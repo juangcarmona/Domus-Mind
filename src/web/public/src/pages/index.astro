@@ -1,3 +1,41 @@
 ---
-return Astro.redirect('/en/');
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import HeroSection from '@/components/HeroSection.astro';
+import CtaBlock from '@/components/CtaBlock.astro';
+import { defaultLocale } from '@/lib/i18n';
+import { getPageContent } from '@/lib/content';
+import type { HomeFrontmatter } from '@/lib/content-types';
+
+const locale = defaultLocale;
+const { content } = getPageContent<HomeFrontmatter>(locale, 'home');
+const { frontmatter } = content;
+const Content = content.Content as unknown as () => unknown;
 ---
+<BaseLayout locale={locale} title={frontmatter.title} description={frontmatter.description} currentPath="/">
+  <HeroSection
+    title={frontmatter.heroTitle}
+    body={frontmatter.heroBody}
+    primaryCta={{ label: frontmatter.primaryCtaLabel, href: frontmatter.primaryCtaHref }}
+    secondaryCta={{ label: frontmatter.secondaryCtaLabel, href: frontmatter.secondaryCtaHref }}
+    locale={locale}
+  />
+  <div class="home-content">
+    <Content />
+  </div>
+  <section class="cta-grid" aria-label="Call to action">
+    <CtaBlock
+      title={frontmatter.developerCtaTitle}
+      body={frontmatter.developerCtaBody}
+      label={frontmatter.developerCtaLabel}
+      href={frontmatter.developerCtaHref}
+      locale={locale}
+    />
+    <CtaBlock
+      title={frontmatter.familyCtaTitle}
+      body={frontmatter.familyCtaBody}
+      label={frontmatter.familyCtaLabel}
+      href={frontmatter.familyCtaHref}
+      locale={locale}
+    />
+  </section>
+</BaseLayout>

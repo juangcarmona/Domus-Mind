@@ -1,20 +1,27 @@
 ---
+import { withLocale, type Locale } from '@/lib/i18n';
+
 interface HeroProps {
   title: string;
   body: string;
   primaryCta: { label: string; href: string };
   secondaryCta: { label: string; href: string };
-  locale: string;
+  locale: Locale;
 }
 
 const { title, body, primaryCta, secondaryCta, locale } = Astro.props as HeroProps;
 ---
 <section class="hero">
+  <svg class="hero-logo" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <polygon fill="currentColor" points="128,24 24,112 24,232 232,232 232,112"/>
+    <rect fill="currentColor" x="172" y="52" width="20" height="44"/>
+    <polygon fill="var(--surface)" points="60,216 60,112 128,168 196,112 196,216 164,216 164,166 128,220 92,166 92,216"/>
+  </svg>
   <h1>DomusMind</h1>
   <p class="hero-subtitle">{title}</p>
   <p>{body}</p>
   <div class="cta-row">
-    <a class="button" href={`/${locale}${primaryCta.href}`}>{primaryCta.label}</a>
-    <a class="button ghost" href={`/${locale}${secondaryCta.href}`}>{secondaryCta.label}</a>
+    <a class="button" href={withLocale(locale, primaryCta.href)}>{primaryCta.label}</a>
+    <a class="button ghost" href={withLocale(locale, secondaryCta.href)}>{secondaryCta.label}</a>
   </div>
 </section>

@@ -5,6 +5,13 @@ export interface UiContent {
   themeLabel: string;
   languageLabel: string;
   footer: Record<string, string>;
+  fallbackNotice?: string;
+}
+
+export interface SectionContent {
+  title: string;
+  body?: string;
+  list?: string[];
 }
 
 export interface HomeFrontmatter {

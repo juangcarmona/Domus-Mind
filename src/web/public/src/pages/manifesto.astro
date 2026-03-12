@@ -1,0 +1,15 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { defaultLocale } from '@/lib/i18n';
+import { getPageContent } from '@/lib/content';
+import type { PageFrontmatter } from '@/lib/content-types';
+
+const locale = defaultLocale;
+const { content } = getPageContent<PageFrontmatter>(locale, 'manifesto');
+const { frontmatter } = content;
+const Content = content.Content as unknown as () => unknown;
+---
+<BaseLayout locale={locale} title={frontmatter.title} description={frontmatter.description} currentPath="/manifesto">
+  <h1>{frontmatter.title}</h1>
+  <Content />
+</BaseLayout>

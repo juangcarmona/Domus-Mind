@@ -21,6 +21,6 @@ Delivery phases from foundation through intelligence.
 
 ## Links
 
-- [Repository Documentation](https://github.com/juangcarmona/Domus-Mind/tree/main/docs)
-- [Architecture Docs](https://github.com/juangcarmona/Domus-Mind/tree/main/docs/03_architecture)
-- [Domain Docs](https://github.com/juangcarmona/Domus-Mind/tree/main/docs/04_domain)
+- [Repository Documentation](https://github.com/juangcarmona/domusmind/tree/main/docs)
+- [Architecture Docs](https://github.com/juangcarmona/domusmind/tree/main/docs/03_architecture)
+- [Domain Docs](https://github.com/juangcarmona/domusmind/tree/main/docs/04_domain)

@@ -2,18 +2,21 @@
 import type { Locale } from '@/lib/i18n';
 import { withLocale } from '@/lib/i18n';
 import type { UiContent } from '@/lib/content-types';
+import GitHubIcon from './GitHubIcon.astro';
 
 const { locale, ui } = Astro.props as { locale: Locale; ui: UiContent };
 ---
 <footer class="site-footer">
-  <div>
-    <p><strong>{ui.siteName}</strong> · {ui.tagline}</p>
-    <p>Open household infrastructure.</p>
-  </div>
+  <p><strong>{ui.siteName}</strong> &middot; {ui.tagline}</p>
   <ul>
     <li><a href={withLocale(locale, '/faq')}>{ui.footer.faq}</a></li>
     <li><a href={withLocale(locale, '/domain')}>{ui.footer.domain}</a></li>
     <li><a href={withLocale(locale, '/open-source')}>{ui.footer.openSource}</a></li>
-    <li><a href="https://github.com/juangcarmona/Domus-Mind">{ui.footer.github}</a></li>
+    <li>
+      <a class="footer-github" href="https://github.com/juangcarmona/domusmind" aria-label="GitHub repository" target="_blank" rel="noopener noreferrer">
+        <GitHubIcon size={14} />
+        {ui.footer.github}
+      </a>
+    </li>
   </ul>
 </footer>

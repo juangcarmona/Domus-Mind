@@ -1,10 +1,12 @@
 ---
+import { withLocale, type Locale } from '@/lib/i18n';
+
 interface CtaProps {
   title: string;
   body: string;
   label: string;
   href: string;
-  locale: string;
+  locale: Locale;
 }
 
 const { title, body, label, href, locale } = Astro.props as CtaProps;
@@ -12,5 +14,5 @@ const { title, body, label, href, locale } = Astro.props as CtaProps;
 <article class="cta-card">
   <h3>{title}</h3>
   <p>{body}</p>
-  <a class="button" href={`/${locale}${href}`}>{label}</a>
+  <a class="button" href={withLocale(locale, href)}>{label}</a>
 </article>

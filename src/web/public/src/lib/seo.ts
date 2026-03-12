@@ -1,4 +1,4 @@
-import type { Locale } from './i18n';
+import { defaultLocale, type Locale } from './i18n';
 
 const baseUrl = 'https://domusmind.org';
 
@@ -15,7 +15,11 @@ function normalizePath(pathname: string): string {
 }
 
 export function localeUrl(locale: Locale, pathname: string): string {
-  return `${baseUrl}/${locale}${normalizePath(pathname)}`;
+  const path = normalizePath(pathname);
+  if (locale === defaultLocale) {
+    return `${baseUrl}${path}`;
+  }
+  return `${baseUrl}/${locale}${path}`;
 }
 
 export function canonicalUrl(locale: Locale, pathname: string): string {

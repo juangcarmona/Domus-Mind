@@ -1,15 +1,15 @@
 ---
 import { locales, type Locale, withLocale } from '@/lib/i18n';
 
-const { locale, path = '/' } = Astro.props as { locale: Locale; path?: string };
+const { locale, path = '/' } = Astro.props as { locale: Locale; path?: string; label?: string };
 const localeNames: Record<Locale, string> = {
-  en: 'English',
-  es: 'Español',
-  fr: 'Français',
-  de: 'Deutsch',
-  it: 'Italiano',
+  en: 'EN',
+  es: 'ES',
+  fr: 'FR',
+  de: 'DE',
+  it: 'IT',
   zh: '中文',
-  ja: '日本語',
+  ja: '日本',
 };
 ---
 <label class="sr-only" for="locale-switcher">{Astro.props.label ?? 'Language'}</label>

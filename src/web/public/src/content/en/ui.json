@@ -16,5 +16,6 @@
     "domain": "Domain",
     "openSource": "Open Source",
     "github": "GitHub Repository"
-  }
+  },
+  "fallbackNotice": "This page is not yet available in English. Showing English content. Want to help?"
 }

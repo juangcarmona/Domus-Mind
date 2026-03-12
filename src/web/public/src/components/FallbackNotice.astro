@@ -1,0 +1,19 @@
+---
+import type { Locale } from '@/lib/i18n';
+import { getUiContent } from '@/lib/content';
+
+const { locale } = Astro.props as { locale: Locale };
+const ui = getUiContent(locale);
+const notice = ui.fallbackNotice;
+---
+{notice && (
+  <div class="fallback-notice" role="note">
+    <span class="fallback-notice__text">{notice}</span>
+    <a
+      class="fallback-notice__link"
+      href="https://github.com/juangcarmona/domusmind/issues"
+      target="_blank"
+      rel="noopener noreferrer"
+    >GitHub ↗</a>
+  </div>
+)}

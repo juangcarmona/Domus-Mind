@@ -1,22 +1,15 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import FallbackNotice from '@/components/FallbackNotice.astro';
-import { locales, defaultLocale, normalizeLocale, withLocale } from '@/lib/i18n';
+import { defaultLocale, withLocale } from '@/lib/i18n';
 import { getPageContent } from '@/lib/content';
 import type { PageFrontmatter } from '@/lib/content-types';
 
-export function getStaticPaths() {
-  return locales.filter((l) => l !== defaultLocale).map((lang) => ({ params: { lang } }));
-}
-
-const locale = normalizeLocale(Astro.params.lang);
-const { content, sourceLocale } = getPageContent<PageFrontmatter>(locale, 'docs');
-const isFallback = sourceLocale !== locale;
+const locale = defaultLocale;
+const { content } = getPageContent<PageFrontmatter>(locale, 'docs');
 const { frontmatter } = content;
 const Content = content.Content as unknown as () => unknown;
 ---
 <BaseLayout locale={locale} title={frontmatter.title} description={frontmatter.description} currentPath="/docs">
-  {isFallback && <FallbackNotice locale={locale} />}
   <h1>{frontmatter.title}</h1>
   <Content />
   <p>
