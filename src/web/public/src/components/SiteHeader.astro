@@ -1,0 +1,40 @@
+---
+import type { Locale } from '@/lib/i18n';
+import { withLocale } from '@/lib/i18n';
+import type { UiContent } from '@/lib/content-types';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+const { locale, ui, currentPath = '/' } = Astro.props as {
+  locale: Locale;
+  ui: UiContent;
+  currentPath?: string;
+};
+
+const links = [
+  { key: 'home', href: '/' },
+  { key: 'manifesto', href: '/manifesto' },
+  { key: 'concept', href: '/concept' },
+  { key: 'architecture', href: '/architecture' },
+  { key: 'community', href: '/community' },
+  { key: 'docs', href: '/docs' },
+];
+---
+<header class="site-header">
+  <a class="brand" href={withLocale(locale, '/')}>{ui.siteName}</a>
+  <nav aria-label="Primary">
+    <ul>
+      {links.map((link) => (
+        <li>
+          <a href={withLocale(locale, link.href)} aria-current={currentPath === link.href ? 'page' : undefined}>
+            {ui.nav[link.key]}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+  <div class="header-controls">
+    <LanguageSwitcher locale={locale} path={currentPath} label={ui.languageLabel} />
+    <ThemeToggle label={ui.themeLabel} />
+  </div>
+</header>

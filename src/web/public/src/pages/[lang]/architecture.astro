@@ -1,0 +1,24 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { locales, normalizeLocale, withLocale } from '@/lib/i18n';
+import { getPageContent } from '@/lib/content';
+import type { PageFrontmatter } from '@/lib/content-types';
+
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const locale = normalizeLocale(Astro.params.lang);
+const { content, sourceLocale } = getPageContent<PageFrontmatter>(locale, 'architecture');
+if (sourceLocale !== locale) {
+  return Astro.redirect(withLocale(sourceLocale, '/architecture'));
+}
+const { frontmatter } = content;
+const Content = content.Content as unknown as () => unknown;
+---
+<BaseLayout locale={locale} title={frontmatter.title} description={frontmatter.description} currentPath="/architecture">
+  <h1>{frontmatter.title}</h1>
+  <p class="lead">API-first, domain-centric, event-driven infrastructure.</p>
+  <pre class="diagram" aria-label="High level architecture diagram">Clients → API → Application Slices → Domain Model → Infrastructure</pre>
+  <Content />
+</BaseLayout>

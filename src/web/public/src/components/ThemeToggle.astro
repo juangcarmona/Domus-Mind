@@ -1,0 +1,66 @@
+<button class="icon-button" type="button" id="theme-toggle" aria-label={Astro.props.label ?? 'Toggle theme'} aria-pressed="false">
+  <span aria-hidden="true" id="theme-icon">◐</span>
+</button>
+
+<script is:inline>
+  const storageKey = 'domusmind-theme';
+  const root = document.documentElement;
+  const button = document.getElementById('theme-toggle');
+  const icon = document.getElementById('theme-icon');
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+  let hasStoredTheme = false;
+
+  const currentTheme = () => root.getAttribute('data-theme') || 'light';
+
+  const getStoredTheme = () => {
+    try {
+      const value = localStorage.getItem(storageKey);
+      hasStoredTheme = Boolean(value);
+      return value;
+    } catch {
+      hasStoredTheme = false;
+      return null;
+    }
+  };
+
+  const saveTheme = (value) => {
+    try {
+      localStorage.setItem(storageKey, value);
+      hasStoredTheme = true;
+    } catch {
+      hasStoredTheme = false;
+    }
+  };
+
+  const applyTheme = (value) => {
+    root.setAttribute('data-theme', value);
+  };
+
+  const applyIcon = () => {
+    const dark = currentTheme() === 'dark';
+    if (icon) {
+      icon.textContent = dark ? '☀' : '☾';
+    }
+    if (button instanceof HTMLButtonElement) {
+      button.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    }
+  };
+
+  getStoredTheme();
+
+  button?.addEventListener('click', () => {
+    const next = currentTheme() === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    saveTheme(next);
+    applyIcon();
+  });
+
+  media.addEventListener('change', (event) => {
+    if (!hasStoredTheme) {
+      applyTheme(event.matches ? 'dark' : 'light');
+      applyIcon();
+    }
+  });
+
+  applyIcon();
+</script>

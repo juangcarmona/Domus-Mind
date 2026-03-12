@@ -1,0 +1,20 @@
+{
+  "siteName": "DomusMind",
+  "tagline": "The Operating System for Family Life",
+  "nav": {
+    "home": "Home",
+    "manifesto": "Manifesto",
+    "concept": "Concept",
+    "architecture": "Architecture",
+    "community": "Community",
+    "docs": "Docs"
+  },
+  "themeLabel": "Toggle theme",
+  "languageLabel": "Language",
+  "footer": {
+    "faq": "FAQ",
+    "domain": "Domain",
+    "openSource": "Open Source",
+    "github": "GitHub Repository"
+  }
+}

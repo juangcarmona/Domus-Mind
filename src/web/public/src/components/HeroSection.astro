@@ -1,0 +1,20 @@
+---
+interface HeroProps {
+  title: string;
+  body: string;
+  primaryCta: { label: string; href: string };
+  secondaryCta: { label: string; href: string };
+  locale: string;
+}
+
+const { title, body, primaryCta, secondaryCta, locale } = Astro.props as HeroProps;
+---
+<section class="hero">
+  <h1>DomusMind</h1>
+  <p class="hero-subtitle">{title}</p>
+  <p>{body}</p>
+  <div class="cta-row">
+    <a class="button" href={`/${locale}${primaryCta.href}`}>{primaryCta.label}</a>
+    <a class="button ghost" href={`/${locale}${secondaryCta.href}`}>{secondaryCta.label}</a>
+  </div>
+</section>

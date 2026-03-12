@@ -1,0 +1,19 @@
+---
+import type { Locale } from '@/lib/i18n';
+import { withLocale } from '@/lib/i18n';
+import type { UiContent } from '@/lib/content-types';
+
+const { locale, ui } = Astro.props as { locale: Locale; ui: UiContent };
+---
+<footer class="site-footer">
+  <div>
+    <p><strong>{ui.siteName}</strong> · {ui.tagline}</p>
+    <p>Open household infrastructure.</p>
+  </div>
+  <ul>
+    <li><a href={withLocale(locale, '/faq')}>{ui.footer.faq}</a></li>
+    <li><a href={withLocale(locale, '/domain')}>{ui.footer.domain}</a></li>
+    <li><a href={withLocale(locale, '/open-source')}>{ui.footer.openSource}</a></li>
+    <li><a href="https://github.com/juangcarmona/Domus-Mind">{ui.footer.github}</a></li>
+  </ul>
+</footer>

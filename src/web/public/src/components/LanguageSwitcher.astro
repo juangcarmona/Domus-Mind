@@ -1,0 +1,33 @@
+---
+import { locales, type Locale, withLocale } from '@/lib/i18n';
+
+const { locale, path = '/' } = Astro.props as { locale: Locale; path?: string };
+const localeNames: Record<Locale, string> = {
+  en: 'English',
+  es: 'Español',
+  fr: 'Français',
+  de: 'Deutsch',
+  it: 'Italiano',
+  zh: '中文',
+  ja: '日本語',
+};
+---
+<label class="sr-only" for="locale-switcher">{Astro.props.label ?? 'Language'}</label>
+<select
+  id="locale-switcher"
+  class="locale-select"
+  aria-label={Astro.props.label ?? 'Language'}
+>
+  {locales.map((candidate) => (
+    <option value={withLocale(candidate, path)} selected={candidate === locale}>{localeNames[candidate]}</option>
+  ))}
+</select>
+
+<script is:inline>
+  const localeSwitcher = document.getElementById('locale-switcher');
+  localeSwitcher?.addEventListener('change', (event) => {
+    if (event.target instanceof HTMLSelectElement) {
+      window.location.href = event.target.value;
+    }
+  });
+</script>

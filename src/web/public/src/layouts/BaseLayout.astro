@@ -1,0 +1,63 @@
+---
+import '@/styles/global.css';
+import type { Locale } from '@/lib/i18n';
+import { canonicalUrl, localeUrl, pageTitle } from '@/lib/seo';
+import SiteHeader from '@/components/SiteHeader.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import { getUiContent } from '@/lib/content';
+import { locales } from '@/lib/i18n';
+
+const {
+  locale,
+  title,
+  description,
+  currentPath = '/',
+} = Astro.props as {
+  locale: Locale;
+  title: string;
+  description: string;
+  currentPath?: string;
+};
+
+const ui = getUiContent(locale);
+const canonical = canonicalUrl(locale, currentPath);
+---
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle(title)} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content="https://domusmind.org/og/default.svg" />
+    <link rel="canonical" href={canonical} />
+    {locales.map((candidate) => (
+      <link rel="alternate" hreflang={candidate} href={localeUrl(candidate, currentPath)} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={localeUrl('en', currentPath)} />
+    <link rel="icon" href="/favicon.svg" />
+    <title>{pageTitle(title)}</title>
+    <script is:inline>
+      (() => {
+        const storageKey = 'domusmind-theme';
+        let stored = null;
+        try {
+          stored = localStorage.getItem(storageKey);
+        } catch {}
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored || (systemDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+  </head>
+  <body>
+    <SiteHeader locale={locale} ui={ui} currentPath={currentPath} />
+    <main>
+      <slot />
+    </main>
+    <SiteFooter locale={locale} ui={ui} />
+  </body>
+</html>

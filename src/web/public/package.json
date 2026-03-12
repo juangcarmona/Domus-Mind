@@ -1,0 +1,21 @@
+{
+  "name": "domusmind-public-site",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.1",
+    "astro": "^6.0.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

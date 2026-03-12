@@ -1,0 +1,16 @@
+---
+interface CtaProps {
+  title: string;
+  body: string;
+  label: string;
+  href: string;
+  locale: string;
+}
+
+const { title, body, label, href, locale } = Astro.props as CtaProps;
+---
+<article class="cta-card">
+  <h3>{title}</h3>
+  <p>{body}</p>
+  <a class="button" href={`/${locale}${href}`}>{label}</a>
+</article>

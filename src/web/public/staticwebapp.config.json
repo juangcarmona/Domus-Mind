@@ -1,0 +1,6 @@
+{
+  "navigationFallback": {
+    "rewrite": "/en/index.html",
+    "exclude": ["/assets/*", "/og/*", "/favicon.svg", "/robots.txt", "/sitemap-index.xml", "/sitemap-*.xml"]
+  }
+}

@@ -2,41 +2,47 @@ name: public-site-ci
 
 on:
   pull_request:
+    branches: [main]
     paths:
       - 'src/web/public/**'
-  push:
-    branches: [ main ]
-    paths:
-      - 'src/web/public/**'
+      - '.github/workflows/public-site-ci.yml'
+      - '.github/workflows/public-site-cd.yml'
   workflow_dispatch:
 
 jobs:
-  build:
-
+  validate:
+    name: Validate Astro site
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: src/web/public
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: src/web/public/package-lock.json
 
-      - name: Install
+      - name: Install dependencies
         run: npm ci
+
+      - name: Check formatting/lint
+        run: npm run lint --if-present
+
+      - name: Run Astro checks
+        run: npm run check --if-present
 
       - name: Build
         run: npm run build
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v6
         with:
-          name: domusmind-public
+          name: public-site-dist
           path: src/web/public/dist
+          if-no-files-found: error
