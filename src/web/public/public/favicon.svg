@@ -1,5 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="DomusMind">
-  <rect width="64" height="64" rx="14" fill="#6A4C93"/>
-  <path d="M12 32L32 16l20 16v16a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V32Z" fill="none" stroke="#F5F3F7" stroke-width="4"/>
-  <path d="M24 48V34h16v14" fill="none" stroke="#E6B655" stroke-width="4"/>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- House -->
+  <polygon fill="#6A4C93"
+    points="128,24 24,112 24,232 232,232 232,112"/>
+
+  <!-- Chimney -->
+  <rect fill="#6A4C93"
+    x="172"
+    y="52"
+    width="20"
+    height="44"/>
+
+  <!-- Bigger M -->
+  <polygon fill="#FFFFFF"
+    points="
+      60,200
+      60,96
+      128,152
+      196,96
+      196,200
+      164,200
+      164,150
+      128,204
+      92,150
+      92,200
+    "/>
+
 </svg>
