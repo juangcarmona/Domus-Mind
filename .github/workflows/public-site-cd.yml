@@ -1,24 +1,31 @@
-name: public-site-deploy
+name: public-site-cd
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'src/web/public/**'
-      - '.github/workflows/public-site-deploy.yml'
+      - '.github/workflows/public-site-cd.yml'
   workflow_dispatch:
 
 jobs:
   deploy:
+    name: Deploy production site
     runs-on: ubuntu-latest
-    env:
-      AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+
+    environment:
+      name: production
+
     defaults:
       run:
         working-directory: src/web/public
 
+    permissions:
+      contents: read
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -34,10 +41,11 @@ jobs:
         run: npm run build
 
       - name: Deploy to Azure Static Web Apps
-        if: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ env.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.WEB_SITE_DEPLOYMENT_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
           app_location: src/web/public
+          api_location: ""
           output_location: dist
-          skip_app_build: true
