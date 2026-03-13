@@ -30,7 +30,12 @@ const links = [
     </svg>
     {ui.siteName}
   </a>
-  <nav aria-label="Primary">
+  <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  <nav aria-label="Primary" class="primary-nav">
     <ul>
       {links.map((link) => (
         <li>
@@ -55,3 +60,48 @@ const links = [
     <ThemeToggle label={ui.themeLabel} />
   </div>
 </header>
+
+<script is:inline>
+  const siteHeader = document.querySelector('.site-header');
+  const navToggle = siteHeader?.querySelector('.nav-toggle');
+  const navMenu = siteHeader?.querySelector('.primary-nav');
+  const mobileMediaQuery = window.matchMedia('(max-width: 768px)');
+
+  const closeNavMenu = () => {
+    navToggle?.setAttribute('aria-expanded', 'false');
+    navMenu?.classList.remove('is-open');
+  };
+
+  const toggleNavMenu = () => {
+    const isExpanded = navToggle?.getAttribute('aria-expanded') === 'true';
+    navToggle?.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+    navMenu?.classList.toggle('is-open', !isExpanded);
+  };
+
+  navToggle?.addEventListener('click', () => {
+    if (!mobileMediaQuery.matches) return;
+    toggleNavMenu();
+  });
+
+  navMenu?.addEventListener('click', (event) => {
+    if (!mobileMediaQuery.matches) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest('a')) {
+      closeNavMenu();
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!mobileMediaQuery.matches) return;
+    const target = event.target;
+    if (target instanceof Node && !siteHeader?.contains(target)) {
+      closeNavMenu();
+    }
+  });
+
+  mobileMediaQuery.addEventListener('change', () => {
+    if (!mobileMediaQuery.matches) {
+      closeNavMenu();
+    }
+  });
+</script>
