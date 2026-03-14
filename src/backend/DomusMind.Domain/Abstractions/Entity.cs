@@ -12,21 +12,22 @@ public abstract class Entity<TId>
 
     public override bool Equals(object? obj)
     {
-        if (obj is not Entity<TId> other)
+        if (obj is null || obj.GetType() != GetType())
         {
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (ReferenceEquals(this, obj))
         {
             return true;
         }
 
-        return EqualityComparer<TId>.Default.Equals(Id, other.Id);
+        return obj is Entity<TId> other &&
+               EqualityComparer<TId>.Default.Equals(Id, other.Id);
     }
 
     public override int GetHashCode()
     {
-        return Id.GetHashCode();
+        return HashCode.Combine(GetType(), Id);
     }
 }

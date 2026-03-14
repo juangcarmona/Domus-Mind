@@ -17,15 +17,24 @@ public sealed class CurrentUserAccessor : ICurrentUser
     {
         get
         {
-            var claim = _httpContextAccessor.HttpContext?.User
-                ?.FindFirst(ClaimTypes.NameIdentifier);
+            var claim = _httpContextAccessor.HttpContext?
+                .User?
+                .FindFirst(ClaimTypes.NameIdentifier);
 
-            if (claim is null) return null;
-
-            return Guid.TryParse(claim.Value, out var id) ? id : null;
+            return claim is not null && Guid.TryParse(claim.Value, out var id)
+                ? id
+                : null;
         }
     }
 
-    public string? Email =>
-        _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
+    public string? Email
+    {
+        get
+        {
+            return _httpContextAccessor.HttpContext?
+                .User?
+                .FindFirst(ClaimTypes.Email)?
+                .Value;
+        }
+    }
 }

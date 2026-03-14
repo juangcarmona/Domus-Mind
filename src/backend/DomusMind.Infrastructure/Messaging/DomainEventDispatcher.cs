@@ -1,7 +1,6 @@
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Domain.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace DomusMind.Infrastructure.Messaging;
 
@@ -20,24 +19,23 @@ public sealed class DomainEventDispatcher : IDomainEventDispatcher
     {
         foreach (var domainEvent in domainEvents)
         {
-            var eventType = domainEvent.GetType();
-
             var handlerType = typeof(IDomainEventHandler<>)
-                .MakeGenericType(eventType);
+                .MakeGenericType(domainEvent.GetType());
 
             var handlers = _serviceProvider.GetServices(handlerType);
 
-            var method = handlerType.GetMethod(
-                nameof(IDomainEventHandler<IDomainEvent>.Handle))!;
-
-            foreach (var handler in handlers)
+            foreach (var handler in handlers.Where(h => h is not null))
             {
-                var task = (Task)method.Invoke(
-                    handler,
-                    new object[] { domainEvent, cancellationToken })!;
-
-                await task;
+                await DispatchToHandler(handler!, domainEvent, cancellationToken);
             }
         }
+    }
+
+    private static Task DispatchToHandler(
+        object handler,
+        IDomainEvent domainEvent,
+        CancellationToken cancellationToken)
+    {
+        return ((dynamic)handler).Handle((dynamic)domainEvent, cancellationToken);
     }
 }
