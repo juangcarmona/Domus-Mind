@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/" />
-  <Folder Name="/src/backend/">
+  <Folder Name="/src/backend/"> 
+    <Project Path="src/backend/DomusMind.AppHost/DomusMind.AppHost.csproj" />
     <Project Path="src/backend/DomusMind.Api/DomusMind.Api.csproj" />
     <Project Path="src/backend/DomusMind.Application/DomusMind.Application.csproj" />
     <Project Path="src/backend/DomusMind.Contracts/DomusMind.Contracts.csproj" />

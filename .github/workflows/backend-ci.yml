@@ -5,11 +5,13 @@ on:
     paths:
       - 'src/backend/**'
       - 'tests/backend/**'
+      - 'DomusMind.slnx'
   push:
     branches: [ main ]
     paths:
       - 'src/backend/**'
       - 'tests/backend/**'
+      - 'DomusMind.slnx'
   workflow_dispatch:
 
 jobs:
