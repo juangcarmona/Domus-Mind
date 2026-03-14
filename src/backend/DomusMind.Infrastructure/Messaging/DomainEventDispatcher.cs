@@ -22,20 +22,21 @@ public sealed class DomainEventDispatcher : IDomainEventDispatcher
             var handlerType = typeof(IDomainEventHandler<>)
                 .MakeGenericType(domainEvent.GetType());
 
+            var handleMethod = handlerType.GetMethod(
+                nameof(IDomainEventHandler<IDomainEvent>.Handle))
+                ?? throw new InvalidOperationException(
+                    $"Handle method not found on {handlerType.Name}.");
+
             var handlers = _serviceProvider.GetServices(handlerType);
 
             foreach (var handler in handlers.Where(h => h is not null))
             {
-                await DispatchToHandler(handler!, domainEvent, cancellationToken);
+                var task = (Task?)handleMethod.Invoke(handler!, [domainEvent, cancellationToken])
+                    ?? throw new InvalidOperationException(
+                        $"Handler {handlerType.Name} returned null.");
+
+                await task;
             }
         }
-    }
-
-    private static Task DispatchToHandler(
-        object handler,
-        IDomainEvent domainEvent,
-        CancellationToken cancellationToken)
-    {
-        return ((dynamic)handler).Handle((dynamic)domainEvent, cancellationToken);
     }
 }

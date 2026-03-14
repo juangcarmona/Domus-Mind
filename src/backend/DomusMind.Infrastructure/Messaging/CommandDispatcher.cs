@@ -12,15 +12,24 @@ public sealed class CommandDispatcher : ICommandDispatcher
         _serviceProvider = serviceProvider;
     }
 
-    public Task<TResponse> Dispatch<TResponse>(
+    public async Task<TResponse> Dispatch<TResponse>(
         ICommand<TResponse> command,
         CancellationToken cancellationToken = default)
     {
         var handlerType = typeof(ICommandHandler<,>)
             .MakeGenericType(command.GetType(), typeof(TResponse));
 
-        dynamic handler = _serviceProvider.GetRequiredService(handlerType);
+        var handler = _serviceProvider.GetRequiredService(handlerType);
 
-        return handler.Handle((dynamic)command, cancellationToken);
+        var handleMethod = handlerType.GetMethod(
+            nameof(ICommandHandler<ICommand<TResponse>, TResponse>.Handle))
+            ?? throw new InvalidOperationException(
+                $"Handle method not found on {handlerType.Name}.");
+
+        var task = (Task<TResponse>?)handleMethod.Invoke(handler, [command, cancellationToken])
+            ?? throw new InvalidOperationException(
+                $"Handler {handlerType.Name} returned null.");
+
+        return await task;
     }
 }

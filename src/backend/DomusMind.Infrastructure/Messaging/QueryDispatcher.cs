@@ -12,15 +12,24 @@ public sealed class QueryDispatcher : IQueryDispatcher
         _serviceProvider = serviceProvider;
     }
 
-    public Task<TResponse> Dispatch<TResponse>(
+    public async Task<TResponse> Dispatch<TResponse>(
         IQuery<TResponse> query,
         CancellationToken cancellationToken = default)
     {
         var handlerType = typeof(IQueryHandler<,>)
             .MakeGenericType(query.GetType(), typeof(TResponse));
 
-        dynamic handler = _serviceProvider.GetRequiredService(handlerType);
+        var handler = _serviceProvider.GetRequiredService(handlerType);
 
-        return handler.Handle((dynamic)query, cancellationToken);
+        var handleMethod = handlerType.GetMethod(
+            nameof(IQueryHandler<IQuery<TResponse>, TResponse>.Handle))
+            ?? throw new InvalidOperationException(
+                $"Handle method not found on {handlerType.Name}.");
+
+        var task = (Task<TResponse>?)handleMethod.Invoke(handler, [query, cancellationToken])
+            ?? throw new InvalidOperationException(
+                $"Handler {handlerType.Name} returned null.");
+
+        return await task;
     }
 }
