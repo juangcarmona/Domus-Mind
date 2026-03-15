@@ -30,6 +30,7 @@ using DomusMind.Application.Features.Tasks.CreateRoutine;
 using DomusMind.Application.Features.Tasks.UpdateRoutine;
 using DomusMind.Application.Features.Tasks.PauseRoutine;
 using DomusMind.Application.Features.Tasks.ResumeRoutine;
+using DomusMind.Application.Features.Family.GetHouseholdTimeline;
 using DomusMind.Contracts.Auth;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
@@ -57,6 +58,7 @@ public static class ApplicationServices
         services.AddScoped<ICommandHandler<AddMemberCommand, AddMemberResponse>, AddMemberCommandHandler>();
         services.AddScoped<IQueryHandler<GetFamilyQuery, FamilyResponse>, GetFamilyQueryHandler>();
         services.AddScoped<IQueryHandler<GetFamilyMembersQuery, IReadOnlyCollection<FamilyMemberResponse>>, GetFamilyMembersQueryHandler>();
+        services.AddScoped<IQueryHandler<GetHouseholdTimelineQuery, HouseholdTimelineResponse>, GetHouseholdTimelineQueryHandler>();
 
         // Responsibilities slices
         services.AddScoped<ICommandHandler<CreateResponsibilityDomainCommand, CreateResponsibilityDomainResponse>, CreateResponsibilityDomainCommandHandler>();

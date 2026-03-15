@@ -5,6 +5,7 @@ using DomusMind.Application.Features.Family.AddMember;
 using DomusMind.Application.Features.Family.CreateFamily;
 using DomusMind.Application.Features.Family.GetFamily;
 using DomusMind.Application.Features.Family.GetFamilyMembers;
+using DomusMind.Application.Features.Family.GetHouseholdTimeline;
 using DomusMind.Contracts.Family;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -113,6 +114,30 @@ public sealed class FamiliesController : ControllerBase
         {
             var response = await dispatcher.Dispatch(
                 new GetFamilyMembersQuery(familyId, _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (FamilyException ex)
+        {
+            return MapFamilyException(ex);
+        }
+    }
+
+    /// <summary>Returns a unified chronological timeline of events, tasks, and routines for the given family.</summary>
+    [HttpGet("{familyId:guid}/timeline")]
+    [ProducesResponseType(typeof(HouseholdTimelineResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetHouseholdTimeline(
+        Guid familyId,
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new GetHouseholdTimelineQuery(familyId, _currentUser.UserId!.Value),
                 cancellationToken);
 
             return Ok(response);
