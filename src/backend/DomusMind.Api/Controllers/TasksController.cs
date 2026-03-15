@@ -5,6 +5,7 @@ using DomusMind.Application.Features.Tasks.AssignTask;
 using DomusMind.Application.Features.Tasks.CancelTask;
 using DomusMind.Application.Features.Tasks.CompleteTask;
 using DomusMind.Application.Features.Tasks.CreateTask;
+using DomusMind.Application.Features.Tasks.ReassignTask;
 using DomusMind.Application.Features.Tasks.RescheduleTask;
 using DomusMind.Contracts.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -99,6 +100,23 @@ public sealed class TasksController : ControllerBase
         {
             var response = await dispatcher.Dispatch(
                 new RescheduleTaskCommand(id, request.NewDueDate, _currentUser.UserId!.Value),
+                cancellationToken);
+            return Ok(response);
+        }
+        catch (TasksException ex) { return MapTasksException(ex); }
+    }
+
+    [HttpPost("{id:guid}/reassign")]
+    public async Task<IActionResult> ReassignTask(
+        Guid id,
+        [FromBody] ReassignTaskRequest request,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new ReassignTaskCommand(id, request.NewAssigneeId, _currentUser.UserId!.Value),
                 cancellationToken);
             return Ok(response);
         }

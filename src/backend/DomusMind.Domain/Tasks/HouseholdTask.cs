@@ -85,6 +85,20 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
             Guid.NewGuid(), Id.Value, DateTime.UtcNow));
     }
 
+    public void Reassign(MemberId newAssigneeId)
+    {
+        if (Status == TaskStatus.Completed)
+            throw new InvalidOperationException("Cannot reassign a completed task.");
+
+        if (Status == TaskStatus.Cancelled)
+            throw new InvalidOperationException("Cannot reassign a cancelled task.");
+
+        var previousAssigneeId = AssigneeId;
+        AssigneeId = newAssigneeId;
+        RaiseDomainEvent(new TaskReassigned(
+            Guid.NewGuid(), Id.Value, FamilyId.Value, previousAssigneeId?.Value, newAssigneeId.Value, DateTime.UtcNow));
+    }
+
     public void Reschedule(DateTime? newDueDate)
     {
         if (Status == TaskStatus.Completed)

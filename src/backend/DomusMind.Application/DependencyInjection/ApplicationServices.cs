@@ -5,32 +5,44 @@ using DomusMind.Application.Features.Auth.Login;
 using DomusMind.Application.Features.Auth.Logout;
 using DomusMind.Application.Features.Auth.RefreshToken;
 using DomusMind.Application.Features.Auth.RegisterUser;
+using DomusMind.Application.Features.Calendar.AddEventParticipant;
+using DomusMind.Application.Features.Calendar.AddReminder;
+using DomusMind.Application.Features.Calendar.CancelEvent;
+using DomusMind.Application.Features.Calendar.DetectCalendarConflicts;
+using DomusMind.Application.Features.Calendar.GetFamilyPlans;
+using DomusMind.Application.Features.Calendar.GetFamilyTimeline;
+using DomusMind.Application.Features.Calendar.ProposeAlternativeTimes;
+using DomusMind.Application.Features.Calendar.RemoveEventParticipant;
+using DomusMind.Application.Features.Calendar.RemoveReminder;
+using DomusMind.Application.Features.Calendar.RescheduleEvent;
+using DomusMind.Application.Features.Calendar.ScheduleEvent;
+using DomusMind.Application.Features.Calendar.SuggestEventParticipants;
 using DomusMind.Application.Features.Family.AddMember;
 using DomusMind.Application.Features.Family.CreateFamily;
+using DomusMind.Application.Features.Family.GetEnrichedTimeline;
 using DomusMind.Application.Features.Family.GetFamily;
 using DomusMind.Application.Features.Family.GetFamilyMembers;
+using DomusMind.Application.Features.Family.GetHouseholdTimeline;
+using DomusMind.Application.Features.Family.GetMemberActivity;
 using DomusMind.Application.Features.Responsibilities.AssignPrimaryOwner;
 using DomusMind.Application.Features.Responsibilities.AssignSecondaryOwner;
 using DomusMind.Application.Features.Responsibilities.CreateResponsibilityDomain;
+using DomusMind.Application.Features.Responsibilities.DetectResponsibilityOverload;
+using DomusMind.Application.Features.Responsibilities.GetHouseholdAreas;
+using DomusMind.Application.Features.Responsibilities.GetResponsibilityBalance;
+using DomusMind.Application.Features.Responsibilities.GetResponsibilityVisibility;
+using DomusMind.Application.Features.Responsibilities.SuggestResponsibilityOwner;
 using DomusMind.Application.Features.Responsibilities.TransferResponsibility;
-using DomusMind.Application.Features.Calendar.ScheduleEvent;
-using DomusMind.Application.Features.Calendar.RescheduleEvent;
-using DomusMind.Application.Features.Calendar.CancelEvent;
-using DomusMind.Application.Features.Calendar.AddEventParticipant;
-using DomusMind.Application.Features.Calendar.RemoveEventParticipant;
-using DomusMind.Application.Features.Calendar.AddReminder;
-using DomusMind.Application.Features.Calendar.RemoveReminder;
-using DomusMind.Application.Features.Calendar.GetFamilyTimeline;
-using DomusMind.Application.Features.Tasks.CreateTask;
 using DomusMind.Application.Features.Tasks.AssignTask;
-using DomusMind.Application.Features.Tasks.CompleteTask;
 using DomusMind.Application.Features.Tasks.CancelTask;
-using DomusMind.Application.Features.Tasks.RescheduleTask;
+using DomusMind.Application.Features.Tasks.CompleteTask;
 using DomusMind.Application.Features.Tasks.CreateRoutine;
-using DomusMind.Application.Features.Tasks.UpdateRoutine;
+using DomusMind.Application.Features.Tasks.CreateTask;
 using DomusMind.Application.Features.Tasks.PauseRoutine;
+using DomusMind.Application.Features.Tasks.ReassignTask;
+using DomusMind.Application.Features.Tasks.RescheduleTask;
 using DomusMind.Application.Features.Tasks.ResumeRoutine;
-using DomusMind.Application.Features.Family.GetHouseholdTimeline;
+using DomusMind.Application.Features.Tasks.UpdateRoutine;
 using DomusMind.Contracts.Auth;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
@@ -86,6 +98,26 @@ public static class ApplicationServices
         services.AddScoped<ICommandHandler<UpdateRoutineCommand, UpdateRoutineResponse>, UpdateRoutineCommandHandler>();
         services.AddScoped<ICommandHandler<PauseRoutineCommand, PauseRoutineResponse>, PauseRoutineCommandHandler>();
         services.AddScoped<ICommandHandler<ResumeRoutineCommand, ResumeRoutineResponse>, ResumeRoutineCommandHandler>();
+        services.AddScoped<ICommandHandler<ReassignTaskCommand, ReassignTaskResponse>, ReassignTaskCommandHandler>();
+
+        // Calendar coordination slices (Phase 6)
+        services.AddScoped<IQueryHandler<DetectCalendarConflictsQuery, CalendarConflictsResponse>, DetectCalendarConflictsQueryHandler>();
+        services.AddScoped<IQueryHandler<SuggestEventParticipantsQuery, SuggestEventParticipantsResponse>, SuggestEventParticipantsQueryHandler>();
+        services.AddScoped<IQueryHandler<ProposeAlternativeTimesQuery, ProposeAlternativeTimesResponse>, ProposeAlternativeTimesQueryHandler>();
+        services.AddScoped<IQueryHandler<GetFamilyPlansQuery, FamilyPlansResponse>, GetFamilyPlansQueryHandler>();
+
+        // Chore coordination slices (Phase 6)
+        services.AddScoped<IQueryHandler<SuggestResponsibilityOwnerQuery, SuggestResponsibilityOwnerResponse>, SuggestResponsibilityOwnerQueryHandler>();
+        services.AddScoped<IQueryHandler<GetResponsibilityBalanceQuery, ResponsibilityBalanceResponse>, GetResponsibilityBalanceQueryHandler>();
+        services.AddScoped<IQueryHandler<DetectResponsibilityOverloadQuery, ResponsibilityOverloadResponse>, DetectResponsibilityOverloadQueryHandler>();
+
+        // Household system slices (Phase 6)
+        services.AddScoped<IQueryHandler<GetHouseholdAreasQuery, HouseholdAreasResponse>, GetHouseholdAreasQueryHandler>();
+        services.AddScoped<IQueryHandler<GetResponsibilityVisibilityQuery, ResponsibilityVisibilityResponse>, GetResponsibilityVisibilityQueryHandler>();
+        services.AddScoped<IQueryHandler<GetMemberActivityQuery, MemberActivityResponse>, GetMemberActivityQueryHandler>();
+
+        // Timeline enrichment slices (Phase 6)
+        services.AddScoped<IQueryHandler<GetEnrichedTimelineQuery, EnrichedTimelineResponse>, GetEnrichedTimelineQueryHandler>();
 
         return services;
     }

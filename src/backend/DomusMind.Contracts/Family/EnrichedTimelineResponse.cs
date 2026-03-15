@@ -1,0 +1,21 @@
+namespace DomusMind.Contracts.Family;
+
+public sealed record EnrichedTimelineEntry(
+    Guid EntryId,
+    string EntryType,
+    string Title,
+    DateTime? EffectiveDate,
+    string Status,
+    string Priority,
+    string Group,
+    bool IsOverdue,
+    bool IsUnassigned,
+    Guid? AssigneeId);
+
+public sealed record TimelineGroup(
+    string GroupKey,
+    IReadOnlyCollection<EnrichedTimelineEntry> Entries);
+
+public sealed record EnrichedTimelineResponse(
+    IReadOnlyCollection<TimelineGroup> Groups,
+    int TotalEntries);

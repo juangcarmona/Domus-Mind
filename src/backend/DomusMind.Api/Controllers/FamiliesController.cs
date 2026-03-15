@@ -3,9 +3,11 @@ using DomusMind.Application.Abstractions.Security;
 using DomusMind.Application.Features.Family;
 using DomusMind.Application.Features.Family.AddMember;
 using DomusMind.Application.Features.Family.CreateFamily;
+using DomusMind.Application.Features.Family.GetEnrichedTimeline;
 using DomusMind.Application.Features.Family.GetFamily;
 using DomusMind.Application.Features.Family.GetFamilyMembers;
 using DomusMind.Application.Features.Family.GetHouseholdTimeline;
+using DomusMind.Application.Features.Family.GetMemberActivity;
 using DomusMind.Contracts.Family;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -138,6 +140,69 @@ public sealed class FamiliesController : ControllerBase
         {
             var response = await dispatcher.Dispatch(
                 new GetHouseholdTimelineQuery(familyId, _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (FamilyException ex)
+        {
+            return MapFamilyException(ex);
+        }
+    }
+
+    /// <summary>Returns all cross-context activity for a specific family member.</summary>
+    [HttpGet("{familyId:guid}/members/{memberId:guid}/activity")]
+    [ProducesResponseType(typeof(MemberActivityResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetMemberActivity(
+        Guid familyId,
+        Guid memberId,
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new GetMemberActivityQuery(familyId, memberId, _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (FamilyException ex)
+        {
+            return MapFamilyException(ex);
+        }
+    }
+
+    /// <summary>Returns an enriched, grouped, and filterable household timeline.</summary>
+    [HttpGet("{familyId:guid}/timeline/enriched")]
+    [ProducesResponseType(typeof(EnrichedTimelineResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetEnrichedTimeline(
+        Guid familyId,
+        [FromQuery] string? types,
+        [FromQuery] Guid? memberFilter,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        [FromQuery] string? statuses,
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var typeFilter = string.IsNullOrWhiteSpace(types)
+                ? null
+                : (IReadOnlyCollection<string>)types.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+            var statusFilter = string.IsNullOrWhiteSpace(statuses)
+                ? null
+                : (IReadOnlyCollection<string>)statuses.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+            var response = await dispatcher.Dispatch(
+                new GetEnrichedTimelineQuery(
+                    familyId, typeFilter, memberFilter, from, to, statusFilter,
+                    _currentUser.UserId!.Value),
                 cancellationToken);
 
             return Ok(response);

@@ -4,6 +4,11 @@ using DomusMind.Application.Features.Responsibilities;
 using DomusMind.Application.Features.Responsibilities.AssignPrimaryOwner;
 using DomusMind.Application.Features.Responsibilities.AssignSecondaryOwner;
 using DomusMind.Application.Features.Responsibilities.CreateResponsibilityDomain;
+using DomusMind.Application.Features.Responsibilities.DetectResponsibilityOverload;
+using DomusMind.Application.Features.Responsibilities.GetHouseholdAreas;
+using DomusMind.Application.Features.Responsibilities.GetResponsibilityBalance;
+using DomusMind.Application.Features.Responsibilities.GetResponsibilityVisibility;
+using DomusMind.Application.Features.Responsibilities.SuggestResponsibilityOwner;
 using DomusMind.Application.Features.Responsibilities.TransferResponsibility;
 using DomusMind.Contracts.Responsibilities;
 using Microsoft.AspNetCore.Authorization;
@@ -120,6 +125,130 @@ public sealed class ResponsibilityDomainsController : ControllerBase
         {
             var response = await dispatcher.Dispatch(
                 new TransferResponsibilityCommand(id, request.NewPrimaryOwnerId, _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (ResponsibilitiesException ex)
+        {
+            return MapResponsibilitiesException(ex);
+        }
+    }
+
+    /// <summary>Returns all household areas (responsibility domains) with enriched owner context.</summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(HouseholdAreasResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetHouseholdAreas(
+        [FromQuery] Guid familyId,
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new GetHouseholdAreasQuery(familyId, _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (ResponsibilitiesException ex)
+        {
+            return MapResponsibilitiesException(ex);
+        }
+    }
+
+    /// <summary>Returns the responsibility load balance per family member.</summary>
+    [HttpGet("balance")]
+    [ProducesResponseType(typeof(ResponsibilityBalanceResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetResponsibilityBalance(
+        [FromQuery] Guid familyId,
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new GetResponsibilityBalanceQuery(familyId, _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (ResponsibilitiesException ex)
+        {
+            return MapResponsibilitiesException(ex);
+        }
+    }
+
+    /// <summary>Detects family members overloaded with responsibilities.</summary>
+    [HttpGet("overload")]
+    [ProducesResponseType(typeof(ResponsibilityOverloadResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DetectOverload(
+        [FromQuery] Guid familyId,
+        [FromQuery] int threshold,
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var effectiveThreshold = threshold > 0 ? threshold : 3;
+            var response = await dispatcher.Dispatch(
+                new DetectResponsibilityOverloadQuery(familyId, effectiveThreshold, _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (ResponsibilitiesException ex)
+        {
+            return MapResponsibilitiesException(ex);
+        }
+    }
+
+    /// <summary>Returns a per-member visibility map of responsibility domains.</summary>
+    [HttpGet("visibility")]
+    [ProducesResponseType(typeof(ResponsibilityVisibilityResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetResponsibilityVisibility(
+        [FromQuery] Guid familyId,
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new GetResponsibilityVisibilityQuery(familyId, _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (ResponsibilitiesException ex)
+        {
+            return MapResponsibilitiesException(ex);
+        }
+    }
+
+    /// <summary>Suggests the best family member to primary-own a responsibility domain.</summary>
+    [HttpGet("{id:guid}/suggest-owner")]
+    [ProducesResponseType(typeof(SuggestResponsibilityOwnerResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SuggestOwner(
+        Guid id,
+        [FromQuery] Guid familyId,
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new SuggestResponsibilityOwnerQuery(familyId, id, _currentUser.UserId!.Value),
                 cancellationToken);
 
             return Ok(response);
