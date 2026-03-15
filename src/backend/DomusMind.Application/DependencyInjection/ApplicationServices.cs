@@ -21,10 +21,20 @@ using DomusMind.Application.Features.Calendar.RemoveEventParticipant;
 using DomusMind.Application.Features.Calendar.AddReminder;
 using DomusMind.Application.Features.Calendar.RemoveReminder;
 using DomusMind.Application.Features.Calendar.GetFamilyTimeline;
+using DomusMind.Application.Features.Tasks.CreateTask;
+using DomusMind.Application.Features.Tasks.AssignTask;
+using DomusMind.Application.Features.Tasks.CompleteTask;
+using DomusMind.Application.Features.Tasks.CancelTask;
+using DomusMind.Application.Features.Tasks.RescheduleTask;
+using DomusMind.Application.Features.Tasks.CreateRoutine;
+using DomusMind.Application.Features.Tasks.UpdateRoutine;
+using DomusMind.Application.Features.Tasks.PauseRoutine;
+using DomusMind.Application.Features.Tasks.ResumeRoutine;
 using DomusMind.Contracts.Auth;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
 using DomusMind.Contracts.Responsibilities;
+using DomusMind.Contracts.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DomusMind.Application.DependencyInjection;
@@ -63,6 +73,17 @@ public static class ApplicationServices
         services.AddScoped<ICommandHandler<AddReminderCommand, AddReminderResponse>, AddReminderCommandHandler>();
         services.AddScoped<ICommandHandler<RemoveReminderCommand, RemoveReminderResponse>, RemoveReminderCommandHandler>();
         services.AddScoped<IQueryHandler<GetFamilyTimelineQuery, FamilyTimelineResponse>, GetFamilyTimelineQueryHandler>();
+
+        // Tasks slices
+        services.AddScoped<ICommandHandler<CreateTaskCommand, CreateTaskResponse>, CreateTaskCommandHandler>();
+        services.AddScoped<ICommandHandler<AssignTaskCommand, AssignTaskResponse>, AssignTaskCommandHandler>();
+        services.AddScoped<ICommandHandler<CompleteTaskCommand, CompleteTaskResponse>, CompleteTaskCommandHandler>();
+        services.AddScoped<ICommandHandler<CancelTaskCommand, CancelTaskResponse>, CancelTaskCommandHandler>();
+        services.AddScoped<ICommandHandler<RescheduleTaskCommand, RescheduleTaskResponse>, RescheduleTaskCommandHandler>();
+        services.AddScoped<ICommandHandler<CreateRoutineCommand, CreateRoutineResponse>, CreateRoutineCommandHandler>();
+        services.AddScoped<ICommandHandler<UpdateRoutineCommand, UpdateRoutineResponse>, UpdateRoutineCommandHandler>();
+        services.AddScoped<ICommandHandler<PauseRoutineCommand, PauseRoutineResponse>, PauseRoutineCommandHandler>();
+        services.AddScoped<ICommandHandler<ResumeRoutineCommand, ResumeRoutineResponse>, ResumeRoutineCommandHandler>();
 
         return services;
     }
