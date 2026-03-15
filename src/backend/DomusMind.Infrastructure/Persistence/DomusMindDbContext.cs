@@ -24,6 +24,9 @@ public sealed class DomusMindDbContext : DbContext, IDomusMindDbContext
     public DbSet<Domain.Responsibilities.ResponsibilityDomain> ResponsibilityDomains
         => Set<Domain.Responsibilities.ResponsibilityDomain>();
 
+    public DbSet<Domain.Calendar.CalendarEvent> CalendarEvents
+        => Set<Domain.Calendar.CalendarEvent>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DomusMindDbContext).Assembly);

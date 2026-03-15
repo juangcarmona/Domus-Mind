@@ -13,7 +13,16 @@ using DomusMind.Application.Features.Responsibilities.AssignPrimaryOwner;
 using DomusMind.Application.Features.Responsibilities.AssignSecondaryOwner;
 using DomusMind.Application.Features.Responsibilities.CreateResponsibilityDomain;
 using DomusMind.Application.Features.Responsibilities.TransferResponsibility;
+using DomusMind.Application.Features.Calendar.ScheduleEvent;
+using DomusMind.Application.Features.Calendar.RescheduleEvent;
+using DomusMind.Application.Features.Calendar.CancelEvent;
+using DomusMind.Application.Features.Calendar.AddEventParticipant;
+using DomusMind.Application.Features.Calendar.RemoveEventParticipant;
+using DomusMind.Application.Features.Calendar.AddReminder;
+using DomusMind.Application.Features.Calendar.RemoveReminder;
+using DomusMind.Application.Features.Calendar.GetFamilyTimeline;
 using DomusMind.Contracts.Auth;
+using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
 using DomusMind.Contracts.Responsibilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,6 +53,16 @@ public static class ApplicationServices
         services.AddScoped<ICommandHandler<AssignPrimaryOwnerCommand, AssignPrimaryOwnerResponse>, AssignPrimaryOwnerCommandHandler>();
         services.AddScoped<ICommandHandler<AssignSecondaryOwnerCommand, AssignSecondaryOwnerResponse>, AssignSecondaryOwnerCommandHandler>();
         services.AddScoped<ICommandHandler<TransferResponsibilityCommand, TransferResponsibilityResponse>, TransferResponsibilityCommandHandler>();
+
+        // Calendar slices
+        services.AddScoped<ICommandHandler<ScheduleEventCommand, ScheduleEventResponse>, ScheduleEventCommandHandler>();
+        services.AddScoped<ICommandHandler<RescheduleEventCommand, RescheduleEventResponse>, RescheduleEventCommandHandler>();
+        services.AddScoped<ICommandHandler<CancelEventCommand, CancelEventResponse>, CancelEventCommandHandler>();
+        services.AddScoped<ICommandHandler<AddEventParticipantCommand, AddEventParticipantResponse>, AddEventParticipantCommandHandler>();
+        services.AddScoped<ICommandHandler<RemoveEventParticipantCommand, RemoveEventParticipantResponse>, RemoveEventParticipantCommandHandler>();
+        services.AddScoped<ICommandHandler<AddReminderCommand, AddReminderResponse>, AddReminderCommandHandler>();
+        services.AddScoped<ICommandHandler<RemoveReminderCommand, RemoveReminderResponse>, RemoveReminderCommandHandler>();
+        services.AddScoped<IQueryHandler<GetFamilyTimelineQuery, FamilyTimelineResponse>, GetFamilyTimelineQueryHandler>();
 
         return services;
     }
