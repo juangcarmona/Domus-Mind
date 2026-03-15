@@ -1,19 +1,27 @@
+using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace DomusMind.Infrastructure.Auth;
 
-/// <summary>
-/// Foundation stub for family-scoped authorization.
-/// Returns false until the Family context models membership.
-/// </summary>
 public sealed class FamilyAuthorizationService : IFamilyAuthorizationService
 {
+    private readonly IDomusMindDbContext _dbContext;
+
+    public FamilyAuthorizationService(IDomusMindDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
     public Task<bool> CanAccessFamilyAsync(
         Guid userId,
         Guid familyId,
         CancellationToken cancellationToken = default)
     {
-        // Placeholder: will delegate to the Family aggregate in a future slice.
-        return Task.FromResult(false);
+        return _dbContext.Set<UserFamilyAccess>()
+            .AsNoTracking()
+            .AnyAsync(x => x.UserId == userId && x.FamilyId == familyId, cancellationToken);
     }
 }
+

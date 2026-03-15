@@ -3,6 +3,7 @@ using System;
 using DomusMind.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DomusMind.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(DomusMindDbContext))]
-    partial class DomusMindDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260315075938_AddFamilyContext")]
+    partial class AddFamilyContext
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,7 +46,7 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                     b.ToTable("families", (string)null);
                 });
 
-            modelBuilder.Entity("DomusMind.Domain.Family.FamilyMember", b =>
+            modelBuilder.Entity("DomusMind.Domain.Family.Member", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -73,7 +76,7 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("FamilyId");
 
-                    b.ToTable("family_members", (string)null);
+                    b.ToTable("members", (string)null);
                 });
 
             modelBuilder.Entity("DomusMind.Infrastructure.Auth.AuthUser", b =>
@@ -213,7 +216,7 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                     b.ToTable("user_family_access", (string)null);
                 });
 
-            modelBuilder.Entity("DomusMind.Domain.Family.FamilyMember", b =>
+            modelBuilder.Entity("DomusMind.Domain.Family.Member", b =>
                 {
                     b.HasOne("DomusMind.Domain.Family.Family", null)
                         .WithMany("Members")

@@ -73,6 +73,7 @@ public static class AuthInfrastructureExtensions
         services.AddScoped<IRefreshTokenService, RefreshTokenStore>();
         services.AddScoped<IAuthUserRepository, AuthUserRepository>();
         services.AddScoped<IFamilyAuthorizationService, FamilyAuthorizationService>();
+        services.AddScoped<IFamilyAccessGranter, FamilyAccessGranter>();
 
         return services;
     }
