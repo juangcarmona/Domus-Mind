@@ -1,45 +1,109 @@
-# DomusMind — Slice Catalog
+# DomusMind — Slice Catalog (Updated)
 
 ## Purpose
 
-This document lists the V1 slices of DomusMind.
+This document lists the **V1 slices of DomusMind**.
 
 Detailed behavior is defined in `specs/features/...`.
 
+Slices represent **user-visible system capabilities** implemented as vertical slices.
+
 ---
 
-## Family
+# Family
 
-- create-family
-- add-member
-- assign-relationship
+Household identity and membership.
 
-## Responsibilities
+* create-family
+* identify-self
+* add-member
+* add-initial-members
+* assign-relationship
+* view-family
+* view-family-members
+* update-household-settings
 
-- create-responsibility-domain
-- assign-primary-owner
-- assign-secondary-owner
-- transfer-responsibility
+---
 
-## Calendar
+# Responsibilities
 
-- schedule-event
-- reschedule-event
-- cancel-event
-- add-event-participant
-- remove-event-participant
-- add-reminder
-- remove-reminder
-- view-family-timeline
+Household ownership structure.
 
-## Tasks
+* create-responsibility-domain
+* assign-primary-owner
+* assign-secondary-owner
+* transfer-responsibility
+* suggest-owner
+* rebalance-responsibilities
+* detect-overload
+* reassign-responsibility
+* view-responsibility-visibility
 
-- create-task
-- assign-task
-- complete-task
-- cancel-task
-- reschedule-task
-- create-routine
-- update-routine
-- pause-routine
-- resume-routine
+---
+
+# Calendar
+
+Planning and coordination.
+
+* schedule-event
+* reschedule-event
+* cancel-event
+* add-event-participant
+* remove-event-participant
+* add-reminder
+* remove-reminder
+* detect-calendar-conflict
+* suggest-participant
+* propose-new-time
+* view-family-timeline
+* view-family-plans
+
+---
+
+# Tasks
+
+Execution and routines.
+
+* create-task
+* assign-task
+* complete-task
+* cancel-task
+* reschedule-task
+* reassign-task
+* create-routine
+* update-routine
+* pause-routine
+* resume-routine
+
+---
+
+# Coordination Views (Read Models)
+
+Household coordination surfaces.
+
+* view-family-timeline-enriched
+* view-weekly-household-grid
+* view-member-activity
+* view-responsibility-balance
+* view-responsibility-overload
+
+---
+
+# Account
+
+User self-management.
+
+* view-account
+* update-display-name
+* change-password
+* logout-session
+
+---
+
+# System
+
+Operational and metadata capabilities.
+
+* view-supported-languages
+* system-health-check
+

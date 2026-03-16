@@ -6,7 +6,9 @@ This document defines the **application execution model** used by DomusMind.
 
 The application layer translates system capabilities into domain behavior.
 
-All interactions with the domain follow a **Command / Query model**.
+All interactions follow a **Command / Query execution model**.
+
+The application layer also produces **read models used by product surfaces**.
 
 ---
 
@@ -19,12 +21,14 @@ Commands represent **intent to change system state**.
 Examples:
 
 ```
-
 CreateFamily
+IdentifySelf
 AddMember
 ScheduleEvent
 CreateTask
-
+AssignPrimaryOwner
+CreateRoutine
+UpdateHouseholdSettings
 ```
 
 Properties:
@@ -37,18 +41,16 @@ Properties:
 Contract:
 
 ```
-
 ICommand<TResponse>
-
 ```
 
 Handler:
 
 ```
-
 ICommandHandler<TCommand, TResponse>
-
 ```
+
+Commands are **explicit system capabilities**.
 
 ---
 
@@ -59,11 +61,12 @@ Queries represent **read operations**.
 Examples:
 
 ```
-
 GetFamily
+GetFamilyMembers
 GetFamilyTimeline
-GetMemberSchedule
-
+GetWeeklyHouseholdGrid
+GetMemberActivity
+GetResponsibilityBalance
 ```
 
 Properties:
@@ -71,71 +74,99 @@ Properties:
 - do not modify domain state
 - may read multiple aggregates
 - optimized for read models
+- may compose data from multiple modules
 
 Contract:
 
 ```
-
 IQuery<TResponse>
-
 ```
 
 Handler:
 
 ```
-
 IQueryHandler<TQuery, TResponse>
-
 ```
+
+Queries often produce **projections tailored for UI surfaces**.
 
 ---
 
-## Domain Events
+# Read Models
+
+DomusMind exposes several **coordination projections**.
+
+These are not aggregates.
+
+They are **computed views over multiple domain concepts**.
+
+Examples:
+
+```
+FamilyTimeline
+EnrichedFamilyTimeline
+WeeklyHouseholdGrid
+ResponsibilityBalance
+MemberActivity
+```
+
+Read models may aggregate data from:
+
+```
+Events
+Tasks
+Routines
+Members
+Responsibilities
+```
+
+They exist **only in the application layer**.
+
+---
+
+# Domain Events
 
 Domain events represent **facts that occurred in the domain**.
 
 Examples:
 
 ```
-
 FamilyCreated
+MemberAdded
 EventScheduled
+EventRescheduled
+TaskAssigned
 TaskCompleted
-
+RoutinePaused
+ResponsibilityTransferred
 ```
 
 Contract:
 
 ```
-
 IDomainEvent
-
 ```
 
 Handlers:
 
 ```
-
 IDomainEventHandler<TEvent>
-
 ```
 
-Events may trigger behavior in other modules.
+Domain events allow **modules to react to changes without direct coupling**.
 
 ---
 
 # Dispatchers
 
-Dispatchers route requests to handlers.
+Dispatchers route execution requests.
 
 Interfaces:
 
 ```
-
 ICommandDispatcher
 IQueryDispatcher
 IDomainEventDispatcher
-
 ```
 
 Responsibilities:
@@ -153,7 +184,6 @@ Dispatchers use the system dependency injection container.
 Typical command execution:
 
 ```
-
 Client
 ↓
 API Endpoint
@@ -167,7 +197,22 @@ Aggregate
 Domain Events
 ↓
 Event Handlers
+```
 
+Typical query execution:
+
+```
+Client
+↓
+API Endpoint
+↓
+Query Dispatcher
+↓
+Query Handler
+↓
+Read Model
+↓
+Response
 ```
 
 ---
@@ -179,65 +224,85 @@ Validation occurs before command execution.
 Typical flow:
 
 ```
-
 Command
 ↓
 Validator
 ↓
 Handler
-
 ```
 
-Validation failures must prevent command execution.
+Rules:
+
+- validation failures stop execution
+- validators do not mutate domain state
+
+Contract:
+
+```
+IValidator<TCommand>
+```
 
 ---
 
 # Transaction Boundary
 
-Commands execute within a **single transaction scope**.
+Commands execute inside a **single transaction scope**.
 
 Rules:
 
 - one command modifies one aggregate
 - domain events are emitted after state change
-- event publishing occurs after successful persistence
+- persistence occurs before event publication
+- event handlers run after successful commit
+
+Queries do not open transaction scopes unless required.
 
 ---
 
 # Relationship With Vertical Slices
 
-Each vertical slice implements:
+Each vertical slice contains:
 
 ```
-
-Command / Query
+Command or Query
 Validator
 Handler
 Endpoint
-
 ```
 
 Example:
 
 ```
-
 features/calendar/schedule-event
+
 ScheduleEventCommand
 ScheduleEventValidator
 ScheduleEventHandler
 ScheduleEventEndpoint
+```
+
+Example query slice:
 
 ```
+features/calendar/get-weekly-household-grid
+
+GetWeeklyHouseholdGridQuery
+GetWeeklyHouseholdGridHandler
+GetWeeklyHouseholdGridEndpoint
+```
+
+Each slice is independent and self-contained.
 
 ---
 
 # Architectural Role
 
-The application model ensures that:
+The application model ensures:
 
-- system capabilities are explicit
-- domain logic remains isolated
-- modules interact through events
-- vertical slices remain independent
+- explicit system capabilities
+- strict separation between domain and UI projections
+- event-driven module interaction
+- independent vertical slices
+- predictable execution flow
 
-It provides the **execution backbone of the DomusMind platform**.
+It forms the **execution backbone of the DomusMind platform**.
