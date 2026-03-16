@@ -43,7 +43,15 @@ function AuthedApp() {
   }
 
   if (bootstrapStatus === "needsOnboarding") {
-    return <OnboardingPage />;
+    return (
+      <Routes>
+        <Route path="*" element={<OnboardingPage />} />
+      </Routes>
+    );
+  }
+
+  if (bootstrapStatus !== "ready") {
+    return <div className="loading-wrap">Loading your household…</div>;
   }
 
   return (
@@ -65,7 +73,7 @@ type AuthPage = "login" | "register";
 function UnauthApp() {
   const nav = useNavigate();
   const [page, setPage] = [
-    sessionStorage.getItem("dm_auth_page") as AuthPage ?? "login",
+    (sessionStorage.getItem("dm_auth_page") as AuthPage) ?? "login",
     (p: AuthPage) => {
       sessionStorage.setItem("dm_auth_page", p);
       nav(".", { replace: true });

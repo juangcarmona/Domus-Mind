@@ -173,7 +173,7 @@ public sealed class CompleteOnboardingCommandHandlerTests
     {
         var (db, family) = await BuildWithFamilyAsync();
         var handler = BuildHandler(db);
-        var birthDate = new DateTime(1985, 4, 12, 0, 0, 0, DateTimeKind.Utc);
+        var birthDate = new DateOnly(1985, 4, 12);
 
         var result = await handler.Handle(
             new CompleteOnboardingCommand(

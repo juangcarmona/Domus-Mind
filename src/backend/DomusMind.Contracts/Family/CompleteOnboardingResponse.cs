@@ -5,7 +5,7 @@ public sealed record OnboardingMemberItem(
     string Name,
     string Role,
     bool IsManager,
-    DateTime? BirthDate,
+    DateOnly? BirthDate,
     DateTime JoinedAtUtc);
 
 public sealed record CompleteOnboardingResponse(

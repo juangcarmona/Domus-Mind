@@ -149,7 +149,9 @@ const householdSlice = createSlice({
       })
       .addCase(createFamily.fulfilled, (state, action) => {
         state.family = action.payload;
-        state.bootstrapStatus = "ready";
+        state.members = [];
+        state.bootstrapStatus = "needsOnboarding";
+        state.error = null;
       })
       .addCase(createFamily.rejected, (state, action) => {
         state.error = action.payload as string;
@@ -168,6 +170,8 @@ const householdSlice = createSlice({
           role: m.role,
           joinedAtUtc: m.joinedAtUtc,
         }));
+        state.bootstrapStatus = "ready";
+        state.error = null;
       });
   },
 });

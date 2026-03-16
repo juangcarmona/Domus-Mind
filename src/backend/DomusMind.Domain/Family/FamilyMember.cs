@@ -8,10 +8,10 @@ public sealed class FamilyMember : Entity<MemberId>
     public MemberName Name { get; private set; }
     public MemberRole Role { get; private set; }
     public bool IsManager { get; private set; }
-    public DateTime? BirthDate { get; private set; }
+    public DateOnly? BirthDate { get; private set; }
     public DateTime JoinedAtUtc { get; private set; }
 
-    private FamilyMember(MemberId id, MemberName name, MemberRole role, bool isManager, DateTime? birthDate, DateTime joinedAtUtc)
+    private FamilyMember(MemberId id, MemberName name, MemberRole role, bool isManager, DateOnly? birthDate, DateTime joinedAtUtc)
         : base(id)
     {
         Name = name;
@@ -26,7 +26,7 @@ public sealed class FamilyMember : Entity<MemberId>
         => new(id, name, role, false, null, joinedAtUtc);
 
     // Extended overload
-    internal static FamilyMember Create(MemberId id, MemberName name, MemberRole role, bool isManager, DateTime? birthDate, DateTime joinedAtUtc)
+    internal static FamilyMember Create(MemberId id, MemberName name, MemberRole role, bool isManager, DateOnly? birthDate, DateTime joinedAtUtc)
         => new(id, name, role, isManager, birthDate, joinedAtUtc);
 
 #pragma warning disable CS8618

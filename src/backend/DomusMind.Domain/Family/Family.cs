@@ -32,7 +32,7 @@ public sealed class Family : AggregateRoot<FamilyId>
     public FamilyMember AddMember(MemberId memberId, MemberName name, MemberRole role, DateTime addedAtUtc)
         => AddMember(memberId, name, role, false, null, addedAtUtc);
 
-    public FamilyMember AddMember(MemberId memberId, MemberName name, MemberRole role, bool isManager, DateTime? birthDate, DateTime addedAtUtc)
+    public FamilyMember AddMember(MemberId memberId, MemberName name, MemberRole role, bool isManager, DateOnly? birthDate, DateTime addedAtUtc)
     {
         if (isManager && role.Value != "Adult")
             throw new InvalidOperationException(
