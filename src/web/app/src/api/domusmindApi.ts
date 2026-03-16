@@ -197,6 +197,34 @@ export interface AssignTaskRequest {
   assigneeId: string;
 }
 
+export interface AdditionalMemberRequest {
+  name: string;
+  birthDate?: string | null;
+  type?: string | null;
+  manager?: boolean;
+}
+
+export interface CompleteOnboardingRequest {
+  selfName: string;
+  selfBirthDate?: string | null;
+  additionalMembers?: AdditionalMemberRequest[];
+}
+
+export interface OnboardingMemberItem {
+  memberId: string;
+  name: string;
+  role: string;
+  isManager: boolean;
+  birthDate: string | null;
+  joinedAtUtc: string;
+}
+
+export interface CompleteOnboardingResponse {
+  familyId: string;
+  familyName: string;
+  members: OnboardingMemberItem[];
+}
+
 /* ---- API client ---- */
 
 export const domusmindApi = {
@@ -215,6 +243,12 @@ export const domusmindApi = {
 
   addMember: (familyId: string, body: AddMemberRequest) =>
     request<AddMemberResponse>(`/api/families/${familyId}/members`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  completeOnboarding: (familyId: string, body: CompleteOnboardingRequest) =>
+    request<CompleteOnboardingResponse>(`/api/families/${familyId}/onboarding`, {
       method: "POST",
       body: JSON.stringify(body),
     }),

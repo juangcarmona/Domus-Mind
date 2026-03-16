@@ -2,6 +2,7 @@ using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Application.Features.Family;
 using DomusMind.Application.Features.Family.AddMember;
+using DomusMind.Application.Features.Family.CompleteOnboarding;
 using DomusMind.Application.Features.Family.CreateFamily;
 using DomusMind.Application.Features.Family.GetEnrichedTimeline;
 using DomusMind.Application.Features.Family.GetFamily;
@@ -71,6 +72,42 @@ public sealed class FamiliesController : ControllerBase
             return Created(
                 $"/api/families/{familyId}/members/{response.MemberId}",
                 response);
+        }
+        catch (FamilyException ex)
+        {
+            return MapFamilyException(ex);
+        }
+    }
+
+    /// <summary>Completes household onboarding: adds the creator as manager plus optional additional members.</summary>
+    [HttpPost("{familyId:guid}/onboarding")]
+    [ProducesResponseType(typeof(CompleteOnboardingResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CompleteOnboarding(
+        Guid familyId,
+        [FromBody] CompleteOnboardingRequest request,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var additionalMembers = request.AdditionalMembers?
+                .Select(m => new AdditionalMemberInput(m.Name, m.BirthDate, m.Type, m.Manager))
+                .ToList()
+                ?? [];
+
+            var response = await dispatcher.Dispatch(
+                new CompleteOnboardingCommand(
+                    familyId,
+                    _currentUser.UserId!.Value,
+                    request.SelfName,
+                    request.SelfBirthDate,
+                    additionalMembers),
+                cancellationToken);
+
+            return Ok(response);
         }
         catch (FamilyException ex)
         {

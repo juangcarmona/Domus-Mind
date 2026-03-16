@@ -1,5 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { domusmindApi, type FamilyResponse, type FamilyMemberResponse } from "../api/domusmindApi";
+import {
+  domusmindApi,
+  type FamilyResponse,
+  type FamilyMemberResponse,
+  type AdditionalMemberRequest,
+} from "../api/domusmindApi";
 
 const FAMILY_KEY = "dm_family_id";
 
@@ -89,6 +94,31 @@ export const addMember = createAsyncThunk(
   },
 );
 
+export const completeOnboarding = createAsyncThunk(
+  "household/completeOnboarding",
+  async (
+    payload: {
+      familyId: string;
+      selfName: string;
+      selfBirthDate?: string | null;
+      additionalMembers?: AdditionalMemberRequest[];
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      return await domusmindApi.completeOnboarding(payload.familyId, {
+        selfName: payload.selfName,
+        selfBirthDate: payload.selfBirthDate,
+        additionalMembers: payload.additionalMembers,
+      });
+    } catch (err: unknown) {
+      return rejectWithValue(
+        (err as { message?: string }).message ?? "Failed to complete onboarding",
+      );
+    }
+  },
+);
+
 const householdSlice = createSlice({
   name: "household",
   initialState,
@@ -129,6 +159,15 @@ const householdSlice = createSlice({
       })
       .addCase(addMember.fulfilled, (state, action) => {
         state.members.push(action.payload);
+      })
+      .addCase(completeOnboarding.fulfilled, (state, action) => {
+        state.members = action.payload.members.map((m) => ({
+          memberId: m.memberId,
+          familyId: action.payload.familyId,
+          name: m.name,
+          role: m.role,
+          joinedAtUtc: m.joinedAtUtc,
+        }));
       });
   },
 });

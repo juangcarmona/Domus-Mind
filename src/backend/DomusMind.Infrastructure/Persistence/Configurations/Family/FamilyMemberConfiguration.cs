@@ -40,6 +40,15 @@ public sealed class FamilyMemberConfiguration : IEntityTypeConfiguration<FamilyM
             .HasColumnName("joined_at_utc")
             .IsRequired();
 
+        builder.Property(m => m.IsManager)
+            .HasColumnName("is_manager")
+            .HasDefaultValue(false)
+            .IsRequired();
+
+        builder.Property(m => m.BirthDate)
+            .HasColumnName("birth_date")
+            .IsRequired(false);
+
         // Shadow FK to parent family
         builder.Property<FamilyId>("FamilyId")
             .HasConversion(

@@ -2,7 +2,7 @@ import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { createFamily, addMember } from "../store/householdSlice";
+import { createFamily, completeOnboarding } from "../store/householdSlice";
 import { fetchSupportedLanguages } from "../store/languagesSlice";
 import { setUiLanguage } from "../i18n/index";
 import { HouseholdLogo } from "../components/HouseholdLogo";
@@ -10,11 +10,12 @@ import { HouseholdLogo } from "../components/HouseholdLogo";
 // Step 0: language selection
 // Step 1: welcome
 // Step 2: name household
-// Step 3: add people
-// Step 4: done
-type Step = 0 | 1 | 2 | 3 | 4;
+// Step 3: who are you?
+// Step 4: add household members
+// Step 5: done
+type Step = 0 | 1 | 2 | 3 | 4 | 5;
 
-const STEP_COUNT = 5;
+const STEP_COUNT = 6;
 
 export function OnboardingPage() {
   const dispatch = useAppDispatch();
@@ -28,11 +29,18 @@ export function OnboardingPage() {
     i18n.language?.split("-")[0] ?? "en",
   );
   const [householdName, setHouseholdName] = useState("");
-  const [people, setPeople] = useState<{ name: string; role: string }[]>([]);
-  const [personName, setPersonName] = useState("");
-  const [personRole, setPersonRole] = useState("Adult");
-  const [addError, setAddError] = useState<string | null>(null);
+  const [selfName, setSelfName] = useState("");
+  const [selfBirthDate, setSelfBirthDate] = useState("");
+  const [members, setMembers] = useState<
+    { name: string; birthDate: string; type: string; manager: boolean }[]
+  >([]);
+  const [memberName, setMemberName] = useState("");
+  const [memberBirthDate, setMemberBirthDate] = useState("");
+  const [memberType, setMemberType] = useState("adult");
+  const [memberIsManager, setMemberIsManager] = useState(false);
+  const [memberError, setMemberError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [membersError, setMembersError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const familyId = household.family?.familyId;
@@ -72,26 +80,50 @@ export function OnboardingPage() {
     }
   }
 
-  function handleAddPerson() {
-    const name = personName.trim();
+  function handleAddMember() {
+    const name = memberName.trim();
     if (!name) return;
-    setPeople((prev) => [...prev, { name, role: personRole }]);
-    setPersonName("");
-    setAddError(null);
-  }
-
-  function handleRemovePerson(i: number) {
-    setPeople((prev) => prev.filter((_, idx) => idx !== i));
-  }
-
-  async function handleSavePeople() {
-    if (!familyId) return;
-    setSubmitting(true);
-    for (const p of people) {
-      await dispatch(addMember({ familyId, name: p.name, role: p.role }));
+    if (memberType !== "adult" && memberIsManager) {
+      setMemberError(t("onboarding.members.managerAdultOnly"));
+      return;
     }
+    setMembers((prev) => [
+      ...prev,
+      { name, birthDate: memberBirthDate, type: memberType, manager: memberIsManager },
+    ]);
+    setMemberName("");
+    setMemberBirthDate("");
+    setMemberIsManager(false);
+    setMemberError(null);
+  }
+
+  function handleRemoveMember(i: number) {
+    setMembers((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  async function handleCompleteOnboarding() {
+    if (!familyId || !selfName.trim()) return;
+    setSubmitting(true);
+    setMembersError(null);
+    const result = await dispatch(
+      completeOnboarding({
+        familyId,
+        selfName: selfName.trim(),
+        selfBirthDate: selfBirthDate || null,
+        additionalMembers: members.map((m) => ({
+          name: m.name,
+          birthDate: m.birthDate || null,
+          type: m.type,
+          manager: m.manager,
+        })),
+      }),
+    );
     setSubmitting(false);
-    setStep(4);
+    if (completeOnboarding.fulfilled.match(result)) {
+      setStep(5);
+    } else {
+      setMembersError((result.payload as string) ?? t("common.error"));
+    }
   }
 
   function handleFinish() {
@@ -116,7 +148,7 @@ export function OnboardingPage() {
   }
 
   function renderBackButton(currentStep: Step) {
-    if (currentStep <= 0 || currentStep >= 4) return null;
+    if (currentStep <= 0 || currentStep >= 5) return null;
 
     return (
       <button
@@ -300,7 +332,7 @@ export function OnboardingPage() {
     );
   }
 
-  /* ---- Step 3: Add people ---- */
+  /* ---- Step 3: Who are you? ---- */
   if (step === 3) {
     return (
       <div className="onboarding-wrap">
@@ -310,28 +342,70 @@ export function OnboardingPage() {
             <HouseholdLogo size={48} />
           </div>
           {renderDots()}
-          <p className="onboarding-step-label">{t("onboarding.people.step")}</p>
-          <h1>{t("onboarding.people.title")}</h1>
-          <p>{t("onboarding.people.subtitle")}</p>
+          <p className="onboarding-step-label">{t("onboarding.self.step")}</p>
+          <h1>{t("onboarding.self.title")}</h1>
+          <p>{t("onboarding.self.subtitle")}</p>
+          <div className="form-group">
+            <input
+              className="form-control"
+              type="text"
+              placeholder={t("onboarding.self.namePlaceholder")}
+              value={selfName}
+              onChange={(e) => setSelfName(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="form-group">
+            <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.875rem" }}>
+              {t("onboarding.self.birthdateLabel")}
+            </label>
+            <input
+              className="form-control"
+              type="date"
+              value={selfBirthDate}
+              onChange={(e) => setSelfBirthDate(e.target.value)}
+            />
+          </div>
+          <button
+            className="btn"
+            style={{ width: "100%", justifyContent: "center" }}
+            disabled={!selfName.trim()}
+            onClick={() => setStep(4)}
+          >
+            {t("onboarding.self.next")}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-          {people.length > 0 && (
+  /* ---- Step 4: Add household members ---- */
+  if (step === 4) {
+    return (
+      <div className="onboarding-wrap">
+        <div className="onboarding-card">
+          {renderBackButton(step)}
+          <div className="logo-wrap">
+            <HouseholdLogo size={48} />
+          </div>
+          {renderDots()}
+          <p className="onboarding-step-label">{t("onboarding.members.step")}</p>
+          <h1>{t("onboarding.members.title")}</h1>
+          <p>{t("onboarding.members.subtitle")}</p>
+
+          {members.length > 0 && (
             <div className="people-chips">
-              {people.map((p, i) => (
+              {members.map((m, i) => (
                 <span key={i} className="people-chip">
-                  {p.name}
-                  <span
-                    style={{
-                      fontSize: "0.75rem",
-                      opacity: 0.7,
-                      marginLeft: "0.1rem",
-                    }}
-                  >
-                    ({t(`onboarding.people.roles.${p.role}` as never, p.role)})
+                  {m.name}
+                  <span style={{ fontSize: "0.75rem", opacity: 0.7, marginLeft: "0.1rem" }}>
+                    ({t(`onboarding.members.types.${m.type}` as never, m.type)}
+                    {m.manager ? ` · ${t("onboarding.members.managerLabel")}` : ""})
                   </span>
                   <button
                     type="button"
-                    onClick={() => handleRemovePerson(i)}
-                    aria-label={`Remove ${p.name}`}
+                    onClick={() => handleRemoveMember(i)}
+                    aria-label={`Remove ${m.name}`}
                   >
                     ×
                   </button>
@@ -340,18 +414,18 @@ export function OnboardingPage() {
             </div>
           )}
 
-          <div className="inline-form" style={{ marginBottom: "1rem" }}>
+          <div className="inline-form" style={{ marginBottom: "0.5rem" }}>
             <div className="form-group" style={{ flex: 2 }}>
               <input
                 className="form-control"
                 type="text"
-                placeholder={t("onboarding.people.namePlaceholder")}
-                value={personName}
-                onChange={(e) => setPersonName(e.target.value)}
+                placeholder={t("onboarding.members.namePlaceholder")}
+                value={memberName}
+                onChange={(e) => setMemberName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    handleAddPerson();
+                    handleAddMember();
                   }
                 }}
               />
@@ -359,44 +433,63 @@ export function OnboardingPage() {
             <div className="form-group" style={{ flex: 1 }}>
               <select
                 className="form-control"
-                value={personRole}
-                onChange={(e) => setPersonRole(e.target.value)}
+                value={memberType}
+                onChange={(e) => {
+                  setMemberType(e.target.value);
+                  if (e.target.value !== "adult") setMemberIsManager(false);
+                }}
               >
-                <option value="Adult">
-                  {t("onboarding.people.roles.Adult")}
-                </option>
-                <option value="Child">
-                  {t("onboarding.people.roles.Child")}
-                </option>
-                <option value="Teen">
-                  {t("onboarding.people.roles.Teen")}
-                </option>
+                <option value="adult">{t("onboarding.members.types.adult")}</option>
+                <option value="child">{t("onboarding.members.types.child")}</option>
+                <option value="pet">{t("onboarding.members.types.pet")}</option>
               </select>
             </div>
             <button
               type="button"
               className="btn btn-ghost"
-              onClick={handleAddPerson}
-              disabled={!personName.trim()}
+              onClick={handleAddMember}
+              disabled={!memberName.trim()}
             >
-              {t("onboarding.people.add")}
+              {t("onboarding.members.add")}
             </button>
           </div>
 
-          {addError && <p className="error-msg">{addError}</p>}
+          {memberType === "adult" && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <input
+                id="member-manager"
+                type="checkbox"
+                checked={memberIsManager}
+                onChange={(e) => setMemberIsManager(e.target.checked)}
+              />
+              <label htmlFor="member-manager" style={{ fontSize: "0.875rem" }}>
+                {t("onboarding.members.managerLabel")}
+              </label>
+            </div>
+          )}
+
+          {memberError && <p className="error-msg">{memberError}</p>}
+          {membersError && <p className="error-msg">{membersError}</p>}
 
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button
               className="btn"
               style={{ flex: 1, justifyContent: "center" }}
-              onClick={handleSavePeople}
+              onClick={handleCompleteOnboarding}
               disabled={submitting}
             >
               {submitting
-                ? t("onboarding.people.saving")
-                : people.length > 0
-                  ? t("onboarding.people.save")
-                  : t("onboarding.people.skip")}
+                ? t("onboarding.members.completing")
+                : members.length > 0
+                  ? t("onboarding.members.complete")
+                  : t("onboarding.members.skip")}
             </button>
           </div>
         </div>
@@ -404,7 +497,7 @@ export function OnboardingPage() {
     );
   }
 
-  /* ---- Step 4: Done ---- */
+  /* ---- Step 5: Done ---- */
   return (
     <div className="onboarding-wrap">
       <div className="onboarding-card">
