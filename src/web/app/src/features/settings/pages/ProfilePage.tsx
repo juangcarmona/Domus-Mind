@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { useAuth } from "../auth/AuthProvider";
-import type { ApiError } from "../api/authApi";
+import { useAuth } from "../../../auth/AuthProvider";
+import type { ApiError } from "../../../api/authApi";
 
 interface Props {
   onLogout?: () => void;

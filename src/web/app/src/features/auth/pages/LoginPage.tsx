@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
-import { useAuth } from "../auth/AuthProvider";
-import type { ApiError } from "../api/authApi";
-import { HouseholdLogo } from "../components/HouseholdLogo";
+import { useAuth } from "../../../auth/AuthProvider";
+import type { ApiError } from "../../../api/authApi";
+import { HouseholdLogo } from "../../../components/HouseholdLogo";
 
 interface Props { onSuccess?: () => void; onGoToRegister?: () => void; }
 

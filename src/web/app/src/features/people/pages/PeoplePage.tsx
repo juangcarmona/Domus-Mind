@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchMembers, addMember } from "../store/householdSlice";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
+import { fetchMembers, addMember } from "../../../store/householdSlice";
 
 export function PeoplePage() {
   const dispatch = useAppDispatch();

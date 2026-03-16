@@ -1,13 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import {
   fetchAreas,
   createArea,
   assignPrimaryOwner,
   transferArea,
-} from "../store/areasSlice";
-import type { HouseholdAreaItem } from "../api/domusmindApi";
+} from "../../../store/areasSlice";
+import type { HouseholdAreaItem } from "../../../api/domusmindApi";
 
 function AssignOwnerModal({
   area,

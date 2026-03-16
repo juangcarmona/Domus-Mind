@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchTimeline } from "../store/timelineSlice";
-import { completeTask, cancelTask } from "../store/tasksSlice";
-import type { EnrichedTimelineEntry } from "../api/domusmindApi";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
+import { fetchTimeline } from "../../../store/timelineSlice";
+import { completeTask, cancelTask } from "../../../store/tasksSlice";
+import type { EnrichedTimelineEntry } from "../../../api/domusmindApi";
 
 function formatDate(iso: string | null, locale: string): string {
   if (!iso) return "";

@@ -1,9 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchPlans, scheduleEvent, cancelEvent } from "../store/plansSlice";
-import { ConfirmDialog } from "../components/ConfirmDialog";
-import type { FamilyTimelineEventItem } from "../api/domusmindApi";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
+import { fetchPlans, scheduleEvent, cancelEvent } from "../../../store/plansSlice";
+import { ConfirmDialog } from "../../../components/ConfirmDialog";
+import type { FamilyTimelineEventItem } from "../../../api/domusmindApi";
 
 function formatDateTime(iso: string, locale: string): string {
   const d = new Date(iso);
