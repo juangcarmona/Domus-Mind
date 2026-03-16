@@ -39,7 +39,7 @@ public sealed class FamiliesController : ControllerBase
         try
         {
             var response = await dispatcher.Dispatch(
-                new CreateFamilyCommand(request.Name, _currentUser.UserId!.Value),
+                new CreateFamilyCommand(request.Name, request.PrimaryLanguageCode, _currentUser.UserId!.Value),
                 cancellationToken);
 
             return CreatedAtAction(nameof(GetFamily), new { familyId = response.FamilyId }, response);

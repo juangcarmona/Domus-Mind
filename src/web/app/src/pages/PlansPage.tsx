@@ -1,15 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchPlans, scheduleEvent, cancelEvent } from "../store/plansSlice";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import type { FamilyTimelineEventItem } from "../api/domusmindApi";
 
-function formatDateTime(iso: string): string {
+function formatDateTime(iso: string, locale: string): string {
   const d = new Date(iso);
-  return d.toLocaleString([], {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(d);
 }
 
 export function PlansPage() {
@@ -17,6 +15,8 @@ export function PlansPage() {
   const { family } = useAppSelector((s) => s.household);
   const { items, status, error } = useAppSelector((s) => s.plans);
   const familyId = family?.familyId;
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
 
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
@@ -70,21 +70,21 @@ export function PlansPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>Plans</h1>
+        <h1>{t("plans.title")}</h1>
         <button
           className="btn"
           onClick={() => { setShowForm(true); setFormError(null); }}
         >
-          + Schedule plan
+          + {t("plans.add")}
         </button>
       </div>
 
       {showForm && (
         <div className="card">
-          <h2>Schedule a plan</h2>
+          <h2>{t("plans.add")}</h2>
           <form onSubmit={handleSchedule}>
             <div className="form-group">
-              <label htmlFor="plan-title">Title</label>
+              <label htmlFor="plan-title">{t("plans.form.title")}</label>
               <input
                 id="plan-title"
                 className="form-control"
@@ -93,12 +93,11 @@ export function PlansPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 autoFocus
-                placeholder="e.g. Mateo football practice"
               />
             </div>
             <div className="inline-form">
               <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="plan-start">Start</label>
+                <label htmlFor="plan-start">{t("plans.form.start")}</label>
                 <input
                   id="plan-start"
                   className="form-control"
@@ -109,7 +108,7 @@ export function PlansPage() {
                 />
               </div>
               <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="plan-end">End (optional)</label>
+                <label htmlFor="plan-end">{t("plans.form.end")}</label>
                 <input
                   id="plan-end"
                   className="form-control"
@@ -120,27 +119,26 @@ export function PlansPage() {
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="plan-desc">Notes (optional)</label>
+              <label htmlFor="plan-desc">{t("plans.form.description")}</label>
               <input
                 id="plan-desc"
                 className="form-control"
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Optional notes"
               />
             </div>
             {formError && <p className="error-msg">{formError}</p>}
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <button type="submit" className="btn" disabled={submitting}>
-                {submitting ? "Scheduling…" : "Schedule"}
+                {submitting ? t("common.saving") : t("plans.form.save")}
               </button>
               <button
                 type="button"
                 className="btn btn-ghost"
                 onClick={() => setShowForm(false)}
               >
-                Cancel
+                {t("plans.form.cancel")}
               </button>
             </div>
           </form>
@@ -148,14 +146,13 @@ export function PlansPage() {
       )}
 
       {status === "loading" && (
-        <div className="loading-wrap">Loading plans…</div>
+        <div className="loading-wrap">{t("common.loading")}</div>
       )}
       {status === "error" && <p className="error-msg">{error}</p>}
 
       {status === "success" && active.length === 0 && (
         <div className="empty-state">
-          <p>No plans scheduled.</p>
-          <p>Add a plan — it will appear on the timeline.</p>
+          <p>{t("plans.noPlans")}</p>
         </div>
       )}
 
@@ -166,8 +163,8 @@ export function PlansPage() {
               <div className="item-card-body">
                 <div className="item-card-title">{plan.title}</div>
                 <div className="item-card-subtitle">
-                  {formatDateTime(plan.startTime)}
-                  {plan.endTime && ` → ${formatDateTime(plan.endTime)}`}
+                  {formatDateTime(plan.startTime, locale)}
+                  {plan.endTime && ` → ${formatDateTime(plan.endTime, locale)}`}
                   {plan.participantMemberIds.length > 0 && (
                     <span>
                       {" "}
@@ -188,7 +185,7 @@ export function PlansPage() {
                     className="btn btn-ghost btn-sm"
                     onClick={() => setCancelTarget(plan)}
                   >
-                    Cancel
+                    {t("plans.cancelEvent")}
                   </button>
                 )}
               </div>
@@ -199,9 +196,9 @@ export function PlansPage() {
 
       <ConfirmDialog
         isOpen={!!cancelTarget}
-        title="Cancel plan"
-        message={`Are you sure you want to cancel "${cancelTarget?.title}"?`}
-        confirmLabel="Cancel plan"
+        title={t("plans.cancelEvent")}
+        message={t("plans.confirmCancel")}
+        confirmLabel={t("plans.yes")}
         onConfirm={handleCancel}
         onCancel={() => setCancelTarget(null)}
       />

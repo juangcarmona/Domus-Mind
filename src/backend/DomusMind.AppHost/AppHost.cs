@@ -1,6 +1,7 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var postgres = builder.AddPostgres("postgres")
+    .WithPgAdmin(pgAdmin => pgAdmin.WithHostPort(5050))
     .WithDataVolume();
 
 var domusmindDb = postgres.AddDatabase("domusmind");

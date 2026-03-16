@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
   fetchAreas,
@@ -19,6 +20,7 @@ function AssignOwnerModal({
   members: { memberId: string; name: string }[];
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const [memberId, setMemberId] = useState(area.primaryOwnerId ?? "");
   const [submitting, setSubmitting] = useState(false);
@@ -35,12 +37,12 @@ function AssignOwnerModal({
       const result = await dispatch(transferArea({ areaId: area.areaId, newPrimaryOwnerId: memberId, familyId }));
       setSubmitting(false);
       if (transferArea.fulfilled.match(result)) { onClose(); }
-      else { setError((result as { payload?: unknown }).payload as string ?? "Failed"); }
+      else { setError((result as { payload?: unknown }).payload as string ?? t("common.failed")); }
     } else {
       const result = await dispatch(assignPrimaryOwner({ areaId: area.areaId, memberId, familyId }));
       setSubmitting(false);
       if (assignPrimaryOwner.fulfilled.match(result)) { onClose(); }
-      else { setError((result as { payload?: unknown }).payload as string ?? "Failed"); }
+      else { setError((result as { payload?: unknown }).payload as string ?? t("common.failed")); }
     }
   }
 
@@ -48,11 +50,11 @@ function AssignOwnerModal({
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>
-          {area.primaryOwnerId ? "Transfer ownership" : "Assign owner"} — {area.name}
+          {area.primaryOwnerId ? t("areas.transfer") : t("areas.assign")} — {area.name}
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="owner-select">Person responsible</label>
+            <label htmlFor="owner-select">{t("areas.responsible")}</label>
             <select
               id="owner-select"
               className="form-control"
@@ -61,7 +63,7 @@ function AssignOwnerModal({
               required
               autoFocus
             >
-              <option value="">— select person —</option>
+              <option value="">{t("common.selectPerson")}</option>
               {members.map((m) => (
                 <option key={m.memberId} value={m.memberId}>
                   {m.name}
@@ -72,10 +74,10 @@ function AssignOwnerModal({
           {error && <p className="error-msg">{error}</p>}
           <div className="modal-footer">
             <button type="button" className="btn btn-ghost" onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </button>
             <button type="submit" className="btn" disabled={submitting || !memberId}>
-              {submitting ? "Saving…" : "Save"}
+              {submitting ? t("common.saving") : t("common.save")}
             </button>
           </div>
         </form>
@@ -85,6 +87,7 @@ function AssignOwnerModal({
 }
 
 export function AreasPage() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { family, members } = useAppSelector((s) => s.household);
   const { items: areas, status, error } = useAppSelector((s) => s.areas);
@@ -111,7 +114,7 @@ export function AreasPage() {
       setAreaName("");
       setShowForm(false);
     } else {
-      setFormError(result.payload as string ?? "Failed to create area");
+      setFormError(result.payload as string ?? t("areas.createError"));
     }
   }
 
@@ -120,18 +123,18 @@ export function AreasPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>Areas</h1>
+        <h1>{t("areas.title")}</h1>
         <button className="btn" onClick={() => { setShowForm(true); setFormError(null); }}>
-          + New area
+          {t("areas.add")}
         </button>
       </div>
 
       {showForm && (
         <div className="card">
-          <h2>Create area</h2>
+          <h2>{t("areas.createHeading")}</h2>
           <form onSubmit={handleCreate}>
             <div className="form-group">
-              <label htmlFor="area-name">Area name</label>
+              <label htmlFor="area-name">{t("areas.nameLabel")}</label>
               <input
                 id="area-name"
                 className="form-control"
@@ -140,20 +143,20 @@ export function AreasPage() {
                 onChange={(e) => setAreaName(e.target.value)}
                 required
                 autoFocus
-                placeholder="e.g. Finance, School, Maintenance"
+                placeholder={t("areas.namePlaceholder")}
               />
             </div>
             {formError && <p className="error-msg">{formError}</p>}
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <button type="submit" className="btn" disabled={submitting}>
-                {submitting ? "Creating…" : "Create"}
+                {submitting ? t("common.creating") : t("common.create")}
               </button>
               <button
                 type="button"
                 className="btn btn-ghost"
                 onClick={() => setShowForm(false)}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
             </div>
           </form>
@@ -161,15 +164,15 @@ export function AreasPage() {
       )}
 
       {status === "loading" && (
-        <div className="loading-wrap">Loading areas…</div>
+        <div className="loading-wrap">{t("areas.loading")}</div>
       )}
 
       {status === "error" && <p className="error-msg">{error}</p>}
 
       {status === "success" && areas.length === 0 && (
         <div className="empty-state">
-          <p>No areas yet.</p>
-          <p>Areas define who is responsible for what in your household.</p>
+          <p>{t("areas.empty")}</p>
+          <p>{t("areas.emptyHint")}</p>
         </div>
       )}
 
@@ -181,14 +184,14 @@ export function AreasPage() {
                 <div className="item-card-title">{area.name}</div>
                 <div className="item-card-subtitle">
                   {area.primaryOwnerName ? (
-                    <>Owner: {area.primaryOwnerName}</>
+                    <>{t("areas.owner")}: {area.primaryOwnerName}</>
                   ) : (
-                    <span style={{ color: "var(--accent)" }}>No owner assigned</span>
+                    <span style={{ color: "var(--accent)" }}>{t("areas.noOwner")}</span>
                   )}
                   {area.secondaryOwnerIds.length > 0 && (
                     <span>
                       {" "}
-                      · {area.secondaryOwnerIds.length} secondary
+                      · {area.secondaryOwnerIds.length} {t("areas.secondary")}
                     </span>
                   )}
                 </div>
@@ -198,7 +201,7 @@ export function AreasPage() {
                   className="btn btn-ghost btn-sm"
                   onClick={() => setAssignTarget(area)}
                 >
-                  {area.primaryOwnerId ? "Transfer" : "Assign"}
+                  {area.primaryOwnerId ? t("areas.transfer") : t("areas.assign")}
                 </button>
               </div>
             </div>

@@ -28,6 +28,10 @@ public sealed class FamilyConfiguration : IEntityTypeConfiguration<Domain.Family
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(f => f.PrimaryLanguageCode)
+            .HasColumnName("primary_language_code")
+            .HasMaxLength(10);
+
         builder.Property(f => f.CreatedAtUtc)
             .HasColumnName("created_at_utc")
             .IsRequired();

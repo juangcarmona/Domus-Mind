@@ -26,6 +26,7 @@ public sealed class GetFamilyMembersQueryHandlerTests
         var family = Domain.Family.Family.Create(
             FamilyId.New(),
             FamilyName.Create("Test Family"),
+            null,
             DateTime.UtcNow);
         db.Set<Domain.Family.Family>().Add(family);
         await db.SaveChangesAsync();

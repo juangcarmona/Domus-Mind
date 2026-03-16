@@ -4,6 +4,7 @@ import timelineReducer from "./timelineSlice";
 import areasReducer from "./areasSlice";
 import plansReducer from "./plansSlice";
 import tasksReducer from "./tasksSlice";
+import languagesReducer from "./languagesSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     areas: areasReducer,
     plans: plansReducer,
     tasks: tasksReducer,
+    languages: languagesReducer,
   },
 });
 

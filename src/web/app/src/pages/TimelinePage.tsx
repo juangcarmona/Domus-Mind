@@ -1,22 +1,14 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchTimeline } from "../store/timelineSlice";
 import { completeTask, cancelTask } from "../store/tasksSlice";
 import type { EnrichedTimelineEntry } from "../api/domusmindApi";
 
-const GROUP_LABELS: Record<string, string> = {
-  Overdue: "Overdue",
-  Today: "Today",
-  Tomorrow: "Tomorrow",
-  ThisWeek: "This week",
-  Later: "Later",
-  Undated: "Routines & ongoing",
-};
-
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null, locale: string): string {
   if (!iso) return "";
   const d = new Date(iso);
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(d);
 }
 
 function entryTypeDot(type: string) {
@@ -25,17 +17,11 @@ function entryTypeDot(type: string) {
   return "routine";
 }
 
-function entryTypeLabel(type: string) {
-  if (type === "CalendarEvent") return "Plan";
-  if (type === "Task") return "Chore";
-  return "Routine";
-}
-
 function StatusBadge({ status }: { status: string }) {
   const cls = status.toLowerCase();
   return (
     <span className={`entry-status-badge ${cls}`}>
-      {status === "Pending" ? "pending" : status.toLowerCase()}
+      {status.toLowerCase()}
     </span>
   );
 }
@@ -43,17 +29,37 @@ function StatusBadge({ status }: { status: string }) {
 function TimelineEntry({
   entry,
   memberName,
+  locale,
+  labelPlan,
+  labelChore,
+  labelRoutine,
+  labelUnassigned,
+  labelComplete,
+  labelCancel,
   onComplete,
   onCancel,
 }: {
   entry: EnrichedTimelineEntry;
   memberName: string | null;
+  locale: string;
+  labelPlan: string;
+  labelChore: string;
+  labelRoutine: string;
+  labelUnassigned: string;
+  labelComplete: string;
+  labelCancel: string;
   onComplete: (id: string) => void;
   onCancel: (id: string) => void;
 }) {
   const isTask = entry.entryType === "Task";
   const isDone =
     entry.status === "Completed" || entry.status === "Cancelled";
+  const typeLabel =
+    entry.entryType === "CalendarEvent"
+      ? labelPlan
+      : entry.entryType === "Task"
+        ? labelChore
+        : labelRoutine;
 
   return (
     <div
@@ -63,21 +69,13 @@ function TimelineEntry({
       <div className="entry-body">
         <div className="entry-title">{entry.title}</div>
         <div className="entry-meta">
-          <span>{entryTypeLabel(entry.entryType)}</span>
+          <span>{typeLabel}</span>
           {entry.effectiveDate && (
-            <span>
-              {" "}
-              · {formatDate(entry.effectiveDate)}
-            </span>
+            <span> · {formatDate(entry.effectiveDate, locale)}</span>
           )}
-          {memberName && (
-            <span>
-              {" "}
-              · {memberName}
-            </span>
-          )}
+          {memberName && <span> · {memberName}</span>}
           {entry.isUnassigned && isTask && (
-            <span style={{ color: "var(--accent)" }}> · unassigned</span>
+            <span style={{ color: "var(--accent)" }}> · {labelUnassigned}</span>
           )}
         </div>
       </div>
@@ -88,7 +86,7 @@ function TimelineEntry({
             <button
               className="btn btn-sm"
               onClick={() => onComplete(entry.entryId)}
-              title="Mark done"
+              title={labelComplete}
               style={{ padding: "0.15rem 0.5rem" }}
             >
               ✓
@@ -96,7 +94,7 @@ function TimelineEntry({
             <button
               className="btn btn-ghost btn-sm"
               onClick={() => onCancel(entry.entryId)}
-              title="Cancel"
+              title={labelCancel}
               style={{ padding: "0.15rem 0.45rem" }}
             >
               ✕
@@ -113,6 +111,8 @@ export function TimelinePage() {
   const { family, members } = useAppSelector((s) => s.household);
   const { data, status, error } = useAppSelector((s) => s.timeline);
   const [filterType, setFilterType] = useState<string>("");
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
 
   const familyId = family?.familyId;
 
@@ -155,10 +155,10 @@ export function TimelinePage() {
             ? (() => {
                 const today = data.groups.find((g) => g.groupKey === "Today");
                 return today && today.entries.length > 0
-                  ? `Today — ${today.entries.length} item${today.entries.length > 1 ? "s" : ""}`
-                  : "Timeline";
+                  ? `${t("timeline.groups.Today")} — ${today.entries.length}`
+                  : t("timeline.title");
               })()
-            : "Timeline"}
+            : t("timeline.title")}
         </h1>
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
           <select
@@ -167,19 +167,19 @@ export function TimelinePage() {
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
-            <option value="">All</option>
-            <option value="CalendarEvent">Plans</option>
-            <option value="Task">Chores</option>
-            <option value="Routine">Routines</option>
+            <option value="">{t("timeline.filter.all")}</option>
+            <option value="CalendarEvent">{t("timeline.filter.plans")}</option>
+            <option value="Task">{t("timeline.filter.chores")}</option>
+            <option value="Routine">{t("timeline.filter.routines")}</option>
           </select>
-          <button className="btn btn-ghost btn-sm" onClick={load}>
+          <button className="btn btn-ghost btn-sm" onClick={load} title={t("timeline.refresh")}>
             ↻
           </button>
         </div>
       </div>
 
       {status === "loading" && (
-        <div className="loading-wrap">Loading timeline…</div>
+        <div className="loading-wrap">{t("common.loading")}</div>
       )}
 
       {status === "error" && (
@@ -195,17 +195,16 @@ export function TimelinePage() {
         <>
           {data.totalEntries === 0 && (
             <div className="empty-state">
-              <p>Nothing here yet.</p>
-              <p>
-                Add a plan, a chore, or a routine — they will all show up here.
-              </p>
+              <p>{t("timeline.empty")}</p>
             </div>
           )}
 
           {data.groups.map((group) => (
             <section key={group.groupKey} className="timeline-section">
               <div className="timeline-section-header">
-                <h2>{GROUP_LABELS[group.groupKey] ?? group.groupKey}</h2>
+                <h2>
+                  {t(`timeline.groups.${group.groupKey}` as never, group.groupKey)}
+                </h2>
                 <span
                   className={`timeline-badge ${group.groupKey === "Overdue" ? "overdue" : ""}`}
                 >
@@ -222,6 +221,13 @@ export function TimelinePage() {
                         ? (memberMap[entry.assigneeId] ?? null)
                         : null
                     }
+                    locale={locale}
+                    labelPlan={t("nav.plans")}
+                    labelChore={t("nav.chores")}
+                    labelRoutine={t("timeline.filter.routines")}
+                    labelUnassigned={t("tasks.unassigned")}
+                    labelComplete={t("timeline.actions.complete")}
+                    labelCancel={t("timeline.actions.cancel")}
                     onComplete={handleComplete}
                     onCancel={handleCancel}
                   />

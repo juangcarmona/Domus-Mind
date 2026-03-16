@@ -11,7 +11,7 @@ public sealed class FamilyTests
     {
         var id = FamilyId.New();
         var familyName = FamilyName.Create(name);
-        return Domain.Family.Family.Create(id, familyName, DateTime.UtcNow);
+        return Domain.Family.Family.Create(id, familyName, null, DateTime.UtcNow);
     }
 
     // ── Family.Create ──────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@ public sealed class FamilyTests
     public void Create_FamilyCreatedEvent_ContainsCorrectFamilyId()
     {
         var id = FamilyId.New();
-        var family = Domain.Family.Family.Create(id, FamilyName.Create("Test"), DateTime.UtcNow);
+        var family = Domain.Family.Family.Create(id, FamilyName.Create("Test"), null, DateTime.UtcNow);
 
         var evt = family.DomainEvents.OfType<FamilyCreated>().Single();
         evt.FamilyId.Should().Be(id.Value);

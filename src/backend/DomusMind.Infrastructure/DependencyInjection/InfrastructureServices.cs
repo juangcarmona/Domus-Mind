@@ -1,6 +1,8 @@
+using DomusMind.Application.Abstractions.Languages;
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Infrastructure.Events;
+using DomusMind.Infrastructure.Languages;
 using DomusMind.Infrastructure.Messaging;
 using DomusMind.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +27,8 @@ public static class InfrastructureServices
         services.AddScoped<IQueryDispatcher, QueryDispatcher>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IEventLogWriter, EventLogWriter>();
+
+        services.AddScoped<ISupportedLanguageReader, SupportedLanguageReader>();
 
         return services;
     }

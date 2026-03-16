@@ -1,19 +1,32 @@
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { createFamily, addMember } from "../store/householdSlice";
+import { fetchSupportedLanguages } from "../store/languagesSlice";
+import { setUiLanguage } from "../i18n/index";
 import { HouseholdLogo } from "../components/HouseholdLogo";
 
-type Step = 0 | 1 | 2 | 3;
+// Step 0: language selection
+// Step 1: welcome
+// Step 2: name household
+// Step 3: add people
+// Step 4: done
+type Step = 0 | 1 | 2 | 3 | 4;
 
-const STEP_COUNT = 4;
+const STEP_COUNT = 5;
 
 export function OnboardingPage() {
   const dispatch = useAppDispatch();
   const nav = useNavigate();
+  const { t, i18n } = useTranslation();
   const household = useAppSelector((s) => s.household);
+  const languages = useAppSelector((s) => s.languages);
 
   const [step, setStep] = useState<Step>(0);
+  const [selectedLang, setSelectedLang] = useState<string>(
+    i18n.language?.split("-")[0] ?? "en",
+  );
   const [householdName, setHouseholdName] = useState("");
   const [people, setPeople] = useState<{ name: string; role: string }[]>([]);
   const [personName, setPersonName] = useState("");
@@ -24,17 +37,35 @@ export function OnboardingPage() {
 
   const familyId = household.family?.familyId;
 
+  // Fetch available languages for step 0
+  useEffect(() => {
+    if (languages.status === "idle") {
+      dispatch(fetchSupportedLanguages());
+    }
+  }, [dispatch, languages.status]);
+
+  function handleLangSelect(code: string) {
+    setSelectedLang(code);
+    setUiLanguage(code);
+  }
+
+  function handleLangContinue() {
+    setStep(1);
+  }
+
   async function handleCreateHousehold(e: FormEvent) {
     e.preventDefault();
     if (!householdName.trim()) return;
     setSubmitting(true);
     setCreateError(null);
-    const result = await dispatch(createFamily(householdName.trim()));
+    const result = await dispatch(
+      createFamily({ name: householdName.trim(), primaryLanguageCode: selectedLang }),
+    );
     setSubmitting(false);
     if (createFamily.fulfilled.match(result)) {
-      setStep(2);
+      setStep(3);
     } else {
-      setCreateError(result.payload as string ?? "Something went wrong");
+      setCreateError((result.payload as string) ?? t("common.error"));
     }
   }
 
@@ -57,7 +88,7 @@ export function OnboardingPage() {
       await dispatch(addMember({ familyId, name: p.name, role: p.role }));
     }
     setSubmitting(false);
-    setStep(3);
+    setStep(4);
   }
 
   function handleFinish() {
@@ -77,7 +108,7 @@ export function OnboardingPage() {
     );
   }
 
-  /* ---- Step 0: Welcome ---- */
+  /* ---- Step 0: Language selection ---- */
   if (step === 0) {
     return (
       <div className="onboarding-wrap">
@@ -86,21 +117,67 @@ export function OnboardingPage() {
             <HouseholdLogo size={48} />
           </div>
           {renderDots()}
-          <h1>Welcome to DomusMind</h1>
-          <p>Your household coordination system. Set up in minutes.</p>
+          <h1>{t("lang.select")}</h1>
+          <p>{t("lang.subtitle")}</p>
+
+          {languages.status === "loading" && (
+            <p className="muted-text">{t("common.loading")}</p>
+          )}
+
+          {languages.items.length > 0 && (
+            <div className="lang-grid">
+              {languages.items.map((lang) => (
+                <button
+                  key={lang.code}
+                  type="button"
+                  className={`lang-option${selectedLang === lang.code ? " selected" : ""}`}
+                  onClick={() => handleLangSelect(lang.code)}
+                >
+                  <span className="lang-native">{lang.nativeDisplayName}</span>
+                  <span className="lang-display">{lang.displayName}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Fallback: show static list if backend unavailable */}
+          {languages.status !== "loading" && languages.items.length === 0 && (
+            <div className="lang-grid">
+              {[
+                { code: "en", displayName: "English", nativeDisplayName: "English" },
+                { code: "de", displayName: "German", nativeDisplayName: "Deutsch" },
+                { code: "es", displayName: "Spanish", nativeDisplayName: "Español" },
+                { code: "fr", displayName: "French", nativeDisplayName: "Français" },
+                { code: "it", displayName: "Italian", nativeDisplayName: "Italiano" },
+                { code: "ja", displayName: "Japanese", nativeDisplayName: "日本語" },
+                { code: "zh", displayName: "Chinese", nativeDisplayName: "中文" },
+              ].map((lang) => (
+                <button
+                  key={lang.code}
+                  type="button"
+                  className={`lang-option${selectedLang === lang.code ? " selected" : ""}`}
+                  onClick={() => handleLangSelect(lang.code)}
+                >
+                  <span className="lang-native">{lang.nativeDisplayName}</span>
+                  <span className="lang-display">{lang.displayName}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
           <button
             className="btn"
-            style={{ width: "100%", justifyContent: "center" }}
-            onClick={() => setStep(1)}
+            style={{ width: "100%", justifyContent: "center", marginTop: "1rem" }}
+            onClick={handleLangContinue}
           >
-            Start your household
+            {t("lang.continue")}
           </button>
         </div>
       </div>
     );
   }
 
-  /* ---- Step 1: Name household ---- */
+  /* ---- Step 1: Welcome ---- */
   if (step === 1) {
     return (
       <div className="onboarding-wrap">
@@ -109,15 +186,38 @@ export function OnboardingPage() {
             <HouseholdLogo size={48} />
           </div>
           {renderDots()}
-          <p className="onboarding-step-label">Step 1 of 3</p>
-          <h1>Name your household</h1>
-          <p>What should we call your household?</p>
+          <h1>{t("onboarding.welcome.title")}</h1>
+          <p>{t("onboarding.welcome.subtitle")}</p>
+          <button
+            className="btn"
+            style={{ width: "100%", justifyContent: "center" }}
+            onClick={() => setStep(2)}
+          >
+            {t("onboarding.welcome.start")}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ---- Step 2: Name household ---- */
+  if (step === 2) {
+    return (
+      <div className="onboarding-wrap">
+        <div className="onboarding-card">
+          <div className="logo-wrap">
+            <HouseholdLogo size={48} />
+          </div>
+          {renderDots()}
+          <p className="onboarding-step-label">{t("onboarding.name.step")}</p>
+          <h1>{t("onboarding.name.title")}</h1>
+          <p>{t("onboarding.name.subtitle")}</p>
           <form onSubmit={handleCreateHousehold}>
             <div className="form-group">
               <input
                 className="form-control"
                 type="text"
-                placeholder="e.g. Carmona Family"
+                placeholder={t("onboarding.name.placeholder")}
                 value={householdName}
                 onChange={(e) => setHouseholdName(e.target.value)}
                 required
@@ -131,7 +231,7 @@ export function OnboardingPage() {
               style={{ width: "100%", justifyContent: "center" }}
               disabled={submitting || !householdName.trim()}
             >
-              {submitting ? "Creating…" : "Create Household"}
+              {submitting ? t("onboarding.name.creating") : t("onboarding.name.create")}
             </button>
           </form>
         </div>
@@ -139,8 +239,8 @@ export function OnboardingPage() {
     );
   }
 
-  /* ---- Step 2: Add people ---- */
-  if (step === 2) {
+  /* ---- Step 3: Add people ---- */
+  if (step === 3) {
     return (
       <div className="onboarding-wrap">
         <div className="onboarding-card">
@@ -148,9 +248,9 @@ export function OnboardingPage() {
             <HouseholdLogo size={48} />
           </div>
           {renderDots()}
-          <p className="onboarding-step-label">Step 2 of 3</p>
-          <h1>Who lives here?</h1>
-          <p>Add the people in your household. You can always add more later.</p>
+          <p className="onboarding-step-label">{t("onboarding.people.step")}</p>
+          <h1>{t("onboarding.people.title")}</h1>
+          <p>{t("onboarding.people.subtitle")}</p>
 
           {people.length > 0 && (
             <div className="people-chips">
@@ -158,7 +258,7 @@ export function OnboardingPage() {
                 <span key={i} className="people-chip">
                   {p.name}
                   <span style={{ fontSize: "0.75rem", opacity: 0.7, marginLeft: "0.1rem" }}>
-                    ({p.role})
+                    ({t(`onboarding.people.roles.${p.role}` as never, p.role)})
                   </span>
                   <button
                     type="button"
@@ -177,7 +277,7 @@ export function OnboardingPage() {
               <input
                 className="form-control"
                 type="text"
-                placeholder="Name"
+                placeholder={t("onboarding.people.namePlaceholder")}
                 value={personName}
                 onChange={(e) => setPersonName(e.target.value)}
                 onKeyDown={(e) => {
@@ -194,9 +294,9 @@ export function OnboardingPage() {
                 value={personRole}
                 onChange={(e) => setPersonRole(e.target.value)}
               >
-                <option value="Adult">Adult</option>
-                <option value="Child">Child</option>
-                <option value="Teen">Teen</option>
+                <option value="Adult">{t("onboarding.people.roles.Adult")}</option>
+                <option value="Child">{t("onboarding.people.roles.Child")}</option>
+                <option value="Teen">{t("onboarding.people.roles.Teen")}</option>
               </select>
             </div>
             <button
@@ -205,7 +305,7 @@ export function OnboardingPage() {
               onClick={handleAddPerson}
               disabled={!personName.trim()}
             >
-              Add
+              {t("onboarding.people.add")}
             </button>
           </div>
 
@@ -218,7 +318,11 @@ export function OnboardingPage() {
               onClick={handleSavePeople}
               disabled={submitting}
             >
-              {submitting ? "Saving…" : people.length > 0 ? "Save & continue" : "Skip for now"}
+              {submitting
+                ? t("onboarding.people.saving")
+                : people.length > 0
+                  ? t("onboarding.people.save")
+                  : t("onboarding.people.skip")}
             </button>
           </div>
         </div>
@@ -226,7 +330,7 @@ export function OnboardingPage() {
     );
   }
 
-  /* ---- Step 3: Done ---- */
+  /* ---- Step 4: Done ---- */
   return (
     <div className="onboarding-wrap">
       <div className="onboarding-card">
@@ -234,17 +338,16 @@ export function OnboardingPage() {
           <HouseholdLogo size={48} />
         </div>
         {renderDots()}
-        <h1>Your household is ready</h1>
+        <h1>{t("onboarding.done.title")}</h1>
         <p>
-          {household.family?.name} is set up and ready to use. Open your
-          timeline to see what matters today.
+          {household.family?.name} {t("onboarding.done.subtitle")}
         </p>
         <button
           className="btn"
           style={{ width: "100%", justifyContent: "center" }}
           onClick={handleFinish}
         >
-          Open Timeline →
+          {t("onboarding.done.open")}
         </button>
       </div>
     </div>

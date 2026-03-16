@@ -1,13 +1,14 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchTimeline } from "../store/timelineSlice";
 import { createTask, completeTask, cancelTask, assignTask } from "../store/tasksSlice";
 import type { EnrichedTimelineEntry } from "../api/domusmindApi";
 
-function formatDate(iso: string | null): string {
-  if (!iso) return "No due date";
+function formatDate(iso: string | null, locale: string, noDateLabel: string): string {
+  if (!iso) return noDateLabel;
   const d = new Date(iso);
-  return d.toLocaleDateString([], { dateStyle: "medium" });
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(d);
 }
 
 function AssignModal({
@@ -21,6 +22,7 @@ function AssignModal({
   onAssign: (taskId: string, memberId: string) => Promise<void>;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const [memberId, setMemberId] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -36,10 +38,10 @@ function AssignModal({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h2>Assign — {entry.title}</h2>
+        <h2>{t("tasks.assign")} — {entry.title}</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="assign-select">Assign to</label>
+            <label htmlFor="assign-select">{t("tasks.assignTo")}</label>
             <select
               id="assign-select"
               className="form-control"
@@ -48,7 +50,7 @@ function AssignModal({
               required
               autoFocus
             >
-              <option value="">— select person —</option>
+              <option value="">{t("common.selectPerson")}</option>
               {members.map((m) => (
                 <option key={m.memberId} value={m.memberId}>
                   {m.name}
@@ -58,10 +60,10 @@ function AssignModal({
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-ghost" onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </button>
             <button type="submit" className="btn" disabled={submitting || !memberId}>
-              {submitting ? "Assigning…" : "Assign"}
+              {submitting ? t("tasks.assigning") : t("tasks.assign")}
             </button>
           </div>
         </form>
@@ -71,6 +73,8 @@ function AssignModal({
 }
 
 export function TasksPage() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
   const dispatch = useAppDispatch();
   const { family, members } = useAppSelector((s) => s.household);
   const { data: timeline, status: timelineStatus } = useAppSelector((s) => s.timeline);
@@ -118,7 +122,7 @@ export function TasksPage() {
       setShowForm(false);
       loadTasks();
     } else {
-      setFormError(result.payload as string ?? "Failed to create chore");
+      setFormError(result.payload as string ?? t("tasks.createError"));
     }
   }
 
@@ -149,21 +153,21 @@ export function TasksPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>Chores</h1>
+        <h1>{t("tasks.title")}</h1>
         <button
           className="btn"
           onClick={() => { setShowForm(true); setFormError(null); }}
         >
-          + Add chore
+          {t("tasks.add")}
         </button>
       </div>
 
       {showForm && (
         <div className="card">
-          <h2>Add a chore</h2>
+          <h2>{t("tasks.addHeading")}</h2>
           <form onSubmit={handleCreate}>
             <div className="form-group">
-              <label htmlFor="task-title">Title</label>
+              <label htmlFor="task-title">{t("tasks.titleLabel")}</label>
               <input
                 id="task-title"
                 className="form-control"
@@ -172,11 +176,11 @@ export function TasksPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 autoFocus
-                placeholder="e.g. Take out the trash"
+                placeholder={t("tasks.titlePlaceholder")}
               />
             </div>
             <div className="form-group">
-              <label htmlFor="task-due">Due date (optional)</label>
+              <label htmlFor="task-due">{t("tasks.dueLabel")}</label>
               <input
                 id="task-due"
                 className="form-control"
@@ -188,14 +192,14 @@ export function TasksPage() {
             {formError && <p className="error-msg">{formError}</p>}
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <button type="submit" className="btn" disabled={submitting}>
-                {submitting ? "Adding…" : "Add"}
+                {submitting ? t("common.adding") : t("common.add")}
               </button>
               <button
                 type="button"
                 className="btn btn-ghost"
                 onClick={() => setShowForm(false)}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
             </div>
           </form>
@@ -203,20 +207,20 @@ export function TasksPage() {
       )}
 
       {timelineStatus === "loading" && (
-        <div className="loading-wrap">Loading chores…</div>
+        <div className="loading-wrap">{t("tasks.loading")}</div>
       )}
 
       {active.length === 0 && timelineStatus !== "loading" && (
         <div className="empty-state">
-          <p>No active chores.</p>
-          <p>Add a chore — it will appear here and on the timeline.</p>
+          <p>{t("tasks.empty")}</p>
+          <p>{t("tasks.emptyHint")}</p>
         </div>
       )}
 
       {active.length > 0 && (
         <>
           <div style={{ marginBottom: "0.5rem", fontSize: "0.82rem", color: "var(--muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            Active ({active.length})
+            {t("tasks.active")} ({active.length})
           </div>
           <div className="item-list" style={{ marginBottom: "1.5rem" }}>
             {active.map((task) => (
@@ -228,14 +232,14 @@ export function TasksPage() {
                 <div className="item-card-body">
                   <div className="item-card-title">{task.title}</div>
                   <div className="item-card-subtitle">
-                    {formatDate(task.effectiveDate)}
+                    {formatDate(task.effectiveDate, locale, t("tasks.noDueDate"))}
                     {task.assigneeId && memberMap[task.assigneeId]
                       ? ` · ${memberMap[task.assigneeId]}`
                       : task.isUnassigned
-                        ? " · unassigned"
+                        ? ` · ${t("timeline.unassigned")}`
                         : ""}
                     {task.isOverdue && (
-                      <span style={{ color: "var(--danger)" }}> · overdue</span>
+                      <span style={{ color: "var(--danger)" }}> · {t("tasks.overdue")}</span>
                     )}
                   </div>
                 </div>
@@ -243,21 +247,21 @@ export function TasksPage() {
                   <button
                     className="btn btn-ghost btn-sm"
                     onClick={() => setAssignTarget(task)}
-                    title="Assign to someone"
+                    title={t("tasks.assignTitle")}
                   >
-                    Assign
+                    {t("tasks.assign")}
                   </button>
                   <button
                     className="btn btn-sm"
                     onClick={() => handleComplete(task.entryId)}
-                    title="Mark done"
+                    title={t("tasks.markDoneTitle")}
                   >
-                    ✓ Done
+                    ✓ {t("tasks.done")}
                   </button>
                   <button
                     className="btn btn-ghost btn-sm"
                     onClick={() => handleCancel(task.entryId)}
-                    title="Cancel"
+                    title={t("common.cancel")}
                   >
                     ✕
                   </button>
@@ -271,7 +275,7 @@ export function TasksPage() {
       {done.length > 0 && (
         <>
           <div style={{ marginBottom: "0.5rem", fontSize: "0.82rem", color: "var(--muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            Completed / Cancelled
+            {t("tasks.completedCancelled")}
           </div>
           <div className="item-list">
             {done.slice(0, 10).map((task) => (

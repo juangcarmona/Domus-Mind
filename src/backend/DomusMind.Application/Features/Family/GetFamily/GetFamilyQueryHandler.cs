@@ -40,6 +40,7 @@ public sealed class GetFamilyQueryHandler : IQueryHandler<GetFamilyQuery, Family
         return new FamilyResponse(
             family.Id.Value,
             family.Name.Value,
+            family.PrimaryLanguageCode,
             family.CreatedAtUtc,
             family.Members.Count);
     }

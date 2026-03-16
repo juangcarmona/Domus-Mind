@@ -1,5 +1,6 @@
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Infrastructure.Auth;
+using DomusMind.Infrastructure.Languages;
 using Microsoft.EntityFrameworkCore;
 
 namespace DomusMind.Infrastructure.Persistence;
@@ -32,6 +33,9 @@ public sealed class DomusMindDbContext : DbContext, IDomusMindDbContext
 
     public DbSet<Domain.Tasks.Routine> Routines
         => Set<Domain.Tasks.Routine>();
+
+    public DbSet<SupportedLanguage> SupportedLanguages
+        => Set<SupportedLanguage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

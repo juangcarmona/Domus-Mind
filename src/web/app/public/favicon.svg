@@ -1,0 +1,29 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- House -->
+  <polygon fill="#6A4C93"
+    points="128,24 24,112 24,232 232,232 232,112"/>
+
+  <!-- Chimney -->
+  <rect fill="#6A4C93"
+    x="172"
+    y="52"
+    width="20"
+    height="44"/>
+
+  <!-- M (lowered) -->
+  <polygon fill="#FFFFFF"
+    points="
+      60,216
+      60,112
+      128,168
+      196,112
+      196,216
+      164,216
+      164,166
+      128,220
+      92,166
+      92,216
+    "/>
+
+</svg>

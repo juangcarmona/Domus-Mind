@@ -47,9 +47,15 @@ export const bootstrapHousehold = createAsyncThunk(
 
 export const createFamily = createAsyncThunk(
   "household/createFamily",
-  async (name: string, { rejectWithValue }) => {
+  async (
+    payload: { name: string; primaryLanguageCode?: string | null },
+    { rejectWithValue },
+  ) => {
     try {
-      const family = await domusmindApi.createFamily({ name });
+      const family = await domusmindApi.createFamily({
+        name: payload.name,
+        primaryLanguageCode: payload.primaryLanguageCode,
+      });
       storeFamilyId(family.familyId);
       return family;
     } catch (err: unknown) {

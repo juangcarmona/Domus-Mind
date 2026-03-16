@@ -2,6 +2,7 @@ using DomusMind.Api.OpenApi;
 using DomusMind.Application.DependencyInjection;
 using DomusMind.Infrastructure.Auth;
 using DomusMind.Infrastructure.DependencyInjection;
+using DomusMind.Infrastructure.Languages;
 using DomusMind.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,6 +38,7 @@ using (var scope = app.Services.CreateScope())
 }
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 await AuthSeedService.SeedAdminAsync(app.Services, CancellationToken.None);
+await LanguageSeedService.SeedAsync(app.Services, CancellationToken.None);
 
 app.Run();
 

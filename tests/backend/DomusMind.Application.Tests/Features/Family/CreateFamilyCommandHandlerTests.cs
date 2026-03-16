@@ -1,3 +1,4 @@
+using DomusMind.Application.Abstractions.Languages;
 using DomusMind.Application.Features.Family;
 using DomusMind.Application.Features.Family.CreateFamily;
 using DomusMind.Infrastructure.Events;
@@ -16,13 +17,15 @@ public sealed class CreateFamilyCommandHandlerTests
 
     private static CreateFamilyCommandHandler BuildHandler(
         DomusMindDbContext? db = null,
-        StubFamilyAccessGranter? granter = null)
+        StubFamilyAccessGranter? granter = null,
+        StubSupportedLanguageReader? languageReader = null)
     {
         var context = db ?? CreateDb();
         return new CreateFamilyCommandHandler(
             context,
             new EventLogWriter(context),
-            granter ?? new StubFamilyAccessGranter());
+            granter ?? new StubFamilyAccessGranter(),
+            languageReader ?? new StubSupportedLanguageReader());
     }
 
     [Fact]
@@ -32,12 +35,53 @@ public sealed class CreateFamilyCommandHandlerTests
         var handler = BuildHandler();
 
         var result = await handler.Handle(
-            new CreateFamilyCommand("Smith Family", userId),
+            new CreateFamilyCommand("Smith Family", null, userId),
             CancellationToken.None);
 
         result.FamilyId.Should().NotBeEmpty();
         result.Name.Should().Be("Smith Family");
         result.CreatedAtUtc.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task Handle_WithValidLanguageCode_PersistsLanguage()
+    {
+        var userId = Guid.NewGuid();
+        var reader = new StubSupportedLanguageReader(supportedCodes: ["en", "fr"]);
+        var handler = BuildHandler(languageReader: reader);
+
+        var result = await handler.Handle(
+            new CreateFamilyCommand("Dupont Family", "fr", userId),
+            CancellationToken.None);
+
+        result.PrimaryLanguageCode.Should().Be("fr");
+    }
+
+    [Fact]
+    public async Task Handle_WithUnsupportedLanguageCode_ThrowsFamilyException()
+    {
+        var handler = BuildHandler(languageReader: new StubSupportedLanguageReader(supportedCodes: ["en"]));
+
+        var act = () => handler.Handle(
+            new CreateFamilyCommand("Smith Family", "xx", Guid.NewGuid()),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FamilyException>()
+            .Where(e => e.Code == FamilyErrorCode.InvalidInput);
+    }
+
+    [Fact]
+    public async Task Handle_WithNullLanguageCode_PersistsNullLanguage()
+    {
+        var db = CreateDb();
+        var handler = BuildHandler(db: db);
+        var userId = Guid.NewGuid();
+
+        var result = await handler.Handle(
+            new CreateFamilyCommand("Davis Family", null, userId),
+            CancellationToken.None);
+
+        result.PrimaryLanguageCode.Should().BeNull();
     }
 
     [Fact]
@@ -48,7 +92,7 @@ public sealed class CreateFamilyCommandHandlerTests
         var handler = BuildHandler(granter: granter);
 
         var result = await handler.Handle(
-            new CreateFamilyCommand("Johnson Family", userId),
+            new CreateFamilyCommand("Johnson Family", null, userId),
             CancellationToken.None);
 
         granter.GrantedAccesses.Should().ContainSingle();
@@ -65,7 +109,7 @@ public sealed class CreateFamilyCommandHandlerTests
         var userId = Guid.NewGuid();
 
         var result = await handler.Handle(
-            new CreateFamilyCommand("Davis Family", userId),
+            new CreateFamilyCommand("Davis Family", null, userId),
             CancellationToken.None);
 
         var saved = await db.Families.FindAsync(
@@ -81,7 +125,7 @@ public sealed class CreateFamilyCommandHandlerTests
         var handler = BuildHandler();
 
         var act = () => handler.Handle(
-            new CreateFamilyCommand(name, Guid.NewGuid()),
+            new CreateFamilyCommand(name, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<FamilyException>()
@@ -94,7 +138,7 @@ public sealed class CreateFamilyCommandHandlerTests
         var handler = BuildHandler();
 
         var act = () => handler.Handle(
-            new CreateFamilyCommand(new string('X', 101), Guid.NewGuid()),
+            new CreateFamilyCommand(new string('X', 101), null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<FamilyException>()

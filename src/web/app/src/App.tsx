@@ -6,9 +6,11 @@ import {
   Navigate,
   useNavigate,
 } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { bootstrapHousehold } from "./store/householdSlice";
+import { UI_LANG_KEY, setUiLanguage } from "./i18n/index";
 import { AppShell } from "./components/AppShell";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -21,14 +23,23 @@ import { TasksPage } from "./pages/TasksPage";
 
 function AuthedApp() {
   const dispatch = useAppDispatch();
-  const { bootstrapStatus } = useAppSelector((s) => s.household);
+  const { bootstrapStatus, family } = useAppSelector((s) => s.household);
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     dispatch(bootstrapHousehold());
   }, [dispatch]);
 
+  // Sync language precedence: explicit UI choice > household language > browser/fallback
+  useEffect(() => {
+    const explicitChoice = localStorage.getItem(UI_LANG_KEY);
+    if (!explicitChoice && family?.primaryLanguageCode) {
+      setUiLanguage(family.primaryLanguageCode);
+    }
+  }, [family?.primaryLanguageCode, i18n]);
+
   if (bootstrapStatus === "idle" || bootstrapStatus === "loading") {
-    return <div className="loading-wrap">Loading your household\u2026</div>;
+    return <div className="loading-wrap">Loading your household…</div>;
   }
 
   if (bootstrapStatus === "needsOnboarding") {

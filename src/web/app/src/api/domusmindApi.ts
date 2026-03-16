@@ -41,12 +41,23 @@ async function request<T>(
 export interface FamilyResponse {
   familyId: string;
   name: string;
+  primaryLanguageCode: string | null;
   createdAtUtc: string;
   memberCount: number;
 }
 
 export interface CreateFamilyRequest {
   name: string;
+  primaryLanguageCode?: string | null;
+}
+
+export interface SupportedLanguageItem {
+  code: string;
+  culture: string;
+  displayName: string;
+  nativeDisplayName: string;
+  isDefault: boolean;
+  sortOrder: number;
 }
 
 export interface FamilyMemberResponse {
@@ -318,4 +329,9 @@ export const domusmindApi = {
       method: "POST",
       body: JSON.stringify({ newDueDate }),
     }),
+
+  /* Languages */
+  getSupportedLanguages: () =>
+    // Public endpoint — no auth token needed
+    request<{ languages: SupportedLanguageItem[] }>("/api/languages", {}, null),
 };

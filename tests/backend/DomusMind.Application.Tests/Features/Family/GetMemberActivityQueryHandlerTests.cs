@@ -28,7 +28,7 @@ public sealed class GetMemberActivityQueryHandlerTests
 
     private static Domain.Family.Family MakeFamily(FamilyId familyId, MemberId memberId, string memberName = "Alice")
     {
-        var family = Domain.Family.Family.Create(familyId, FamilyName.Create("Test Family"), DateTime.UtcNow);
+        var family = Domain.Family.Family.Create(familyId, FamilyName.Create("Test Family"), null, DateTime.UtcNow);
         family.AddMember(memberId, MemberName.Create(memberName), MemberRole.Create("Adult"), DateTime.UtcNow);
         family.ClearDomainEvents();
         return family;

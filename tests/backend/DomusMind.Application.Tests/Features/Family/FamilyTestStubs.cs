@@ -1,3 +1,4 @@
+using DomusMind.Application.Abstractions.Languages;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Domain.Abstractions;
@@ -33,4 +34,27 @@ internal sealed class StubEventLogWriter : IEventLogWriter
         WrittenEvents.AddRange(domainEvents);
         return Task.CompletedTask;
     }
+}
+
+internal sealed class StubSupportedLanguageReader : ISupportedLanguageReader
+{
+    private readonly HashSet<string> _supportedCodes;
+
+    public StubSupportedLanguageReader(IEnumerable<string>? supportedCodes = null)
+    {
+        _supportedCodes = new HashSet<string>(
+            supportedCodes ?? ["en", "de", "es", "fr", "it", "ja", "zh"],
+            StringComparer.OrdinalIgnoreCase);
+    }
+
+    public Task<IReadOnlyCollection<SupportedLanguageItem>> GetActiveAsync(CancellationToken cancellationToken = default)
+    {
+        var items = _supportedCodes
+            .Select(c => new SupportedLanguageItem(c, c + "-XX", c, c, c == "en", 0))
+            .ToList();
+        return Task.FromResult<IReadOnlyCollection<SupportedLanguageItem>>(items.AsReadOnly());
+    }
+
+    public Task<bool> IsActiveAsync(string code, CancellationToken cancellationToken = default)
+        => Task.FromResult(_supportedCodes.Contains(code));
 }

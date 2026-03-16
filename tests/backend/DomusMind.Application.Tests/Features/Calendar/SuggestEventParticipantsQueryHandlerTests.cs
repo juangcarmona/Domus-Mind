@@ -31,7 +31,7 @@ public sealed class SuggestEventParticipantsQueryHandlerTests
 
     private static Domain.Family.Family MakeFamily(FamilyId familyId, params (MemberId id, string name)[] members)
     {
-        var family = Domain.Family.Family.Create(familyId, FamilyName.Create("Test Family"), DateTime.UtcNow);
+        var family = Domain.Family.Family.Create(familyId, FamilyName.Create("Test Family"), null, DateTime.UtcNow);
         foreach (var (id, name) in members)
             family.AddMember(id, MemberName.Create(name), MemberRole.Create("Adult"), DateTime.UtcNow);
         family.ClearDomainEvents();

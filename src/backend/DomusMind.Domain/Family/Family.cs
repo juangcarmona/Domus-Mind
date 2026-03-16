@@ -9,19 +9,21 @@ public sealed class Family : AggregateRoot<FamilyId>
     private readonly List<FamilyMember> _members = [];
 
     public FamilyName Name { get; private set; }
+    public string? PrimaryLanguageCode { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public IReadOnlyCollection<FamilyMember> Members => _members.AsReadOnly();
 
-    private Family(FamilyId id, FamilyName name, DateTime createdAtUtc)
+    private Family(FamilyId id, FamilyName name, string? primaryLanguageCode, DateTime createdAtUtc)
         : base(id)
     {
         Name = name;
+        PrimaryLanguageCode = primaryLanguageCode;
         CreatedAtUtc = createdAtUtc;
     }
 
-    public static Family Create(FamilyId id, FamilyName name, DateTime createdAtUtc)
+    public static Family Create(FamilyId id, FamilyName name, string? primaryLanguageCode, DateTime createdAtUtc)
     {
-        var family = new Family(id, name, createdAtUtc);
+        var family = new Family(id, name, primaryLanguageCode, createdAtUtc);
         family.RaiseDomainEvent(new FamilyCreated(Guid.NewGuid(), id.Value, createdAtUtc));
         return family;
     }

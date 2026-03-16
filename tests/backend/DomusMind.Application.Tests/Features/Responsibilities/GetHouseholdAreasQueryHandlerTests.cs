@@ -24,7 +24,7 @@ public sealed class GetHouseholdAreasQueryHandlerTests
 
     private static Domain.Family.Family MakeFamily(FamilyId familyId, MemberId memberId, string name = "Alice")
     {
-        var family = Domain.Family.Family.Create(familyId, FamilyName.Create("Test"), DateTime.UtcNow);
+        var family = Domain.Family.Family.Create(familyId, FamilyName.Create("Test"), null, DateTime.UtcNow);
         family.AddMember(memberId, MemberName.Create(name), MemberRole.Create("Adult"), DateTime.UtcNow);
         family.ClearDomainEvents();
         return family;

@@ -407,6 +407,52 @@ p { margin: 0 0 0.5rem; }
 .onboarding-card h1 { font-size: 1.5rem; margin-bottom: 0.5rem; text-align: center; }
 .onboarding-card > p { color: var(--muted); margin-bottom: 1.25rem; text-align: center; }
 
+/* Language selection grid */
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.5rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.lang-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.65rem 0.5rem;
+  border: 1.5px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.lang-option:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+}
+
+.lang-option.selected {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--primary);
+}
+
+.lang-option {
+  color: var(--muted);
+}
+
+.lang-native {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.lang-option.selected .lang-native {
+  color: var(--primary);
+}
+
 .people-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
 
 .people-chip {

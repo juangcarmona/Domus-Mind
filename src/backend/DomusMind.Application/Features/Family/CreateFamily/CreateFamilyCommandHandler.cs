@@ -1,3 +1,4 @@
+using DomusMind.Application.Abstractions.Languages;
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
@@ -13,15 +14,18 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
     private readonly IDomusMindDbContext _dbContext;
     private readonly IEventLogWriter _eventLogWriter;
     private readonly IFamilyAccessGranter _familyAccessGranter;
+    private readonly ISupportedLanguageReader _languageReader;
 
     public CreateFamilyCommandHandler(
         IDomusMindDbContext dbContext,
         IEventLogWriter eventLogWriter,
-        IFamilyAccessGranter familyAccessGranter)
+        IFamilyAccessGranter familyAccessGranter,
+        ISupportedLanguageReader languageReader)
     {
         _dbContext = dbContext;
         _eventLogWriter = eventLogWriter;
         _familyAccessGranter = familyAccessGranter;
+        _languageReader = languageReader;
     }
 
     public async Task<CreateFamilyResponse> Handle(
@@ -34,11 +38,22 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
         if (command.Name.Trim().Length > 100)
             throw new FamilyException(FamilyErrorCode.InvalidInput, "Family name cannot exceed 100 characters.");
 
+        string? languageCode = null;
+        if (!string.IsNullOrWhiteSpace(command.PrimaryLanguageCode))
+        {
+            var isValid = await _languageReader.IsActiveAsync(command.PrimaryLanguageCode, cancellationToken);
+            if (!isValid)
+                throw new FamilyException(
+                    FamilyErrorCode.InvalidInput,
+                    $"Language code '{command.PrimaryLanguageCode}' is not a supported language.");
+            languageCode = command.PrimaryLanguageCode;
+        }
+
         var familyId = FamilyId.New();
         var name = FamilyName.Create(command.Name);
         var now = DateTime.UtcNow;
 
-        var family = Domain.Family.Family.Create(familyId, name, now);
+        var family = Domain.Family.Family.Create(familyId, name, languageCode, now);
 
         _dbContext.Set<Domain.Family.Family>().Add(family);
 
@@ -47,6 +62,6 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
         await _eventLogWriter.WriteAsync(family.DomainEvents, cancellationToken);
         family.ClearDomainEvents();
 
-        return new CreateFamilyResponse(familyId.Value, name.Value, now);
+        return new CreateFamilyResponse(familyId.Value, name.Value, languageCode, now);
     }
 }
