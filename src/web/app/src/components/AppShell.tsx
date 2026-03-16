@@ -1,72 +1,167 @@
+import { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthProvider";
 import { HouseholdLogo } from "./HouseholdLogo";
+import { UserAvatar } from "./UserAvatar";
 import { useAppSelector } from "../store/hooks";
 
+const NAV_ITEMS = [
+  { to: "/timeline", labelKey: "nav.timeline" },
+  { to: "/week",     labelKey: "nav.week"     },
+  { to: "/tasks",    labelKey: "nav.chores"   },
+  { to: "/plans",    labelKey: "nav.plans"    },
+  { to: "/people",   labelKey: "nav.people"   },
+  { to: "/areas",    labelKey: "nav.areas"    },
+] as const;
+
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const nav = useNavigate();
   const { t } = useTranslation();
   const family = useAppSelector((s) => s.household.family);
 
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const avatarMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close avatar dropdown on outside click
+  useEffect(() => {
+    function onOutside(e: MouseEvent) {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target as Node)) {
+        setAvatarMenuOpen(false);
+      }
+    }
+    if (avatarMenuOpen) document.addEventListener("mousedown", onOutside);
+    return () => document.removeEventListener("mousedown", onOutside);
+  }, [avatarMenuOpen]);
+
+  // Close drawer on Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setDrawerOpen(false);
+    }
+    if (drawerOpen) document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [drawerOpen]);
+
   async function handleLogout() {
+    setAvatarMenuOpen(false);
     await logout();
     nav("/login");
   }
 
+  const userName = user?.email?.split("@")[0] ?? "";
+
   return (
     <div className="app-layout">
       <header className="site-header">
+        {/* Mobile: hamburger button */}
+        <button
+          className="hamburger"
+          aria-label="Open navigation"
+          aria-expanded={drawerOpen}
+          onClick={() => setDrawerOpen(true)}
+          type="button"
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
         <NavLink to="/timeline" className="brand">
           <HouseholdLogo className="brand-mark" />
-          {family?.name ?? "DomusMind"}
+          <span className="brand-name">{family?.name ?? "DomusMind"}</span>
         </NavLink>
 
-        <nav aria-label="Primary">
+        {/* Desktop nav — hidden on mobile via CSS */}
+        <nav aria-label="Primary" className="primary-nav">
           <ul>
-            <li>
-              <NavLink to="/timeline" className={({ isActive }) => isActive ? "active" : undefined}>
-                {t("nav.timeline")}
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/people" className={({ isActive }) => isActive ? "active" : undefined}>
-                {t("nav.people")}
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/areas" className={({ isActive }) => isActive ? "active" : undefined}>
-                {t("nav.areas")}
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/plans" className={({ isActive }) => isActive ? "active" : undefined}>
-                {t("nav.plans")}
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/tasks" className={({ isActive }) => isActive ? "active" : undefined}>
-                {t("nav.chores")}
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/week" className={({ isActive }) => isActive ? "active" : undefined}>
-                {t("nav.week")}
-              </NavLink>
-            </li>
+            {NAV_ITEMS.map(({ to, labelKey }) => (
+              <li key={to}>
+                <NavLink to={to} className={({ isActive }) => isActive ? "active" : undefined}>
+                  {t(labelKey)}
+                </NavLink>
+              </li>
+            ))}
           </ul>
         </nav>
 
-        <div className="header-controls">
-          <NavLink to="/settings" className={({ isActive }) => `btn btn-ghost btn-sm${isActive ? " active" : ""}`}>
-            {t("nav.settings")}
-          </NavLink>
-          <button className="btn btn-ghost btn-sm" onClick={handleLogout}>
-            {t("nav.signOut")}
-          </button>
+        {/* Avatar + dropdown */}
+        <div className="header-end" ref={avatarMenuRef}>
+          <UserAvatar name={userName} onClick={() => setAvatarMenuOpen((o) => !o)} />
+          {avatarMenuOpen && (
+            <div className="avatar-menu" role="menu">
+              <NavLink
+                to="/settings"
+                className="avatar-menu-item"
+                role="menuitem"
+                onClick={() => setAvatarMenuOpen(false)}
+              >
+                {t("nav.settings")}
+              </NavLink>
+              <div className="avatar-menu-divider" role="separator" />
+              <button
+                className="avatar-menu-item avatar-menu-item--danger"
+                role="menuitem"
+                onClick={handleLogout}
+                type="button"
+              >
+                {t("nav.signOut")}
+              </button>
+            </div>
+          )}
         </div>
       </header>
+
+      {/* Mobile navigation drawer */}
+      {drawerOpen && (
+        <>
+          <div
+            className="drawer-backdrop"
+            aria-hidden="true"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <nav className="mobile-drawer" aria-label="Mobile navigation">
+            <div className="mobile-drawer-header">
+              <NavLink to="/timeline" className="brand" onClick={() => setDrawerOpen(false)}>
+                <HouseholdLogo className="brand-mark" />
+                <span>{family?.name ?? "DomusMind"}</span>
+              </NavLink>
+              <button
+                className="drawer-close"
+                aria-label={t("common.close")}
+                onClick={() => setDrawerOpen(false)}
+                type="button"
+              >
+                ✕
+              </button>
+            </div>
+            <ul>
+              {NAV_ITEMS.map(({ to, labelKey }) => (
+                <li key={to}>
+                  <NavLink
+                    to={to}
+                    className={({ isActive }) => isActive ? "active" : undefined}
+                    onClick={() => setDrawerOpen(false)}
+                  >
+                    {t(labelKey)}
+                  </NavLink>
+                </li>
+              ))}
+              <li>
+                <NavLink
+                  to="/settings"
+                  className={({ isActive }) => isActive ? "active" : undefined}
+                  onClick={() => setDrawerOpen(false)}
+                >
+                  {t("nav.settings")}
+                </NavLink>
+              </li>
+            </ul>
+          </nav>
+        </>
+      )}
 
       <main className="app-main">{children}</main>
     </div>
