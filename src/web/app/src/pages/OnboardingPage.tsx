@@ -59,7 +59,10 @@ export function OnboardingPage() {
     setSubmitting(true);
     setCreateError(null);
     const result = await dispatch(
-      createFamily({ name: householdName.trim(), primaryLanguageCode: selectedLang }),
+      createFamily({
+        name: householdName.trim(),
+        primaryLanguageCode: selectedLang,
+      }),
     );
     setSubmitting(false);
     if (createFamily.fulfilled.match(result)) {
@@ -108,11 +111,33 @@ export function OnboardingPage() {
     );
   }
 
+  function handleBack() {
+    setStep((prev) => (prev > 0 ? ((prev - 1) as Step) : prev));
+  }
+
+  function renderBackButton(currentStep: Step) {
+    if (currentStep <= 0 || currentStep >= 4) return null;
+
+    return (
+      <button
+        type="button"
+        className="onboarding-back"
+        onClick={handleBack}
+        aria-label={t("common.back")}
+        title={t("common.back")}
+      >
+                  ❮
+              
+      </button>
+    );
+  }
+
   /* ---- Step 0: Language selection ---- */
   if (step === 0) {
     return (
       <div className="onboarding-wrap">
         <div className="onboarding-card">
+          {renderBackButton(step)}
           <div className="logo-wrap">
             <HouseholdLogo size={48} />
           </div>
@@ -144,13 +169,41 @@ export function OnboardingPage() {
           {languages.status !== "loading" && languages.items.length === 0 && (
             <div className="lang-grid">
               {[
-                { code: "en", displayName: "English", nativeDisplayName: "English" },
-                { code: "de", displayName: "German", nativeDisplayName: "Deutsch" },
-                { code: "es", displayName: "Spanish", nativeDisplayName: "Español" },
-                { code: "fr", displayName: "French", nativeDisplayName: "Français" },
-                { code: "it", displayName: "Italian", nativeDisplayName: "Italiano" },
-                { code: "ja", displayName: "Japanese", nativeDisplayName: "日本語" },
-                { code: "zh", displayName: "Chinese", nativeDisplayName: "中文" },
+                {
+                  code: "en",
+                  displayName: "English",
+                  nativeDisplayName: "English",
+                },
+                {
+                  code: "de",
+                  displayName: "German",
+                  nativeDisplayName: "Deutsch",
+                },
+                {
+                  code: "es",
+                  displayName: "Spanish",
+                  nativeDisplayName: "Español",
+                },
+                {
+                  code: "fr",
+                  displayName: "French",
+                  nativeDisplayName: "Français",
+                },
+                {
+                  code: "it",
+                  displayName: "Italian",
+                  nativeDisplayName: "Italiano",
+                },
+                {
+                  code: "ja",
+                  displayName: "Japanese",
+                  nativeDisplayName: "日本語",
+                },
+                {
+                  code: "zh",
+                  displayName: "Chinese",
+                  nativeDisplayName: "中文",
+                },
               ].map((lang) => (
                 <button
                   key={lang.code}
@@ -167,7 +220,11 @@ export function OnboardingPage() {
 
           <button
             className="btn"
-            style={{ width: "100%", justifyContent: "center", marginTop: "1rem" }}
+            style={{
+              width: "100%",
+              justifyContent: "center",
+              marginTop: "1rem",
+            }}
             onClick={handleLangContinue}
           >
             {t("lang.continue")}
@@ -182,6 +239,7 @@ export function OnboardingPage() {
     return (
       <div className="onboarding-wrap">
         <div className="onboarding-card">
+          {renderBackButton(step)}
           <div className="logo-wrap">
             <HouseholdLogo size={48} />
           </div>
@@ -205,6 +263,7 @@ export function OnboardingPage() {
     return (
       <div className="onboarding-wrap">
         <div className="onboarding-card">
+          {renderBackButton(step)}
           <div className="logo-wrap">
             <HouseholdLogo size={48} />
           </div>
@@ -231,7 +290,9 @@ export function OnboardingPage() {
               style={{ width: "100%", justifyContent: "center" }}
               disabled={submitting || !householdName.trim()}
             >
-              {submitting ? t("onboarding.name.creating") : t("onboarding.name.create")}
+              {submitting
+                ? t("onboarding.name.creating")
+                : t("onboarding.name.create")}
             </button>
           </form>
         </div>
@@ -244,6 +305,7 @@ export function OnboardingPage() {
     return (
       <div className="onboarding-wrap">
         <div className="onboarding-card">
+          {renderBackButton(step)}
           <div className="logo-wrap">
             <HouseholdLogo size={48} />
           </div>
@@ -257,7 +319,13 @@ export function OnboardingPage() {
               {people.map((p, i) => (
                 <span key={i} className="people-chip">
                   {p.name}
-                  <span style={{ fontSize: "0.75rem", opacity: 0.7, marginLeft: "0.1rem" }}>
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      opacity: 0.7,
+                      marginLeft: "0.1rem",
+                    }}
+                  >
                     ({t(`onboarding.people.roles.${p.role}` as never, p.role)})
                   </span>
                   <button
@@ -294,9 +362,15 @@ export function OnboardingPage() {
                 value={personRole}
                 onChange={(e) => setPersonRole(e.target.value)}
               >
-                <option value="Adult">{t("onboarding.people.roles.Adult")}</option>
-                <option value="Child">{t("onboarding.people.roles.Child")}</option>
-                <option value="Teen">{t("onboarding.people.roles.Teen")}</option>
+                <option value="Adult">
+                  {t("onboarding.people.roles.Adult")}
+                </option>
+                <option value="Child">
+                  {t("onboarding.people.roles.Child")}
+                </option>
+                <option value="Teen">
+                  {t("onboarding.people.roles.Teen")}
+                </option>
               </select>
             </div>
             <button
