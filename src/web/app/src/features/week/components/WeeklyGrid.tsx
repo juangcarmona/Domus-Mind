@@ -3,19 +3,32 @@ import type { WeeklyGridResponse, WeeklyGridCell as GridCell } from "../types";
 import { WeekHeader } from "./WeekHeader";
 import { WeeklyGridRow } from "./WeeklyGridRow";
 import { WeeklyGridCell as WGCell } from "./WeeklyGridCell";
+import { TodaySummary } from "./TodaySummary";
 
 interface WeeklyGridProps {
   grid: WeeklyGridResponse;
 }
 
-function SharedRow({ cells, label }: { cells: GridCell[]; label: string }) {
+function SharedRow({
+  cells,
+  label,
+  today,
+}: {
+  cells: GridCell[];
+  label: string;
+  today: string;
+}) {
   return (
     <div className="wg-row wg-row--shared">
       <div className="wg-member-label">
         <span className="wg-member-name">{label}</span>
       </div>
       {cells.map((cell) => (
-        <WGCell key={cell.date} cell={cell} />
+        <WGCell
+          key={cell.date}
+          cell={cell}
+          isToday={cell.date.slice(0, 10) === today}
+        />
       ))}
     </div>
   );
@@ -23,6 +36,7 @@ function SharedRow({ cells, label }: { cells: GridCell[]; label: string }) {
 
 export function WeeklyGrid({ grid }: WeeklyGridProps) {
   const { t } = useTranslation("week");
+  const todayIso = new Date().toISOString().slice(0, 10);
   const members = grid.members ?? [];
   const sharedCells = grid.sharedCells ?? [];
   const hasSharedContent = sharedCells.some((c) => (c.routines?.length ?? 0) > 0);
@@ -38,15 +52,20 @@ export function WeeklyGrid({ grid }: WeeklyGridProps) {
             return d.toISOString().slice(0, 10);
           });
 
+  const isCurrentWeek = days.includes(todayIso);
+
   return (
-    <div className="weekly-grid">
-      <WeekHeader days={days} />
-      {hasSharedContent && (
-        <SharedRow cells={sharedCells} label={t("household")} />
-      )}
-      {members.map((member) => (
-        <WeeklyGridRow key={member.memberId} member={member} />
-      ))}
-    </div>
+    <>
+      {isCurrentWeek && <TodaySummary grid={grid} today={todayIso} />}
+      <div className="weekly-grid">
+        <WeekHeader days={days} today={todayIso} />
+        {hasSharedContent && (
+          <SharedRow cells={sharedCells} label={t("household")} today={todayIso} />
+        )}
+        {members.map((member) => (
+          <WeeklyGridRow key={member.memberId} member={member} today={todayIso} />
+        ))}
+      </div>
+    </>
   );
 }

@@ -1091,6 +1091,93 @@ p {
   white-space: nowrap;
 }
 
+/* ---- Week grid: today column highlight ---- */
+.wg-day-header--today {
+  background: color-mix(in srgb, var(--primary) 14%, var(--surface));
+  color: var(--primary);
+  position: relative;
+}
+.wg-day-header--today .wg-day-name {
+  color: var(--primary);
+}
+.wg-day-header--today .wg-day-date {
+  color: var(--primary);
+  font-weight: 600;
+}
+.wg-today-dot {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--primary);
+  margin: 0.15rem auto 0;
+}
+.wg-cell--today {
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  border-left-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+.wg-cell--today.wg-cell--empty {
+  background: color-mix(in srgb, var(--primary) 4%, var(--bg));
+}
+
+/* ---- Today summary ---- */
+.today-summary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.today-summary-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.today-summary-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.today-summary-date {
+  font-size: 0.875rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+.today-summary-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.today-summary-member {
+  min-width: 140px;
+  flex: 1 1 140px;
+  background: color-mix(in srgb, var(--bg) 50%, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.65rem;
+}
+.today-summary-member-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+.today-summary-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.today-summary-empty {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
 /* ---- Week nav ---- */
 .week-nav {
   display: flex;
