@@ -1,9 +1,9 @@
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Tasks;
+using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.Events;
 using DomusMind.Domain.Tasks.ValueObjects;
 using FluentAssertions;
-using TaskStatus = DomusMind.Domain.Tasks.TaskStatus;
 
 namespace DomusMind.Domain.Tests.Tasks;
 
@@ -51,7 +51,7 @@ public sealed class HouseholdTaskTests
     public void Create_WithValidData_SetsPendingStatus()
     {
         var task = BuildTask();
-        task.Status.Should().Be(TaskStatus.Pending);
+        task.Status.Should().Be(HouseholdTaskStatus.Pending);
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public sealed class HouseholdTaskTests
     {
         var task = BuildTask();
         task.Complete();
-        task.Status.Should().Be(TaskStatus.Completed);
+        task.Status.Should().Be(HouseholdTaskStatus.Completed);
     }
 
     [Fact]
@@ -184,7 +184,7 @@ public sealed class HouseholdTaskTests
     {
         var task = BuildTask();
         task.Cancel();
-        task.Status.Should().Be(TaskStatus.Cancelled);
+        task.Status.Should().Be(HouseholdTaskStatus.Cancelled);
     }
 
     [Fact]

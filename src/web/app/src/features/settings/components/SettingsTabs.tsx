@@ -8,7 +8,7 @@ interface SettingsTabsProps {
 }
 
 export function SettingsTabs({ active, onChange }: SettingsTabsProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation("settings");
   return (
     <div className="settings-tabs" role="tablist">
       <button
@@ -18,7 +18,7 @@ export function SettingsTabs({ active, onChange }: SettingsTabsProps) {
         onClick={() => onChange("account")}
         type="button"
       >
-        {t("settings.account.title")}
+        {t("account.title")}
       </button>
       <button
         role="tab"
@@ -27,7 +27,7 @@ export function SettingsTabs({ active, onChange }: SettingsTabsProps) {
         onClick={() => onChange("household")}
         type="button"
       >
-        {t("settings.household.title")}
+        {t("household.title")}
       </button>
     </div>
   );

@@ -1,28 +1,39 @@
-import type { WeeklyGridEventItem, WeeklyGridTaskItem } from "../types";
+import type { WeeklyGridEventItem, WeeklyGridTaskItem, WeeklyGridRoutineItem } from "../types";
 
 type ItemType = "event" | "task" | "routine";
 
 interface WeeklyGridItemProps {
   type: ItemType;
   title: string;
-  time?: string;
+  time?: string | null;
   status?: string;
+  subtitle?: string;
+  color?: string | null;
 }
 
-function typeLabel(type: ItemType): string {
-  switch (type) {
-    case "event": return "E";
-    case "task": return "T";
-    case "routine": return "R";
-  }
-}
+export function WeeklyGridItem({
+  type,
+  title,
+  time,
+  status,
+  subtitle,
+  color,
+}: WeeklyGridItemProps) {
+  const tooltipText = [title, time, subtitle, status ? `(${status})` : ""]
+    .filter(Boolean)
+    .join(" · ");
 
-export function WeeklyGridItem({ type, title, time, status }: WeeklyGridItemProps) {
+  const style = color
+    ? ({ ["--wg-item-accent" as string]: color } as React.CSSProperties)
+    : undefined;
+
   return (
-    <div className={`wg-item wg-item--${type}`} title={`${title}${status ? ` (${status})` : ""}`}>
-      <span className="wg-item-type">{typeLabel(type)}</span>
-      <span className="wg-item-title">{title}</span>
-      {time && <span className="wg-item-time">{time}</span>}
+    <div
+      className={`wg-item wg-item--${type}`}
+      title={tooltipText}
+      style={style}
+    >
+      <span className="wg-item-title">{title} {time && `· ${time}`}</span>
     </div>
   );
 }
@@ -33,6 +44,7 @@ export function eventToItem(e: WeeklyGridEventItem) {
     minute: "2-digit",
     hour12: false,
   });
+  const participantNames = e.participants?.map((p) => p.displayName).join(", ");
   return (
     <WeeklyGridItem
       key={e.eventId}
@@ -40,6 +52,7 @@ export function eventToItem(e: WeeklyGridEventItem) {
       title={e.title}
       time={time}
       status={e.status}
+      subtitle={participantNames || undefined}
     />
   );
 }
@@ -51,6 +64,19 @@ export function taskToItem(t: WeeklyGridTaskItem) {
       type="task"
       title={t.title}
       status={t.status}
+    />
+  );
+}
+
+export function routineToItem(r: WeeklyGridRoutineItem) {
+  return (
+    <WeeklyGridItem
+      key={`routine-${r.routineId}`}
+      type="routine"
+      title={r.name}
+      time={r.time ?? r.frequency}
+      status={r.kind}
+      color={r.color}
     />
   );
 }

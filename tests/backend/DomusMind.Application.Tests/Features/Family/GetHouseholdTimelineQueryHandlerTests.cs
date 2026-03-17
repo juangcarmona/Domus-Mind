@@ -4,11 +4,11 @@ using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Tasks;
+using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
 using DomusMind.Infrastructure.Persistence;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using TaskStatus = DomusMind.Domain.Tasks.TaskStatus;
 
 namespace DomusMind.Application.Tests.Features.Family;
 
@@ -47,7 +47,15 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
         string name)
         => Routine.Create(
             RoutineId.New(), familyId,
-            RoutineName.Create(name), "Daily", DateTime.UtcNow);
+            RoutineName.Create(name),
+            RoutineScope.Household,
+            RoutineKind.Cue,
+            RoutineColor.From("#3B82F6"),
+            RoutineSchedule.Weekly(
+                new[] { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday,
+                         DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday }),
+            null,
+            DateTime.UtcNow);
 
     // --- Authorization ---
 

@@ -2,12 +2,12 @@ using DomusMind.Application.Features.Tasks;
 using DomusMind.Application.Features.Tasks.CompleteTask;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Tasks;
+using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
 using DomusMind.Infrastructure.Events;
 using DomusMind.Infrastructure.Persistence;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using TaskStatus = DomusMind.Domain.Tasks.TaskStatus;
 
 namespace DomusMind.Application.Tests.Features.Tasks;
 
@@ -61,7 +61,7 @@ public sealed class CompleteTaskCommandHandlerTests
 
         var saved = await db.Set<HouseholdTask>()
             .SingleOrDefaultAsync(t => t.Id == task.Id);
-        saved!.Status.Should().Be(TaskStatus.Completed);
+        saved!.Status.Should().Be(HouseholdTaskStatus.Completed);
     }
 
     [Fact]

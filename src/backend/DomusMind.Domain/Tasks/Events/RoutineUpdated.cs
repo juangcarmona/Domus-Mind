@@ -6,5 +6,8 @@ public sealed record RoutineUpdated(
     Guid EventId,
     Guid RoutineId,
     string Name,
-    string Cadence,
-    DateTime OccurredAtUtc) : IDomainEvent;
+    string Scope,
+    string Kind,
+    string Color,
+    DateTime OccurredAtUtc
+) : IDomainEvent;

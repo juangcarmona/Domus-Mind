@@ -20,11 +20,12 @@ function AssignOwnerModal({
   members: { memberId: string; name: string }[];
   onClose: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation("areas");
   const dispatch = useAppDispatch();
   const [memberId, setMemberId] = useState(area.primaryOwnerId ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t: tCommon } = useTranslation("common");
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -37,12 +38,12 @@ function AssignOwnerModal({
       const result = await dispatch(transferArea({ areaId: area.areaId, newPrimaryOwnerId: memberId, familyId }));
       setSubmitting(false);
       if (transferArea.fulfilled.match(result)) { onClose(); }
-      else { setError((result as { payload?: unknown }).payload as string ?? t("common.failed")); }
+      else { setError((result as { payload?: unknown }).payload as string ?? tCommon("failed")); }
     } else {
       const result = await dispatch(assignPrimaryOwner({ areaId: area.areaId, memberId, familyId }));
       setSubmitting(false);
       if (assignPrimaryOwner.fulfilled.match(result)) { onClose(); }
-      else { setError((result as { payload?: unknown }).payload as string ?? t("common.failed")); }
+      else { setError((result as { payload?: unknown }).payload as string ?? tCommon("failed")); }
     }
   }
 
@@ -50,11 +51,11 @@ function AssignOwnerModal({
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>
-          {area.primaryOwnerId ? t("areas.transfer") : t("areas.assign")} — {area.name}
+          {area.primaryOwnerId ? t("transfer") : t("assign")} — {area.name}
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="owner-select">{t("areas.responsible")}</label>
+            <label htmlFor="owner-select">{t("responsible")}</label>
             <select
               id="owner-select"
               className="form-control"
@@ -63,7 +64,7 @@ function AssignOwnerModal({
               required
               autoFocus
             >
-              <option value="">{t("common.selectPerson")}</option>
+              <option value="">{tCommon("selectPerson")}</option>
               {members.map((m) => (
                 <option key={m.memberId} value={m.memberId}>
                   {m.name}
@@ -74,10 +75,10 @@ function AssignOwnerModal({
           {error && <p className="error-msg">{error}</p>}
           <div className="modal-footer">
             <button type="button" className="btn btn-ghost" onClick={onClose}>
-              {t("common.cancel")}
+              {tCommon("cancel")}
             </button>
             <button type="submit" className="btn" disabled={submitting || !memberId}>
-              {submitting ? t("common.saving") : t("common.save")}
+              {submitting ? tCommon("saving") : tCommon("save")}
             </button>
           </div>
         </form>
@@ -87,7 +88,8 @@ function AssignOwnerModal({
 }
 
 export function AreasPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("areas");
+  const { t: tCommon } = useTranslation("common");
   const dispatch = useAppDispatch();
   const { family, members } = useAppSelector((s) => s.household);
   const { items: areas, status, error } = useAppSelector((s) => s.areas);
@@ -114,7 +116,7 @@ export function AreasPage() {
       setAreaName("");
       setShowForm(false);
     } else {
-      setFormError(result.payload as string ?? t("areas.createError"));
+      setFormError(result.payload as string ?? t("createError"));
     }
   }
 
@@ -123,18 +125,18 @@ export function AreasPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>{t("areas.title")}</h1>
+        <h1>{t("title")}</h1>
         <button className="btn" onClick={() => { setShowForm(true); setFormError(null); }}>
-          {t("areas.add")}
+          {t("add")}
         </button>
       </div>
 
       {showForm && (
         <div className="card">
-          <h2>{t("areas.createHeading")}</h2>
+          <h2>{t("createHeading")}</h2>
           <form onSubmit={handleCreate}>
             <div className="form-group">
-              <label htmlFor="area-name">{t("areas.nameLabel")}</label>
+              <label htmlFor="area-name">{t("nameLabel")}</label>
               <input
                 id="area-name"
                 className="form-control"
@@ -143,20 +145,20 @@ export function AreasPage() {
                 onChange={(e) => setAreaName(e.target.value)}
                 required
                 autoFocus
-                placeholder={t("areas.namePlaceholder")}
+                placeholder={t("namePlaceholder")}
               />
             </div>
             {formError && <p className="error-msg">{formError}</p>}
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <button type="submit" className="btn" disabled={submitting}>
-                {submitting ? t("common.creating") : t("common.create")}
+                {submitting ? tCommon("creating") : tCommon("create")}
               </button>
               <button
                 type="button"
                 className="btn btn-ghost"
                 onClick={() => setShowForm(false)}
               >
-                {t("common.cancel")}
+                {tCommon("cancel")}
               </button>
             </div>
           </form>
@@ -164,15 +166,15 @@ export function AreasPage() {
       )}
 
       {status === "loading" && (
-        <div className="loading-wrap">{t("areas.loading")}</div>
+        <div className="loading-wrap">{t("loading")}</div>
       )}
 
       {status === "error" && <p className="error-msg">{error}</p>}
 
       {status === "success" && areas.length === 0 && (
         <div className="empty-state">
-          <p>{t("areas.empty")}</p>
-          <p>{t("areas.emptyHint")}</p>
+          <p>{t("empty")}</p>
+          <p>{t("emptyHint")}</p>
         </div>
       )}
 
@@ -184,14 +186,14 @@ export function AreasPage() {
                 <div className="item-card-title">{area.name}</div>
                 <div className="item-card-subtitle">
                   {area.primaryOwnerName ? (
-                    <>{t("areas.owner")}: {area.primaryOwnerName}</>
+                    <>{t("owner")}: {area.primaryOwnerName}</>
                   ) : (
-                    <span style={{ color: "var(--accent)" }}>{t("areas.noOwner")}</span>
+                    <span style={{ color: "var(--accent)" }}>{t("noOwner")}</span>
                   )}
                   {area.secondaryOwnerIds.length > 0 && (
                     <span>
                       {" "}
-                      · {area.secondaryOwnerIds.length} {t("areas.secondary")}
+                      · {area.secondaryOwnerIds.length} {t("secondary")}
                     </span>
                   )}
                 </div>
@@ -201,7 +203,7 @@ export function AreasPage() {
                   className="btn btn-ghost btn-sm"
                   onClick={() => setAssignTarget(area)}
                 >
-                  {area.primaryOwnerId ? t("areas.transfer") : t("areas.assign")}
+                  {area.primaryOwnerId ? t("transfer") : t("assign")}
                 </button>
               </div>
             </div>

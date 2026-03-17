@@ -1,0 +1,17 @@
+export default {
+  title: "Espaces",
+  add: "+ Nouvel espace",
+  createHeading: "Créer un espace",
+  nameLabel: "Nom de l'espace",
+  namePlaceholder: "ex. Finances, École, Entretien",
+  loading: "Chargement des espaces…",
+  empty: "Aucun espace pour l'instant.",
+  emptyHint: "Les espaces définissent qui est responsable de quoi dans votre foyer.",
+  owner: "Responsable",
+  noOwner: "Aucun responsable",
+  secondary: "secondaire",
+  assign: "Attribuer un responsable",
+  transfer: "Transférer la responsabilité",
+  responsible: "Personne responsable",
+  createError: "Impossible de créer l'espace",
+} as const;

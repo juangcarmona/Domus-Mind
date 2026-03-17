@@ -1,0 +1,15 @@
+export default {
+  save: "Salva",
+  saving: "Salvataggio…",
+  cancel: "Annulla",
+  close: "Chiudi",
+  add: "Aggiungi",
+  adding: "Aggiunta…",
+  create: "Crea",
+  creating: "Creazione…",
+  back: "Indietro",
+  failed: "Qualcosa è andato storto.",
+  error: "Qualcosa è andato storto.",
+  loading: "Caricamento…",
+  selectPerson: "— seleziona persona —",
+} as const;

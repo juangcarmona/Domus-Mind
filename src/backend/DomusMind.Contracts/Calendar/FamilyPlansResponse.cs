@@ -6,7 +6,8 @@ public sealed record FamilyPlanItem(
     DateTime StartTime,
     DateTime? EndTime,
     string Status,
-    IReadOnlyCollection<Guid> ParticipantMemberIds);
+    IReadOnlyCollection<Guid> ParticipantMemberIds,
+    IReadOnlyCollection<ParticipantProjection> Participants);
 
 public sealed record FamilyPlansResponse(
     IReadOnlyCollection<FamilyPlanItem> Plans);

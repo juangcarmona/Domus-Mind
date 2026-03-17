@@ -1,0 +1,10 @@
+export default {
+  timeline: "时间线",
+  people: "成员",
+  areas: "区域",
+  plans: "计划",
+  chores: "家务",
+  week: "周",
+  signOut: "退出",
+  settings: "设置",
+} as const;

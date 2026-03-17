@@ -1,0 +1,17 @@
+export default {
+  title: "予定",
+  add: "イベントを追加",
+  form: {
+    title: "タイトル",
+    start: "開始",
+    end: "終了（任意）",
+    description: "説明（任意）",
+    save: "追加",
+    cancel: "キャンセル",
+  },
+  cancelEvent: "イベントをキャンセル",
+  confirmCancel: "このイベントをキャンセルしますか？",
+  yes: "はい、キャンセルします",
+  no: "そのままにする",
+  noPlans: "予定はありません。",
+} as const;

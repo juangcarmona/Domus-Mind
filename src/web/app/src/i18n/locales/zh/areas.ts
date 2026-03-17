@@ -1,0 +1,17 @@
+export default {
+  title: "区域",
+  add: "+ 新建区域",
+  createHeading: "创建区域",
+  nameLabel: "区域名称",
+  namePlaceholder: "例：财务、学校、维修",
+  loading: "加载区域…",
+  empty: "暂无区域。",
+  emptyHint: "区域定义家庭中谁负责什么。",
+  owner: "负责人",
+  noOwner: "未分配负责人",
+  secondary: "副责任",
+  assign: "分配负责人",
+  transfer: "转移负责人",
+  responsible: "负责人",
+  createError: "创建区域失败",
+} as const;

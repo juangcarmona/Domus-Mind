@@ -5,7 +5,7 @@ import { fetchTimeline } from "../../../store/timelineSlice";
 import { completeTask, cancelTask } from "../../../store/tasksSlice";
 import type { EnrichedTimelineEntry } from "../../../api/domusmindApi";
 
-function formatDate(iso: string | null, locale: string): string {
+function formatTime(iso: string | null, locale: string): string {
   if (!iso) return "";
   const d = new Date(iso);
   return new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(d);
@@ -71,9 +71,12 @@ function TimelineEntry({
         <div className="entry-meta">
           <span>{typeLabel}</span>
           {entry.effectiveDate && (
-            <span> · {formatDate(entry.effectiveDate, locale)}</span>
+            <span> · {formatTime(entry.effectiveDate, locale)}</span>
           )}
-          {memberName && <span> · {memberName}</span>}
+          {entry.entryType === "CalendarEvent" && entry.participants && entry.participants.length > 0
+            ? <span> · {entry.participants.map((p) => p.displayName).join(", ")}</span>
+            : memberName && <span> · {memberName}</span>
+          }
           {entry.isUnassigned && isTask && (
             <span style={{ color: "var(--accent)" }}> · {labelUnassigned}</span>
           )}
@@ -111,7 +114,9 @@ export function TimelinePage() {
   const { family, members } = useAppSelector((s) => s.household);
   const { data, status, error } = useAppSelector((s) => s.timeline);
   const [filterType, setFilterType] = useState<string>("");
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation("timeline");
+  const { t: tNav } = useTranslation("nav");
+  const { t: tCommon } = useTranslation("common");
   const locale = i18n.language;
 
   const familyId = family?.familyId;
@@ -155,10 +160,10 @@ export function TimelinePage() {
             ? (() => {
                 const today = data.groups.find((g) => g.groupKey === "Today");
                 return today && today.entries.length > 0
-                  ? `${t("timeline.groups.Today")} — ${today.entries.length}`
-                  : t("timeline.title");
+                  ? `${t("groups.Today")} — ${today.entries.length}`
+                  : t("title");
               })()
-            : t("timeline.title")}
+            : t("title")}
         </h1>
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
           <select
@@ -167,19 +172,19 @@ export function TimelinePage() {
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
-            <option value="">{t("timeline.filter.all")}</option>
-            <option value="CalendarEvent">{t("timeline.filter.plans")}</option>
-            <option value="Task">{t("timeline.filter.chores")}</option>
-            <option value="Routine">{t("timeline.filter.routines")}</option>
+            <option value="">{t("filter.all")}</option>
+            <option value="CalendarEvent">{t("filter.plans")}</option>
+            <option value="Task">{t("filter.chores")}</option>
+            <option value="Routine">{t("filter.routines")}</option>
           </select>
-          <button className="btn btn-ghost btn-sm" onClick={load} title={t("timeline.refresh")}>
+          <button className="btn btn-ghost btn-sm" onClick={load} title={t("refresh")}>
             ↻
           </button>
         </div>
       </div>
 
       {status === "loading" && (
-        <div className="loading-wrap">{t("common.loading")}</div>
+        <div className="loading-wrap">{tCommon("loading")}</div>
       )}
 
       {status === "error" && (
@@ -195,7 +200,7 @@ export function TimelinePage() {
         <>
           {data.totalEntries === 0 && (
             <div className="empty-state">
-              <p>{t("timeline.empty")}</p>
+              <p>{t("empty")}</p>
             </div>
           )}
 
@@ -203,7 +208,7 @@ export function TimelinePage() {
             <section key={group.groupKey} className="timeline-section">
               <div className="timeline-section-header">
                 <h2>
-                  {t(`timeline.groups.${group.groupKey}` as never, group.groupKey)}
+                  {t(`groups.${group.groupKey}` as never, group.groupKey)}
                 </h2>
                 <span
                   className={`timeline-badge ${group.groupKey === "Overdue" ? "overdue" : ""}`}
@@ -222,12 +227,12 @@ export function TimelinePage() {
                         : null
                     }
                     locale={locale}
-                    labelPlan={t("nav.plans")}
-                    labelChore={t("nav.chores")}
-                    labelRoutine={t("timeline.filter.routines")}
-                    labelUnassigned={t("tasks.unassigned")}
-                    labelComplete={t("timeline.actions.complete")}
-                    labelCancel={t("timeline.actions.cancel")}
+                    labelPlan={tNav("plans")}
+                    labelChore={tNav("chores")}
+                    labelRoutine={t("filter.routines")}
+                    labelUnassigned={t("unassigned")}
+                    labelComplete={t("actions.complete")}
+                    labelCancel={t("actions.cancel")}
                     onComplete={handleComplete}
                     onCancel={handleCancel}
                   />

@@ -7,5 +7,8 @@ public sealed record RoutineCreated(
     Guid RoutineId,
     Guid FamilyId,
     string Name,
-    string Cadence,
-    DateTime OccurredAtUtc) : IDomainEvent;
+    string Scope,
+    string Kind,
+    string Color,
+    DateTime OccurredAtUtc
+) : IDomainEvent;

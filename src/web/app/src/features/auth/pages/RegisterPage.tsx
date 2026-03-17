@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../auth/AuthProvider";
 import type { ApiError } from "../../../api/authApi";
 import { HouseholdLogo } from "../../../components/HouseholdLogo";
@@ -7,6 +8,7 @@ interface Props { onSuccess?: () => void; onGoToLogin?: () => void; }
 
 export function RegisterPage({ onSuccess, onGoToLogin }: Props) {
   const { register } = useAuth();
+  const { t } = useTranslation("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [done, setDone] = useState(false);
@@ -18,7 +20,7 @@ export function RegisterPage({ onSuccess, onGoToLogin }: Props) {
     setError(null);
     setLoading(true);
     try { await register(email, password); setDone(true); onSuccess?.(); }
-    catch (err) { setError((err as ApiError).message ?? "Registration failed."); }
+    catch (err) { setError((err as ApiError).message ?? t("registrationFailed")); }
     finally { setLoading(false); }
   }
 
@@ -26,9 +28,9 @@ export function RegisterPage({ onSuccess, onGoToLogin }: Props) {
     return (
       <div className="auth-wrap">
         <div className="auth-card" style={{ textAlign: "center" }}>
-          <p>Account created.</p>
+          <p>{t("accountCreated")}</p>
           <button className="btn" style={{ width: "100%", justifyContent: "center" }} onClick={onGoToLogin}>
-            Sign in
+            {t("signIn")}
           </button>
         </div>
       </div>
@@ -41,18 +43,18 @@ export function RegisterPage({ onSuccess, onGoToLogin }: Props) {
         <div style={{ textAlign: "center", marginBottom: "1.25rem", color: "var(--primary)" }}>
           <HouseholdLogo size={40} />
         </div>
-        <h1 style={{ textAlign: "center", marginBottom: "1.25rem" }}>Create account</h1>
+        <h1 style={{ textAlign: "center", marginBottom: "1.25rem" }}>{t("register")}</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="reg-email">Email</label>
+            <label htmlFor="reg-email">{t("email")}</label>
             <input id="reg-email" className="form-control" type="email" value={email}
               onChange={(e) => setEmail(e.target.value)} required autoFocus />
           </div>
           <div className="form-group">
-            <label htmlFor="reg-password">Password</label>
+            <label htmlFor="reg-password">{t("password")}</label>
             <input id="reg-password" className="form-control" type="password" value={password}
               onChange={(e) => setPassword(e.target.value)} required minLength={8} />
-            <span className="form-hint">At least 8 characters</span>
+            <span className="form-hint">{t("passwordHint")}</span>
           </div>
           {error && <p className="error-msg">{error}</p>}
           <button type="submit" className="btn" disabled={loading}
@@ -62,8 +64,8 @@ export function RegisterPage({ onSuccess, onGoToLogin }: Props) {
         </form>
         {onGoToLogin && (
           <p className="auth-footer">
-            Have an account?{" "}
-            <button onClick={onGoToLogin}>Sign in</button>
+            {t("haveAccount")}{" "}
+            <button onClick={onGoToLogin}>{t("signIn")}</button>
           </p>
         )}
       </div>

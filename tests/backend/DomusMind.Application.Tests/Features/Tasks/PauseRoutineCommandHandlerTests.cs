@@ -2,6 +2,7 @@ using DomusMind.Application.Features.Tasks;
 using DomusMind.Application.Features.Tasks.PauseRoutine;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Tasks;
+using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
 using DomusMind.Infrastructure.Events;
 using DomusMind.Infrastructure.Persistence;
@@ -22,12 +23,22 @@ public sealed class PauseRoutineCommandHandlerTests
         StubTasksAuthorizationService? auth = null)
         => new(db, new EventLogWriter(db), auth ?? new StubTasksAuthorizationService());
 
+    private static Routine CreateValidRoutine(FamilyId familyId)
+        => Routine.Create(
+            RoutineId.New(),
+            familyId,
+            RoutineName.Create("Grocery Shopping"),
+            RoutineScope.Household,
+            RoutineKind.Cue,
+            RoutineColor.From("#8B5CF6"),
+            RoutineSchedule.Weekly(new[] { DayOfWeek.Sunday }, new TimeOnly(11, 0)),
+            Array.Empty<MemberId>(),
+            DateTime.UtcNow);
+
     private static async Task<(DomusMindDbContext Db, Routine Routine)> BuildWithRoutineAsync()
     {
         var db = CreateDb();
-        var routine = Routine.Create(
-            RoutineId.New(), FamilyId.New(),
-            RoutineName.Create("Grocery Shopping"), "Every Sunday at 11:00", DateTime.UtcNow);
+        var routine = CreateValidRoutine(FamilyId.New());
         db.Set<Routine>().Add(routine);
         await db.SaveChangesAsync();
         routine.ClearDomainEvents();
@@ -60,6 +71,8 @@ public sealed class PauseRoutineCommandHandlerTests
 
         var saved = await db.Set<Routine>()
             .SingleOrDefaultAsync(r => r.Id == routine.Id);
+
+        saved.Should().NotBeNull();
         saved!.Status.Should().Be(RoutineStatus.Paused);
     }
 

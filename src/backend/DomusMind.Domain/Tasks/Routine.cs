@@ -1,5 +1,6 @@
 using DomusMind.Domain.Abstractions;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.Events;
 using DomusMind.Domain.Tasks.ValueObjects;
 
@@ -7,53 +8,111 @@ namespace DomusMind.Domain.Tasks;
 
 public sealed class Routine : AggregateRoot<RoutineId>
 {
+    private readonly List<RoutineTargetMember> _targetMembers = [];
+
     public FamilyId FamilyId { get; private set; }
     public RoutineName Name { get; private set; }
-    public string Cadence { get; private set; }
+    public RoutineScope Scope { get; private set; }
+    public RoutineKind Kind { get; private set; }
+    public RoutineColor Color { get; private set; }
+    public RoutineSchedule Schedule { get; private set; }
     public RoutineStatus Status { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
+
+    public IReadOnlyCollection<MemberId> TargetMemberIds =>
+        _targetMembers.Select(x => x.MemberId).ToArray();
 
     private Routine(
         RoutineId id,
         FamilyId familyId,
         RoutineName name,
-        string cadence,
+        RoutineScope scope,
+        RoutineKind kind,
+        RoutineColor color,
+        RoutineSchedule schedule,
+        IEnumerable<MemberId> targetMembers,
         DateTime createdAtUtc)
         : base(id)
     {
         FamilyId = familyId;
         Name = name;
-        Cadence = cadence;
+        Scope = scope;
+        Kind = kind;
+        Color = color;
+        Schedule = schedule;
         Status = RoutineStatus.Active;
         CreatedAtUtc = createdAtUtc;
+
+        ReplaceTargetMembers(targetMembers);
     }
 
     public static Routine Create(
         RoutineId id,
         FamilyId familyId,
         RoutineName name,
-        string cadence,
+        RoutineScope scope,
+        RoutineKind kind,
+        RoutineColor color,
+        RoutineSchedule schedule,
+        IEnumerable<MemberId>? targetMembers,
         DateTime createdAtUtc)
     {
-        if (string.IsNullOrWhiteSpace(cadence))
-            throw new InvalidOperationException("Cadence cannot be empty.");
+        var members = targetMembers?.Distinct().ToList() ?? [];
 
-        var routine = new Routine(id, familyId, name, cadence.Trim(), createdAtUtc);
+        ValidateScope(scope, members);
+
+        var routine = new Routine(
+            id,
+            familyId,
+            name,
+            scope,
+            kind,
+            color,
+            schedule,
+            members,
+            createdAtUtc);
+
         routine.RaiseDomainEvent(new RoutineCreated(
-            Guid.NewGuid(), id.Value, familyId.Value, name.Value, cadence.Trim(), createdAtUtc));
+            Guid.NewGuid(),
+            id.Value,
+            familyId.Value,
+            name.Value,
+            scope.ToString(),
+            kind.ToString(),
+            color.Value,
+            createdAtUtc));
+
         return routine;
     }
 
-    public void Update(RoutineName newName, string newCadence)
+    public void Update(
+        RoutineName newName,
+        RoutineScope newScope,
+        RoutineKind newKind,
+        RoutineColor newColor,
+        RoutineSchedule newSchedule,
+        IEnumerable<MemberId>? targetMembers)
     {
-        if (string.IsNullOrWhiteSpace(newCadence))
-            throw new InvalidOperationException("Cadence cannot be empty.");
+        var members = targetMembers?.Distinct().ToList() ?? [];
+
+        ValidateScope(newScope, members);
 
         Name = newName;
-        Cadence = newCadence.Trim();
+        Scope = newScope;
+        Kind = newKind;
+        Color = newColor;
+        Schedule = newSchedule;
+
+        ReplaceTargetMembers(members);
 
         RaiseDomainEvent(new RoutineUpdated(
-            Guid.NewGuid(), Id.Value, newName.Value, newCadence.Trim(), DateTime.UtcNow));
+            Guid.NewGuid(),
+            Id.Value,
+            newName.Value,
+            newScope.ToString(),
+            newKind.ToString(),
+            newColor.Value,
+            DateTime.UtcNow));
     }
 
     public void Pause()
@@ -62,8 +121,11 @@ public sealed class Routine : AggregateRoot<RoutineId>
             throw new InvalidOperationException("Routine is already paused.");
 
         Status = RoutineStatus.Paused;
+
         RaiseDomainEvent(new RoutinePaused(
-            Guid.NewGuid(), Id.Value, DateTime.UtcNow));
+            Guid.NewGuid(),
+            Id.Value,
+            DateTime.UtcNow));
     }
 
     public void Resume()
@@ -72,12 +134,29 @@ public sealed class Routine : AggregateRoot<RoutineId>
             throw new InvalidOperationException("Routine is already active.");
 
         Status = RoutineStatus.Active;
+
         RaiseDomainEvent(new RoutineResumed(
-            Guid.NewGuid(), Id.Value, DateTime.UtcNow));
+            Guid.NewGuid(),
+            Id.Value,
+            DateTime.UtcNow));
+    }
+
+    public bool AppliesTo(MemberId memberId)
+        => Scope == RoutineScope.Household || _targetMembers.Any(x => x.MemberId == memberId);
+
+    private void ReplaceTargetMembers(IEnumerable<MemberId> members)
+    {
+        _targetMembers.Clear();
+        _targetMembers.AddRange(members.Select(RoutineTargetMember.Create));
+    }
+
+    private static void ValidateScope(RoutineScope scope, IReadOnlyCollection<MemberId> members)
+    {
+        if (scope == RoutineScope.Members && members.Count == 0)
+            throw new InvalidOperationException("Member-scoped routine must target at least one member.");
     }
 
 #pragma warning disable CS8618
-    // EF Core parameterless constructor
     private Routine() : base(default) { }
 #pragma warning restore CS8618
 }

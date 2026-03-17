@@ -3,7 +3,6 @@ using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Events;
 using DomusMind.Domain.Tasks.ValueObjects;
 using FluentAssertions;
-using TaskStatus = DomusMind.Domain.Tasks.TaskStatus;
 
 namespace DomusMind.Domain.Tests.Tasks;
 

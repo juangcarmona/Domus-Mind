@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../auth/AuthProvider";
 import type { ApiError } from "../../../api/authApi";
 import { HouseholdLogo } from "../../../components/HouseholdLogo";
@@ -7,6 +8,7 @@ interface Props { onSuccess?: () => void; onGoToRegister?: () => void; }
 
 export function LoginPage({ onSuccess, onGoToRegister }: Props) {
   const { login } = useAuth();
+  const { t } = useTranslation("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +19,7 @@ export function LoginPage({ onSuccess, onGoToRegister }: Props) {
     setError(null);
     setLoading(true);
     try { await login(email, password); onSuccess?.(); }
-    catch (err) { setError((err as ApiError).message ?? "Sign in failed."); }
+    catch (err) { setError((err as ApiError).message ?? t("signInFailed")); }
     finally { setLoading(false); }
   }
 
@@ -27,15 +29,15 @@ export function LoginPage({ onSuccess, onGoToRegister }: Props) {
         <div style={{ textAlign: "center", marginBottom: "1.25rem", color: "var(--primary)" }}>
           <HouseholdLogo size={40} />
         </div>
-        <h1 style={{ textAlign: "center", marginBottom: "1.25rem" }}>Sign in</h1>
+        <h1 style={{ textAlign: "center", marginBottom: "1.25rem" }}>{t("signIn")}</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t("email")}</label>
             <input id="email" className="form-control" type="email" value={email}
               onChange={(e) => setEmail(e.target.value)} required autoFocus />
           </div>
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t("password")}</label>
             <input id="password" className="form-control" type="password" value={password}
               onChange={(e) => setPassword(e.target.value)} required />
           </div>
@@ -47,8 +49,8 @@ export function LoginPage({ onSuccess, onGoToRegister }: Props) {
         </form>
         {onGoToRegister && (
           <p className="auth-footer">
-            No account?{" "}
-            <button onClick={onGoToRegister}>Create one</button>
+            {t("noAccount")}{" "}
+            <button onClick={onGoToRegister}>{t("createOne")}</button>
           </p>
         )}
       </div>

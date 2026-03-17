@@ -1,0 +1,15 @@
+export default {
+  save: "保存",
+  saving: "保存中…",
+  cancel: "キャンセル",
+  close: "閉じる",
+  add: "追加",
+  adding: "追加中…",
+  create: "作成",
+  creating: "作成中…",
+  back: "戻る",
+  failed: "エラーが発生しました。",
+  error: "エラーが発生しました。",
+  loading: "読み込み中…",
+  selectPerson: "— 担当者を選択 —",
+} as const;

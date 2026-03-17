@@ -7,7 +7,7 @@ import { AccountSettingsSection } from "../components/AccountSettingsSection";
 import { HouseholdSettingsSection } from "../components/HouseholdSettingsSection";
 
 export function SettingsPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("settings");
   const dispatch = useAppDispatch();
   const languagesStatus = useAppSelector((s) => s.languages.status);
   const [activeTab, setActiveTab] = useState<SettingsTab>("account");
@@ -20,7 +20,7 @@ export function SettingsPage() {
 
   return (
     <div className="page-wrap">
-      <h1 className="page-title">{t("settings.title")}</h1>
+      <h1 className="page-title">{t("title")}</h1>
       <SettingsTabs active={activeTab} onChange={setActiveTab} />
       <div role="tabpanel">
         {activeTab === "account" ? <AccountSettingsSection /> : <HouseholdSettingsSection />}

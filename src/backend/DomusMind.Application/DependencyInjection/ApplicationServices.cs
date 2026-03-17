@@ -42,6 +42,7 @@ using DomusMind.Application.Features.Tasks.CancelTask;
 using DomusMind.Application.Features.Tasks.CompleteTask;
 using DomusMind.Application.Features.Tasks.CreateRoutine;
 using DomusMind.Application.Features.Tasks.CreateTask;
+using DomusMind.Application.Features.Tasks.GetRoutinesByFamily;
 using DomusMind.Application.Features.Tasks.PauseRoutine;
 using DomusMind.Application.Features.Tasks.ReassignTask;
 using DomusMind.Application.Features.Tasks.RescheduleTask;
@@ -106,6 +107,7 @@ public static class ApplicationServices
         services.AddScoped<ICommandHandler<PauseRoutineCommand, PauseRoutineResponse>, PauseRoutineCommandHandler>();
         services.AddScoped<ICommandHandler<ResumeRoutineCommand, ResumeRoutineResponse>, ResumeRoutineCommandHandler>();
         services.AddScoped<ICommandHandler<ReassignTaskCommand, ReassignTaskResponse>, ReassignTaskCommandHandler>();
+        services.AddScoped<IQueryHandler<GetRoutinesByFamilyQuery, RoutineListResponse>, GetRoutinesByFamilyQueryHandler>();
 
         // Calendar coordination slices (Phase 6)
         services.AddScoped<IQueryHandler<DetectCalendarConflictsQuery, CalendarConflictsResponse>, DetectCalendarConflictsQueryHandler>();

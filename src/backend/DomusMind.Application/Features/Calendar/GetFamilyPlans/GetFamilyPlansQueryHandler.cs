@@ -53,14 +53,33 @@ public sealed class GetFamilyPlansQueryHandler
             events = events.Where(e => e.ParticipantIds.Contains(memberId)).ToList();
         }
 
+        var familyForNames = await _dbContext
+            .Set<Domain.Family.Family>()
+            .AsNoTracking()
+            .Include(f => f.Members)
+            .SingleOrDefaultAsync(f => f.Id == familyId, cancellationToken);
+
+        var memberNameMap = familyForNames?.Members
+            .ToDictionary(m => m.Id.Value, m => m.Name.Value)
+            ?? new Dictionary<Guid, string>();
+
         var plans = events
-            .Select(e => new FamilyPlanItem(
-                e.Id.Value,
-                e.Title.Value,
-                e.StartTime,
-                e.EndTime,
-                e.Status.ToString(),
-                e.ParticipantIds.Select(p => p.Value).ToList()))
+            .Select(e =>
+            {
+                var participants = e.ParticipantIds
+                    .Select(p => new ParticipantProjection(
+                        p.Value,
+                        memberNameMap.GetValueOrDefault(p.Value, "?")))
+                    .ToList();
+                return new FamilyPlanItem(
+                    e.Id.Value,
+                    e.Title.Value,
+                    e.StartTime,
+                    e.EndTime,
+                    e.Status.ToString(),
+                    e.ParticipantIds.Select(p => p.Value).ToList(),
+                    participants);
+            })
             .ToList();
 
         return new FamilyPlansResponse(plans);

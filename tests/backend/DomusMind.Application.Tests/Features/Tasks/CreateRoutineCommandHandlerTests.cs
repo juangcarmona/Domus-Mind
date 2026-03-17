@@ -1,6 +1,7 @@
 using DomusMind.Application.Features.Tasks;
 using DomusMind.Application.Features.Tasks.CreateRoutine;
 using DomusMind.Domain.Tasks;
+using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Infrastructure.Events;
 using DomusMind.Infrastructure.Persistence;
 using FluentAssertions;
@@ -25,6 +26,23 @@ public sealed class CreateRoutineCommandHandlerTests
             auth ?? new StubTasksAuthorizationService());
     }
 
+    private static CreateRoutineCommand WeeklyHouseholdCommand(
+        string name = "Morning Workout",
+        Guid? familyId = null)
+        => new(
+            name,
+            familyId ?? Guid.NewGuid(),
+            "Household",
+            "Scheduled",
+            "#3B82F6",
+            "Weekly",
+            new[] { DayOfWeek.Monday, DayOfWeek.Wednesday },
+            Array.Empty<int>(),
+            null,
+            new TimeOnly(7, 0),
+            Array.Empty<Guid>(),
+            Guid.NewGuid());
+
     [Fact]
     public async Task Handle_WithValidInput_ReturnsResponse()
     {
@@ -32,13 +50,17 @@ public sealed class CreateRoutineCommandHandlerTests
         var familyId = Guid.NewGuid();
 
         var result = await handler.Handle(
-            new CreateRoutineCommand("Morning Workout", familyId, "Daily at 07:00", Guid.NewGuid()),
+            WeeklyHouseholdCommand("Morning Workout", familyId),
             CancellationToken.None);
 
         result.RoutineId.Should().NotBeEmpty();
         result.FamilyId.Should().Be(familyId);
         result.Name.Should().Be("Morning Workout");
-        result.Cadence.Should().Be("Daily at 07:00");
+        result.Scope.Should().Be("Household");
+        result.Kind.Should().Be("Scheduled");
+        result.Color.Should().Be("#3B82F6");
+        result.Frequency.Should().Be("Weekly");
+        result.DaysOfWeek.Should().BeEquivalentTo(new[] { DayOfWeek.Monday, DayOfWeek.Wednesday });
         result.Status.Should().Be("Active");
     }
 
@@ -49,13 +71,16 @@ public sealed class CreateRoutineCommandHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new CreateRoutineCommand("Evening Walk", Guid.NewGuid(), "Daily at 18:30", Guid.NewGuid()),
+            WeeklyHouseholdCommand("Evening Walk"),
             CancellationToken.None);
 
         var saved = await db.Set<Routine>()
             .SingleOrDefaultAsync(r => r.Id == RoutineId.From(result.RoutineId));
         saved.Should().NotBeNull();
         saved!.Name.Value.Should().Be("Evening Walk");
+        saved.Scope.Should().Be(RoutineScope.Household);
+        saved.Kind.Should().Be(RoutineKind.Scheduled);
+        saved.Schedule.Frequency.Should().Be(RoutineFrequency.Weekly);
     }
 
     [Theory]
@@ -66,22 +91,32 @@ public sealed class CreateRoutineCommandHandlerTests
         var handler = BuildHandler();
 
         var act = () => handler.Handle(
-            new CreateRoutineCommand(name, Guid.NewGuid(), "Weekly", Guid.NewGuid()),
+            WeeklyHouseholdCommand(name),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<TasksException>()
             .Where(e => e.Code == TasksErrorCode.InvalidInput);
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public async Task Handle_EmptyCadence_ThrowsTasksException(string cadence)
+    [Fact]
+    public async Task Handle_MemberScopedWithNoTargetMembers_ThrowsTasksException()
     {
         var handler = BuildHandler();
 
         var act = () => handler.Handle(
-            new CreateRoutineCommand("Valid Name", Guid.NewGuid(), cadence, Guid.NewGuid()),
+            new CreateRoutineCommand(
+                "Chore Rotation",
+                Guid.NewGuid(),
+                "Members",
+                "Cue",
+                "#8B5CF6",
+                "Weekly",
+                new[] { DayOfWeek.Friday },
+                Array.Empty<int>(),
+                null,
+                null,
+                Array.Empty<Guid>(),
+                Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<TasksException>()
@@ -95,7 +130,7 @@ public sealed class CreateRoutineCommandHandlerTests
         var handler = BuildHandler(auth: auth);
 
         var act = () => handler.Handle(
-            new CreateRoutineCommand("Weekend Clean", Guid.NewGuid(), "Weekly", Guid.NewGuid()),
+            WeeklyHouseholdCommand("Weekend Clean"),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<TasksException>()

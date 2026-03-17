@@ -1,0 +1,17 @@
+export default {
+  title: "エリア",
+  add: "+ エリアを作成",
+  createHeading: "エリアを作成",
+  nameLabel: "エリア名",
+  namePlaceholder: "例: 財務、学校、メンテナンス",
+  loading: "エリアを読み込んでいます…",
+  empty: "まだエリアがありません。",
+  emptyHint: "エリアは家庭内で誰が何を担当するかを定義します。",
+  owner: "担当者",
+  noOwner: "担当者未設定",
+  secondary: "サブ",
+  assign: "担当者を割り当てる",
+  transfer: "担当者を移譲する",
+  responsible: "担当者",
+  createError: "エリアを作成できませんでした",
+} as const;

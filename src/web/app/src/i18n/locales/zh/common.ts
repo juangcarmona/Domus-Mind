@@ -1,0 +1,15 @@
+export default {
+  save: "保存",
+  saving: "保存中…",
+  cancel: "取消",
+  close: "关闭",
+  add: "添加",
+  adding: "添加中…",
+  create: "创建",
+  creating: "创建中…",
+  back: "返回",
+  failed: "出现错误。",
+  error: "出现错误。",
+  loading: "加载中…",
+  selectPerson: "— 选择人员 —",
+} as const;

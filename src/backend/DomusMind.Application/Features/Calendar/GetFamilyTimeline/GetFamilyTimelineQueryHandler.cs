@@ -50,14 +50,33 @@ public sealed class GetFamilyTimelineQueryHandler
             .OrderBy(e => e.StartTime)
             .ToListAsync(cancellationToken);
 
+        var familyForNames = await _dbContext
+            .Set<Domain.Family.Family>()
+            .AsNoTracking()
+            .Include(f => f.Members)
+            .SingleOrDefaultAsync(f => f.Id == familyId, cancellationToken);
+
+        var memberNameMap = familyForNames?.Members
+            .ToDictionary(m => m.Id.Value, m => m.Name.Value)
+            ?? new Dictionary<Guid, string>();
+
         var items = events
-            .Select(e => new FamilyTimelineEventItem(
-                e.Id.Value,
-                e.Title.Value,
-                e.StartTime,
-                e.EndTime,
-                e.Status.ToString(),
-                e.ParticipantIds.Select(p => p.Value).ToList()))
+            .Select(e =>
+            {
+                var participants = e.ParticipantIds
+                    .Select(p => new ParticipantProjection(
+                        p.Value,
+                        memberNameMap.GetValueOrDefault(p.Value, "?")))
+                    .ToList();
+                return new FamilyTimelineEventItem(
+                    e.Id.Value,
+                    e.Title.Value,
+                    e.StartTime,
+                    e.EndTime,
+                    e.Status.ToString(),
+                    e.ParticipantIds.Select(p => p.Value).ToList(),
+                    participants);
+            })
             .ToList();
 
         return new FamilyTimelineResponse(items);

@@ -7,7 +7,9 @@ export function PeoplePage() {
   const dispatch = useAppDispatch();
   const { family, members } = useAppSelector((s) => s.household);
   const familyId = family?.familyId;
-  const { t } = useTranslation();
+  const { t } = useTranslation("people");
+  const { t: tOnboarding } = useTranslation("onboarding");
+  const { t: tCommon } = useTranslation("common");
 
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
@@ -33,7 +35,7 @@ export function PeoplePage() {
       setRole("Adult");
       setShowForm(false);
     } else {
-      setError(result.payload as string ?? t("common.error"));
+      setError(result.payload as string ?? tCommon("error"));
     }
   }
 
@@ -42,22 +44,22 @@ export function PeoplePage() {
   return (
     <div>
       <div className="page-header">
-        <h1>{t("people.title")}</h1>
+        <h1>{t("title")}</h1>
         <button
           className="btn"
           onClick={() => { setShowForm(true); setError(null); }}
         >
-          + {t("people.add")}
+          + {t("add")}
         </button>
       </div>
 
       {showForm && (
         <div className="card">
-          <h2>{t("people.add")}</h2>
+          <h2>{t("add")}</h2>
           <form onSubmit={handleAdd}>
             <div className="inline-form" style={{ marginBottom: "0.75rem" }}>
               <div className="form-group" style={{ flex: 2 }}>
-                <label htmlFor="person-name">{t("people.form.name")}</label>
+                <label htmlFor="person-name">{t("form.name")}</label>
                 <input
                   id="person-name"
                   className="form-control"
@@ -69,30 +71,30 @@ export function PeoplePage() {
                 />
               </div>
               <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="person-role">{t("people.form.role")}</label>
+                <label htmlFor="person-role">{t("form.role")}</label>
                 <select
                   id="person-role"
                   className="form-control"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                 >
-                  <option value="Adult">{t("onboarding.people.roles.Adult")}</option>
-                  <option value="Child">{t("onboarding.people.roles.Child")}</option>
-                  <option value="Teen">{t("onboarding.people.roles.Teen")}</option>
+                  <option value="Adult">{tOnboarding("people.roles.Adult")}</option>
+                  <option value="Child">{tOnboarding("people.roles.Child")}</option>
+                  <option value="Teen">{tOnboarding("people.roles.Teen")}</option>
                 </select>
               </div>
             </div>
             {error && <p className="error-msg">{error}</p>}
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <button type="submit" className="btn" disabled={submitting}>
-                {submitting ? t("common.saving") : t("people.form.save")}
+                {submitting ? tCommon("saving") : t("form.save")}
               </button>
               <button
                 type="button"
                 className="btn btn-ghost"
                 onClick={() => setShowForm(false)}
               >
-                {t("people.form.cancel")}
+                {t("form.cancel")}
               </button>
             </div>
           </form>
@@ -101,7 +103,7 @@ export function PeoplePage() {
 
       {members.length === 0 ? (
         <div className="empty-state">
-          <p>{t("people.title")}</p>
+          <p>{t("title")}</p>
         </div>
       ) : (
         <div className="item-list">
@@ -121,7 +123,7 @@ export function PeoplePage() {
               <div>
                 <div style={{ fontWeight: 600 }}>{m.name}</div>
                 <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-                  {t(`onboarding.people.roles.${m.role}` as never, m.role)}
+                  {tOnboarding(`people.roles.${m.role}` as never, m.role)}
                 </div>
               </div>
             </div>

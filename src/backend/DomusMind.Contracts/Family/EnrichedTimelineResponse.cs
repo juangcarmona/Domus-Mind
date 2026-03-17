@@ -1,3 +1,5 @@
+using DomusMind.Contracts.Calendar;
+
 namespace DomusMind.Contracts.Family;
 
 public sealed record EnrichedTimelineEntry(
@@ -10,7 +12,8 @@ public sealed record EnrichedTimelineEntry(
     string Group,
     bool IsOverdue,
     bool IsUnassigned,
-    Guid? AssigneeId);
+    Guid? AssigneeId,
+    IReadOnlyCollection<ParticipantProjection>? Participants);
 
 public sealed record TimelineGroup(
     string GroupKey,

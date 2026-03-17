@@ -5,7 +5,8 @@ import { updateHouseholdSettings } from "../../../store/householdSlice";
 import { FIRST_DAY_OPTIONS, DATE_FORMAT_OPTIONS } from "../types";
 
 export function HouseholdSettingsSection() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("settings");
+  const { t: tCommon } = useTranslation("common");
   const dispatch = useAppDispatch();
   const family = useAppSelector((s) => s.household.family);
   const allLanguages = useAppSelector((s) => s.languages.items);
@@ -41,18 +42,18 @@ export function HouseholdSettingsSection() {
     setSaving(false);
 
     if (updateHouseholdSettings.fulfilled.match(result)) {
-      setSuccess(t("settings.household.saved"));
+      setSuccess(t("household.saved"));
     } else {
-      setError((result.payload as string) ?? t("common.failed"));
+      setError((result.payload as string) ?? tCommon("failed"));
     }
   }
 
   return (
     <section className="settings-section">
-      <h2 className="settings-section-title">{t("settings.household.title")}</h2>
+      <h2 className="settings-section-title">{t("household.title")}</h2>
       <form onSubmit={handleSave} className="settings-form">
         <div className="form-group">
-          <label htmlFor="household-name">{t("settings.household.name")}</label>
+          <label htmlFor="household-name">{t("household.name")}</label>
           <input
             id="household-name"
             type="text"
@@ -65,7 +66,7 @@ export function HouseholdSettingsSection() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="household-lang">{t("settings.household.language")}</label>
+          <label htmlFor="household-lang">{t("household.language")}</label>
           <select
             id="household-lang"
             className="form-control"
@@ -82,7 +83,7 @@ export function HouseholdSettingsSection() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="first-day">{t("settings.household.firstDayOfWeek")}</label>
+          <label htmlFor="first-day">{t("household.firstDayOfWeek")}</label>
           <select
             id="first-day"
             className="form-control"
@@ -92,14 +93,14 @@ export function HouseholdSettingsSection() {
             <option value="">—</option>
             {FIRST_DAY_OPTIONS.map((d) => (
               <option key={d} value={d}>
-                {t(`settings.household.days.${d}`)}
+                {t(`household.days.${d}` as never)}
               </option>
             ))}
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="date-format">{t("settings.household.dateFormat")}</label>
+          <label htmlFor="date-format">{t("household.dateFormat")}</label>
           <select
             id="date-format"
             className="form-control"
@@ -119,7 +120,7 @@ export function HouseholdSettingsSection() {
         {success && <p className="success-msg">{success}</p>}
 
         <button type="submit" className="btn" disabled={saving || !name.trim()}>
-          {saving ? t("settings.household.saving") : t("settings.household.save")}
+          {saving ? t("household.saving") : t("household.save")}
         </button>
       </form>
     </section>

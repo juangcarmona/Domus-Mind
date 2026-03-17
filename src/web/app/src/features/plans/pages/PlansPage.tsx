@@ -3,20 +3,18 @@ import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { fetchPlans, scheduleEvent, cancelEvent } from "../../../store/plansSlice";
 import { ConfirmDialog } from "../../../components/ConfirmDialog";
+import { useDateFormatter } from "../../../hooks/useDateFormatter";
 import type { FamilyTimelineEventItem } from "../../../api/domusmindApi";
-
-function formatDateTime(iso: string, locale: string): string {
-  const d = new Date(iso);
-  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(d);
-}
 
 export function PlansPage() {
   const dispatch = useAppDispatch();
   const { family } = useAppSelector((s) => s.household);
   const { items, status, error } = useAppSelector((s) => s.plans);
   const familyId = family?.familyId;
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation("plans");
+  const { t: tCommon } = useTranslation("common");
   const locale = i18n.language;
+  const { formatDateTime } = useDateFormatter(locale);
 
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
@@ -70,21 +68,21 @@ export function PlansPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>{t("plans.title")}</h1>
+        <h1>{t("title")}</h1>
         <button
           className="btn"
           onClick={() => { setShowForm(true); setFormError(null); }}
         >
-          + {t("plans.add")}
+          + {t("add")}
         </button>
       </div>
 
       {showForm && (
         <div className="card">
-          <h2>{t("plans.add")}</h2>
+          <h2>{t("add")}</h2>
           <form onSubmit={handleSchedule}>
             <div className="form-group">
-              <label htmlFor="plan-title">{t("plans.form.title")}</label>
+              <label htmlFor="plan-title">{t("form.title")}</label>
               <input
                 id="plan-title"
                 className="form-control"
@@ -97,7 +95,7 @@ export function PlansPage() {
             </div>
             <div className="inline-form">
               <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="plan-start">{t("plans.form.start")}</label>
+                <label htmlFor="plan-start">{t("form.start")}</label>
                 <input
                   id="plan-start"
                   className="form-control"
@@ -108,7 +106,7 @@ export function PlansPage() {
                 />
               </div>
               <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="plan-end">{t("plans.form.end")}</label>
+                <label htmlFor="plan-end">{t("form.end")}</label>
                 <input
                   id="plan-end"
                   className="form-control"
@@ -119,7 +117,7 @@ export function PlansPage() {
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="plan-desc">{t("plans.form.description")}</label>
+              <label htmlFor="plan-desc">{t("form.description")}</label>
               <input
                 id="plan-desc"
                 className="form-control"
@@ -131,14 +129,14 @@ export function PlansPage() {
             {formError && <p className="error-msg">{formError}</p>}
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <button type="submit" className="btn" disabled={submitting}>
-                {submitting ? t("common.saving") : t("plans.form.save")}
+                {submitting ? tCommon("saving") : t("form.save")}
               </button>
               <button
                 type="button"
                 className="btn btn-ghost"
                 onClick={() => setShowForm(false)}
               >
-                {t("plans.form.cancel")}
+                {t("form.cancel")}
               </button>
             </div>
           </form>
@@ -146,13 +144,13 @@ export function PlansPage() {
       )}
 
       {status === "loading" && (
-        <div className="loading-wrap">{t("common.loading")}</div>
+        <div className="loading-wrap">{tCommon("loading")}</div>
       )}
       {status === "error" && <p className="error-msg">{error}</p>}
 
       {status === "success" && active.length === 0 && (
         <div className="empty-state">
-          <p>{t("plans.noPlans")}</p>
+          <p>{t("noPlans")}</p>
         </div>
       )}
 
@@ -163,14 +161,10 @@ export function PlansPage() {
               <div className="item-card-body">
                 <div className="item-card-title">{plan.title}</div>
                 <div className="item-card-subtitle">
-                  {formatDateTime(plan.startTime, locale)}
-                  {plan.endTime && ` → ${formatDateTime(plan.endTime, locale)}`}
-                  {plan.participantMemberIds.length > 0 && (
-                    <span>
-                      {" "}
-                      · {plan.participantMemberIds.length} participant
-                      {plan.participantMemberIds.length > 1 ? "s" : ""}
-                    </span>
+                  {formatDateTime(plan.startTime)}
+                  {plan.endTime && ` → ${formatDateTime(plan.endTime)}`}
+                  {plan.participants?.length > 0 && (
+                    <span> · {plan.participants.map((p) => p.displayName).join(", ")}</span>
                   )}
                 </div>
               </div>
@@ -185,7 +179,7 @@ export function PlansPage() {
                     className="btn btn-ghost btn-sm"
                     onClick={() => setCancelTarget(plan)}
                   >
-                    {t("plans.cancelEvent")}
+                    {t("cancelEvent")}
                   </button>
                 )}
               </div>
@@ -196,9 +190,9 @@ export function PlansPage() {
 
       <ConfirmDialog
         isOpen={!!cancelTarget}
-        title={t("plans.cancelEvent")}
-        message={t("plans.confirmCancel")}
-        confirmLabel={t("plans.yes")}
+        title={t("cancelEvent")}
+        message={t("confirmCancel")}
+        confirmLabel={t("yes")}
         onConfirm={handleCancel}
         onCancel={() => setCancelTarget(null)}
       />

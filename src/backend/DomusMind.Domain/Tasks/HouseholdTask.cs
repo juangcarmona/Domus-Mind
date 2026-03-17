@@ -1,5 +1,6 @@
 using DomusMind.Domain.Abstractions;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.Events;
 using DomusMind.Domain.Tasks.ValueObjects;
 
@@ -11,7 +12,7 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
     public TaskTitle Title { get; private set; }
     public string? Description { get; private set; }
     public DateTime? DueDate { get; private set; }
-    public TaskStatus Status { get; private set; }
+    public HouseholdTaskStatus Status { get; private set; }
     public MemberId? AssigneeId { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
@@ -28,7 +29,7 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
         Title = title;
         Description = description;
         DueDate = dueDate;
-        Status = TaskStatus.Pending;
+        Status = HouseholdTaskStatus.Pending;
         CreatedAtUtc = createdAtUtc;
     }
 
@@ -48,10 +49,10 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
 
     public void Assign(MemberId assigneeId)
     {
-        if (Status == TaskStatus.Completed)
+        if (Status == HouseholdTaskStatus.Completed)
             throw new InvalidOperationException("Cannot assign a completed task.");
 
-        if (Status == TaskStatus.Cancelled)
+        if (Status == HouseholdTaskStatus.Cancelled)
             throw new InvalidOperationException("Cannot assign a cancelled task.");
 
         AssigneeId = assigneeId;
@@ -61,36 +62,36 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
 
     public void Complete()
     {
-        if (Status == TaskStatus.Completed)
+        if (Status == HouseholdTaskStatus.Completed)
             throw new InvalidOperationException("Task is already completed.");
 
-        if (Status == TaskStatus.Cancelled)
+        if (Status == HouseholdTaskStatus.Cancelled)
             throw new InvalidOperationException("Cannot complete a cancelled task.");
 
-        Status = TaskStatus.Completed;
+        Status = HouseholdTaskStatus.Completed;
         RaiseDomainEvent(new TaskCompleted(
             Guid.NewGuid(), Id.Value, DateTime.UtcNow));
     }
 
     public void Cancel()
     {
-        if (Status == TaskStatus.Cancelled)
+        if (Status == HouseholdTaskStatus.Cancelled)
             throw new InvalidOperationException("Task is already cancelled.");
 
-        if (Status == TaskStatus.Completed)
+        if (Status == HouseholdTaskStatus.Completed)
             throw new InvalidOperationException("Cannot cancel a completed task.");
 
-        Status = TaskStatus.Cancelled;
+        Status = HouseholdTaskStatus.Cancelled;
         RaiseDomainEvent(new TaskCancelled(
             Guid.NewGuid(), Id.Value, DateTime.UtcNow));
     }
 
     public void Reassign(MemberId newAssigneeId)
     {
-        if (Status == TaskStatus.Completed)
+        if (Status == HouseholdTaskStatus.Completed)
             throw new InvalidOperationException("Cannot reassign a completed task.");
 
-        if (Status == TaskStatus.Cancelled)
+        if (Status == HouseholdTaskStatus.Cancelled)
             throw new InvalidOperationException("Cannot reassign a cancelled task.");
 
         var previousAssigneeId = AssigneeId;
@@ -101,10 +102,10 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
 
     public void Reschedule(DateTime? newDueDate)
     {
-        if (Status == TaskStatus.Completed)
+        if (Status == HouseholdTaskStatus.Completed)
             throw new InvalidOperationException("Cannot reschedule a completed task.");
 
-        if (Status == TaskStatus.Cancelled)
+        if (Status == HouseholdTaskStatus.Cancelled)
             throw new InvalidOperationException("Cannot reschedule a cancelled task.");
 
         DueDate = newDueDate;

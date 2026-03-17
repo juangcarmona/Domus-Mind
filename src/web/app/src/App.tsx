@@ -26,7 +26,7 @@ import { WeekPage } from "./features/week/pages/WeekPage";
 function AuthedApp() {
   const dispatch = useAppDispatch();
   const { bootstrapStatus, family } = useAppSelector((s) => s.household);
-  const { i18n } = useTranslation();
+  const { i18n } = useTranslation("common");
 
   useEffect(() => {
     dispatch(bootstrapHousehold());

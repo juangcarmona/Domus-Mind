@@ -5,6 +5,7 @@ using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Family.ValueObjects;
 using DomusMind.Domain.Tasks;
+using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
 using DomusMind.Infrastructure.Persistence;
 using FluentAssertions;
@@ -119,12 +120,23 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
+
         var routine = Routine.Create(
-            RoutineId.New(), familyId,
-            RoutineName.Create("Evening Clean"), "Daily", DateTime.UtcNow);
+            RoutineId.New(),
+            familyId,
+            RoutineName.Create("Evening Clean"),
+            RoutineScope.Household,
+            RoutineKind.Cue,
+            RoutineColor.From("#7C3AED"),
+            RoutineSchedule.Weekly(new[] { DayOfWeek.Monday }),
+            Array.Empty<MemberId>(),
+            DateTime.UtcNow);
+
         routine.ClearDomainEvents();
+
         db.Set<Routine>().Add(routine);
         await db.SaveChangesAsync();
+
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(NoFilter(familyId.Value), CancellationToken.None);
@@ -142,19 +154,32 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
         var familyId = FamilyId.New();
 
         var task = HouseholdTask.Create(
-            TaskId.New(), familyId,
-            TaskTitle.Create("A Task"), null,
-            DateTime.UtcNow.AddDays(5), DateTime.UtcNow);
+            TaskId.New(),
+            familyId,
+            TaskTitle.Create("A Task"),
+            null,
+            DateTime.UtcNow.AddDays(5),
+            DateTime.UtcNow);
+
         task.ClearDomainEvents();
 
         var routine = Routine.Create(
-            RoutineId.New(), familyId,
-            RoutineName.Create("A Routine"), "Weekly", DateTime.UtcNow);
+            RoutineId.New(),
+            familyId,
+            RoutineName.Create("A Routine"),
+            RoutineScope.Household,
+            RoutineKind.Cue,
+            RoutineColor.From("#0EA5E9"),
+            RoutineSchedule.Weekly(new[] { DayOfWeek.Friday }),
+            Array.Empty<MemberId>(),
+            DateTime.UtcNow);
+
         routine.ClearDomainEvents();
 
         db.Set<HouseholdTask>().Add(task);
         db.Set<Routine>().Add(routine);
         await db.SaveChangesAsync();
+
         var handler = BuildHandler(db);
 
         var query = new GetEnrichedTimelineQuery(

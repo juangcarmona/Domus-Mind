@@ -7,18 +7,19 @@ import { UserAvatar } from "./UserAvatar";
 import { useAppSelector } from "../store/hooks";
 
 const NAV_ITEMS = [
-  { to: "/timeline", labelKey: "nav.timeline" },
-  { to: "/week",     labelKey: "nav.week"     },
-  { to: "/tasks",    labelKey: "nav.chores"   },
-  { to: "/plans",    labelKey: "nav.plans"    },
-  { to: "/people",   labelKey: "nav.people"   },
-  { to: "/areas",    labelKey: "nav.areas"    },
+  { to: "/timeline", labelKey: "timeline" },
+  { to: "/week",     labelKey: "week"     },
+  { to: "/tasks",    labelKey: "chores"   },
+  { to: "/plans",    labelKey: "plans"    },
+  { to: "/people",   labelKey: "people"   },
+  { to: "/areas",    labelKey: "areas"    },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { logout, user } = useAuth();
   const nav = useNavigate();
-  const { t } = useTranslation();
+  const { t: tNav } = useTranslation("nav");
+  const { t: tCommon } = useTranslation("common");
   const family = useAppSelector((s) => s.household.family);
 
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
@@ -80,7 +81,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {NAV_ITEMS.map(({ to, labelKey }) => (
               <li key={to}>
                 <NavLink to={to} className={({ isActive }) => isActive ? "active" : undefined}>
-                  {t(labelKey)}
+                  {tNav(labelKey as never)}
                 </NavLink>
               </li>
             ))}
@@ -98,7 +99,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 role="menuitem"
                 onClick={() => setAvatarMenuOpen(false)}
               >
-                {t("nav.settings")}
+                {tNav("settings")}
               </NavLink>
               <div className="avatar-menu-divider" role="separator" />
               <button
@@ -107,7 +108,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 onClick={handleLogout}
                 type="button"
               >
-                {t("nav.signOut")}
+                {tNav("signOut")}
               </button>
             </div>
           )}
@@ -130,7 +131,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </NavLink>
               <button
                 className="drawer-close"
-                aria-label={t("common.close")}
+                aria-label={tCommon("close")}
                 onClick={() => setDrawerOpen(false)}
                 type="button"
               >
@@ -145,7 +146,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     className={({ isActive }) => isActive ? "active" : undefined}
                     onClick={() => setDrawerOpen(false)}
                   >
-                    {t(labelKey)}
+                    {tNav(labelKey as never)}
                   </NavLink>
                 </li>
               ))}
@@ -155,7 +156,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   className={({ isActive }) => isActive ? "active" : undefined}
                   onClick={() => setDrawerOpen(false)}
                 >
-                  {t("nav.settings")}
+                  {tNav("settings")}
                 </NavLink>
               </li>
             </ul>

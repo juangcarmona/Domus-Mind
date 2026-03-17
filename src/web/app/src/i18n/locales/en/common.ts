@@ -1,0 +1,15 @@
+export default {
+  save: "Save",
+  saving: "Saving…",
+  cancel: "Cancel",
+  close: "Close",
+  add: "Add",
+  adding: "Adding…",
+  create: "Create",
+  creating: "Creating…",
+  back: "Back",
+  failed: "Something went wrong.",
+  error: "Something went wrong.",
+  loading: "Loading…",
+  selectPerson: "— select person —",
+} as const;

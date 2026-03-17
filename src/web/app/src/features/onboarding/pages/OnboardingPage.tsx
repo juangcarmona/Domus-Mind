@@ -20,7 +20,9 @@ const STEP_COUNT = 6;
 export function OnboardingPage() {
   const dispatch = useAppDispatch();
   const nav = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation("onboarding");
+  const { t: tLang } = useTranslation("lang");
+  const { t: tCommon } = useTranslation("common");
   const household = useAppSelector((s) => s.household);
   const languages = useAppSelector((s) => s.languages);
 
@@ -76,7 +78,7 @@ export function OnboardingPage() {
     if (createFamily.fulfilled.match(result)) {
       setStep(3);
     } else {
-      setCreateError((result.payload as string) ?? t("common.error"));
+      setCreateError((result.payload as string) ?? tCommon("error"));
     }
   }
 
@@ -84,7 +86,7 @@ export function OnboardingPage() {
     const name = memberName.trim();
     if (!name) return;
     if (memberType !== "adult" && memberIsManager) {
-      setMemberError(t("onboarding.members.managerAdultOnly"));
+      setMemberError(t("members.managerAdultOnly"));
       return;
     }
     setMembers((prev) => [
@@ -122,7 +124,7 @@ export function OnboardingPage() {
     if (completeOnboarding.fulfilled.match(result)) {
       setStep(5);
     } else {
-      setMembersError((result.payload as string) ?? t("common.error"));
+      setMembersError((result.payload as string) ?? tCommon("error"));
     }
   }
 
@@ -155,8 +157,8 @@ export function OnboardingPage() {
         type="button"
         className="onboarding-back"
         onClick={handleBack}
-        aria-label={t("common.back")}
-        title={t("common.back")}
+        aria-label={tCommon("back")}
+        title={tCommon("back")}
       >
                   ❮
               
@@ -174,11 +176,11 @@ export function OnboardingPage() {
             <HouseholdLogo size={48} />
           </div>
           {renderDots()}
-          <h1>{t("lang.select")}</h1>
-          <p>{t("lang.subtitle")}</p>
+          <h1>{tLang("select")}</h1>
+          <p>{tLang("subtitle")}</p>
 
           {languages.status === "loading" && (
-            <p className="muted-text">{t("common.loading")}</p>
+            <p className="muted-text">{tCommon("loading")}</p>
           )}
 
           {languages.items.length > 0 && (
@@ -259,7 +261,7 @@ export function OnboardingPage() {
             }}
             onClick={handleLangContinue}
           >
-            {t("lang.continue")}
+            {tLang("continue")}
           </button>
         </div>
       </div>
@@ -276,14 +278,14 @@ export function OnboardingPage() {
             <HouseholdLogo size={48} />
           </div>
           {renderDots()}
-          <h1>{t("onboarding.welcome.title")}</h1>
-          <p>{t("onboarding.welcome.subtitle")}</p>
+          <h1>{t("welcome.title")}</h1>
+          <p>{t("welcome.subtitle")}</p>
           <button
             className="btn"
             style={{ width: "100%", justifyContent: "center" }}
             onClick={() => setStep(2)}
           >
-            {t("onboarding.welcome.start")}
+            {t("welcome.start")}
           </button>
         </div>
       </div>
@@ -300,15 +302,15 @@ export function OnboardingPage() {
             <HouseholdLogo size={48} />
           </div>
           {renderDots()}
-          <p className="onboarding-step-label">{t("onboarding.name.step")}</p>
-          <h1>{t("onboarding.name.title")}</h1>
-          <p>{t("onboarding.name.subtitle")}</p>
+          <p className="onboarding-step-label">{t("name.step")}</p>
+          <h1>{t("name.title")}</h1>
+          <p>{t("name.subtitle")}</p>
           <form onSubmit={handleCreateHousehold}>
             <div className="form-group">
               <input
                 className="form-control"
                 type="text"
-                placeholder={t("onboarding.name.placeholder")}
+                placeholder={t("name.placeholder")}
                 value={householdName}
                 onChange={(e) => setHouseholdName(e.target.value)}
                 required
@@ -323,8 +325,8 @@ export function OnboardingPage() {
               disabled={submitting || !householdName.trim()}
             >
               {submitting
-                ? t("onboarding.name.creating")
-                : t("onboarding.name.create")}
+                ? t("name.creating")
+                : t("name.create")}
             </button>
           </form>
         </div>
@@ -342,14 +344,14 @@ export function OnboardingPage() {
             <HouseholdLogo size={48} />
           </div>
           {renderDots()}
-          <p className="onboarding-step-label">{t("onboarding.self.step")}</p>
-          <h1>{t("onboarding.self.title")}</h1>
-          <p>{t("onboarding.self.subtitle")}</p>
+          <p className="onboarding-step-label">{t("self.step")}</p>
+          <h1>{t("self.title")}</h1>
+          <p>{t("self.subtitle")}</p>
           <div className="form-group">
             <input
               className="form-control"
               type="text"
-              placeholder={t("onboarding.self.namePlaceholder")}
+              placeholder={t("self.namePlaceholder")}
               value={selfName}
               onChange={(e) => setSelfName(e.target.value)}
               autoFocus
@@ -357,7 +359,7 @@ export function OnboardingPage() {
           </div>
           <div className="form-group">
             <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.875rem" }}>
-              {t("onboarding.self.birthdateLabel")}
+              {t("self.birthdateLabel")}
             </label>
             <input
               className="form-control"
@@ -372,7 +374,7 @@ export function OnboardingPage() {
             disabled={!selfName.trim()}
             onClick={() => setStep(4)}
           >
-            {t("onboarding.self.next")}
+            {t("self.next")}
           </button>
         </div>
       </div>
@@ -389,9 +391,9 @@ export function OnboardingPage() {
             <HouseholdLogo size={48} />
           </div>
           {renderDots()}
-          <p className="onboarding-step-label">{t("onboarding.members.step")}</p>
-          <h1>{t("onboarding.members.title")}</h1>
-          <p>{t("onboarding.members.subtitle")}</p>
+          <p className="onboarding-step-label">{t("members.step")}</p>
+          <h1>{t("members.title")}</h1>
+          <p>{t("members.subtitle")}</p>
 
           {members.length > 0 && (
             <div className="people-chips">
@@ -399,8 +401,8 @@ export function OnboardingPage() {
                 <span key={i} className="people-chip">
                   {m.name}
                   <span style={{ fontSize: "0.75rem", opacity: 0.7, marginLeft: "0.1rem" }}>
-                    ({t(`onboarding.members.types.${m.type}` as never, m.type)}
-                    {m.manager ? ` · ${t("onboarding.members.managerLabel")}` : ""})
+                    ({t(`members.types.${m.type}` as never, m.type)}
+                    {m.manager ? ` · ${t("members.managerLabel")}` : ""})
                   </span>
                   <button
                     type="button"
@@ -419,7 +421,7 @@ export function OnboardingPage() {
               <input
                 className="form-control"
                 type="text"
-                placeholder={t("onboarding.members.namePlaceholder")}
+                placeholder={t("members.namePlaceholder")}
                 value={memberName}
                 onChange={(e) => setMemberName(e.target.value)}
                 onKeyDown={(e) => {
@@ -439,9 +441,9 @@ export function OnboardingPage() {
                   if (e.target.value !== "adult") setMemberIsManager(false);
                 }}
               >
-                <option value="adult">{t("onboarding.members.types.adult")}</option>
-                <option value="child">{t("onboarding.members.types.child")}</option>
-                <option value="pet">{t("onboarding.members.types.pet")}</option>
+                <option value="adult">{t("members.types.adult")}</option>
+                <option value="child">{t("members.types.child")}</option>
+                <option value="pet">{t("members.types.pet")}</option>
               </select>
             </div>
             <button
@@ -450,7 +452,7 @@ export function OnboardingPage() {
               onClick={handleAddMember}
               disabled={!memberName.trim()}
             >
-              {t("onboarding.members.add")}
+              {t("members.add")}
             </button>
           </div>
 
@@ -470,7 +472,7 @@ export function OnboardingPage() {
                 onChange={(e) => setMemberIsManager(e.target.checked)}
               />
               <label htmlFor="member-manager" style={{ fontSize: "0.875rem" }}>
-                {t("onboarding.members.managerLabel")}
+                {t("members.managerLabel")}
               </label>
             </div>
           )}
@@ -486,10 +488,10 @@ export function OnboardingPage() {
               disabled={submitting}
             >
               {submitting
-                ? t("onboarding.members.completing")
+                ? t("members.completing")
                 : members.length > 0
-                  ? t("onboarding.members.complete")
-                  : t("onboarding.members.skip")}
+                  ? t("members.complete")
+                  : t("members.skip")}
             </button>
           </div>
         </div>
@@ -505,16 +507,16 @@ export function OnboardingPage() {
           <HouseholdLogo size={48} />
         </div>
         {renderDots()}
-        <h1>{t("onboarding.done.title")}</h1>
+        <h1>{t("done.title")}</h1>
         <p>
-          {household.family?.name} {t("onboarding.done.subtitle")}
+          {household.family?.name} {t("done.subtitle")}
         </p>
         <button
           className="btn"
           style={{ width: "100%", justifyContent: "center" }}
           onClick={handleFinish}
         >
-          {t("onboarding.done.open")}
+          {t("done.open")}
         </button>
       </div>
     </div>

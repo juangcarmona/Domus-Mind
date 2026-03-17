@@ -4,10 +4,10 @@ This document describes how bounded contexts collaborate inside DomusMind.
 
 Core contexts in V1:
 
-- Family
-- Responsibility
-- Calendar
-- Tasks
+* Family
+* Responsibility
+* Calendar
+* Tasks 
 
 ---
 
@@ -25,15 +25,26 @@ Tasks defines operational work referencing members, responsibilities, and events
 
 # Dependency Graph
 
+The dependency structure is **not a linear chain**.
+
+Responsibility and Calendar both depend on Family, while Tasks depends on Family and may react to both Calendar and Responsibility.
+
 ```
-Family
-  ↓
-Responsibility
-  ↓
-Calendar
-  ↓
-Tasks
+        Family
+        /   \
+       ↓     ↓
+Responsibility   Calendar
+        \       /
+         ↓     ↓
+           Tasks
 ```
+
+Dependency interpretation:
+
+* **Family** provides identity and relationship structure
+* **Responsibility** depends on Family for ownership assignments
+* **Calendar** depends on Family for participant identity
+* **Tasks** depends on Family for assignees and may react to Calendar and Responsibility events
 
 ---
 
@@ -49,6 +60,8 @@ Communication rules:
 * accountability flows from Responsibility
 * time flows from Calendar
 * execution happens in Tasks
+
+Contexts react to events rather than forming direct structural dependencies.
 
 ---
 
@@ -151,15 +164,17 @@ Contexts communicate through events and identifiers.
 
 No context should require direct access to another context's internal model.
 
+Dependencies represent **identity and information flow**, not permission to modify state.
+
 ---
 
 # Summary
 
 The DomusMind core model is built around four cooperating contexts:
 
-Family → identity
-Responsibility → accountability
-Calendar → time
-Tasks → execution
+* **Family** → identity
+* **Responsibility** → accountability
+* **Calendar** → time
+* **Tasks** → execution
 
-Together they form the operational backbone of the household system.
+Responsibility and Calendar both depend on Family, while Tasks integrates signals from Family, Calendar, and Responsibility to coordinate household work.

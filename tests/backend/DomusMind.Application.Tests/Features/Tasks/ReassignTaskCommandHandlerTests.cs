@@ -8,7 +8,6 @@ using DomusMind.Infrastructure.Events;
 using DomusMind.Infrastructure.Persistence;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using TaskStatus = DomusMind.Domain.Tasks.TaskStatus;
 
 namespace DomusMind.Application.Tests.Features.Tasks;
 

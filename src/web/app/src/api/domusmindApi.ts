@@ -83,6 +83,11 @@ export interface AddMemberResponse {
   joinedAtUtc: string;
 }
 
+export interface ParticipantProjection {
+  memberId: string;
+  displayName: string;
+}
+
 export interface EnrichedTimelineEntry {
   entryId: string;
   entryType: "CalendarEvent" | "Task" | "Routine";
@@ -94,6 +99,7 @@ export interface EnrichedTimelineEntry {
   isOverdue: boolean;
   isUnassigned: boolean;
   assigneeId: string | null;
+  participants: ParticipantProjection[] | null;
 }
 
 export interface TimelineGroup {
@@ -131,6 +137,55 @@ export interface FamilyTimelineEventItem {
   endTime: string | null;
   status: string;
   participantMemberIds: string[];
+  participants: ParticipantProjection[];
+}
+
+export interface RoutineListItem {
+  routineId: string;
+  familyId: string;
+  name: string;
+  scope: string;
+  kind: string;
+  color: string;
+  frequency: string;
+  daysOfWeek: number[];
+  daysOfMonth: number[];
+  monthOfYear: number | null;
+  time: string | null;
+  targetMemberIds: string[];
+  status: string;
+  createdAtUtc: string;
+}
+
+export interface RoutineListResponse {
+  routines: RoutineListItem[];
+}
+
+export interface CreateRoutineRequest {
+  name: string;
+  familyId: string;
+  scope: string;
+  kind: string;
+  color: string;
+  frequency: string;
+  daysOfWeek: number[];
+  daysOfMonth: number[];
+  monthOfYear?: number | null;
+  time?: string | null;
+  targetMemberIds: string[];
+}
+
+export interface UpdateRoutineRequest {
+  name: string;
+  scope: string;
+  kind: string;
+  color: string;
+  frequency: string;
+  daysOfWeek: number[];
+  daysOfMonth: number[];
+  monthOfYear?: number | null;
+  time?: string | null;
+  targetMemberIds: string[];
 }
 
 export interface FamilyTimelineResponse {
@@ -399,4 +454,26 @@ export const domusmindApi = {
       `/api/families/${familyId}/weekly-grid${params}`,
     );
   },
+
+  /* Routines */
+  getRoutines: (familyId: string) =>
+    request<RoutineListResponse>(`/api/routines?familyId=${familyId}`),
+
+  createRoutine: (body: CreateRoutineRequest) =>
+    request<RoutineListItem>("/api/routines", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  updateRoutine: (routineId: string, body: UpdateRoutineRequest) =>
+    request<RoutineListItem>(`/api/routines/${routineId}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+
+  pauseRoutine: (routineId: string) =>
+    request<unknown>(`/api/routines/${routineId}/pause`, { method: "POST" }),
+
+  resumeRoutine: (routineId: string) =>
+    request<unknown>(`/api/routines/${routineId}/resume`, { method: "POST" }),
 };

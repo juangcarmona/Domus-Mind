@@ -6,15 +6,15 @@ The Family context defines the **household unit** and its internal human structu
 
 It is responsible for representing:
 
-- the family itself
-- its members
-- dependents
-- pets
-- relationships between members
+* the family itself
+* its members
+* dependents
+* pets
+* relationships between members
 
 This context establishes the **core identity boundary** of DomusMind.
 
-Most other contexts reference Family, but do not own or modify its internal structure.
+Most other contexts reference Family entities, but do not own or modify their structure. 
 
 ---
 
@@ -22,14 +22,14 @@ Most other contexts reference Family, but do not own or modify its internal stru
 
 The Family context is responsible for:
 
-- creating a family
-- adding and removing members
-- registering dependents
-- registering pets
-- defining relationships between members
-- maintaining the household identity boundary
+* creating a family
+* adding and removing members
+* registering dependents
+* registering pets
+* defining relationships between members
+* maintaining the household identity boundary
 
-It is the source of truth for **who belongs to a family**.
+It is the source of truth for **who belongs to a family and how they relate to one another**.
 
 ---
 
@@ -41,12 +41,14 @@ The `Family` aggregate is the primary aggregate root of this context.
 
 It owns:
 
-- members
-- dependents
-- pets
-- relationships
+* members
+* dependents
+* pets
+* relationships
 
 All modifications to family structure must occur through `Family`.
+
+Other contexts may reference family entities but cannot change their structure.
 
 ---
 
@@ -54,37 +56,100 @@ All modifications to family structure must occur through `Family`.
 
 ## Member
 
-Represents a person belonging to the family.
+Represents a person belonging to the household.
+
+Members are typically **independent participants** in household coordination.
 
 Examples:
 
-- adult
-- child
-- caregiver
+* adult
+* teenager
+* caregiver
+
+Members may:
+
+* participate in plans (Calendar)
+* receive task assignments (Tasks)
+* hold responsibility ownership (Responsibilities)
+
+---
 
 ## Dependent
 
-Represents a person or dependent entity requiring care within the family.
+Represents a household entity **requiring care or supervision** from members.
 
-Examples:
+Dependents may include:
 
-- child
-- elderly relative
+* children
+* elderly relatives
+* other care recipients
+
+Dependents may appear as **participants in plans** but typically do not receive task assignments.
+
+Example:
+
+```
+Child participates in school event
+Parent is responsible for preparation tasks
+```
+
+Dependents may have relationships linking them to responsible members.
+
+Example:
+
+```
+Child depends on Parent
+```
+
+These dependency relationships are defined **inside the Family context**.
+
+---
 
 ## Pet
 
-Represents an animal dependent belonging to the family.
+Represents an animal belonging to the household.
 
-## Relationship
-
-Represents a relationship between two members of the same family.
+Pets are considered a special form of dependent.
 
 Examples:
 
-- parent-child
-- spouse
-- sibling
-- caregiver-dependent
+* dog
+* cat
+* rabbit
+
+Pets may:
+
+* appear as participants in events
+* generate operational tasks (feeding, vet visits)
+
+Pet identity is still owned by the Family context.
+
+---
+
+## Relationship
+
+Represents a **structural relationship between two family entities**.
+
+Examples:
+
+* parent → child
+* spouse ↔ spouse
+* sibling ↔ sibling
+* caregiver → dependent
+
+Relationships express **dependency and responsibility structures inside the household**.
+
+Example:
+
+```
+Child depends on Parent
+```
+
+These semantics are important for later operational rules, such as:
+
+* determining responsible adults
+* validating task assignment
+* interpreting participant responsibility
 
 ---
 
@@ -92,50 +157,68 @@ Examples:
 
 Suggested value objects:
 
-- `FamilyId`
-- `MemberId`
-- `DependentId`
-- `PetId`
-- `RelationshipId`
-- `MemberName`
-- `PetName`
-- `RelationshipType`
-- `MemberRole`
+* `FamilyId`
+* `MemberId`
+* `DependentId`
+* `PetId`
+* `RelationshipId`
+* `MemberName`
+* `PetName`
+* `RelationshipType`
+* `MemberRole`
 
-The exact value object set may evolve, but identifiers must remain strongly typed.
+Identifiers must remain **strongly typed**.
 
 ---
 
 # Invariants
 
-The Family aggregate must enforce the following invariants:
+The Family aggregate must enforce the following invariants.
 
 ## Identity and Membership
 
-- a family must have a stable `FamilyId`
-- a member belongs to exactly one family
-- member IDs must be unique within the family
-- dependent IDs must be unique within the family
-- pet IDs must be unique within the family
+* a family must have a stable `FamilyId`
+* a member belongs to exactly one family
+* member IDs must be unique within the family
+* dependent IDs must be unique within the family
+* pet IDs must be unique within the family
 
 ## Structural Integrity
 
-- relationships must reference existing members of the same family
-- a relationship cannot reference unknown members
-- a pet must belong to exactly one family
-- a dependent must belong to exactly one family
+* relationships must reference existing members of the same family
+* a relationship cannot reference unknown entities
+* a pet must belong to exactly one family
+* a dependent must belong to exactly one family
+
+## Dependency Semantics
+
+The Family context defines **dependency relationships** between entities.
+
+Typical patterns:
+
+```
+Parent → Child
+Caregiver → Dependent
+Owner → Pet
+```
+
+These relationships determine **who is responsible for dependents**.
+
+Only the Family context defines these semantics.
+
+Other contexts must not infer or modify dependency structures.
 
 ## Valid State Rules
 
-- a removed member cannot participate in new relationships
-- duplicate active members are not allowed
-- duplicate active pets are not allowed
-- duplicate relationships of the same type between the same active members should not be allowed unless explicitly modeled
+* a removed member cannot participate in new relationships
+* duplicate active members are not allowed
+* duplicate active pets are not allowed
+* duplicate relationships of the same type between the same entities should not exist unless explicitly modeled
 
 ## Ownership Boundary
 
-- only the Family context may change family membership structure
-- other contexts must reference family members by ID only
+* only the Family context may change membership or relationships
+* other contexts must reference family entities **by ID only**
 
 ---
 
@@ -143,21 +226,21 @@ The Family aggregate must enforce the following invariants:
 
 Core commands owned by this context:
 
-- `CreateFamily`
-- `AddMember`
-- `RemoveMember`
-- `AddDependent`
-- `RemoveDependent`
-- `AddPet`
-- `RemovePet`
-- `AssignRelationship`
-- `RemoveRelationship`
+* `CreateFamily`
+* `AddMember`
+* `RemoveMember`
+* `AddDependent`
+* `RemoveDependent`
+* `AddPet`
+* `RemovePet`
+* `AssignRelationship`
+* `RemoveRelationship`
 
 Suggested future commands:
 
-- `RenameFamily`
-- `UpdateMemberProfile`
-- `ArchiveFamily`
+* `RenameFamily`
+* `UpdateMemberProfile`
+* `ArchiveFamily`
 
 ---
 
@@ -165,17 +248,17 @@ Suggested future commands:
 
 Core queries supported by this context:
 
-- `GetFamily`
-- `GetFamilyMembers`
-- `GetFamilyDependents`
-- `GetFamilyPets`
-- `GetFamilyRelationships`
-- `GetMemberById`
+* `GetFamily`
+* `GetFamilyMembers`
+* `GetFamilyDependents`
+* `GetFamilyPets`
+* `GetFamilyRelationships`
+* `GetMemberById`
 
 Suggested future queries:
 
-- `GetFamilyStructure`
-- `GetHouseholdRoster`
+* `GetFamilyStructure`
+* `GetHouseholdRoster`
 
 ---
 
@@ -183,15 +266,15 @@ Suggested future queries:
 
 The Family context emits:
 
-- `FamilyCreated`
-- `MemberAdded`
-- `MemberRemoved`
-- `DependentAdded`
-- `DependentRemoved`
-- `PetAdded`
-- `PetRemoved`
-- `RelationshipAssigned`
-- `RelationshipRemoved`
+* `FamilyCreated`
+* `MemberAdded`
+* `MemberRemoved`
+* `DependentAdded`
+* `DependentRemoved`
+* `PetAdded`
+* `PetRemoved`
+* `RelationshipAssigned`
+* `RelationshipRemoved`
 
 These events are facts and must be emitted only after successful state change.
 
@@ -203,56 +286,20 @@ The Family context should consume very few events.
 
 In principle, it should not depend on downstream operational contexts such as:
 
-- Tasks
-- Calendar
-- Responsibilities
-- Food
-- Inventory
+* Tasks
+* Calendar
+* Responsibilities
+* Food
+* Inventory
 
 Possible future consumed events:
 
-- identity import events from external integrations
-- household bootstrap events during migration/import flows
+* identity import events from external integrations
+* household bootstrap events during migration/import flows
 
 Default rule:
 
 **Family is upstream. It emits more than it consumes.**
-
----
-
-# Read Models
-
-Useful read models for this context:
-
-## Family Summary
-
-Contains:
-
-- family ID
-- family name
-- total members
-- total dependents
-- total pets
-
-## Family Roster
-
-Contains:
-
-- all active members
-- all dependents
-- all pets
-- roles
-- statuses
-
-## Family Relationship Graph
-
-Contains:
-
-- members
-- relationship edges
-- relationship types
-
-This read model is especially useful for UI and future AI-assisted reasoning.
 
 ---
 
@@ -266,31 +313,105 @@ Responsibilities cannot create, modify, or remove members.
 
 Integration rule:
 
-- Responsibilities references `MemberId`
-- Family owns membership validity
+* Responsibilities references `MemberId`
+* Family owns membership validity
+
+---
 
 ## Calendar Context
 
-Events may include participants that are members, dependents, or pets.
+Events may include participants that are:
 
-Calendar does not own those entities.
+* members
+* dependents
+* pets
+
+Calendar does not own these entities.
 
 Integration rule:
 
-- Calendar references participant IDs
-- Family owns participant identity
+* Calendar references participant IDs
+* Family owns participant identity and relationships
+
+---
 
 ## Tasks Context
 
 Tasks may be assigned to members defined in Family.
 
-Tasks does not own member lifecycle.
+Tasks cannot change member structure.
 
-## Pets Context
+Example:
 
-If Pets becomes a separate bounded context in the future, Family should still own **pet membership in the household**, while Pets may own operational pet care details.
+```
+Parent assigned task: prepare school bag
+Child participates in school event
+```
 
-For V1, pets remain inside Family.
+Assignment and participation rules depend on relationships defined by Family.
+
+---
+
+## Identity Ownership Rule
+
+Other contexts may reference Family entities as:
+
+* **participants** (Calendar)
+* **assignees** (Tasks)
+* **responsibility owners** (Responsibilities)
+
+However:
+
+**Family alone owns membership and relationship semantics.**
+
+This ensures consistent rules for cases such as:
+
+```
+Child participates in event
+Parent receives preparation task
+```
+
+Dependency structures remain authoritative in the Family context.
+
+---
+
+# Read Models
+
+Useful read models for this context.
+
+## Family Summary
+
+Contains:
+
+* family ID
+* family name
+* total members
+* total dependents
+* total pets
+
+---
+
+## Family Roster
+
+Contains:
+
+* all active members
+* all dependents
+* all pets
+* roles
+* statuses
+
+---
+
+## Family Relationship Graph
+
+Contains:
+
+* members
+* relationship edges
+* relationship types
+
+This read model is useful for UI and potential AI-assisted reasoning.
 
 ---
 
@@ -298,19 +419,19 @@ For V1, pets remain inside Family.
 
 Within this context:
 
-- `Family` means the household unit
-- `Member` means a person belonging to the household
-- `Dependent` means a non-independent household entity requiring care
-- `Pet` is a dependent animal belonging to the household
-- `Relationship` means a declared structural relationship between members
+* `Family` means the household unit
+* `Member` means an independent household person
+* `Dependent` means an entity requiring care from members
+* `Pet` means an animal dependent belonging to the household
+* `Relationship` means a structural dependency or kinship link
 
-Do not use ambiguous synonyms such as:
+Avoid ambiguous synonyms such as:
 
-- user
-- account member
-- profile
-- contact
-- participant
+* user
+* account member
+* profile
+* contact
+* participant
 
 unless they belong to another explicit context.
 
@@ -320,14 +441,14 @@ unless they belong to another explicit context.
 
 Initial slices mapped to this context:
 
-- `create-family`
-- `add-member`
-- `remove-member`
-- `add-dependent`
-- `add-pet`
-- `assign-relationship`
+* `create-family`
+* `add-member`
+* `remove-member`
+* `add-dependent`
+* `add-pet`
+* `assign-relationship`
 
-These slices should operate only on the `Family` aggregate.
+These slices operate only on the `Family` aggregate.
 
 ---
 
@@ -335,18 +456,20 @@ These slices should operate only on the `Family` aggregate.
 
 Rules:
 
-- one command modifies one `Family` aggregate
-- all structural changes occur inside the `Family` transaction boundary
-- downstream reactions occur through domain events
-- no cross-aggregate write inside the same command
+* one command modifies one `Family` aggregate
+* all structural changes occur inside the `Family` transaction boundary
+* downstream reactions occur through domain events
+* no cross-aggregate write inside the same command
 
 Example:
 
-`AddMember`
-→ updates `Family`
-→ emits `MemberAdded`
+```
+AddMember
+→ updates Family
+→ emits MemberAdded
+```
 
-Then other modules may react asynchronously or after commit.
+Other modules may react after commit.
 
 ---
 
@@ -354,20 +477,20 @@ Then other modules may react asynchronously or after commit.
 
 The Family context is intentionally small and strict.
 
-It should model **identity and household structure**, not operational behavior.
+It models **identity and household structure**, not operational behavior.
 
 It must not absorb logic that belongs to:
 
-- scheduling
-- task execution
-- responsibility assignment
-- reminders
-- food planning
-- administration
+* scheduling
+* task execution
+* responsibility assignment
+* reminders
+* food planning
+* administration
 
-If the question is “who belongs to this household?”, the answer belongs here.
+If the question is **“who belongs to this household?”**, the answer belongs here.
 
-If the question is “what must happen for this person?”, the answer belongs elsewhere.
+If the question is **“what must happen for this person?”**, the answer belongs elsewhere.
 
 ---
 
@@ -377,10 +500,10 @@ The Family context defines the **identity backbone of DomusMind**.
 
 It owns:
 
-- household identity
-- members
-- dependents
-- pets
-- relationships
+* household identity
+* members
+* dependents
+* pets
+* relationships
 
-It is upstream from most other contexts and should remain stable, strict, and small.
+Other contexts may reference these entities as participants or assignees, but **only Family defines and maintains their relationships and dependency semantics**.

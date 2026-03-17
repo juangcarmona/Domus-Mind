@@ -63,6 +63,7 @@ export const scheduleEvent = createAsyncThunk(
         endTime: res.endTime,
         status: res.status,
         participantMemberIds: [],
+        participants: [],
       } as FamilyTimelineEventItem;
     } catch (err: unknown) {
       return rejectWithValue(

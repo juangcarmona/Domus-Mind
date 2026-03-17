@@ -1071,21 +1071,24 @@ p {
   background: color-mix(in srgb, var(--muted) 12%, transparent);
   color: var(--muted);
 }
-.wg-item-type {
-  font-weight: 700;
-  font-size: 0.68rem;
-  flex-shrink: 0;
+.wg-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0.2rem 0.45rem;
+  border-left: 3px solid var(--wg-item-accent, transparent);
+  border-radius: 0.4rem;
 }
+.wg-item-type,
 .wg-item-title {
-  flex: 1;
-  white-space: nowrap;
+  min-width: 0;
+}
+
+.wg-item-title {
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.wg-item-time {
-  font-size: 0.68rem;
-  opacity: 0.8;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* ---- Week nav ---- */

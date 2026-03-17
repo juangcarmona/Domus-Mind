@@ -5,7 +5,7 @@ interface WeekHeaderProps {
 }
 
 export function WeekHeader({ days }: WeekHeaderProps) {
-  const { i18n } = useTranslation();
+  const { i18n } = useTranslation("week");
 
   return (
     <div className="wg-header-row">

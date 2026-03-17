@@ -1,0 +1,17 @@
+export default {
+  title: "Bereiche",
+  add: "+ Neuer Bereich",
+  createHeading: "Bereich erstellen",
+  nameLabel: "Bereichsname",
+  namePlaceholder: "z.B. Finanzen, Schule, Wartung",
+  loading: "Bereiche werden geladen…",
+  empty: "Noch keine Bereiche.",
+  emptyHint: "Bereiche definieren, wer für was im Haushalt verantwortlich ist.",
+  owner: "Eigentümer",
+  noOwner: "Kein Eigentümer zugewiesen",
+  secondary: "sekundär",
+  assign: "Eigentümer zuweisen",
+  transfer: "Eigentümerschaft übertragen",
+  responsible: "Verantwortliche Person",
+  createError: "Bereich konnte nicht erstellt werden",
+} as const;

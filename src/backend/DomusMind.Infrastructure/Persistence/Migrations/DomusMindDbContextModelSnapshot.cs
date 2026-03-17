@@ -239,33 +239,33 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("Cadence")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("cadence");
-
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("FamilyId")
                         .HasColumnType("uuid")
                         .HasColumnName("family_id");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Status")
+                    b.Property<string>("Kind")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
-                        .HasColumnName("status");
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("scope");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FamilyId");
+
+                    b.HasIndex("FamilyId", "Status");
 
                     b.ToTable("routines", (string)null);
                 });
@@ -459,6 +459,118 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                         .HasForeignKey("FamilyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.Tasks.Routine", b =>
+                {
+                    b.OwnsOne("DomusMind.Domain.Tasks.ValueObjects.RoutineColor", "Color", b1 =>
+                        {
+                            b1.Property<Guid>("RoutineId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(7)
+                                .HasColumnType("character varying(7)")
+                                .HasColumnName("color");
+
+                            b1.HasKey("RoutineId");
+
+                            b1.ToTable("routines");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RoutineId");
+                        });
+
+                    b.OwnsOne("DomusMind.Domain.Tasks.ValueObjects.RoutineName", "Name", b1 =>
+                        {
+                            b1.Property<Guid>("RoutineId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("name");
+
+                            b1.HasKey("RoutineId");
+
+                            b1.ToTable("routines");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RoutineId");
+                        });
+
+                    b.OwnsOne("DomusMind.Domain.Tasks.ValueObjects.RoutineSchedule", "Schedule", b1 =>
+                        {
+                            b1.Property<Guid>("RoutineId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("DaysOfMonth")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("schedule_days_of_month");
+
+                            b1.Property<string>("DaysOfWeek")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("schedule_days_of_week");
+
+                            b1.Property<string>("Frequency")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("character varying(20)")
+                                .HasColumnName("schedule_frequency");
+
+                            b1.Property<int?>("MonthOfYear")
+                                .HasColumnType("integer")
+                                .HasColumnName("schedule_month_of_year");
+
+                            b1.Property<TimeOnly?>("Time")
+                                .HasColumnType("time without time zone")
+                                .HasColumnName("schedule_time");
+
+                            b1.HasKey("RoutineId");
+
+                            b1.ToTable("routines");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RoutineId");
+                        });
+
+                    b.OwnsMany("DomusMind.Domain.Tasks.RoutineTargetMember", "_targetMembers", b1 =>
+                        {
+                            b1.Property<Guid>("routine_id")
+                                .HasColumnType("uuid")
+                                .HasColumnName("routine_id");
+
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("uuid")
+                                .HasColumnName("member_id");
+
+                            b1.HasKey("routine_id", "Id");
+
+                            b1.HasIndex("Id");
+
+                            b1.HasIndex("routine_id", "Id")
+                                .IsUnique();
+
+                            b1.ToTable("routine_target_members", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("routine_id");
+                        });
+
+                    b.Navigation("Color")
+                        .IsRequired();
+
+                    b.Navigation("Name")
+                        .IsRequired();
+
+                    b.Navigation("Schedule")
+                        .IsRequired();
+
+                    b.Navigation("_targetMembers");
                 });
 
             modelBuilder.Entity("DomusMind.Domain.Family.Family", b =>

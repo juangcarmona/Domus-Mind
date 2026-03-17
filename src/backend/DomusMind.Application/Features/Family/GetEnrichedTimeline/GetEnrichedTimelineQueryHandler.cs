@@ -1,10 +1,12 @@
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Tasks;
+using DomusMind.Domain.Tasks.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace DomusMind.Application.Features.Family.GetEnrichedTimeline;
@@ -52,18 +54,38 @@ public sealed class GetEnrichedTimelineQueryHandler
             .Where(r => r.FamilyId == familyId)
             .ToListAsync(cancellationToken);
 
+        // Resolve member names for participant projection
+        var familyForNames = await _dbContext
+            .Set<Domain.Family.Family>()
+            .AsNoTracking()
+            .Include(f => f.Members)
+            .SingleOrDefaultAsync(f => f.Id == familyId, cancellationToken);
+
+        var memberNameMap = familyForNames?.Members
+            .ToDictionary(m => m.Id.Value, m => m.Name.Value)
+            ?? new Dictionary<Guid, string>();
+
         // --- Build raw entries ---
-        var calendarEntries = calendarEvents.Select(e => new EnrichedTimelineEntry(
-            e.Id.Value,
-            "CalendarEvent",
-            e.Title.Value,
-            e.StartTime,
-            e.Status.ToString(),
-            ComputePriority(e.StartTime, today),
-            ComputeGroup(e.StartTime, today),
-            e.StartTime.Date < today,
-            false,
-            null));
+        var calendarEntries = calendarEvents.Select(e =>
+        {
+            var participants = e.ParticipantIds
+                .Select(p => new ParticipantProjection(
+                    p.Value,
+                    memberNameMap.GetValueOrDefault(p.Value, "?")))
+                .ToList();
+            return new EnrichedTimelineEntry(
+                e.Id.Value,
+                "CalendarEvent",
+                e.Title.Value,
+                e.StartTime,
+                e.Status.ToString(),
+                ComputePriority(e.StartTime, today),
+                ComputeGroup(e.StartTime, today),
+                e.StartTime.Date < today,
+                false,
+                null,
+                participants.Count > 0 ? participants : null);
+        });
 
         var taskEntries = tasks.Select(t => new EnrichedTimelineEntry(
             t.Id.Value,
@@ -73,9 +95,10 @@ public sealed class GetEnrichedTimelineQueryHandler
             t.Status.ToString(),
             ComputePriority(t.DueDate, today),
             ComputeGroup(t.DueDate, today),
-            t.DueDate.HasValue && t.DueDate.Value.Date < today && t.Status == Domain.Tasks.TaskStatus.Pending,
+            t.DueDate.HasValue && t.DueDate.Value.Date < today && t.Status == HouseholdTaskStatus.Pending,
             !t.AssigneeId.HasValue,
-            t.AssigneeId?.Value));
+            t.AssigneeId?.Value,
+            null));
 
         var routineEntries = routines.Select(r => new EnrichedTimelineEntry(
             r.Id.Value,
@@ -87,6 +110,7 @@ public sealed class GetEnrichedTimelineQueryHandler
             "Undated",
             false,
             false,
+            null,
             null));
 
         var allEntries = calendarEntries.Concat(taskEntries).Concat(routineEntries).ToList();

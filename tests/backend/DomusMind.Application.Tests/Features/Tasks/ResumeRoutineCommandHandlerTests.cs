@@ -2,6 +2,7 @@ using DomusMind.Application.Features.Tasks;
 using DomusMind.Application.Features.Tasks.ResumeRoutine;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Tasks;
+using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
 using DomusMind.Infrastructure.Events;
 using DomusMind.Infrastructure.Persistence;
@@ -22,16 +23,35 @@ public sealed class ResumeRoutineCommandHandlerTests
         StubTasksAuthorizationService? auth = null)
         => new(db, new EventLogWriter(db), auth ?? new StubTasksAuthorizationService());
 
+    private static Routine CreateRoutine(
+        string name = "Homework Review",
+        RoutineScope scope = RoutineScope.Household,
+        RoutineKind kind = RoutineKind.Cue)
+    {
+        return Routine.Create(
+            RoutineId.New(),
+            FamilyId.New(),
+            RoutineName.Create(name),
+            scope,
+            kind,
+            RoutineColor.From("#8B5CF6"),
+            RoutineSchedule.Weekly(
+                new[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
+                new TimeOnly(17, 0)),
+            targetMembers: Array.Empty<MemberId>(),
+            createdAtUtc: DateTime.UtcNow);
+    }
+
     private static async Task<(DomusMindDbContext Db, Routine Routine)> BuildWithPausedRoutineAsync()
     {
         var db = CreateDb();
-        var routine = Routine.Create(
-            RoutineId.New(), FamilyId.New(),
-            RoutineName.Create("Homework Review"), "Every weekday at 17:00", DateTime.UtcNow);
+        var routine = CreateRoutine();
         routine.Pause();
+
         db.Set<Routine>().Add(routine);
         await db.SaveChangesAsync();
         routine.ClearDomainEvents();
+
         return (db, routine);
     }
 
@@ -61,6 +81,8 @@ public sealed class ResumeRoutineCommandHandlerTests
 
         var saved = await db.Set<Routine>()
             .SingleOrDefaultAsync(r => r.Id == routine.Id);
+
+        saved.Should().NotBeNull();
         saved!.Status.Should().Be(RoutineStatus.Active);
     }
 
@@ -96,14 +118,13 @@ public sealed class ResumeRoutineCommandHandlerTests
     [Fact]
     public async Task Handle_AlreadyActive_ThrowsTasksException()
     {
-        // Create an active (not paused) routine
         var db = CreateDb();
-        var routine = Routine.Create(
-            RoutineId.New(), FamilyId.New(),
-            RoutineName.Create("Active Routine"), "Daily", DateTime.UtcNow);
+        var routine = CreateRoutine(name: "Active Routine");
+
         db.Set<Routine>().Add(routine);
         await db.SaveChangesAsync();
         routine.ClearDomainEvents();
+
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(

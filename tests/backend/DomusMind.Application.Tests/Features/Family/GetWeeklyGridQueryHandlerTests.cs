@@ -5,6 +5,7 @@ using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Family.ValueObjects;
 using DomusMind.Domain.Tasks;
+using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
 using DomusMind.Infrastructure.Persistence;
 using FluentAssertions;
@@ -65,7 +66,17 @@ public sealed class GetWeeklyGridQueryHandlerTests
     }
 
     private static Routine MakeRoutine(FamilyId familyId, string name)
-        => Routine.Create(RoutineId.New(), familyId, RoutineName.Create(name), "Daily", DateTime.UtcNow);
+        => Routine.Create(
+            RoutineId.New(), familyId,
+            RoutineName.Create(name),
+            RoutineScope.Household,
+            RoutineKind.Cue,
+            RoutineColor.From("#3B82F6"),
+            RoutineSchedule.Weekly(
+                new[] { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday,
+                         DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday }),
+            null,
+            DateTime.UtcNow);
 
     // ---- Authorization / guarding ----
 
@@ -256,11 +267,12 @@ public sealed class GetWeeklyGridQueryHandlerTests
     // ---- Routines ----
 
     [Fact]
-    public async Task Handle_ActiveRoutine_AppearsInRoutinesCollection()
+    public async Task Handle_ActiveRoutine_AppearsInCells()
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId));
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Alice")));
         db.Set<Routine>().Add(MakeRoutine(familyId, "Morning Walk"));
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
@@ -269,7 +281,8 @@ public sealed class GetWeeklyGridQueryHandlerTests
             new GetWeeklyGridQuery(familyId.Value, DateTime.UtcNow, Guid.NewGuid()),
             CancellationToken.None);
 
-        result.Routines.Should().ContainSingle(r => r.Name == "Morning Walk");
+        result.SharedCells.SelectMany(c => c.Routines).Should().Contain(r => r.Name == "Morning Walk");
+        result.Members.First().Cells.SelectMany(c => c.Routines).Should().BeEmpty();
     }
 
     // ---- Response shape ----
@@ -312,5 +325,142 @@ public sealed class GetWeeklyGridQueryHandlerTests
             c.Events.Should().BeEmpty();
             c.Tasks.Should().BeEmpty();
         });
+    }
+
+    // ---- Routine per-cell projection ----
+
+    [Fact]
+    public async Task Handle_ActiveRoutineOnSpecificDay_AppearsOnlyInMatchingCells()
+    {
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Alice")));
+
+        // Member-scoped routine that runs only on Wednesday
+        var wednesdayRoutine = Routine.Create(
+            RoutineId.New(), familyId,
+            RoutineName.Create("Wednesday Task"),
+            RoutineScope.Members,
+            RoutineKind.Scheduled,
+            RoutineColor.From("#FF0000"),
+            RoutineSchedule.Weekly(new[] { DayOfWeek.Wednesday }),
+            new[] { memberId },
+            DateTime.UtcNow);
+        db.Set<Routine>().Add(wednesdayRoutine);
+        await db.SaveChangesAsync();
+        var handler = BuildHandler(db);
+
+        // Week of Monday 16 March 2026 — Wednesday is 18 March
+        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var cells = result.Members.First().Cells;
+        var wednesdayCell = cells.Single(c => c.Date.DayOfWeek == DayOfWeek.Wednesday);
+        wednesdayCell.Routines.Should().ContainSingle(r => r.Name == "Wednesday Task");
+
+        // All other days must be empty
+        cells.Where(c => c.Date.DayOfWeek != DayOfWeek.Wednesday)
+             .Should().AllSatisfy(c => c.Routines.Should().BeEmpty());
+    }
+
+    [Fact]
+    public async Task Handle_NoRoutines_AllCellsHaveEmptyRoutinesCollection()
+    {
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Bob")));
+        await db.SaveChangesAsync();
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, DateTime.UtcNow, Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.Members.First().Cells.Should().AllSatisfy(c =>
+            c.Routines.Should().NotBeNull().And.BeEmpty());
+    }
+
+    [Fact]
+    public async Task Handle_RoutineContractFields_AllPresentInProjection()
+    {
+        // Regression: old types had cadence/status; new contract exposes kind/color/frequency/time/scope
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Carol")));
+
+        var routine = Routine.Create(
+            RoutineId.New(), familyId,
+            RoutineName.Create("Morning Walk"),
+            RoutineScope.Household,
+            RoutineKind.Scheduled,
+            RoutineColor.From("#3B82F6"),
+            RoutineSchedule.Weekly(new[] { DayOfWeek.Monday }),
+            null,
+            DateTime.UtcNow);
+        db.Set<Routine>().Add(routine);
+        await db.SaveChangesAsync();
+        var handler = BuildHandler(db);
+
+        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc); // Monday
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        // Household routine goes to SharedCells, not member cells
+        var mondaySharedCell = result.SharedCells.Single(c => c.Date.DayOfWeek == DayOfWeek.Monday);
+        var item = mondaySharedCell.Routines.Should().ContainSingle().Which;
+
+        item.Name.Should().Be("Morning Walk");
+        item.Kind.Should().NotBeNullOrEmpty();    // e.g. "Scheduled"
+        item.Color.Should().Be("#3B82F6");
+        item.Frequency.Should().NotBeNullOrEmpty(); // e.g. "Weekly"
+        item.Scope.Should().NotBeNullOrEmpty();     // e.g. "Household"
+    }
+
+    [Fact]
+    public async Task Handle_HouseholdRoutine_AppearsInSharedCellsAndNotInMemberCells()
+    {
+        // Regression: household routines must not be duplicated into every member row.
+        // They must appear once in SharedCells and not at all in member cells.
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var member1 = MemberId.New();
+        var member2 = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (member1, "Alice"), (member2, "Bob")));
+
+        var householdRoutine = Routine.Create(
+            RoutineId.New(), familyId,
+            RoutineName.Create("Carmen"),
+            RoutineScope.Household,
+            RoutineKind.Scheduled,
+            RoutineColor.From("#FF8800"),
+            RoutineSchedule.Weekly(new[] { DayOfWeek.Monday, DayOfWeek.Thursday },
+                new TimeOnly(8, 30)),
+            null,
+            DateTime.UtcNow);
+        db.Set<Routine>().Add(householdRoutine);
+        await db.SaveChangesAsync();
+        var handler = BuildHandler(db);
+
+        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc); // Week: Mon 16 – Sun 22 March
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        // SharedCells must have Carmen on Monday and Thursday
+        result.SharedCells.Single(c => c.Date.DayOfWeek == DayOfWeek.Monday)
+              .Routines.Should().ContainSingle(r => r.Name == "Carmen");
+        result.SharedCells.Single(c => c.Date.DayOfWeek == DayOfWeek.Thursday)
+              .Routines.Should().ContainSingle(r => r.Name == "Carmen");
+
+        // No member cell may contain Carmen
+        result.Members.Should().AllSatisfy(m =>
+            m.Cells.Should().AllSatisfy(c =>
+                c.Routines.Should().NotContain(r => r.Name == "Carmen")));
     }
 }
