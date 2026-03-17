@@ -104,6 +104,9 @@ public sealed class GetWeeklyGridQueryHandler
             .ToList();
 
         var memberRows = family.Members
+            .OrderBy(m => m.BirthDate.HasValue ? 0 : 1)
+            .ThenBy(m => m.BirthDate)
+            .ThenBy(m => m.Name.Value)
             .Select(member =>
             {
                 var cells = days

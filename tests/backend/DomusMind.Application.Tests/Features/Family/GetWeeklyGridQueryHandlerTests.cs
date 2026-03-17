@@ -463,4 +463,75 @@ public sealed class GetWeeklyGridQueryHandlerTests
             m.Cells.Should().AllSatisfy(c =>
                 c.Routines.Should().NotContain(r => r.Name == "Carmen")));
     }
+
+    // ---- Member ordering ----
+
+    [Fact]
+    public async Task Handle_MembersWithBirthDates_OrderedByBirthDateAscendingThenByName()
+    {
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var family = Domain.Family.Family.Create(
+            familyId, FamilyName.Create("Test Family"), null, DateTime.UtcNow);
+
+        // Add in reverse expected order to confirm sorting is applied
+        var olderMemberId = MemberId.New();
+        family.AddMember(olderMemberId, MemberName.Create("Zara"), MemberRole.Create("Adult"),
+            false, new DateOnly(1985, 6, 15), DateTime.UtcNow);
+
+        var youngerMemberId = MemberId.New();
+        family.AddMember(youngerMemberId, MemberName.Create("Alice"), MemberRole.Create("Adult"),
+            false, new DateOnly(2000, 3, 1), DateTime.UtcNow);
+
+        // No birthdate — falls after dated members, sorted alphabetically
+        var noDobB = MemberId.New();
+        family.AddMember(noDobB, MemberName.Create("Bob"), MemberRole.Create("Adult"),
+            false, null, DateTime.UtcNow);
+
+        var noDobA = MemberId.New();
+        family.AddMember(noDobA, MemberName.Create("Anna"), MemberRole.Create("Adult"),
+            false, null, DateTime.UtcNow);
+
+        family.ClearDomainEvents();
+        db.Set<Domain.Family.Family>().Add(family);
+        await db.SaveChangesAsync();
+        var handler = BuildHandler(db);
+
+        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var names = result.Members.Select(m => m.Name).ToList();
+        names.Should().Equal("Zara", "Alice", "Anna", "Bob");
+    }
+
+    [Fact]
+    public async Task Handle_MembersWithoutBirthDates_OrderedAlphabetically()
+    {
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var family = Domain.Family.Family.Create(
+            familyId, FamilyName.Create("Test Family"), null, DateTime.UtcNow);
+
+        family.AddMember(MemberId.New(), MemberName.Create("Zoe"), MemberRole.Create("Adult"),
+            false, null, DateTime.UtcNow);
+        family.AddMember(MemberId.New(), MemberName.Create("Aaron"), MemberRole.Create("Adult"),
+            false, null, DateTime.UtcNow);
+        family.AddMember(MemberId.New(), MemberName.Create("Mike"), MemberRole.Create("Adult"),
+            false, null, DateTime.UtcNow);
+
+        family.ClearDomainEvents();
+        db.Set<Domain.Family.Family>().Add(family);
+        await db.SaveChangesAsync();
+        var handler = BuildHandler(db);
+
+        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var names = result.Members.Select(m => m.Name).ToList();
+        names.Should().Equal("Aaron", "Mike", "Zoe");
+    }
 }

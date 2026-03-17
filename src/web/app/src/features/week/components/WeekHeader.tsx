@@ -2,9 +2,10 @@ import { useTranslation } from "react-i18next";
 
 interface WeekHeaderProps {
   days: string[]; // ISO date strings for 7 days
+  today: string;  // ISO date string for today
 }
 
-export function WeekHeader({ days }: WeekHeaderProps) {
+export function WeekHeader({ days, today }: WeekHeaderProps) {
   const { i18n } = useTranslation("week");
 
   return (
@@ -17,10 +18,12 @@ export function WeekHeader({ days }: WeekHeaderProps) {
           day: "numeric",
           month: "short",
         });
+        const isToday = iso.slice(0, 10) === today;
         return (
-          <div key={iso} className="wg-day-header">
+          <div key={iso} className={`wg-day-header${isToday ? " wg-day-header--today" : ""}`}>
             <span className="wg-day-name">{weekday}</span>
             <span className="wg-day-date">{dayNum}</span>
+            {isToday && <span className="wg-today-dot" aria-hidden="true" />}
           </div>
         );
       })}
