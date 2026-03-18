@@ -35,7 +35,10 @@ function startOfWeek(d: Date, firstDayOfWeek?: string | null): Date {
 }
 
 function toIsoDate(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 function addDays(iso: string, n: number): string {
@@ -50,6 +53,21 @@ function addMonths(iso: string, n: number): string {
   return toIsoDate(d);
 }
 
+// ---- Member color palette (deterministic by index) ----
+const MEMBER_COLORS = [
+  "#b79ad9", // primary purple
+  "#f0c872", // accent yellow
+  "#6ec6a0", // teal-green
+  "#e07b84", // salmon
+  "#7bbde0", // sky blue
+  "#e09d6e", // orange
+  "#a0c46e", // lime
+];
+
+function getMemberColor(index: number): string {
+  return MEMBER_COLORS[index % MEMBER_COLORS.length];
+}
+
 // ---- Component ----
 
 export function CoordinationPage() {
@@ -59,6 +77,7 @@ export function CoordinationPage() {
   const family = useAppSelector((s) => s.household.family);
   const familyId = family?.familyId ?? "";
   const firstDayOfWeek = family?.firstDayOfWeek ?? null;
+  const members = useAppSelector((s) => s.household.members);
 
   const selectedDate = useAppSelector((s) => s.coordination.selectedDate);
   const { data: timelineData, status: timelineStatus, error: timelineError } =
@@ -146,11 +165,6 @@ export function CoordinationPage() {
 
   // ---- Labels ----
 
-  const dateNavLabel = new Date(selectedDate + "T00:00:00").toLocaleDateString(
-    i18n.language,
-    { weekday: "long", day: "numeric", month: "long", year: "numeric" },
-  );
-
   const weekEnd = addDays(weekStartForSelected, 6);
   const weekNavLabel = `${new Date(weekStartForSelected + "T00:00:00").toLocaleDateString(
     i18n.language,
@@ -161,24 +175,48 @@ export function CoordinationPage() {
     year: "numeric",
   })}`;
 
+  // ---- Month calendar dots: per-day member colors from timeline data ----
+  const dayDots: Record<string, string[]> = {};
+  if (timelineStatus === "success" && timelineData) {
+    // Build memberId → index map for consistent colors
+    const memberIndexMap = new Map<string, number>();
+    members.forEach((m, idx) => memberIndexMap.set(m.memberId, idx));
+
+    for (const group of timelineData.groups) {
+      for (const entry of group.entries) {
+        if (!entry.effectiveDate || entry.entryType === "Routine") continue;
+        const dayKey = entry.effectiveDate.slice(0, 10);
+        if (!dayDots[dayKey]) dayDots[dayKey] = [];
+
+        // Collect member colors for this entry (assignee or participants)
+        const memberIds = new Set<string>();
+        if (entry.assigneeId) memberIds.add(entry.assigneeId);
+        if (entry.participants) {
+          for (const p of entry.participants) memberIds.add(p.memberId);
+        }
+
+        for (const memberId of memberIds) {
+          const idx = memberIndexMap.get(memberId);
+          const color = idx !== undefined ? getMemberColor(idx) : getMemberColor(0);
+          if (!dayDots[dayKey].includes(color)) {
+            dayDots[dayKey].push(color);
+          }
+        }
+      }
+    }
+  }
+
   return (
     <div className="page-content coord-page">
-      {/* ── Day navigation header ── */}
+      {/* ── Day navigation bar (prev/next/today only — date shown in Day View) ── */}
       <div className="coord-date-nav">
         <button
-          className="btn btn-ghost btn-sm"
+          className="btn btn-ghost btn-sm coord-nav-btn"
           onClick={handlePrevDay}
           type="button"
+          aria-label={t("nav.prevDay")}
         >
-          {t("nav.prevDay")}
-        </button>
-        <span className="coord-date-label">{dateNavLabel}</span>
-        <button
-          className="btn btn-ghost btn-sm"
-          onClick={handleNextDay}
-          type="button"
-        >
-          {t("nav.nextDay")}
+          ‹
         </button>
         {!isToday && (
           <button
@@ -189,6 +227,14 @@ export function CoordinationPage() {
             {t("nav.today")}
           </button>
         )}
+        <button
+          className="btn btn-ghost btn-sm coord-nav-btn"
+          onClick={handleNextDay}
+          type="button"
+          aria-label={t("nav.nextDay")}
+        >
+          ›
+        </button>
       </div>
 
       {/* ── Section 1: Day View (always visible) ── */}
@@ -201,44 +247,46 @@ export function CoordinationPage() {
 
       {/* ── Section 2: Mid-term navigation (Week / Month) ── */}
       <div className="coord-midterm-section">
-        <div className="coord-midterm-header">
-          <div className="coord-midterm-tabs">
+        {/* Centered tab switcher */}
+        <div className="coord-midterm-tabbar">
+          <button
+            className={`coord-midterm-tab${midTermView === "week" ? " coord-midterm-tab--active" : ""}`}
+            onClick={() => setMidTermView("week")}
+            type="button"
+          >
+            <span className="coord-midterm-tab-icon">▦</span>
+            {t("tabs.week")}
+          </button>
+          <button
+            className={`coord-midterm-tab${midTermView === "month" ? " coord-midterm-tab--active" : ""}`}
+            onClick={() => setMidTermView("month")}
+            type="button"
+          >
+            <span className="coord-midterm-tab-icon">🗓</span>
+            {t("tabs.month")}
+          </button>
+        </div>
+
+        {/* Week nav — same style as month nav */}
+        {midTermView === "week" && (
+          <div className="coord-month-nav coord-midterm-week-nav">
             <button
-              className={`coord-midterm-tab${midTermView === "week" ? " coord-midterm-tab--active" : ""}`}
-              onClick={() => setMidTermView("week")}
+              className="btn btn-ghost btn-sm"
+              onClick={handlePrevWeek}
               type="button"
             >
-              {t("tabs.week")}
+              {t("nav.prevMonth")}
             </button>
+            <span className="coord-month-label">{weekNavLabel}</span>
             <button
-              className={`coord-midterm-tab${midTermView === "month" ? " coord-midterm-tab--active" : ""}`}
-              onClick={() => setMidTermView("month")}
+              className="btn btn-ghost btn-sm"
+              onClick={handleNextWeek}
               type="button"
             >
-              {t("tabs.month")}
+              {t("nav.nextMonth")}
             </button>
           </div>
-
-          {midTermView === "week" && (
-            <div className="coord-week-nav">
-              <button
-                className="btn btn-ghost btn-sm"
-                onClick={handlePrevWeek}
-                type="button"
-              >
-                {t("nav.prevWeek")}
-              </button>
-              <span className="coord-week-label">{weekNavLabel}</span>
-              <button
-                className="btn btn-ghost btn-sm"
-                onClick={handleNextWeek}
-                type="button"
-              >
-                {t("nav.nextWeek")}
-              </button>
-            </div>
-          )}
-        </div>
+        )}
 
         {midTermView === "week" && (
           <CoordinationWeekView
@@ -257,6 +305,7 @@ export function CoordinationPage() {
               today={todayIso}
               firstDayOfWeek={firstDayOfWeek}
               displayAnchor={monthAnchor}
+              dayDots={dayDots}
               onSelectDay={handleDaySelect}
               onPrevMonth={() => setMonthAnchor(addMonths(monthAnchor, -1))}
               onNextMonth={() => setMonthAnchor(addMonths(monthAnchor, 1))}

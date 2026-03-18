@@ -1,10 +1,5 @@
 export const FIRST_DAY_OPTIONS = [
   "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
   "sunday",
 ] as const;
 

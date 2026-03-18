@@ -5,6 +5,8 @@ interface MonthViewProps {
   today: string; // ISO YYYY-MM-DD
   firstDayOfWeek?: string | null;
   displayAnchor?: string; // ISO YYYY-MM-DD — which month to show (defaults to selectedDate)
+  /** Per-day member dot colors: date ISO → array of CSS color strings (hex/var). Max 3 shown + overflow. */
+  dayDots?: Record<string, string[]>;
   onSelectDay: (date: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -74,6 +76,7 @@ export function MonthView({
   today,
   firstDayOfWeek,
   displayAnchor,
+  dayDots,
   onSelectDay,
   onPrevMonth,
   onNextMonth,
@@ -173,6 +176,22 @@ export function MonthView({
                   aria-pressed={isSelected}
                 >
                   <span className="coord-month-day-num">{dayNum}</span>
+                  {dayDots && dayDots[iso] && dayDots[iso].length > 0 && (
+                    <span className="coord-month-dots">
+                      {dayDots[iso].slice(0, 3).map((color, idx) => (
+                        <span
+                          key={`${color}-${idx}`}
+                          className="coord-month-dot"
+                          style={{ background: color }}
+                        />
+                      ))}
+                      {dayDots[iso].length > 3 && (
+                        <span className="coord-month-dot-overflow">
+                          +{dayDots[iso].length - 3}
+                        </span>
+                      )}
+                    </span>
+                  )}
                 </button>
               );
             })}

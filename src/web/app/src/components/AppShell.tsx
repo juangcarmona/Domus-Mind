@@ -7,8 +7,7 @@ import { UserAvatar } from "./UserAvatar";
 import { useAppSelector } from "../store/hooks";
 
 const NAV_ITEMS = [
-  { to: "/timeline", labelKey: "timeline" },
-  { to: "/coordination", labelKey: "coordination" },
+  { to: "/agenda", labelKey: "agenda" },
   { to: "/planning", labelKey: "planning" },
   { to: "/areas", labelKey: "areas" },
 ] as const;

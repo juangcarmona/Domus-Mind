@@ -9,10 +9,17 @@ interface HorizontalTimelineRulerProps {
   onSelectDay: (date: string) => void;
 }
 
+function isoLocal(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 function addDaysToIso(iso: string, n: number): string {
   const d = new Date(iso + "T00:00:00");
   d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+  return isoLocal(d);
 }
 
 function generateDayRange(startIso: string, endIso: string): string[] {
@@ -20,7 +27,7 @@ function generateDayRange(startIso: string, endIso: string): string[] {
   const end = new Date(endIso + "T00:00:00");
   const cur = new Date(startIso + "T00:00:00");
   while (cur <= end) {
-    days.push(cur.toISOString().slice(0, 10));
+    days.push(isoLocal(cur));
     cur.setDate(cur.getDate() + 1);
   }
   return days;

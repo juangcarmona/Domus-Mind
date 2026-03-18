@@ -66,9 +66,10 @@ function AuthedApp() {
         <Route path="/plans" element={<Navigate to="/planning" replace />} />
         <Route path="/tasks" element={<Navigate to="/planning" replace />} />
         <Route path="/week" element={<WeekPage />} />
-        <Route path="/coordination" element={<CoordinationPage />} />
+        <Route path="/agenda" element={<CoordinationPage />} />
+        <Route path="/coordination" element={<Navigate to="/agenda" replace />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="*" element={<Navigate to="/timeline" replace />} />
+        <Route path="*" element={<Navigate to="/agenda" replace />} />
       </Routes>
     </AppShell>
   );
