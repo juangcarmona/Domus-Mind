@@ -554,6 +554,50 @@ p {
   margin-top: 1rem;
 }
 
+/* ---- Planning add modal ---- */
+.planning-modal {
+  max-width: 480px;
+}
+
+.planning-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.planning-choice-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+
+.planning-choice-card:hover {
+  border-color: var(--primary);
+  background: var(--surface);
+}
+
+.planning-choice-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.planning-choice-hint {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 /* ---- Inline form row ---- */
 .inline-form {
   display: flex;

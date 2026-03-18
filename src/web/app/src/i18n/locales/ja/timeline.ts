@@ -13,4 +13,15 @@ export default {
     Undated: "ルーティン・進行中",
   },
   actions: { complete: "完了", cancel: "キャンセル" },
+  planning: {
+    add: "追加",
+    chooserTitle: "何を追加しますか？",
+    plan: "予定",
+    planHint: "スケジュールされた活動",
+    task: "タスク",
+    taskHint: "やること",
+    routine: "ルーティン",
+    routineHint: "繰り返し行うこと",
+    back: "戻る",
+  },
 } as const;

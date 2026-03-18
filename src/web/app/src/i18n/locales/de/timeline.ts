@@ -13,4 +13,15 @@ export default {
     Undated: "Routinen & laufend",
   },
   actions: { complete: "Erledigt", cancel: "Abbrechen" },
+  planning: {
+    add: "Hinzufügen",
+    chooserTitle: "Was möchtest du hinzufügen?",
+    plan: "Plan",
+    planHint: "Geplante Aktivität",
+    task: "Aufgabe",
+    taskHint: "Etwas zu erledigen",
+    routine: "Routine",
+    routineHint: "Wiederholt sich",
+    back: "Zurück",
+  },
 } as const;

@@ -13,4 +13,15 @@ export default {
     Undated: "例行及进行中",
   },
   actions: { complete: "完成", cancel: "取消" },
+  planning: {
+    add: "添加",
+    chooserTitle: "你在添加什么？",
+    plan: "计划",
+    planHint: "安排好的活动",
+    task: "任务",
+    taskHint: "需要做的事",
+    routine: "例行",
+    routineHint: "定期重复",
+    back: "返回",
+  },
 } as const;

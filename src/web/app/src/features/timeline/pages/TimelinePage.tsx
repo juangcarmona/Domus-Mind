@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { fetchTimeline } from "../../../store/timelineSlice";
 import { completeTask, cancelTask } from "../../../store/tasksSlice";
 import type { EnrichedTimelineEntry } from "../../../api/domusmindApi";
+import { PlanningAddModal } from "../../../components/PlanningAddModal";
 
 function formatTime(iso: string | null, locale: string): string {
   if (!iso) return "";
@@ -114,6 +115,7 @@ export function TimelinePage() {
   const { family, members } = useAppSelector((s) => s.household);
   const { data, status, error } = useAppSelector((s) => s.timeline);
   const [filterType, setFilterType] = useState<string>("");
+  const [showAddModal, setShowAddModal] = useState(false);
   const { t, i18n } = useTranslation("timeline");
   const { t: tNav } = useTranslation("nav");
   const { t: tCommon } = useTranslation("common");
@@ -180,6 +182,12 @@ export function TimelinePage() {
           <button className="btn btn-ghost btn-sm" onClick={load} title={t("refresh")}>
             ↻
           </button>
+          <button
+            className="btn"
+            onClick={() => setShowAddModal(true)}
+          >
+            + {t("planning.add")}
+          </button>
         </div>
       </div>
 
@@ -241,6 +249,15 @@ export function TimelinePage() {
             </section>
           ))}
         </>
+      )}
+
+      {showAddModal && (
+        <PlanningAddModal
+          familyId={familyId}
+          members={members}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => { setShowAddModal(false); load(); }}
+        />
       )}
     </div>
   );
