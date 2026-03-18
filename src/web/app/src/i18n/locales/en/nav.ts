@@ -3,7 +3,7 @@ export default {
   people: "People",
   areas: "Areas",
   plans: "Plans",
-  chores: "Chores",
+  chores: "Tasks",
   planning: "Planning",
   week: "Week",
   agenda: "Agenda",

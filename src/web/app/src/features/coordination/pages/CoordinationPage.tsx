@@ -64,6 +64,9 @@ const MEMBER_COLORS = [
   "#a0c46e", // lime
 ];
 
+/** Dot color used for unassigned entries (no assignee, no participants). */
+const UNASSIGNED_DOT_COLOR = "var(--muted)";
+
 function getMemberColor(index: number): string {
   return MEMBER_COLORS[index % MEMBER_COLORS.length];
 }
@@ -127,9 +130,11 @@ export function CoordinationPage() {
     }
   }, [weekStartForSelected, fetchGrid, familyId]);
 
-  // Load timeline data once (for the ruler)
+  // Load timeline data (for the ruler + month dots).
+  // Re-fetches whenever familyId changes or if a previous attempt failed.
   useEffect(() => {
-    if (familyId && timelineStatus === "idle") {
+    if (!familyId) return;
+    if (timelineStatus === "idle" || timelineStatus === "error") {
       dispatch(fetchTimeline({ familyId }));
     }
   }, [familyId, timelineStatus, dispatch]);
@@ -195,11 +200,18 @@ export function CoordinationPage() {
           for (const p of entry.participants) memberIds.add(p.memberId);
         }
 
-        for (const memberId of memberIds) {
-          const idx = memberIndexMap.get(memberId);
-          const color = idx !== undefined ? getMemberColor(idx) : getMemberColor(0);
-          if (!dayDots[dayKey].includes(color)) {
-            dayDots[dayKey].push(color);
+        if (memberIds.size === 0) {
+          // Unassigned entry — show a generic muted dot
+          if (!dayDots[dayKey].includes(UNASSIGNED_DOT_COLOR)) {
+            dayDots[dayKey].push(UNASSIGNED_DOT_COLOR);
+          }
+        } else {
+          for (const memberId of memberIds) {
+            const idx = memberIndexMap.get(memberId);
+            const color = idx !== undefined ? getMemberColor(idx) : getMemberColor(0);
+            if (!dayDots[dayKey].includes(color)) {
+              dayDots[dayKey].push(color);
+            }
           }
         }
       }
@@ -271,19 +283,21 @@ export function CoordinationPage() {
         {midTermView === "week" && (
           <div className="coord-month-nav coord-midterm-week-nav">
             <button
-              className="btn btn-ghost btn-sm"
+              className="btn btn-ghost btn-sm coord-nav-btn"
               onClick={handlePrevWeek}
               type="button"
+              aria-label={t("nav.prevWeek")}
             >
-              {t("nav.prevMonth")}
+              ‹
             </button>
             <span className="coord-month-label">{weekNavLabel}</span>
             <button
-              className="btn btn-ghost btn-sm"
+              className="btn btn-ghost btn-sm coord-nav-btn"
               onClick={handleNextWeek}
               type="button"
+              aria-label={t("nav.nextWeek")}
             >
-              {t("nav.nextMonth")}
+              ›
             </button>
           </div>
         )}

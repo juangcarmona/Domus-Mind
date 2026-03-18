@@ -121,19 +121,21 @@ export function MonthView({
     <div className="coord-month">
       <div className="coord-month-nav">
         <button
-          className="btn btn-ghost btn-sm"
+          className="btn btn-ghost btn-sm coord-nav-btn"
           onClick={onPrevMonth}
           type="button"
+          aria-label={t("nav.prevMonth")}
         >
-          {t("nav.prevMonth")}
+          ‹
         </button>
         <span className="coord-month-label">{monthLabel}</span>
         <button
-          className="btn btn-ghost btn-sm"
+          className="btn btn-ghost btn-sm coord-nav-btn"
           onClick={onNextMonth}
           type="button"
+          aria-label={t("nav.nextMonth")}
         >
-          {t("nav.nextMonth")}
+          ›
         </button>
       </div>
 

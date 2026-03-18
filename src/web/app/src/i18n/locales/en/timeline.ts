@@ -3,7 +3,7 @@ export default {
   refresh: "Refresh",
   empty: "Nothing here yet.",
   unassigned: "unassigned",
-  filter: { all: "All", plans: "Plans", chores: "Chores", routines: "Routines" },
+  filter: { all: "All", plans: "Plans", chores: "Tasks", routines: "Routines" },
   groups: {
     Overdue: "Overdue",
     Today: "Today",
