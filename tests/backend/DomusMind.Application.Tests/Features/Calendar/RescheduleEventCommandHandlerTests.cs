@@ -25,14 +25,9 @@ public sealed class RescheduleEventCommandHandlerTests
     private static async Task<(DomusMindDbContext Db, Domain.Calendar.CalendarEvent Evt)> BuildWithEventAsync()
     {
         var db = CreateDb();
-        var calendarEvent = Domain.Calendar.CalendarEvent.Create(
-            CalendarEventId.New(),
-            FamilyId.New(),
-            EventTitle.Create("Soccer Training"),
-            null,
-            DateTime.UtcNow.AddDays(1),
-            null,
-            DateTime.UtcNow);
+        var calendarEvent = CalendarTestHelpers.MakeEvent(
+            FamilyId.New(), "Soccer Training",
+            new DateOnly(2026, 4, 1));
         db.Set<Domain.Calendar.CalendarEvent>().Add(calendarEvent);
         await db.SaveChangesAsync();
         calendarEvent.ClearDomainEvents();
@@ -43,15 +38,15 @@ public sealed class RescheduleEventCommandHandlerTests
     public async Task Handle_WithValidInput_ReturnsResponse()
     {
         var (db, evt) = await BuildWithEventAsync();
-        var newStart = DateTime.UtcNow.AddDays(3);
+        var newDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(3));
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new RescheduleEventCommand(evt.Id.Value, newStart, null, Guid.NewGuid()),
+            new RescheduleEventCommand(evt.Id.Value, newDate.ToString("yyyy-MM-dd"), null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         result.CalendarEventId.Should().Be(evt.Id.Value);
-        result.NewStartTime.Should().Be(newStart);
+        result.Date.Should().Be(newDate.ToString("yyyy-MM-dd"));
         result.Status.Should().Be("Scheduled");
     }
 
@@ -59,16 +54,16 @@ public sealed class RescheduleEventCommandHandlerTests
     public async Task Handle_PersistsNewStartTime()
     {
         var (db, evt) = await BuildWithEventAsync();
-        var newStart = DateTime.UtcNow.AddDays(5);
+        var newDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(5));
         var handler = BuildHandler(db);
 
         await handler.Handle(
-            new RescheduleEventCommand(evt.Id.Value, newStart, null, Guid.NewGuid()),
+            new RescheduleEventCommand(evt.Id.Value, newDate.ToString("yyyy-MM-dd"), null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         var saved = await db.Set<Domain.Calendar.CalendarEvent>()
             .SingleOrDefaultAsync(e => e.Id == evt.Id);
-        saved!.StartTime.Should().Be(newStart);
+        saved!.Time.Date.Should().Be(newDate);
     }
 
     [Fact]
@@ -78,7 +73,7 @@ public sealed class RescheduleEventCommandHandlerTests
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(
-            new RescheduleEventCommand(Guid.NewGuid(), DateTime.UtcNow.AddDays(1), null, Guid.NewGuid()),
+            new RescheduleEventCommand(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)).ToString("yyyy-MM-dd"), null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<CalendarException>()
@@ -93,7 +88,7 @@ public sealed class RescheduleEventCommandHandlerTests
         var handler = BuildHandler(db, auth);
 
         var act = () => handler.Handle(
-            new RescheduleEventCommand(evt.Id.Value, DateTime.UtcNow.AddDays(2), null, Guid.NewGuid()),
+            new RescheduleEventCommand(evt.Id.Value, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)).ToString("yyyy-MM-dd"), null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<CalendarException>()
@@ -110,7 +105,7 @@ public sealed class RescheduleEventCommandHandlerTests
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(
-            new RescheduleEventCommand(evt.Id.Value, DateTime.UtcNow.AddDays(2), null, Guid.NewGuid()),
+            new RescheduleEventCommand(evt.Id.Value, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)).ToString("yyyy-MM-dd"), null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<CalendarException>()
