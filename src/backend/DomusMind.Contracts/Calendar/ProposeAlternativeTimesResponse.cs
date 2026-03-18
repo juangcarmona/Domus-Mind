@@ -1,8 +1,10 @@
 namespace DomusMind.Contracts.Calendar;
 
 public sealed record AlternativeTimeSlot(
-    DateTime ProposedStart,
-    DateTime ProposedEnd);
+    string Date,
+    string Time,
+    string EndDate,
+    string EndTime);
 
 public sealed record ProposeAlternativeTimesResponse(
     Guid EventId,

@@ -5,6 +5,6 @@ namespace DomusMind.Application.Features.Calendar.DetectCalendarConflicts;
 
 public sealed record DetectCalendarConflictsQuery(
     Guid FamilyId,
-    DateTime From,
-    DateTime? To,
+    DateOnly From,
+    DateOnly? To,
     Guid RequestedByUserId) : IQuery<CalendarConflictsResponse>;

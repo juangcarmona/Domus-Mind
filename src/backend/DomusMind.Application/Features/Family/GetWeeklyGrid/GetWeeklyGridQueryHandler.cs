@@ -1,6 +1,7 @@
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
 using DomusMind.Domain.Calendar;
@@ -39,7 +40,7 @@ public sealed class GetWeeklyGridQueryHandler
 
         var familyId = FamilyId.From(query.FamilyId);
 
-        var weekStart = DateTime.SpecifyKind(query.WeekStart.Date, DateTimeKind.Utc);
+        var weekStart = query.WeekStart;
         var weekEnd = weekStart.AddDays(7);
 
         var family = await _dbContext.Set<DomusMind.Domain.Family.Family>()
@@ -55,17 +56,17 @@ public sealed class GetWeeklyGridQueryHandler
         var events = await _dbContext.Set<CalendarEvent>()
             .AsNoTracking()
             .Where(e => e.FamilyId == familyId
-                     && e.StartTime >= weekStart
-                     && e.StartTime < weekEnd
+                     && e.Time.Date >= weekStart
+                     && e.Time.Date < weekEnd
                      && e.Status != EventStatus.Cancelled)
             .ToListAsync(cancellationToken);
 
         var tasks = await _dbContext.Set<HouseholdTask>()
             .AsNoTracking()
             .Where(t => t.FamilyId == familyId
-                     && t.DueDate.HasValue
-                     && t.DueDate.Value >= weekStart
-                     && t.DueDate.Value < weekEnd
+                     && t.Schedule.Kind != Domain.Tasks.ValueObjects.TaskScheduleKind.None
+                     && t.Schedule.Date >= weekStart
+                     && t.Schedule.Date < weekEnd
                      && t.Status == HouseholdTaskStatus.Pending)
             .ToListAsync(cancellationToken);
 
@@ -86,20 +87,19 @@ public sealed class GetWeeklyGridQueryHandler
         var sharedCells = days
             .Select(day =>
             {
-                var cellDate = DateOnly.FromDateTime(day);
                 var dayRoutines = householdRoutines
-                    .Where(r => r.Schedule.OccursOn(cellDate))
+                    .Where(r => r.Schedule.OccursOn(day))
                     .Select(r => new WeeklyGridRoutineItem(
                         r.Id.Value,
                         r.Name.Value,
                         r.Kind.ToString(),
                         r.Color.Value,
                         r.Schedule.Frequency.ToString(),
-                        r.Schedule.Time,
+                        r.Schedule.Time.HasValue ? r.Schedule.Time.Value.ToString("HH:mm") : null,
                         r.Scope.ToString()))
                     .ToList();
 
-                return new WeeklyGridCell(day, [], [], dayRoutines);
+                return new WeeklyGridCell(day.ToString("yyyy-MM-dd"), [], [], dayRoutines);
             })
             .ToList();
 
@@ -113,7 +113,7 @@ public sealed class GetWeeklyGridQueryHandler
                     .Select(day =>
                     {
                         var memberEvents = events
-                            .Where(e => e.StartTime.Date == day.Date
+                            .Where(e => e.Time.Date == day
                                      && e.ParticipantIds.Any(p => p.Value == member.Id.Value))
                             .Select(e =>
                             {
@@ -123,11 +123,14 @@ public sealed class GetWeeklyGridQueryHandler
                                         memberNameMap.GetValueOrDefault(p.Value, "?")))
                                     .ToList();
 
+                                var (date, time, endDate, endTime) = TemporalParser.FormatEventTime(e.Time);
                                 return new WeeklyGridEventItem(
                                     e.Id.Value,
                                     e.Title.Value,
-                                    e.StartTime,
-                                    e.EndTime,
+                                    date,
+                                    time,
+                                    endDate,
+                                    endTime,
                                     e.Status.ToString(),
                                     participants);
                             })
@@ -135,31 +138,33 @@ public sealed class GetWeeklyGridQueryHandler
 
                         var memberTasks = tasks
                             .Where(t => t.AssigneeId?.Value == member.Id.Value
-                                     && t.DueDate.HasValue
-                                     && t.DueDate.Value.Date == day.Date)
-                            .Select(t => new WeeklyGridTaskItem(
-                                t.Id.Value,
-                                t.Title.Value,
-                                t.DueDate,
-                                t.Status.ToString()))
+                                     && t.Schedule.Date == day)
+                            .Select(t =>
+                            {
+                                var (dueDate, dueTime) = TemporalParser.FormatTaskSchedule(t.Schedule);
+                                return new WeeklyGridTaskItem(
+                                    t.Id.Value,
+                                    t.Title.Value,
+                                    dueDate,
+                                    dueTime,
+                                    t.Status.ToString());
+                            })
                             .ToList();
 
-                        var cellDate = DateOnly.FromDateTime(day);
-
                         var cellRoutines = memberRoutines
-                            .Where(r => r.AppliesTo(member.Id) && r.Schedule.OccursOn(cellDate))
+                            .Where(r => r.AppliesTo(member.Id) && r.Schedule.OccursOn(day))
                             .Select(r => new WeeklyGridRoutineItem(
                                 r.Id.Value,
                                 r.Name.Value,
                                 r.Kind.ToString(),
                                 r.Color.Value,
                                 r.Schedule.Frequency.ToString(),
-                                r.Schedule.Time,
+                                r.Schedule.Time.HasValue ? r.Schedule.Time.Value.ToString("HH:mm") : null,
                                 r.Scope.ToString()))
                             .ToList();
 
                         return new WeeklyGridCell(
-                            day,
+                            day.ToString("yyyy-MM-dd"),
                             memberEvents,
                             memberTasks,
                             cellRoutines);
@@ -175,8 +180,8 @@ public sealed class GetWeeklyGridQueryHandler
             .ToList();
 
         return new WeeklyGridResponse(
-            weekStart,
-            weekEnd.AddDays(-1),
+            weekStart.ToString("yyyy-MM-dd"),
+            weekEnd.AddDays(-1).ToString("yyyy-MM-dd"),
             memberRows,
             sharedCells);
     }

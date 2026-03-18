@@ -1,4 +1,5 @@
 using DomusMind.Domain.Abstractions;
+using DomusMind.Domain.Calendar.ValueObjects;
 
 namespace DomusMind.Domain.Calendar.Events;
 
@@ -7,6 +8,5 @@ public sealed record EventScheduled(
     Guid CalendarEventId,
     Guid FamilyId,
     string Title,
-    DateTime StartTime,
-    DateTime? EndTime,
+    EventTime Time,
     DateTime OccurredAtUtc) : IDomainEvent;

@@ -1,6 +1,7 @@
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Family;
@@ -38,12 +39,13 @@ public sealed class GetFamilyPlansQueryHandler
             .Where(e => e.FamilyId == familyId);
 
         if (query.From.HasValue)
-            eventsQuery = eventsQuery.Where(e => e.StartTime >= query.From.Value);
+            eventsQuery = eventsQuery.Where(e => e.Time.Date >= query.From.Value);
         if (query.To.HasValue)
-            eventsQuery = eventsQuery.Where(e => e.StartTime <= query.To.Value);
+            eventsQuery = eventsQuery.Where(e => e.Time.Date <= query.To.Value);
 
         var events = await eventsQuery
-            .OrderBy(e => e.StartTime)
+            .OrderBy(e => e.Time.Date)
+            .ThenBy(e => e.Time.Time)
             .ToListAsync(cancellationToken);
 
         // Apply optional member filter in-memory (participants stored as JSON)
@@ -71,11 +73,14 @@ public sealed class GetFamilyPlansQueryHandler
                         p.Value,
                         memberNameMap.GetValueOrDefault(p.Value, "?")))
                     .ToList();
+                var (date, time, endDate, endTime) = TemporalParser.FormatEventTime(e.Time);
                 return new FamilyPlanItem(
                     e.Id.Value,
                     e.Title.Value,
-                    e.StartTime,
-                    e.EndTime,
+                    date,
+                    time,
+                    endDate,
+                    endTime,
                     e.Status.ToString(),
                     e.ParticipantIds.Select(p => p.Value).ToList(),
                     participants);

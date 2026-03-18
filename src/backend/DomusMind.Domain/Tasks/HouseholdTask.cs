@@ -11,7 +11,7 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
     public FamilyId FamilyId { get; private set; }
     public TaskTitle Title { get; private set; }
     public string? Description { get; private set; }
-    public DateTime? DueDate { get; private set; }
+    public TaskSchedule Schedule { get; private set; }
     public HouseholdTaskStatus Status { get; private set; }
     public MemberId? AssigneeId { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
@@ -21,14 +21,14 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
         FamilyId familyId,
         TaskTitle title,
         string? description,
-        DateTime? dueDate,
+        TaskSchedule schedule,
         DateTime createdAtUtc)
         : base(id)
     {
         FamilyId = familyId;
         Title = title;
         Description = description;
-        DueDate = dueDate;
+        Schedule = schedule;
         Status = HouseholdTaskStatus.Pending;
         CreatedAtUtc = createdAtUtc;
     }
@@ -38,12 +38,12 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
         FamilyId familyId,
         TaskTitle title,
         string? description,
-        DateTime? dueDate,
+        TaskSchedule schedule,
         DateTime createdAtUtc)
     {
-        var task = new HouseholdTask(id, familyId, title, description, dueDate, createdAtUtc);
+        var task = new HouseholdTask(id, familyId, title, description, schedule, createdAtUtc);
         task.RaiseDomainEvent(new TaskCreated(
-            Guid.NewGuid(), id.Value, familyId.Value, title.Value, dueDate, createdAtUtc));
+            Guid.NewGuid(), id.Value, familyId.Value, title.Value, schedule, createdAtUtc));
         return task;
     }
 
@@ -100,7 +100,7 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
             Guid.NewGuid(), Id.Value, FamilyId.Value, previousAssigneeId?.Value, newAssigneeId.Value, DateTime.UtcNow));
     }
 
-    public void Reschedule(DateTime? newDueDate)
+    public void Reschedule(TaskSchedule newSchedule)
     {
         if (Status == HouseholdTaskStatus.Completed)
             throw new InvalidOperationException("Cannot reschedule a completed task.");
@@ -108,9 +108,9 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
         if (Status == HouseholdTaskStatus.Cancelled)
             throw new InvalidOperationException("Cannot reschedule a cancelled task.");
 
-        DueDate = newDueDate;
+        Schedule = newSchedule;
         RaiseDomainEvent(new TaskRescheduled(
-            Guid.NewGuid(), Id.Value, newDueDate, DateTime.UtcNow));
+            Guid.NewGuid(), Id.Value, newSchedule, DateTime.UtcNow));
     }
 
 #pragma warning disable CS8618

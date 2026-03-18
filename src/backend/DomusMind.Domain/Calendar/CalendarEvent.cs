@@ -13,8 +13,7 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
     public FamilyId FamilyId { get; private set; }
     public EventTitle Title { get; private set; }
     public string? Description { get; private set; }
-    public DateTime StartTime { get; private set; }
-    public DateTime? EndTime { get; private set; }
+    public EventTime Time { get; private set; }
     public EventStatus Status { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
@@ -26,16 +25,14 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
         FamilyId familyId,
         EventTitle title,
         string? description,
-        DateTime startTime,
-        DateTime? endTime,
+        EventTime time,
         DateTime createdAtUtc)
         : base(id)
     {
         FamilyId = familyId;
         Title = title;
         Description = description;
-        StartTime = startTime;
-        EndTime = endTime;
+        Time = time;
         Status = EventStatus.Scheduled;
         CreatedAtUtc = createdAtUtc;
     }
@@ -45,32 +42,24 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
         FamilyId familyId,
         EventTitle title,
         string? description,
-        DateTime startTime,
-        DateTime? endTime,
+        EventTime time,
         DateTime createdAtUtc)
     {
-        if (endTime.HasValue && endTime.Value <= startTime)
-            throw new InvalidOperationException("End time must be after start time.");
-
-        var calendarEvent = new CalendarEvent(id, familyId, title, description, startTime, endTime, createdAtUtc);
+        var calendarEvent = new CalendarEvent(id, familyId, title, description, time, createdAtUtc);
         calendarEvent.RaiseDomainEvent(new EventScheduled(
-            Guid.NewGuid(), id.Value, familyId.Value, title.Value, startTime, endTime, createdAtUtc));
+            Guid.NewGuid(), id.Value, familyId.Value, title.Value, time, createdAtUtc));
         return calendarEvent;
     }
 
-    public void Reschedule(DateTime newStartTime, DateTime? newEndTime)
+    public void Reschedule(EventTime newTime)
     {
         if (Status == EventStatus.Cancelled)
             throw new InvalidOperationException("Cannot reschedule a cancelled event.");
 
-        if (newEndTime.HasValue && newEndTime.Value <= newStartTime)
-            throw new InvalidOperationException("New end time must be after new start time.");
-
-        StartTime = newStartTime;
-        EndTime = newEndTime;
+        Time = newTime;
 
         RaiseDomainEvent(new EventRescheduled(
-            Guid.NewGuid(), Id.Value, newStartTime, newEndTime, DateTime.UtcNow));
+            Guid.NewGuid(), Id.Value, newTime, DateTime.UtcNow));
     }
 
     public void Cancel()

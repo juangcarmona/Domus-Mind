@@ -6,8 +6,10 @@ namespace DomusMind.Application.Features.Calendar.ScheduleEvent;
 public sealed record ScheduleEventCommand(
     string Title,
     Guid FamilyId,
-    DateTime StartTime,
-    DateTime? EndTime,
+    string Date,
+    string? Time,
+    string? EndDate,
+    string? EndTime,
     string? Description,
     Guid RequestedByUserId)
     : ICommand<ScheduleEventResponse>;

@@ -5,5 +5,5 @@ namespace DomusMind.Application.Features.Family.GetWeeklyGrid;
 
 public sealed record GetWeeklyGridQuery(
     Guid FamilyId,
-    DateTime WeekStart,
+    DateOnly WeekStart,
     Guid RequestedByUserId) : IQuery<WeeklyGridResponse>;

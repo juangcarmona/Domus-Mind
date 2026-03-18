@@ -1,8 +1,11 @@
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Application.Features.Calendar;
+using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
+using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,21 +45,34 @@ public sealed class ProposeAlternativeTimesQueryHandler
         if (targetEvent is null)
             throw new CalendarException(CalendarErrorCode.EventNotFound, "Event not found.");
 
-        var duration = targetEvent.EndTime.HasValue
-            ? targetEvent.EndTime.Value - targetEvent.StartTime
-            : TimeSpan.FromHours(1);
+        // Only timed events can propose alternatives (date-only events have no time conflicts)
+        if (!targetEvent.Time.HasTime)
+            return new ProposeAlternativeTimesResponse(query.EventId, []);
 
-        // Search within 7 days after the event's current start time
-        var searchStart = targetEvent.StartTime.Date.AddDays(1);
-        var searchEnd = searchStart.AddDays(7);
+        var startDt = targetEvent.Time.Date.ToDateTime(targetEvent.Time.Time!.Value);
+        TimeSpan duration;
+        if (targetEvent.Time.HasRange)
+        {
+            var endDt = targetEvent.Time.EndDate!.Value.ToDateTime(targetEvent.Time.EndTime!.Value);
+            duration = endDt - startDt;
+        }
+        else
+        {
+            duration = TimeSpan.FromHours(1);
+        }
 
-        // Load all non-cancelled family events in the search window (excluding the target event)
+        // Search within 7 days after the event's current start date
+        var searchStartDate = targetEvent.Time.Date.AddDays(1);
+        var searchEndDate = searchStartDate.AddDays(7);
+
+        // Load all non-cancelled family events with times in the search window
         var busyEvents = await _dbContext.Set<CalendarEvent>()
             .AsNoTracking()
             .Where(e => e.FamilyId == familyId
                      && e.Status != EventStatus.Cancelled
-                     && e.StartTime < searchEnd
-                     && e.StartTime >= searchStart)
+                     && e.Time.Kind != EventTimeKind.Day
+                     && e.Time.Date < searchEndDate
+                     && e.Time.Date >= searchStartDate)
             .ToListAsync(cancellationToken);
 
         // Only consider events that share participants with the target event
@@ -67,20 +83,38 @@ public sealed class ProposeAlternativeTimesQueryHandler
 
         var maxSuggestions = query.SuggestionCount > 0 ? query.SuggestionCount : 3;
         var suggestions = new List<AlternativeTimeSlot>();
-        var candidate = searchStart.AddHours(9); // Start from 9 AM
+        var candidate = searchStartDate.ToDateTime(new TimeOnly(9, 0)); // Start from 09:00
 
-        while (suggestions.Count < maxSuggestions && candidate < searchEnd)
+        while (suggestions.Count < maxSuggestions && DateOnly.FromDateTime(candidate) < searchEndDate)
         {
             var candidateEnd = candidate + duration;
 
             var hasConflict = relevantBusySlots.Any(e =>
             {
-                var eEnd = e.EndTime ?? e.StartTime.AddHours(1);
-                return candidate < eEnd && candidateEnd > e.StartTime;
+                var eStart = e.Time.Date.ToDateTime(e.Time.Time!.Value);
+                var eEnd = e.Time.HasRange
+                    ? e.Time.EndDate!.Value.ToDateTime(e.Time.EndTime!.Value)
+                    : eStart.AddHours(1);
+                return candidate < eEnd && candidateEnd > eStart;
             });
 
             if (!hasConflict)
-                suggestions.Add(new AlternativeTimeSlot(candidate, candidateEnd));
+            {
+                var candDate = DateOnly.FromDateTime(candidate);
+                var candTime = TimeOnly.FromDateTime(candidate);
+                var candEndDate = DateOnly.FromDateTime(candidateEnd);
+                var candEndTime = TimeOnly.FromDateTime(candidateEnd);
+
+                // Strip seconds
+                candTime = new TimeOnly(candTime.Hour, candTime.Minute);
+                candEndTime = new TimeOnly(candEndTime.Hour, candEndTime.Minute);
+
+                suggestions.Add(new AlternativeTimeSlot(
+                    candDate.ToString("yyyy-MM-dd"),
+                    candTime.ToString("HH:mm"),
+                    candEndDate.ToString("yyyy-MM-dd"),
+                    candEndTime.ToString("HH:mm")));
+            }
 
             candidate = candidate.AddHours(1);
 

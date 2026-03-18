@@ -1,6 +1,7 @@
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Family;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Family;
@@ -53,25 +54,34 @@ public sealed class GetMemberActivityQueryHandler
         var allFamilyEvents = await _dbContext.Set<CalendarEvent>()
             .AsNoTracking()
             .Where(e => e.FamilyId == familyId)
-            .OrderBy(e => e.StartTime)
+            .OrderBy(e => e.Time.Date)
+            .ThenBy(e => e.Time.Time)
             .ToListAsync(cancellationToken);
 
         var memberEvents = allFamilyEvents
             .Where(e => e.ParticipantIds.Any(p => p.Value == memberId.Value))
-            .Select(e => new MemberCalendarActivity(
-                e.Id.Value, e.Title.Value, e.StartTime, e.EndTime, e.Status.ToString()))
+            .Select(e =>
+            {
+                var (date, time, endDate, endTime) = TemporalParser.FormatEventTime(e.Time);
+                return new MemberCalendarActivity(
+                    e.Id.Value, e.Title.Value, date, time, endDate, endTime, e.Status.ToString());
+            })
             .ToList();
 
         // Tasks assigned to the member
         var memberTasks = await _dbContext.Set<HouseholdTask>()
             .AsNoTracking()
             .Where(t => t.FamilyId == familyId && t.AssigneeId == memberId)
-            .OrderBy(t => t.DueDate)
             .ToListAsync(cancellationToken);
 
         var taskActivities = memberTasks
-            .Select(t => new MemberTaskActivity(
-                t.Id.Value, t.Title.Value, t.DueDate, t.Status.ToString()))
+            .OrderBy(t => t.Schedule.Date)
+            .ThenBy(t => t.Schedule.Time)
+            .Select(t =>
+            {
+                var (dueDate, dueTime) = TemporalParser.FormatTaskSchedule(t.Schedule);
+                return new MemberTaskActivity(t.Id.Value, t.Title.Value, dueDate, dueTime, t.Status.ToString());
+            })
             .ToList();
 
         // Responsibility domains where member is primary or secondary owner (load all, filter in-memory)

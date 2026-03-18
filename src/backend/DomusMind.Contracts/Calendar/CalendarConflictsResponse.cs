@@ -3,10 +3,12 @@ namespace DomusMind.Contracts.Calendar;
 public sealed record CalendarConflict(
     Guid EventAId,
     string EventATitle,
-    DateTime EventAStart,
+    string EventADate,
+    string? EventATime,
     Guid EventBId,
     string EventBTitle,
-    DateTime EventBStart,
+    string EventBDate,
+    string? EventBTime,
     IReadOnlyCollection<Guid> SharedParticipantIds);
 
 public sealed record CalendarConflictsResponse(

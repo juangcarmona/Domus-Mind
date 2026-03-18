@@ -5,6 +5,7 @@ public sealed record CreateTaskResponse(
     Guid FamilyId,
     string Title,
     string? Description,
-    DateTime? DueDate,
+    string? DueDate,
+    string? DueTime,
     string Status,
     DateTime CreatedAtUtc);

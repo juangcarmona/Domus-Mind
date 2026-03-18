@@ -1,5 +1,7 @@
 namespace DomusMind.Contracts.Calendar;
 
 public sealed record RescheduleEventRequest(
-    DateTime NewStartTime,
-    DateTime? NewEndTime);
+    string Date,
+    string? Time,
+    string? EndDate,
+    string? EndTime);

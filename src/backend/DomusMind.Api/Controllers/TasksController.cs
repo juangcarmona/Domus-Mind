@@ -33,7 +33,7 @@ public sealed class TasksController : ControllerBase
             var response = await dispatcher.Dispatch(
                 new CreateTaskCommand(
                     request.Title, request.FamilyId, request.Description,
-                    request.DueDate, _currentUser.UserId!.Value),
+                    request.DueDate, request.DueTime, _currentUser.UserId!.Value),
                 cancellationToken);
             return Created($"/api/tasks/{response.TaskId}", response);
         }
@@ -99,7 +99,7 @@ public sealed class TasksController : ControllerBase
         try
         {
             var response = await dispatcher.Dispatch(
-                new RescheduleTaskCommand(id, request.NewDueDate, _currentUser.UserId!.Value),
+                new RescheduleTaskCommand(id, request.DueDate, request.DueTime, _currentUser.UserId!.Value),
                 cancellationToken);
             return Ok(response);
         }

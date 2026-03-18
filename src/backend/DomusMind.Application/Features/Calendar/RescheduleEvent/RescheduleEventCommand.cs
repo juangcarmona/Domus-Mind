@@ -5,7 +5,9 @@ namespace DomusMind.Application.Features.Calendar.RescheduleEvent;
 
 public sealed record RescheduleEventCommand(
     Guid CalendarEventId,
-    DateTime NewStartTime,
-    DateTime? NewEndTime,
+    string Date,
+    string? Time,
+    string? EndDate,
+    string? EndTime,
     Guid RequestedByUserId)
     : ICommand<RescheduleEventResponse>;

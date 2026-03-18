@@ -5,19 +5,22 @@ namespace DomusMind.Contracts.Family;
 public sealed record WeeklyGridEventItem(
     Guid EventId,
     string Title,
-    DateTime StartTime,
-    DateTime? EndTime,
+    string Date,
+    string? Time,
+    string? EndDate,
+    string? EndTime,
     string Status,
     IReadOnlyCollection<ParticipantProjection> Participants);
 
 public sealed record WeeklyGridTaskItem(
     Guid TaskId,
     string Title,
-    DateTime? DueDate,
+    string? DueDate,
+    string? DueTime,
     string Status);
 
 public sealed record WeeklyGridCell(
-    DateTime Date,
+    string Date,
     IReadOnlyCollection<WeeklyGridEventItem> Events,
     IReadOnlyCollection<WeeklyGridTaskItem> Tasks,
     IReadOnlyCollection<WeeklyGridRoutineItem> Routines);
@@ -34,11 +37,11 @@ public sealed record WeeklyGridRoutineItem(
     string Kind,
     string Color,
     string Frequency,
-    TimeOnly? Time,
+    string? Time,
     string Scope);
 
 public sealed record WeeklyGridResponse(
-    DateTime WeekStart,
-    DateTime WeekEnd,
+    string WeekStart,
+    string WeekEnd,
     IReadOnlyCollection<WeeklyGridMember> Members,
     IReadOnlyCollection<WeeklyGridCell> SharedCells);

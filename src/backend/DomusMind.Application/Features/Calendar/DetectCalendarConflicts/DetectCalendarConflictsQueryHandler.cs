@@ -1,8 +1,10 @@
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
+using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,12 +36,14 @@ public sealed class DetectCalendarConflictsQueryHandler
         var familyId = FamilyId.From(query.FamilyId);
         var searchTo = query.To ?? query.From.AddDays(7);
 
+        // Only events with time can have time conflicts; date-only events don't overlap at the minute level.
         var events = await _dbContext.Set<CalendarEvent>()
             .AsNoTracking()
             .Where(e => e.FamilyId == familyId
                      && e.Status != EventStatus.Cancelled
-                     && e.StartTime < searchTo
-                     && e.StartTime >= query.From)
+                     && e.Time.Kind != EventTimeKind.Day
+                     && e.Time.Date < searchTo
+                     && e.Time.Date >= query.From)
             .ToListAsync(cancellationToken);
 
         var conflicts = new List<CalendarConflict>();
@@ -51,10 +55,17 @@ public sealed class DetectCalendarConflictsQueryHandler
                 var a = events[i];
                 var b = events[j];
 
-                var aEnd = a.EndTime ?? a.StartTime.AddHours(1);
-                var bEnd = b.EndTime ?? b.StartTime.AddHours(1);
+                var aStart = a.Time.Date.ToDateTime(a.Time.Time!.Value);
+                var aEnd = a.Time.HasRange
+                    ? a.Time.EndDate!.Value.ToDateTime(a.Time.EndTime!.Value)
+                    : aStart.AddHours(1);
 
-                var timesOverlap = a.StartTime < bEnd && aEnd > b.StartTime;
+                var bStart = b.Time.Date.ToDateTime(b.Time.Time!.Value);
+                var bEnd = b.Time.HasRange
+                    ? b.Time.EndDate!.Value.ToDateTime(b.Time.EndTime!.Value)
+                    : bStart.AddHours(1);
+
+                var timesOverlap = aStart < bEnd && aEnd > bStart;
                 if (!timesOverlap) continue;
 
                 var sharedParticipants = a.ParticipantIds
@@ -67,9 +78,12 @@ public sealed class DetectCalendarConflictsQueryHandler
 
                 if (!hasSharedParticipants && !eitherHasNoParticipants) continue;
 
+                var (aDate, aTime, _, _) = TemporalParser.FormatEventTime(a.Time);
+                var (bDate, bTime, _, _) = TemporalParser.FormatEventTime(b.Time);
+
                 conflicts.Add(new CalendarConflict(
-                    a.Id.Value, a.Title.Value, a.StartTime,
-                    b.Id.Value, b.Title.Value, b.StartTime,
+                    a.Id.Value, a.Title.Value, aDate, aTime,
+                    b.Id.Value, b.Title.Value, bDate, bTime,
                     sharedParticipants));
             }
         }

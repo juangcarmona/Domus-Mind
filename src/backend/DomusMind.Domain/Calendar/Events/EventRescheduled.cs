@@ -1,10 +1,10 @@
 using DomusMind.Domain.Abstractions;
+using DomusMind.Domain.Calendar.ValueObjects;
 
 namespace DomusMind.Domain.Calendar.Events;
 
 public sealed record EventRescheduled(
     Guid EventId,
     Guid CalendarEventId,
-    DateTime NewStartTime,
-    DateTime? NewEndTime,
+    EventTime NewTime,
     DateTime OccurredAtUtc) : IDomainEvent;

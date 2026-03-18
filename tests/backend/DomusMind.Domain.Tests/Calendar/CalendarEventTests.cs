@@ -10,14 +10,13 @@ public sealed class CalendarEventTests
 {
     private static Domain.Calendar.CalendarEvent BuildEvent(
         string title = "School Excursion",
-        DateTime? startTime = null,
-        DateTime? endTime = null)
+        EventTime? time = null)
     {
         var id = CalendarEventId.New();
         var familyId = FamilyId.New();
         var eventTitle = EventTitle.Create(title);
-        var start = startTime ?? DateTime.UtcNow.AddDays(1);
-        return Domain.Calendar.CalendarEvent.Create(id, familyId, eventTitle, null, start, endTime, DateTime.UtcNow);
+        var eventTime = time ?? EventTime.Day(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)));
+        return Domain.Calendar.CalendarEvent.Create(id, familyId, eventTitle, null, eventTime, DateTime.UtcNow);
     }
 
     // ── Create ─────────────────────────────────────────────────────────────────
@@ -74,31 +73,74 @@ public sealed class CalendarEventTests
     }
 
     [Fact]
+    public void Create_DateOnlyEvent_SetsKindToDay()
+    {
+        var date = new DateOnly(2026, 3, 18);
+        var time = EventTime.Day(date);
+        var id = CalendarEventId.New();
+        var familyId = FamilyId.New();
+        var evt = Domain.Calendar.CalendarEvent.Create(
+            id, familyId, EventTitle.Create("Trip"), null, time, DateTime.UtcNow);
+
+        evt.Time.Kind.Should().Be(EventTimeKind.Day);
+        evt.Time.Date.Should().Be(date);
+        evt.Time.Time.Should().BeNull();
+    }
+
+    [Fact]
+    public void Create_MomentEvent_SetsKindToMoment()
+    {
+        var date = new DateOnly(2026, 3, 18);
+        var t = new TimeOnly(14, 30);
+        var time = EventTime.Moment(date, t);
+        var id = CalendarEventId.New();
+        var familyId = FamilyId.New();
+        var evt = Domain.Calendar.CalendarEvent.Create(
+            id, familyId, EventTitle.Create("Meeting"), null, time, DateTime.UtcNow);
+
+        evt.Time.Kind.Should().Be(EventTimeKind.Moment);
+        evt.Time.Date.Should().Be(date);
+        evt.Time.Time.Should().Be(t);
+    }
+
+    [Fact]
     public void Create_EventScheduled_ContainsCorrectIds()
     {
         var id = CalendarEventId.New();
         var familyId = FamilyId.New();
-        var start = DateTime.UtcNow.AddHours(2);
+        var time = EventTime.Day(DateOnly.FromDateTime(DateTime.UtcNow.AddHours(2)));
         var evt = Domain.Calendar.CalendarEvent.Create(
-            id, familyId, EventTitle.Create("Trip"), null, start, null, DateTime.UtcNow);
+            id, familyId, EventTitle.Create("Trip"), null, time, DateTime.UtcNow);
 
         var domainEvt = evt.DomainEvents.OfType<EventScheduled>().Single();
         domainEvt.CalendarEventId.Should().Be(id.Value);
         domainEvt.FamilyId.Should().Be(familyId.Value);
         domainEvt.Title.Should().Be("Trip");
-        domainEvt.StartTime.Should().Be(start);
+        domainEvt.Time.Date.Should().Be(time.Date);
     }
 
     [Fact]
-    public void Create_EndTimeBeforeStartTime_ThrowsInvalidOperationException()
+    public void EventTime_Range_EndBeforeStart_Throws()
     {
-        var start = DateTime.UtcNow.AddHours(2);
-        var end = DateTime.UtcNow.AddHours(1);
+        var start = new DateOnly(2026, 3, 18);
+        var startT = new TimeOnly(14, 0);
+        var end = new DateOnly(2026, 3, 18);
+        var endT = new TimeOnly(13, 0); // before start
 
-        var act = () => Domain.Calendar.CalendarEvent.Create(
-            CalendarEventId.New(), FamilyId.New(), EventTitle.Create("Bad"), null, start, end, DateTime.UtcNow);
+        var act = () => EventTime.Range(start, startT, end, endT);
 
         act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void EventTime_WithSeconds_Throws()
+    {
+        var date = new DateOnly(2026, 3, 18);
+        var t = new TimeOnly(14, 30, 15); // has seconds
+
+        var act = () => EventTime.Moment(date, t);
+
+        act.Should().Throw<ArgumentException>();
     }
 
     // ── EventTitle value object ────────────────────────────────────────────────
@@ -132,15 +174,16 @@ public sealed class CalendarEventTests
     // ── Reschedule ─────────────────────────────────────────────────────────────
 
     [Fact]
-    public void Reschedule_UpdatesStartTime()
+    public void Reschedule_UpdatesTime()
     {
         var evt = BuildEvent();
-        var newStart = DateTime.UtcNow.AddDays(3);
+        var newDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(3));
+        var newTime = EventTime.Day(newDate);
         evt.ClearDomainEvents();
 
-        evt.Reschedule(newStart, null);
+        evt.Reschedule(newTime);
 
-        evt.StartTime.Should().Be(newStart);
+        evt.Time.Date.Should().Be(newDate);
     }
 
     [Fact]
@@ -148,27 +191,26 @@ public sealed class CalendarEventTests
     {
         var evt = BuildEvent();
         evt.ClearDomainEvents();
-        var newStart = DateTime.UtcNow.AddDays(3);
+        var newTime = EventTime.Day(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(3)));
 
-        evt.Reschedule(newStart, null);
+        evt.Reschedule(newTime);
 
         evt.DomainEvents.Should().HaveCount(1);
         evt.DomainEvents.Single().Should().BeOfType<EventRescheduled>();
     }
 
     [Fact]
-    public void Reschedule_EventRescheduled_ContainsCorrectTimes()
+    public void Reschedule_EventRescheduled_ContainsCorrectTime()
     {
         var evt = BuildEvent();
         evt.ClearDomainEvents();
-        var newStart = DateTime.UtcNow.AddDays(3);
-        var newEnd = newStart.AddHours(2);
+        var newDate = new DateOnly(2026, 4, 1);
+        var newTime = EventTime.Moment(newDate, new TimeOnly(10, 0));
 
-        evt.Reschedule(newStart, newEnd);
+        evt.Reschedule(newTime);
 
         var domainEvt = evt.DomainEvents.OfType<EventRescheduled>().Single();
-        domainEvt.NewStartTime.Should().Be(newStart);
-        domainEvt.NewEndTime.Should().Be(newEnd);
+        domainEvt.NewTime.Date.Should().Be(newDate);
         domainEvt.CalendarEventId.Should().Be(evt.Id.Value);
     }
 
@@ -178,19 +220,7 @@ public sealed class CalendarEventTests
         var evt = BuildEvent();
         evt.Cancel();
 
-        var act = () => evt.Reschedule(DateTime.UtcNow.AddDays(1), null);
-
-        act.Should().Throw<InvalidOperationException>();
-    }
-
-    [Fact]
-    public void Reschedule_NewEndBeforeNewStart_ThrowsInvalidOperationException()
-    {
-        var evt = BuildEvent();
-        var newStart = DateTime.UtcNow.AddHours(5);
-        var newEnd = DateTime.UtcNow.AddHours(3);
-
-        var act = () => evt.Reschedule(newStart, newEnd);
+        var act = () => evt.Reschedule(EventTime.Day(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1))));
 
         act.Should().Throw<InvalidOperationException>();
     }

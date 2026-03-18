@@ -4,7 +4,7 @@ public sealed record HouseholdTimelineEntry(
     Guid EntryId,
     string EntryType,
     string Title,
-    DateTime? EffectiveDate,
+    string? EffectiveDate,
     string Status);
 
 public sealed record HouseholdTimelineResponse(
