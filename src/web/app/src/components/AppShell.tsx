@@ -8,9 +8,9 @@ import { useAppSelector } from "../store/hooks";
 
 const NAV_ITEMS = [
   { to: "/timeline", labelKey: "timeline" },
-  { to: "/week",     labelKey: "week"     },
+  { to: "/coordination", labelKey: "coordination" },
   { to: "/planning", labelKey: "planning" },
-  { to: "/areas",    labelKey: "areas"    },
+  { to: "/areas", labelKey: "areas" },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {

@@ -1328,3 +1328,423 @@ p {
     font-weight: 600;
   }
 }
+
+/* ================================================================
+   Coordination Surface
+   ================================================================ */
+
+/* ---- Page wrapper ---- */
+.coord-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ---- Controls bar (tabs + date nav) ---- */
+.coord-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---- View mode tabs ---- */
+.coord-view-tabs {
+  display: flex;
+  gap: 0.2rem;
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.2rem;
+}
+
+.coord-tab {
+  background: transparent;
+  border: none;
+  padding: 0.3rem 0.75rem;
+  border-radius: calc(var(--radius-md) - 0.1rem);
+  font-size: 0.875rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.coord-tab:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.coord-tab--active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ---- Date navigation ---- */
+.coord-date-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.coord-date-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 12rem;
+  text-align: center;
+}
+
+.coord-today-btn {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+/* ---- Content area ---- */
+.coord-content {
+  flex: 1;
+}
+
+/* ================================================================
+   Day View
+   ================================================================ */
+
+.coord-day-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.coord-day-header {
+  margin-bottom: 0.5rem;
+}
+
+.coord-day-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.coord-day-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.coord-day-member {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.85rem;
+}
+
+.coord-day-member-label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.coord-day-member-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.coord-day-member-role {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+.coord-day-member-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.coord-day-empty-member {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ================================================================
+   Month View
+   ================================================================ */
+
+.coord-month {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.coord-month-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.coord-month-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  min-width: 12rem;
+  text-align: center;
+}
+
+.coord-month-grid {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.coord-month-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  border-bottom: 1px solid var(--border);
+}
+
+.coord-month-weekday {
+  padding: 0.4rem 0.3rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.coord-month-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+
+.coord-month-row:last-child {
+  border-bottom: none;
+}
+
+.coord-month-cell {
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--border);
+  padding: 0.45rem 0.3rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  transition: background 0.12s;
+}
+
+.coord-month-cell:first-child {
+  border-left: none;
+}
+
+.coord-month-cell:hover {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.coord-month-cell--other .coord-month-day-num {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.coord-month-cell--today {
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.coord-month-cell--today .coord-month-day-num {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 50%;
+  width: 1.6rem;
+  height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.coord-month-cell--selected:not(.coord-month-cell--today) {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.coord-month-cell--selected:not(.coord-month-cell--today) .coord-month-day-num {
+  background: var(--accent);
+  color: var(--text);
+  border-radius: 50%;
+  width: 1.6rem;
+  height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.coord-month-day-num {
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+
+/* ================================================================
+   Coordination Timeline
+   ================================================================ */
+
+.coord-timeline-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.coord-tl-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.coord-tl-track {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.coord-tl-group {
+  flex: 0 0 auto;
+  width: 220px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.coord-tl-group--today {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.coord-tl-group--overdue {
+  border-color: color-mix(in srgb, var(--danger) 50%, var(--border));
+}
+
+.coord-tl-group--active {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border-color: var(--accent);
+}
+
+.coord-tl-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.65rem;
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.coord-tl-group--overdue .coord-tl-group-header {
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+  cursor: default;
+}
+
+.coord-tl-group-header:hover:not(.coord-tl-group--overdue .coord-tl-group-header) {
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+}
+
+.coord-tl-group-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.coord-tl-group-count {
+  font-size: 0.75rem;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+  border-radius: 999px;
+  padding: 0.1rem 0.4rem;
+  font-weight: 600;
+}
+
+.coord-tl-group-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.4rem 0.5rem;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.coord-tl-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg) 40%, transparent);
+}
+
+.coord-tl-entry--done {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.coord-tl-entry--overdue {
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}
+
+.coord-tl-entry-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Week view in coordination ---- */
+.coord-week-view {
+  overflow-x: auto;
+}
+
+/* ---- Week header selected state ---- */
+.wg-day-header--selected {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  color: var(--text);
+  position: relative;
+}
+
+.wg-day-header--selected .wg-day-name,
+.wg-day-header--selected .wg-day-date {
+  color: color-mix(in srgb, var(--accent) 80%, var(--text));
+}
+
+.wg-day-header--clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+}
+
+.wg-day-header--clickable:hover {
+  background: color-mix(in srgb, var(--primary) 14%, var(--surface));
+}

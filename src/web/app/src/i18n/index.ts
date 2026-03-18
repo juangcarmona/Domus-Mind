@@ -16,6 +16,7 @@ import enTasks from "./locales/en/tasks";
 import enRoutines from "./locales/en/routines";
 import enSettings from "./locales/en/settings";
 import enWeek from "./locales/en/week";
+import enCoordination from "./locales/en/coordination";
 
 // German
 import deAuth from "./locales/de/auth";
@@ -31,6 +32,7 @@ import deTasks from "./locales/de/tasks";
 import deRoutines from "./locales/de/routines";
 import deSettings from "./locales/de/settings";
 import deWeek from "./locales/de/week";
+import deCoordination from "./locales/de/coordination";
 
 // Spanish
 import esAuth from "./locales/es/auth";
@@ -46,6 +48,7 @@ import esTasks from "./locales/es/tasks";
 import esRoutines from "./locales/es/routines";
 import esSettings from "./locales/es/settings";
 import esWeek from "./locales/es/week";
+import esCoordination from "./locales/es/coordination";
 
 // French
 import frAuth from "./locales/fr/auth";
@@ -61,6 +64,7 @@ import frTasks from "./locales/fr/tasks";
 import frRoutines from "./locales/fr/routines";
 import frSettings from "./locales/fr/settings";
 import frWeek from "./locales/fr/week";
+import frCoordination from "./locales/fr/coordination";
 
 // Italian
 import itAuth from "./locales/it/auth";
@@ -76,6 +80,7 @@ import itTasks from "./locales/it/tasks";
 import itRoutines from "./locales/it/routines";
 import itSettings from "./locales/it/settings";
 import itWeek from "./locales/it/week";
+import itCoordination from "./locales/it/coordination";
 
 // Japanese
 import jaAuth from "./locales/ja/auth";
@@ -91,6 +96,7 @@ import jaTasks from "./locales/ja/tasks";
 import jaRoutines from "./locales/ja/routines";
 import jaSettings from "./locales/ja/settings";
 import jaWeek from "./locales/ja/week";
+import jaCoordination from "./locales/ja/coordination";
 
 // Chinese
 import zhAuth from "./locales/zh/auth";
@@ -106,6 +112,7 @@ import zhTasks from "./locales/zh/tasks";
 import zhRoutines from "./locales/zh/routines";
 import zhSettings from "./locales/zh/settings";
 import zhWeek from "./locales/zh/week";
+import zhCoordination from "./locales/zh/coordination";
 
 // The explicit UI language choice key stored in localStorage.
 export const UI_LANG_KEY = "dm_ui_lang";
@@ -114,13 +121,13 @@ export const SUPPORTED_LANG_CODES = ["en", "de", "es", "fr", "it", "ja", "zh"] a
 export type SupportedLangCode = (typeof SUPPORTED_LANG_CODES)[number];
 
 const resources = {
-  en: { auth: enAuth, common: enCommon, lang: enLang, nav: enNav, onboarding: enOnboarding, timeline: enTimeline, people: enPeople, areas: enAreas, plans: enPlans, tasks: enTasks, routines: enRoutines, settings: enSettings, week: enWeek },
-  de: { auth: deAuth, common: deCommon, lang: deLang, nav: deNav, onboarding: deOnboarding, timeline: deTimeline, people: dePeople, areas: deAreas, plans: dePlans, tasks: deTasks, routines: deRoutines, settings: deSettings, week: deWeek },
-  es: { auth: esAuth, common: esCommon, lang: esLang, nav: esNav, onboarding: esOnboarding, timeline: esTimeline, people: esPeople, areas: esAreas, plans: esPlans, tasks: esTasks, routines: esRoutines, settings: esSettings, week: esWeek },
-  fr: { auth: frAuth, common: frCommon, lang: frLang, nav: frNav, onboarding: frOnboarding, timeline: frTimeline, people: frPeople, areas: frAreas, plans: frPlans, tasks: frTasks, routines: frRoutines, settings: frSettings, week: frWeek },
-  it: { auth: itAuth, common: itCommon, lang: itLang, nav: itNav, onboarding: itOnboarding, timeline: itTimeline, people: itPeople, areas: itAreas, plans: itPlans, tasks: itTasks, routines: itRoutines, settings: itSettings, week: itWeek },
-  ja: { auth: jaAuth, common: jaCommon, lang: jaLang, nav: jaNav, onboarding: jaOnboarding, timeline: jaTimeline, people: jaPeople, areas: jaAreas, plans: jaPlans, tasks: jaTasks, routines: jaRoutines, settings: jaSettings, week: jaWeek },
-  zh: { auth: zhAuth, common: zhCommon, lang: zhLang, nav: zhNav, onboarding: zhOnboarding, timeline: zhTimeline, people: zhPeople, areas: zhAreas, plans: zhPlans, tasks: zhTasks, routines: zhRoutines, settings: zhSettings, week: zhWeek },
+  en: { auth: enAuth, common: enCommon, lang: enLang, nav: enNav, onboarding: enOnboarding, timeline: enTimeline, people: enPeople, areas: enAreas, plans: enPlans, tasks: enTasks, routines: enRoutines, settings: enSettings, week: enWeek, coordination: enCoordination },
+  de: { auth: deAuth, common: deCommon, lang: deLang, nav: deNav, onboarding: deOnboarding, timeline: deTimeline, people: dePeople, areas: deAreas, plans: dePlans, tasks: deTasks, routines: deRoutines, settings: deSettings, week: deWeek, coordination: deCoordination },
+  es: { auth: esAuth, common: esCommon, lang: esLang, nav: esNav, onboarding: esOnboarding, timeline: esTimeline, people: esPeople, areas: esAreas, plans: esPlans, tasks: esTasks, routines: esRoutines, settings: esSettings, week: esWeek, coordination: esCoordination },
+  fr: { auth: frAuth, common: frCommon, lang: frLang, nav: frNav, onboarding: frOnboarding, timeline: frTimeline, people: frPeople, areas: frAreas, plans: frPlans, tasks: frTasks, routines: frRoutines, settings: frSettings, week: frWeek, coordination: frCoordination },
+  it: { auth: itAuth, common: itCommon, lang: itLang, nav: itNav, onboarding: itOnboarding, timeline: itTimeline, people: itPeople, areas: itAreas, plans: itPlans, tasks: itTasks, routines: itRoutines, settings: itSettings, week: itWeek, coordination: itCoordination },
+  ja: { auth: jaAuth, common: jaCommon, lang: jaLang, nav: jaNav, onboarding: jaOnboarding, timeline: jaTimeline, people: jaPeople, areas: jaAreas, plans: jaPlans, tasks: jaTasks, routines: jaRoutines, settings: jaSettings, week: jaWeek, coordination: jaCoordination },
+  zh: { auth: zhAuth, common: zhCommon, lang: zhLang, nav: zhNav, onboarding: zhOnboarding, timeline: zhTimeline, people: zhPeople, areas: zhAreas, plans: zhPlans, tasks: zhTasks, routines: zhRoutines, settings: zhSettings, week: zhWeek, coordination: zhCoordination },
 };
 
 i18n

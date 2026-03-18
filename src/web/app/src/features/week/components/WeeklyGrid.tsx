@@ -7,6 +7,8 @@ import { TodaySummary } from "./TodaySummary";
 
 interface WeeklyGridProps {
   grid: WeeklyGridResponse;
+  selectedDate?: string; // Optional: highlight selected day column
+  onDayClick?: (date: string) => void; // Optional: handle day header click
 }
 
 function SharedRow({
@@ -34,7 +36,7 @@ function SharedRow({
   );
 }
 
-export function WeeklyGrid({ grid }: WeeklyGridProps) {
+export function WeeklyGrid({ grid, selectedDate, onDayClick }: WeeklyGridProps) {
   const { t } = useTranslation("week");
   const todayIso = new Date().toISOString().slice(0, 10);
   const members = grid.members ?? [];
@@ -58,7 +60,12 @@ export function WeeklyGrid({ grid }: WeeklyGridProps) {
     <>
       {isCurrentWeek && <TodaySummary grid={grid} today={todayIso} />}
       <div className="weekly-grid">
-        <WeekHeader days={days} today={todayIso} />
+        <WeekHeader
+          days={days}
+          today={todayIso}
+          selectedDate={selectedDate}
+          onDayClick={onDayClick}
+        />
         {hasSharedContent && (
           <SharedRow cells={sharedCells} label={t("household")} today={todayIso} />
         )}
