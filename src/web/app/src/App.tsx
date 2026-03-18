@@ -18,8 +18,7 @@ import { OnboardingPage } from "./features/onboarding/pages/OnboardingPage";
 import { TimelinePage } from "./features/timeline/pages/TimelinePage";
 import { PeoplePage } from "./features/people/pages/PeoplePage";
 import { AreasPage } from "./features/areas/pages/AreasPage";
-import { PlansPage } from "./features/plans/pages/PlansPage";
-import { TasksPage } from "./features/tasks/pages/TasksPage";
+import { PlanningPage } from "./features/planning/pages/PlanningPage";
 import { SettingsPage } from "./features/settings/pages/SettingsPage";
 import { WeekPage } from "./features/week/pages/WeekPage";
 
@@ -62,8 +61,9 @@ function AuthedApp() {
         <Route path="/timeline" element={<TimelinePage />} />
         <Route path="/people" element={<PeoplePage />} />
         <Route path="/areas" element={<AreasPage />} />
-        <Route path="/plans" element={<PlansPage />} />
-        <Route path="/tasks" element={<TasksPage />} />
+        <Route path="/planning" element={<PlanningPage />} />
+        <Route path="/plans" element={<Navigate to="/planning" replace />} />
+        <Route path="/tasks" element={<Navigate to="/planning" replace />} />
         <Route path="/week" element={<WeekPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/timeline" replace />} />

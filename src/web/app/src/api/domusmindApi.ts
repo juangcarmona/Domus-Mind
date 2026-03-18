@@ -172,7 +172,9 @@ export interface EnrichedTimelineResponse {
 export interface ScheduleEventRequest {
   title: string;
   familyId: string;
-  startTime: string;
+  date: string;
+  time?: string;
+  endDate?: string;
   endTime?: string;
   description?: string;
 }
@@ -250,8 +252,10 @@ export interface FamilyTimelineResponse {
 }
 
 export interface RescheduleEventRequest {
-  newStartTime: string;
-  newEndTime?: string | null;
+  date: string;
+  time?: string;
+  endDate?: string;
+  endTime?: string;
 }
 
 export interface HouseholdAreaItem {

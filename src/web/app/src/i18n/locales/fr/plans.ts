@@ -3,8 +3,10 @@ export default {
   add: "Planifier un événement",
   form: {
     title: "Titre",
-    start: "Début",
-    end: "Fin (facultatif)",
+    startDate: "Date",
+    startTime: "Heure (facultatif)",
+    endDate: "Date de fin (facultatif)",
+    endTime: "Heure de fin (facultatif)",
     description: "Description (facultatif)",
     save: "Planifier",
     cancel: "Annuler",

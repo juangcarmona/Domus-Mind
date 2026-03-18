@@ -3,8 +3,10 @@ export default {
   add: "イベントを追加",
   form: {
     title: "タイトル",
-    start: "開始",
-    end: "終了（任意）",
+    startDate: "日付",
+    startTime: "時間（任意）",
+    endDate: "終了日（任意）",
+    endTime: "終了時間（任意）",
     description: "説明（任意）",
     save: "追加",
     cancel: "キャンセル",

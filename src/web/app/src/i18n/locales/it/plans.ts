@@ -3,8 +3,10 @@ export default {
   add: "Pianifica evento",
   form: {
     title: "Titolo",
-    start: "Inizio",
-    end: "Fine (opzionale)",
+    startDate: "Data",
+    startTime: "Ora (opzionale)",
+    endDate: "Data fine (opzionale)",
+    endTime: "Ora fine (opzionale)",
     description: "Descrizione (opzionale)",
     save: "Pianifica",
     cancel: "Annulla",

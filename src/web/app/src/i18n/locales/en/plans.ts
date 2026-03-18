@@ -3,8 +3,10 @@ export default {
   add: "Schedule event",
   form: {
     title: "Title",
-    start: "Start",
-    end: "End (optional)",
+    startDate: "Date",
+    startTime: "Time (optional)",
+    endDate: "End date (optional)",
+    endTime: "End time (optional)",
     description: "Description (optional)",
     save: "Schedule",
     cancel: "Cancel",

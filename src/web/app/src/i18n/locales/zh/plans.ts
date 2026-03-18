@@ -3,8 +3,10 @@ export default {
   add: "安排活动",
   form: {
     title: "标题",
-    start: "开始",
-    end: "结束（可选）",
+    startDate: "日期",
+    startTime: "时间（可选）",
+    endDate: "结束日期（可选）",
+    endTime: "结束时间（可选）",
     description: "描述（可选）",
     save: "安排",
     cancel: "取消",

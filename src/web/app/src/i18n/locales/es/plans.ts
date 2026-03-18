@@ -3,8 +3,10 @@ export default {
   add: "Programar evento",
   form: {
     title: "Título",
-    start: "Inicio",
-    end: "Fin (opcional)",
+    startDate: "Fecha",
+    startTime: "Hora (opcional)",
+    endDate: "Fecha fin (opcional)",
+    endTime: "Hora fin (opcional)",
     description: "Descripción (opcional)",
     save: "Programar",
     cancel: "Cancelar",

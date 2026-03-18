@@ -4,6 +4,7 @@ export default {
   areas: "Áreas",
   plans: "Planes",
   chores: "Tareas",
+  planning: "Planificación",
   week: "Semana",
   signOut: "Cerrar sesión",
   settings: "Configuración",

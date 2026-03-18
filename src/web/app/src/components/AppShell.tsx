@@ -9,8 +9,7 @@ import { useAppSelector } from "../store/hooks";
 const NAV_ITEMS = [
   { to: "/timeline", labelKey: "timeline" },
   { to: "/week",     labelKey: "week"     },
-  { to: "/tasks",    labelKey: "chores"   },
-  { to: "/plans",    labelKey: "plans"    },
+  { to: "/planning", labelKey: "planning" },
   { to: "/areas",    labelKey: "areas"    },
 ] as const;
 

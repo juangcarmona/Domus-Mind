@@ -3,8 +3,10 @@ export default {
   add: "Termin planen",
   form: {
     title: "Titel",
-    start: "Beginn",
-    end: "Ende (optional)",
+    startDate: "Datum",
+    startTime: "Uhrzeit (optional)",
+    endDate: "Enddatum (optional)",
+    endTime: "Endzeit (optional)",
     description: "Beschreibung (optional)",
     save: "Planen",
     cancel: "Abbrechen",

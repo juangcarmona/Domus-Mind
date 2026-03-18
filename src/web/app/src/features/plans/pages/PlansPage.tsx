@@ -18,7 +18,9 @@ export function PlansPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [startTime, setStartTime] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -31,22 +33,26 @@ export function PlansPage() {
 
   async function handleSchedule(e: FormEvent) {
     e.preventDefault();
-    if (!familyId || !title.trim() || !startTime) return;
+    if (!familyId || !title.trim() || !startDate) return;
     setSubmitting(true);
     setFormError(null);
     const result = await dispatch(
       scheduleEvent({
         familyId,
         title: title.trim(),
-        startTime: new Date(startTime).toISOString(),
-        endTime: endTime ? new Date(endTime).toISOString() : undefined,
+        date: startDate,
+        time: startTime || undefined,
+        endDate: endDate || undefined,
+        endTime: endTime || undefined,
         description: description.trim() || undefined,
       }),
     );
     setSubmitting(false);
     if (scheduleEvent.fulfilled.match(result)) {
       setTitle("");
+      setStartDate("");
       setStartTime("");
+      setEndDate("");
       setEndTime("");
       setDescription("");
       setShowForm(false);
@@ -95,22 +101,44 @@ export function PlansPage() {
             </div>
             <div className="inline-form">
               <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="plan-start">{t("form.start")}</label>
+                <label htmlFor="plan-start-date">{t("form.startDate")}</label>
                 <input
-                  id="plan-start"
+                  id="plan-start-date"
                   className="form-control"
-                  type="datetime-local"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
                   required
                 />
               </div>
               <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="plan-end">{t("form.end")}</label>
+                <label htmlFor="plan-start-time">{t("form.startTime")}</label>
                 <input
-                  id="plan-end"
+                  id="plan-start-time"
                   className="form-control"
-                  type="datetime-local"
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="inline-form">
+              <div className="form-group" style={{ flex: 1 }}>
+                <label htmlFor="plan-end-date">{t("form.endDate")}</label>
+                <input
+                  id="plan-end-date"
+                  className="form-control"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label htmlFor="plan-end-time">{t("form.endTime")}</label>
+                <input
+                  id="plan-end-time"
+                  className="form-control"
+                  type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
                 />

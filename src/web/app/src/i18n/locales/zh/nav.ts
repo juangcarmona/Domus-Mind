@@ -4,6 +4,7 @@ export default {
   areas: "区域",
   plans: "计划",
   chores: "家务",
+  planning: "规划",
   week: "周",
   signOut: "退出",
   settings: "设置",

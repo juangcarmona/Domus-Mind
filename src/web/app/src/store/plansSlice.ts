@@ -36,13 +36,17 @@ export const scheduleEvent = createAsyncThunk(
     {
       familyId,
       title,
-      startTime,
+      date,
+      time,
+      endDate,
       endTime,
       description,
     }: {
       familyId: string;
       title: string;
-      startTime: string;
+      date: string;
+      time?: string;
+      endDate?: string;
       endTime?: string;
       description?: string;
     },
@@ -52,7 +56,9 @@ export const scheduleEvent = createAsyncThunk(
       const res = await domusmindApi.scheduleEvent({
         title,
         familyId,
-        startTime,
+        date,
+        time,
+        endDate,
         endTime,
         description,
       });

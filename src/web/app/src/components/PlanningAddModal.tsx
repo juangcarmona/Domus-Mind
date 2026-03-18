@@ -12,9 +12,10 @@ interface Props {
   members: { memberId: string; name: string }[];
   onClose: () => void;
   onSuccess: () => void;
+  initialStep?: ConceptStep;
 }
 
-export function PlanningAddModal({ familyId, members, onClose, onSuccess }: Props) {
+export function PlanningAddModal({ familyId, members, onClose, onSuccess, initialStep }: Props) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation("timeline");
   const { t: tPlans } = useTranslation("plans");
@@ -22,12 +23,14 @@ export function PlanningAddModal({ familyId, members, onClose, onSuccess }: Prop
   const { t: tRoutines } = useTranslation("routines");
   const { t: tCommon } = useTranslation("common");
 
-  const [step, setStep] = useState<ConceptStep>("choose");
+  const [step, setStep] = useState<ConceptStep>(initialStep ?? "choose");
 
   // Plan form state
   const [planTitle, setPlanTitle] = useState("");
-  const [planStart, setPlanStart] = useState("");
-  const [planEnd, setPlanEnd] = useState("");
+  const [planStartDate, setPlanStartDate] = useState("");
+  const [planStartTime, setPlanStartTime] = useState("");
+  const [planEndDate, setPlanEndDate] = useState("");
+  const [planEndTime, setPlanEndTime] = useState("");
   const [planDesc, setPlanDesc] = useState("");
   const [planSubmitting, setPlanSubmitting] = useState(false);
   const [planError, setPlanError] = useState<string | null>(null);
@@ -61,15 +64,17 @@ export function PlanningAddModal({ familyId, members, onClose, onSuccess }: Prop
 
   async function handlePlanSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!planTitle.trim() || !planStart) return;
+    if (!planTitle.trim() || !planStartDate) return;
     setPlanSubmitting(true);
     setPlanError(null);
     const result = await dispatch(
       scheduleEvent({
         familyId,
         title: planTitle.trim(),
-        startTime: new Date(planStart).toISOString(),
-        endTime: planEnd ? new Date(planEnd).toISOString() : undefined,
+        date: planStartDate,
+        time: planStartTime || undefined,
+        endDate: planEndDate || undefined,
+        endTime: planEndTime || undefined,
         description: planDesc.trim() || undefined,
       }),
     );
@@ -202,24 +207,46 @@ export function PlanningAddModal({ familyId, members, onClose, onSuccess }: Prop
               </div>
               <div className="inline-form">
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label htmlFor="pm-plan-start">{tPlans("form.start")}</label>
+                  <label htmlFor="pm-plan-start-date">{tPlans("form.startDate")}</label>
                   <input
-                    id="pm-plan-start"
+                    id="pm-plan-start-date"
                     className="form-control"
-                    type="datetime-local"
-                    value={planStart}
-                    onChange={(e) => setPlanStart(e.target.value)}
+                    type="date"
+                    value={planStartDate}
+                    onChange={(e) => setPlanStartDate(e.target.value)}
                     required
                   />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label htmlFor="pm-plan-end">{tPlans("form.end")}</label>
+                  <label htmlFor="pm-plan-start-time">{tPlans("form.startTime")}</label>
                   <input
-                    id="pm-plan-end"
+                    id="pm-plan-start-time"
                     className="form-control"
-                    type="datetime-local"
-                    value={planEnd}
-                    onChange={(e) => setPlanEnd(e.target.value)}
+                    type="time"
+                    value={planStartTime}
+                    onChange={(e) => setPlanStartTime(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="inline-form">
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label htmlFor="pm-plan-end-date">{tPlans("form.endDate")}</label>
+                  <input
+                    id="pm-plan-end-date"
+                    className="form-control"
+                    type="date"
+                    value={planEndDate}
+                    onChange={(e) => setPlanEndDate(e.target.value)}
+                  />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label htmlFor="pm-plan-end-time">{tPlans("form.endTime")}</label>
+                  <input
+                    id="pm-plan-end-time"
+                    className="form-control"
+                    type="time"
+                    value={planEndTime}
+                    onChange={(e) => setPlanEndTime(e.target.value)}
                   />
                 </div>
               </div>
