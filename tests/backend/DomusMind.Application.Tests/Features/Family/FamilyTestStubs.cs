@@ -25,6 +25,19 @@ internal sealed class StubFamilyAccessGranter : IFamilyAccessGranter
     }
 }
 
+internal sealed class StubUserFamilyAccessReader : IUserFamilyAccessReader
+{
+    private readonly Guid? _familyId;
+
+    public StubUserFamilyAccessReader(Guid? familyId = null)
+    {
+        _familyId = familyId;
+    }
+
+    public Task<Guid?> GetFamilyIdForUserAsync(Guid userId, CancellationToken cancellationToken = default)
+        => Task.FromResult(_familyId);
+}
+
 internal sealed class StubEventLogWriter : IEventLogWriter
 {
     public List<IDomainEvent> WrittenEvents { get; } = [];

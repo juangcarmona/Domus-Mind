@@ -15,17 +15,20 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
     private readonly IEventLogWriter _eventLogWriter;
     private readonly IFamilyAccessGranter _familyAccessGranter;
     private readonly ISupportedLanguageReader _languageReader;
+    private readonly IUserFamilyAccessReader _familyAccessReader;
 
     public CreateFamilyCommandHandler(
         IDomusMindDbContext dbContext,
         IEventLogWriter eventLogWriter,
         IFamilyAccessGranter familyAccessGranter,
-        ISupportedLanguageReader languageReader)
+        ISupportedLanguageReader languageReader,
+        IUserFamilyAccessReader familyAccessReader)
     {
         _dbContext = dbContext;
         _eventLogWriter = eventLogWriter;
         _familyAccessGranter = familyAccessGranter;
         _languageReader = languageReader;
+        _familyAccessReader = familyAccessReader;
     }
 
     public async Task<CreateFamilyResponse> Handle(
@@ -37,6 +40,14 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
 
         if (command.Name.Trim().Length > 100)
             throw new FamilyException(FamilyErrorCode.InvalidInput, "Family name cannot exceed 100 characters.");
+
+        var existingFamilyId = await _familyAccessReader.GetFamilyIdForUserAsync(
+            command.RequestedByUserId, cancellationToken);
+
+        if (existingFamilyId.HasValue)
+            throw new FamilyException(
+                FamilyErrorCode.FamilyAlreadyExists,
+                "You already have a family associated with your account. Onboarding can only be completed once.");
 
         string? languageCode = null;
         if (!string.IsNullOrWhiteSpace(command.PrimaryLanguageCode))

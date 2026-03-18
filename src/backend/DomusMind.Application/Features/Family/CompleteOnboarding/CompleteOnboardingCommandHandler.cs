@@ -70,7 +70,8 @@ public sealed class CompleteOnboardingCommandHandler
                 MemberRole.Adult,
                 true,
                 command.SelfBirthDate,
-                now);
+                now,
+                command.RequestedByUserId);
             addedMembers.Add(creator);
 
             foreach (var additional in command.AdditionalMembers)

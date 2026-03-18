@@ -169,6 +169,22 @@ public sealed class CompleteOnboardingCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_LinksAuthUserIdToCreatorMember()
+    {
+        var (db, family) = await BuildWithFamilyAsync();
+        var userId = Guid.NewGuid();
+        var handler = BuildHandler(db);
+
+        await handler.Handle(
+            new CompleteOnboardingCommand(
+                family.Id.Value, userId, "Juan", null, []),
+            CancellationToken.None);
+
+        var member = await db.Set<FamilyMember>().SingleAsync();
+        member.AuthUserId.Should().Be(userId);
+    }
+
+    [Fact]
     public async Task Handle_WithBirthDate_PersistsBirthDate()
     {
         var (db, family) = await BuildWithFamilyAsync();

@@ -307,6 +307,9 @@ export const domusmindApi = {
       body: JSON.stringify(body),
     }),
 
+  getMyFamily: () =>
+    request<FamilyResponse>("/api/families/mine"),
+
   getFamily: (familyId: string) =>
     request<FamilyResponse>(`/api/families/${familyId}`),
 

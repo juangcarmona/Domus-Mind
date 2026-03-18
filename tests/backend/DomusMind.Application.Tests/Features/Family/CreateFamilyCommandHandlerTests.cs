@@ -18,14 +18,16 @@ public sealed class CreateFamilyCommandHandlerTests
     private static CreateFamilyCommandHandler BuildHandler(
         DomusMindDbContext? db = null,
         StubFamilyAccessGranter? granter = null,
-        StubSupportedLanguageReader? languageReader = null)
+        StubSupportedLanguageReader? languageReader = null,
+        StubUserFamilyAccessReader? accessReader = null)
     {
         var context = db ?? CreateDb();
         return new CreateFamilyCommandHandler(
             context,
             new EventLogWriter(context),
             granter ?? new StubFamilyAccessGranter(),
-            languageReader ?? new StubSupportedLanguageReader());
+            languageReader ?? new StubSupportedLanguageReader(),
+            accessReader ?? new StubUserFamilyAccessReader());
     }
 
     [Fact]
@@ -115,6 +117,21 @@ public sealed class CreateFamilyCommandHandlerTests
         var saved = await db.Families.FindAsync(
             Domain.Family.FamilyId.From(result.FamilyId));
         saved.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task Handle_WhenUserAlreadyHasFamily_ThrowsFamilyAlreadyExistsException()
+    {
+        var existingFamilyId = Guid.NewGuid();
+        var accessReader = new StubUserFamilyAccessReader(existingFamilyId);
+        var handler = BuildHandler(accessReader: accessReader);
+
+        var act = () => handler.Handle(
+            new CreateFamilyCommand("Another Family", null, Guid.NewGuid()),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FamilyException>()
+            .Where(e => e.Code == FamilyErrorCode.FamilyAlreadyExists);
     }
 
     [Theory]

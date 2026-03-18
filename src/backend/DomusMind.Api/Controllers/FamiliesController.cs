@@ -10,6 +10,7 @@ using DomusMind.Application.Features.Family.GetFamily;
 using DomusMind.Application.Features.Family.GetFamilyMembers;
 using DomusMind.Application.Features.Family.GetHouseholdTimeline;
 using DomusMind.Application.Features.Family.GetMemberActivity;
+using DomusMind.Application.Features.Family.GetMyFamily;
 using DomusMind.Application.Features.Family.GetWeeklyGrid;
 using DomusMind.Contracts.Family;
 using Microsoft.AspNetCore.Authorization;
@@ -27,6 +28,28 @@ public sealed class FamiliesController : ControllerBase
     public FamiliesController(ICurrentUser currentUser)
     {
         _currentUser = currentUser;
+    }
+
+    /// <summary>Returns the family that belongs to the authenticated user, if one exists.</summary>
+    [HttpGet("mine")]
+    [ProducesResponseType(typeof(FamilyResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetMyFamily(
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new GetMyFamilyQuery(_currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (FamilyException ex) when (ex.Code == FamilyErrorCode.FamilyNotFound)
+        {
+            return NotFound();
+        }
     }
 
     /// <summary>Creates a new family. The authenticated user is granted access to the created family.</summary>
@@ -50,6 +73,10 @@ public sealed class FamiliesController : ControllerBase
         catch (FamilyException ex) when (ex.Code == FamilyErrorCode.InvalidInput)
         {
             return BadRequest(new { error = ex.Message });
+        }
+        catch (FamilyException ex) when (ex.Code == FamilyErrorCode.FamilyAlreadyExists)
+        {
+            return Conflict(new { error = ex.Message });
         }
     }
 
@@ -322,6 +349,8 @@ public sealed class FamiliesController : ControllerBase
         FamilyErrorCode.AccessDenied =>
             StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message }),
         FamilyErrorCode.MemberAlreadyExists =>
+            Conflict(new { error = ex.Message }),
+        FamilyErrorCode.FamilyAlreadyExists =>
             Conflict(new { error = ex.Message }),
         FamilyErrorCode.InvalidInput =>
             BadRequest(new { error = ex.Message }),

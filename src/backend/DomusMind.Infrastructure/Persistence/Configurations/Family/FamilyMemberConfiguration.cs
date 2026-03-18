@@ -49,6 +49,10 @@ public sealed class FamilyMemberConfiguration : IEntityTypeConfiguration<FamilyM
             .HasColumnName("birth_date")
             .IsRequired(false);
 
+        builder.Property(m => m.AuthUserId)
+            .HasColumnName("auth_user_id")
+            .IsRequired(false);
+
         // Shadow FK to parent family
         builder.Property<FamilyId>("FamilyId")
             .HasConversion(

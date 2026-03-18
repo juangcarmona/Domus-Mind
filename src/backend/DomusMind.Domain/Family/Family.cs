@@ -41,9 +41,9 @@ public sealed class Family : AggregateRoot<FamilyId>
 
     // Backward-compatible overload
     public FamilyMember AddMember(MemberId memberId, MemberName name, MemberRole role, DateTime addedAtUtc)
-        => AddMember(memberId, name, role, false, null, addedAtUtc);
+        => AddMember(memberId, name, role, false, null, addedAtUtc, null);
 
-    public FamilyMember AddMember(MemberId memberId, MemberName name, MemberRole role, bool isManager, DateOnly? birthDate, DateTime addedAtUtc)
+    public FamilyMember AddMember(MemberId memberId, MemberName name, MemberRole role, bool isManager, DateOnly? birthDate, DateTime addedAtUtc, Guid? authUserId = null)
     {
         if (isManager && role.Value != "Adult")
             throw new InvalidOperationException(
@@ -53,7 +53,7 @@ public sealed class Family : AggregateRoot<FamilyId>
             throw new InvalidOperationException(
                 $"A member with id '{memberId.Value}' already exists in this family.");
 
-        var member = FamilyMember.Create(memberId, name, role, isManager, birthDate, addedAtUtc);
+        var member = FamilyMember.Create(memberId, name, role, isManager, birthDate, addedAtUtc, authUserId);
         _members.Add(member);
 
         RaiseDomainEvent(new MemberAdded(Guid.NewGuid(), Id.Value, memberId.Value, addedAtUtc));

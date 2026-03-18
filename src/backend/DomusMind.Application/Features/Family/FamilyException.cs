@@ -6,6 +6,7 @@ public enum FamilyErrorCode
     AccessDenied,
     MemberAlreadyExists,
     InvalidInput,
+    FamilyAlreadyExists,
 }
 
 public sealed class FamilyException : Exception

@@ -74,6 +74,7 @@ public static class AuthInfrastructureExtensions
         services.AddScoped<IAuthUserRepository, AuthUserRepository>();
         services.AddScoped<IFamilyAuthorizationService, FamilyAuthorizationService>();
         services.AddScoped<IFamilyAccessGranter, FamilyAccessGranter>();
+        services.AddScoped<IUserFamilyAccessReader, UserFamilyAccessReader>();
 
         return services;
     }

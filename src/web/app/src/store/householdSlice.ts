@@ -38,14 +38,12 @@ const initialState: HouseholdState = {
 export const bootstrapHousehold = createAsyncThunk(
   "household/bootstrap",
   async (_) => {
-    const familyId = getStoredFamilyId();
-    if (!familyId) return null;
     try {
-      const family = await domusmindApi.getFamily(familyId);
-      const members = await domusmindApi.getMembers(familyId);
+      const family = await domusmindApi.getMyFamily();
+      const members = await domusmindApi.getMembers(family.familyId);
+      storeFamilyId(family.familyId);
       return { family, members };
     } catch {
-      clearStoredFamilyId();
       return null;
     }
   },
