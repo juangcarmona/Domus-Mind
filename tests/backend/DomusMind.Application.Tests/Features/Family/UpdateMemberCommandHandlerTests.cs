@@ -240,4 +240,25 @@ public sealed class UpdateMemberCommandHandlerTests
         await act.Should().ThrowAsync<FamilyException>()
             .Where(e => e.Code == FamilyErrorCode.InvalidInput);
     }
+
+    [Fact]
+    public async Task Handle_ManagerFlagOnChildRole_ThrowsFamilyException()
+    {
+        var (db, family, managerUserId, targetMemberId) = await BuildFamilyWithManagerAndMemberAsync();
+        var handler = BuildHandler(db);
+
+        var act = () => handler.Handle(
+            new UpdateMemberCommand(
+                family.Id.Value,
+                targetMemberId.Value,
+                "Alice",
+                "Child",
+                null,
+                true, // manager=true but role=Child is invalid
+                managerUserId),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FamilyException>()
+            .Where(e => e.Code == FamilyErrorCode.InvalidInput);
+    }
 }

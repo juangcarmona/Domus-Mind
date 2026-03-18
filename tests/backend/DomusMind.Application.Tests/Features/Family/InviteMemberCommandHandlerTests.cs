@@ -313,4 +313,26 @@ public sealed class InviteMemberCommandHandlerTests
         result.BirthDate.Should().Be(birthDate);
         result.IsManager.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task Handle_ManagerFlagOnChildRole_ThrowsFamilyException()
+    {
+        var (db, family, managerUserId) = await BuildFamilyWithManagerAsync();
+        var handler = BuildHandler(db);
+
+        var act = () => handler.Handle(
+            new InviteMemberCommand(
+                family.Id.Value,
+                "Jack",
+                "Child",
+                null,
+                true, // manager=true but role=Child is invalid
+                "jack@household.local",
+                "Password123",
+                managerUserId),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FamilyException>()
+            .Where(e => e.Code == FamilyErrorCode.InvalidInput);
+    }
 }

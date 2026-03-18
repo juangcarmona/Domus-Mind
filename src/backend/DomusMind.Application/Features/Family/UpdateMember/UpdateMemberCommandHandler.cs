@@ -55,6 +55,9 @@ public sealed class UpdateMemberCommandHandler : ICommandHandler<UpdateMemberCom
         var memberId = MemberId.From(command.MemberId);
         var now = DateTime.UtcNow;
 
+        if (command.IsManager && role.Value != "Adult")
+            throw new FamilyException(FamilyErrorCode.InvalidInput, "Manager role can only be assigned to adult members.");
+
         FamilyMember updatedMember;
         try
         {

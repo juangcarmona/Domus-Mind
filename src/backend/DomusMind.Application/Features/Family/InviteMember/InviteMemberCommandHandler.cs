@@ -82,6 +82,9 @@ public sealed class InviteMemberCommandHandler : ICommandHandler<InviteMemberCom
         var role = MemberRole.Create(command.Role);
         var now = DateTime.UtcNow;
 
+        if (command.IsManager && role.Value != "Adult")
+            throw new FamilyException(FamilyErrorCode.InvalidInput, "Manager role can only be assigned to adult members.");
+
         try
         {
             family.AddMember(memberId, name, role, command.IsManager, command.BirthDate, now, authUserId);
