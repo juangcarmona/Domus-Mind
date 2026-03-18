@@ -4,7 +4,9 @@ public sealed record ScheduleEventResponse(
     Guid CalendarEventId,
     Guid FamilyId,
     string Title,
-    DateTime StartTime,
-    DateTime? EndTime,
+    string Date,
+    string? Time,
+    string? EndDate,
+    string? EndTime,
     string Status,
     DateTime CreatedAtUtc);

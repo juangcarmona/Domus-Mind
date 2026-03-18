@@ -1,6 +1,7 @@
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Tasks;
 using DomusMind.Domain.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -43,9 +44,19 @@ public sealed class RescheduleTaskCommandHandler
         if (!canAccess)
             throw new TasksException(TasksErrorCode.AccessDenied, "Access to this family is denied.");
 
+        Domain.Tasks.ValueObjects.TaskSchedule newSchedule;
         try
         {
-            task.Reschedule(command.NewDueDate);
+            newSchedule = TemporalParser.ParseTaskSchedule(command.DueDate, command.DueTime);
+        }
+        catch (Exception ex) when (ex is FormatException or ArgumentException)
+        {
+            throw new TasksException(TasksErrorCode.InvalidInput, ex.Message);
+        }
+
+        try
+        {
+            task.Reschedule(newSchedule);
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("completed"))
         {
@@ -59,6 +70,8 @@ public sealed class RescheduleTaskCommandHandler
         await _eventLogWriter.WriteAsync(task.DomainEvents, cancellationToken);
         task.ClearDomainEvents();
 
-        return new RescheduleTaskResponse(command.TaskId, command.NewDueDate, task.Status.ToString());
+        var (dueDate, dueTime) = TemporalParser.FormatTaskSchedule(newSchedule);
+
+        return new RescheduleTaskResponse(command.TaskId, dueDate, dueTime, task.Status.ToString());
     }
 }

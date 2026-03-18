@@ -25,10 +25,9 @@ public sealed class RescheduleTaskCommandHandlerTests
     private static async Task<(DomusMindDbContext Db, HouseholdTask Task)> BuildWithTaskAsync()
     {
         var db = CreateDb();
-        var task = HouseholdTask.Create(
-            TaskId.New(), FamilyId.New(),
-            TaskTitle.Create("Schedule vet appointment"),
-            null, DateTime.UtcNow.AddDays(2), DateTime.UtcNow);
+        var task = TaskTestHelpers.MakeTask(
+            FamilyId.New(), "Schedule vet appointment",
+            new DateOnly(2026, 4, 5));
         db.Set<HouseholdTask>().Add(task);
         await db.SaveChangesAsync();
         task.ClearDomainEvents();
@@ -39,31 +38,58 @@ public sealed class RescheduleTaskCommandHandlerTests
     public async Task Handle_WithNewDueDate_ReturnsResponse()
     {
         var (db, task) = await BuildWithTaskAsync();
-        var newDue = DateTime.UtcNow.AddDays(7);
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new RescheduleTaskCommand(task.Id.Value, newDue, Guid.NewGuid()),
+            new RescheduleTaskCommand(task.Id.Value, "2026-04-20", null, Guid.NewGuid()),
             CancellationToken.None);
 
         result.TaskId.Should().Be(task.Id.Value);
-        result.NewDueDate.Should().Be(newDue);
+        result.DueDate.Should().Be("2026-04-20");
+        result.DueTime.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_WithDueDateTime_ReturnsBothDateAndTime()
+    {
+        var (db, task) = await BuildWithTaskAsync();
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new RescheduleTaskCommand(task.Id.Value, "2026-04-20", "09:00", Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.DueDate.Should().Be("2026-04-20");
+        result.DueTime.Should().Be("09:00");
+    }
+
+    [Fact]
+    public async Task Handle_RemoveDueDate_ClearsSchedule()
+    {
+        var (db, task) = await BuildWithTaskAsync();
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new RescheduleTaskCommand(task.Id.Value, null, null, Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.DueDate.Should().BeNull();
+        result.DueTime.Should().BeNull();
     }
 
     [Fact]
     public async Task Handle_PersistsNewDueDate()
     {
         var (db, task) = await BuildWithTaskAsync();
-        var newDue = DateTime.UtcNow.AddDays(14);
         var handler = BuildHandler(db);
 
         await handler.Handle(
-            new RescheduleTaskCommand(task.Id.Value, newDue, Guid.NewGuid()),
+            new RescheduleTaskCommand(task.Id.Value, "2026-05-01", null, Guid.NewGuid()),
             CancellationToken.None);
 
         var saved = await db.Set<HouseholdTask>()
             .SingleOrDefaultAsync(t => t.Id == task.Id);
-        saved!.DueDate.Should().Be(newDue);
+        saved!.Schedule.Date.Should().Be(new DateOnly(2026, 5, 1));
     }
 
     [Fact]
@@ -73,7 +99,7 @@ public sealed class RescheduleTaskCommandHandlerTests
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(
-            new RescheduleTaskCommand(Guid.NewGuid(), DateTime.UtcNow.AddDays(3), Guid.NewGuid()),
+            new RescheduleTaskCommand(Guid.NewGuid(), "2026-04-20", null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<TasksException>()
@@ -88,7 +114,7 @@ public sealed class RescheduleTaskCommandHandlerTests
         var handler = BuildHandler(db, auth);
 
         var act = () => handler.Handle(
-            new RescheduleTaskCommand(task.Id.Value, DateTime.UtcNow.AddDays(5), Guid.NewGuid()),
+            new RescheduleTaskCommand(task.Id.Value, "2026-04-20", null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<TasksException>()
@@ -105,7 +131,7 @@ public sealed class RescheduleTaskCommandHandlerTests
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(
-            new RescheduleTaskCommand(task.Id.Value, DateTime.UtcNow.AddDays(5), Guid.NewGuid()),
+            new RescheduleTaskCommand(task.Id.Value, "2026-04-20", null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<TasksException>()
@@ -122,7 +148,7 @@ public sealed class RescheduleTaskCommandHandlerTests
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(
-            new RescheduleTaskCommand(task.Id.Value, DateTime.UtcNow.AddDays(5), Guid.NewGuid()),
+            new RescheduleTaskCommand(task.Id.Value, "2026-04-20", null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<TasksException>()

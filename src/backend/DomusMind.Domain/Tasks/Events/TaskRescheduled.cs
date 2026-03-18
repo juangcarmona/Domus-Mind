@@ -1,9 +1,10 @@
 using DomusMind.Domain.Abstractions;
+using DomusMind.Domain.Tasks.ValueObjects;
 
 namespace DomusMind.Domain.Tasks.Events;
 
 public sealed record TaskRescheduled(
     Guid EventId,
     Guid TaskId,
-    DateTime? NewDueDate,
+    TaskSchedule NewSchedule,
     DateTime OccurredAtUtc) : IDomainEvent;

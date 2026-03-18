@@ -21,27 +21,13 @@ public sealed class GetFamilyTimelineQueryHandlerTests
         StubCalendarAuthorizationService? auth = null)
         => new(db, auth ?? new StubCalendarAuthorizationService());
 
-    private static Domain.Calendar.CalendarEvent MakeEvent(
-        FamilyId familyId,
-        string title,
-        DateTime startTime,
-        DateTime? endTime = null)
-        => Domain.Calendar.CalendarEvent.Create(
-            CalendarEventId.New(),
-            familyId,
-            EventTitle.Create(title),
-            null,
-            startTime,
-            endTime,
-            DateTime.UtcNow);
-
     [Fact]
-    public async Task Handle_WithFamilyEvents_ReturnsOrderedByStartTime()
+    public async Task Handle_WithFamilyEvents_ReturnsOrderedByDate()
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var later = MakeEvent(familyId, "Later Event", DateTime.UtcNow.AddDays(5));
-        var sooner = MakeEvent(familyId, "Sooner Event", DateTime.UtcNow.AddDays(1));
+        var later = CalendarTestHelpers.MakeEvent(familyId, "Later Event", new DateOnly(2026, 4, 10));
+        var sooner = CalendarTestHelpers.MakeEvent(familyId, "Sooner Event", new DateOnly(2026, 4, 1));
         db.Set<Domain.Calendar.CalendarEvent>().AddRange(later, sooner);
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
@@ -88,14 +74,14 @@ public sealed class GetFamilyTimelineQueryHandlerTests
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var past = MakeEvent(familyId, "Past Event", DateTime.UtcNow.AddDays(-3));
-        var future = MakeEvent(familyId, "Future Event", DateTime.UtcNow.AddDays(3));
+        var past = CalendarTestHelpers.MakeEvent(familyId, "Past Event", new DateOnly(2026, 3, 1));
+        var future = CalendarTestHelpers.MakeEvent(familyId, "Future Event", new DateOnly(2026, 4, 10));
         db.Set<Domain.Calendar.CalendarEvent>().AddRange(past, future);
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new GetFamilyTimelineQuery(familyId.Value, DateTime.UtcNow, null, Guid.NewGuid()),
+            new GetFamilyTimelineQuery(familyId.Value, new DateOnly(2026, 4, 1), null, Guid.NewGuid()),
             CancellationToken.None);
 
         result.Events.Should().ContainSingle()
@@ -108,8 +94,8 @@ public sealed class GetFamilyTimelineQueryHandlerTests
         var db = CreateDb();
         var familyA = FamilyId.New();
         var familyB = FamilyId.New();
-        var eventA = MakeEvent(familyA, "Family A Event", DateTime.UtcNow.AddDays(1));
-        var eventB = MakeEvent(familyB, "Family B Event", DateTime.UtcNow.AddDays(1));
+        var eventA = CalendarTestHelpers.MakeEvent(familyA, "Family A Event", new DateOnly(2026, 4, 1));
+        var eventB = CalendarTestHelpers.MakeEvent(familyB, "Family B Event", new DateOnly(2026, 4, 1));
         db.Set<Domain.Calendar.CalendarEvent>().AddRange(eventA, eventB);
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);

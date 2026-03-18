@@ -6,7 +6,7 @@ public sealed record EnrichedTimelineEntry(
     Guid EntryId,
     string EntryType,
     string Title,
-    DateTime? EffectiveDate,
+    string? EffectiveDate,
     string Status,
     string Priority,
     string Group,

@@ -13,7 +13,7 @@ public sealed class HouseholdTaskReassignTests
         var task = HouseholdTask.Create(
             TaskId.New(), FamilyId.New(),
             TaskTitle.Create("Clean Kitchen"), null,
-            DateTime.UtcNow.AddDays(1), DateTime.UtcNow);
+            TaskSchedule.WithDueDate(new DateOnly(2026, 4, 1)), DateTime.UtcNow);
         task.Assign(MemberId.New());
         task.ClearDomainEvents();
         return task;
@@ -24,7 +24,7 @@ public sealed class HouseholdTaskReassignTests
         var task = HouseholdTask.Create(
             TaskId.New(), FamilyId.New(),
             TaskTitle.Create("Fix Sink"), null,
-            null, DateTime.UtcNow);
+            TaskSchedule.NoSchedule(), DateTime.UtcNow);
         task.ClearDomainEvents();
         return task;
     }

@@ -1,6 +1,7 @@
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Family;
 using DomusMind.Domain.Family;
 using Microsoft.EntityFrameworkCore;
@@ -52,20 +53,28 @@ public sealed class GetHouseholdTimelineQueryHandler
             .ToListAsync(cancellationToken);
 
         var calendarEntries = calendarEvents
-            .Select(e => new HouseholdTimelineEntry(
-                e.Id.Value,
-                "CalendarEvent",
-                e.Title.Value,
-                e.StartTime,
-                e.Status.ToString()));
+            .Select(e =>
+            {
+                var (date, _, _, _) = TemporalParser.FormatEventTime(e.Time);
+                return new HouseholdTimelineEntry(
+                    e.Id.Value,
+                    "CalendarEvent",
+                    e.Title.Value,
+                    date,
+                    e.Status.ToString());
+            });
 
         var taskEntries = tasks
-            .Select(t => new HouseholdTimelineEntry(
-                t.Id.Value,
-                "Task",
-                t.Title.Value,
-                t.DueDate,
-                t.Status.ToString()));
+            .Select(t =>
+            {
+                var (dueDate, _) = TemporalParser.FormatTaskSchedule(t.Schedule);
+                return new HouseholdTimelineEntry(
+                    t.Id.Value,
+                    "Task",
+                    t.Title.Value,
+                    dueDate,
+                    t.Status.ToString());
+            });
 
         var routineEntries = routines
             .Select(r => new HouseholdTimelineEntry(
@@ -78,7 +87,7 @@ public sealed class GetHouseholdTimelineQueryHandler
         var entries = calendarEntries
             .Concat(taskEntries)
             .Concat(routineEntries)
-            .OrderBy(e => e.EffectiveDate.HasValue ? 0 : 1)
+            .OrderBy(e => e.EffectiveDate is null ? 1 : 0)
             .ThenBy(e => e.EffectiveDate)
             .ToList();
 

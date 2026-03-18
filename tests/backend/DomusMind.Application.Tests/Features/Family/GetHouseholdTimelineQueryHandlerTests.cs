@@ -27,20 +27,21 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
     private static Domain.Calendar.CalendarEvent MakeCalendarEvent(
         FamilyId familyId,
         string title,
-        DateTime startTime)
+        DateOnly date)
         => Domain.Calendar.CalendarEvent.Create(
             CalendarEventId.New(), familyId,
             EventTitle.Create(title), null,
-            startTime, null, DateTime.UtcNow);
+            EventTime.Day(date), DateTime.UtcNow);
 
     private static HouseholdTask MakeTask(
         FamilyId familyId,
         string title,
-        DateTime? dueDate = null)
+        DateOnly? dueDate = null)
         => HouseholdTask.Create(
             TaskId.New(), familyId,
             TaskTitle.Create(title), null,
-            dueDate, DateTime.UtcNow);
+            dueDate.HasValue ? TaskSchedule.WithDueDate(dueDate.Value) : TaskSchedule.NoSchedule(),
+            DateTime.UtcNow);
 
     private static Routine MakeRoutine(
         FamilyId familyId,
@@ -96,7 +97,7 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var evt = MakeCalendarEvent(familyId, "School Play", DateTime.UtcNow.AddDays(3));
+        var evt = MakeCalendarEvent(familyId, "School Play", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(3)));
         db.Set<Domain.Calendar.CalendarEvent>().Add(evt);
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
@@ -114,7 +115,7 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var task = MakeTask(familyId, "Buy milk", DateTime.UtcNow.AddDays(1));
+        var task = MakeTask(familyId, "Buy milk", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)));
         db.Set<HouseholdTask>().Add(task);
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
@@ -153,9 +154,9 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
         var db = CreateDb();
         var familyId = FamilyId.New();
         db.Set<Domain.Calendar.CalendarEvent>().Add(
-            MakeCalendarEvent(familyId, "Family Dinner", DateTime.UtcNow.AddDays(2)));
+            MakeCalendarEvent(familyId, "Family Dinner", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2))));
         db.Set<HouseholdTask>().Add(
-            MakeTask(familyId, "Fix the sink", DateTime.UtcNow.AddDays(1)));
+            MakeTask(familyId, "Fix the sink", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1))));
         db.Set<Routine>().Add(
             MakeRoutine(familyId, "Morning Workout"));
         await db.SaveChangesAsync();
@@ -180,9 +181,9 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
         var db = CreateDb();
         var familyId = FamilyId.New();
         db.Set<Domain.Calendar.CalendarEvent>().Add(
-            MakeCalendarEvent(familyId, "Later Event", DateTime.UtcNow.AddDays(5)));
+            MakeCalendarEvent(familyId, "Later Event", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(5))));
         db.Set<HouseholdTask>().Add(
-            MakeTask(familyId, "Earlier Task", DateTime.UtcNow.AddDays(1)));
+            MakeTask(familyId, "Earlier Task", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1))));
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
@@ -201,7 +202,7 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
         var db = CreateDb();
         var familyId = FamilyId.New();
         db.Set<Domain.Calendar.CalendarEvent>().Add(
-            MakeCalendarEvent(familyId, "Dentist Appointment", DateTime.UtcNow.AddDays(3)));
+            MakeCalendarEvent(familyId, "Dentist Appointment", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(3))));
         db.Set<Routine>().Add(
             MakeRoutine(familyId, "Daily Standup"));
         await db.SaveChangesAsync();
@@ -223,7 +224,7 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
         var db = CreateDb();
         var familyId = FamilyId.New();
         db.Set<HouseholdTask>().Add(MakeTask(familyId, "Undated Task", null));
-        db.Set<HouseholdTask>().Add(MakeTask(familyId, "Dated Task", DateTime.UtcNow.AddDays(1)));
+        db.Set<HouseholdTask>().Add(MakeTask(familyId, "Dated Task", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1))));
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
@@ -245,9 +246,9 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
         var familyA = FamilyId.New();
         var familyB = FamilyId.New();
         db.Set<Domain.Calendar.CalendarEvent>().Add(
-            MakeCalendarEvent(familyA, "Family A Event", DateTime.UtcNow.AddDays(1)));
+            MakeCalendarEvent(familyA, "Family A Event", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1))));
         db.Set<Domain.Calendar.CalendarEvent>().Add(
-            MakeCalendarEvent(familyB, "Family B Event", DateTime.UtcNow.AddDays(1)));
+            MakeCalendarEvent(familyB, "Family B Event", DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1))));
         db.Set<HouseholdTask>().Add(MakeTask(familyB, "Family B Task"));
         db.Set<Routine>().Add(MakeRoutine(familyB, "Family B Routine"));
         await db.SaveChangesAsync();
@@ -268,8 +269,8 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var startTime = DateTime.UtcNow.AddDays(4);
-        var evt = MakeCalendarEvent(familyId, "School Concert", startTime);
+        var startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(4));
+        var evt = MakeCalendarEvent(familyId, "School Concert", startDate);
         db.Set<Domain.Calendar.CalendarEvent>().Add(evt);
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
@@ -282,7 +283,7 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
         entry.EntryId.Should().Be(evt.Id.Value);
         entry.EntryType.Should().Be("CalendarEvent");
         entry.Title.Should().Be("School Concert");
-        entry.EffectiveDate.Should().Be(startTime);
+        entry.EffectiveDate.Should().Be(startDate.ToString("yyyy-MM-dd"));
         entry.Status.Should().Be("Scheduled");
     }
 
@@ -291,7 +292,7 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var dueDate = DateTime.UtcNow.AddDays(2);
+        var dueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2));
         var task = MakeTask(familyId, "Water plants", dueDate);
         db.Set<HouseholdTask>().Add(task);
         await db.SaveChangesAsync();
@@ -305,7 +306,7 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
         entry.EntryId.Should().Be(task.Id.Value);
         entry.EntryType.Should().Be("Task");
         entry.Title.Should().Be("Water plants");
-        entry.EffectiveDate.Should().Be(dueDate);
+        entry.EffectiveDate.Should().Be(dueDate.ToString("yyyy-MM-dd"));
         entry.Status.Should().Be("Pending");
     }
 

@@ -7,7 +7,7 @@ public sealed record GetEnrichedTimelineQuery(
     Guid FamilyId,
     IReadOnlyCollection<string>? TypeFilter,
     Guid? MemberFilter,
-    DateTime? From,
-    DateTime? To,
+    DateOnly? From,
+    DateOnly? To,
     IReadOnlyCollection<string>? StatusFilter,
     Guid RequestedByUserId) : IQuery<EnrichedTimelineResponse>;

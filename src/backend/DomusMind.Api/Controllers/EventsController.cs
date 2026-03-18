@@ -48,7 +48,9 @@ public sealed class EventsController : ControllerBase
                 new ScheduleEventCommand(
                     request.Title,
                     request.FamilyId,
-                    request.StartTime,
+                    request.Date,
+                    request.Time,
+                    request.EndDate,
                     request.EndTime,
                     request.Description,
                     _currentUser.UserId!.Value),
@@ -62,22 +64,25 @@ public sealed class EventsController : ControllerBase
         }
     }
 
-    /// <summary>Returns all events for a family, ordered by start time.</summary>
+    /// <summary>Returns all events for a family, ordered by start date.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(FamilyTimelineResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetFamilyTimeline(
         [FromQuery] Guid familyId,
-        [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to,
+        [FromQuery] string? from,
+        [FromQuery] string? to,
         [FromServices] IQueryDispatcher dispatcher,
         CancellationToken cancellationToken)
     {
         try
         {
+            DateOnly? fromDate = from is not null ? DateOnly.ParseExact(from, "yyyy-MM-dd") : null;
+            DateOnly? toDate = to is not null ? DateOnly.ParseExact(to, "yyyy-MM-dd") : null;
+
             var response = await dispatcher.Dispatch(
-                new GetFamilyTimelineQuery(familyId, from, to, _currentUser.UserId!.Value),
+                new GetFamilyTimelineQuery(familyId, fromDate, toDate, _currentUser.UserId!.Value),
                 cancellationToken);
 
             return Ok(response);
@@ -105,7 +110,7 @@ public sealed class EventsController : ControllerBase
         try
         {
             var response = await dispatcher.Dispatch(
-                new RescheduleEventCommand(id, request.NewStartTime, request.NewEndTime, _currentUser.UserId!.Value),
+                new RescheduleEventCommand(id, request.Date, request.Time, request.EndDate, request.EndTime, _currentUser.UserId!.Value),
                 cancellationToken);
 
             return Ok(response);
@@ -257,15 +262,18 @@ public sealed class EventsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DetectCalendarConflicts(
         [FromQuery] Guid familyId,
-        [FromQuery] DateTime from,
-        [FromQuery] DateTime? to,
+        [FromQuery] string from,
+        [FromQuery] string? to,
         [FromServices] IQueryDispatcher dispatcher,
         CancellationToken cancellationToken)
     {
         try
         {
+            var fromDate = DateOnly.ParseExact(from, "yyyy-MM-dd");
+            DateOnly? toDate = to is not null ? DateOnly.ParseExact(to, "yyyy-MM-dd") : null;
+
             var response = await dispatcher.Dispatch(
-                new DetectCalendarConflictsQuery(familyId, from, to, _currentUser.UserId!.Value),
+                new DetectCalendarConflictsQuery(familyId, fromDate, toDate, _currentUser.UserId!.Value),
                 cancellationToken);
 
             return Ok(response);
@@ -338,15 +346,18 @@ public sealed class EventsController : ControllerBase
     public async Task<IActionResult> GetFamilyPlans(
         [FromQuery] Guid familyId,
         [FromQuery] Guid? memberId,
-        [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to,
+        [FromQuery] string? from,
+        [FromQuery] string? to,
         [FromServices] IQueryDispatcher dispatcher,
         CancellationToken cancellationToken)
     {
         try
         {
+            DateOnly? fromDate = from is not null ? DateOnly.ParseExact(from, "yyyy-MM-dd") : null;
+            DateOnly? toDate = to is not null ? DateOnly.ParseExact(to, "yyyy-MM-dd") : null;
+
             var response = await dispatcher.Dispatch(
-                new GetFamilyPlansQuery(familyId, memberId, from, to, _currentUser.UserId!.Value),
+                new GetFamilyPlansQuery(familyId, memberId, fromDate, toDate, _currentUser.UserId!.Value),
                 cancellationToken);
 
             return Ok(response);

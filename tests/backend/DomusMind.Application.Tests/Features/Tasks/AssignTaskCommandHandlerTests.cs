@@ -25,9 +25,7 @@ public sealed class AssignTaskCommandHandlerTests
     private static async Task<(DomusMindDbContext Db, HouseholdTask Task)> BuildWithTaskAsync()
     {
         var db = CreateDb();
-        var task = HouseholdTask.Create(
-            TaskId.New(), FamilyId.New(),
-            TaskTitle.Create("Fix the leak"), null, null, DateTime.UtcNow);
+        var task = TaskTestHelpers.MakeTask(FamilyId.New(), "Fix the leak");
         db.Set<HouseholdTask>().Add(task);
         await db.SaveChangesAsync();
         task.ClearDomainEvents();

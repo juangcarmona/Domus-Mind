@@ -7,6 +7,7 @@ public sealed record CreateTaskCommand(
     string Title,
     Guid FamilyId,
     string? Description,
-    DateTime? DueDate,
+    string? DueDate,
+    string? DueTime,
     Guid RequestedByUserId)
     : ICommand<CreateTaskResponse>;

@@ -38,13 +38,17 @@ public sealed class GetWeeklyGridQueryHandlerTests
     private static Domain.Calendar.CalendarEvent MakeEvent(
         FamilyId familyId,
         string title,
-        DateTime startTime,
+        DateOnly date,
+        TimeOnly? time = null,
         MemberId? participant = null)
     {
+        var eventTime = time.HasValue
+            ? EventTime.Moment(date, time.Value)
+            : EventTime.Day(date);
         var evt = Domain.Calendar.CalendarEvent.Create(
             CalendarEventId.New(), familyId,
             EventTitle.Create(title), null,
-            startTime, null, DateTime.UtcNow);
+            eventTime, DateTime.UtcNow);
         if (participant is not null)
             evt.AddParticipant(participant.Value);
         return evt;
@@ -53,13 +57,16 @@ public sealed class GetWeeklyGridQueryHandlerTests
     private static HouseholdTask MakeTask(
         FamilyId familyId,
         string title,
-        DateTime dueDate,
+        DateOnly? dueDate = null,
         MemberId? assignee = null)
     {
+        var schedule = dueDate.HasValue
+            ? TaskSchedule.WithDueDate(dueDate.Value)
+            : TaskSchedule.NoSchedule();
         var task = HouseholdTask.Create(
             TaskId.New(), familyId,
             TaskTitle.Create(title), null,
-            dueDate, DateTime.UtcNow);
+            schedule, DateTime.UtcNow);
         if (assignee is not null)
             task.Assign(assignee.Value);
         return task;
@@ -88,7 +95,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var handler = BuildHandler(db, auth);
 
         var act = () => handler.Handle(
-            new GetWeeklyGridQuery(Guid.NewGuid(), DateTime.UtcNow, Guid.NewGuid()),
+            new GetWeeklyGridQuery(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow), Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<FamilyException>()
@@ -102,7 +109,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(
-            new GetWeeklyGridQuery(Guid.NewGuid(), DateTime.UtcNow, Guid.NewGuid()),
+            new GetWeeklyGridQuery(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow), Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<FamilyException>()
@@ -112,11 +119,10 @@ public sealed class GetWeeklyGridQueryHandlerTests
     // ---- UTC normalization ----
 
     [Fact]
-    public async Task Handle_WeekStartWithUnspecifiedKind_NormalizesToUtcAndExecutesQuery()
+    public async Task Handle_DateOnlyWeekStart_ReturnsCorrectWeekStartString()
     {
-        // Arrange — DateTimeKind.Unspecified is what ASP.NET Core / DateTime.Date can produce
-        var unspecified = DateTime.SpecifyKind(new DateTime(2026, 3, 16), DateTimeKind.Unspecified);
-        unspecified.Kind.Should().Be(DateTimeKind.Unspecified);
+        // DateOnly has no Kind concept; verify the handler returns the ISO date string correctly
+        var weekStart = new DateOnly(2026, 3, 16);
 
         var db = CreateDb();
         var familyId = FamilyId.New();
@@ -124,21 +130,18 @@ public sealed class GetWeeklyGridQueryHandlerTests
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
-        // Act — must not throw even though the input Kind is Unspecified
-        // (the handler normalises it to UTC before querying)
         var result = await handler.Handle(
-            new GetWeeklyGridQuery(familyId.Value, unspecified, Guid.NewGuid()),
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
             CancellationToken.None);
 
-        // Assert — response carries UTC values
-        result.WeekStart.Kind.Should().Be(DateTimeKind.Utc);
-        result.WeekEnd.Kind.Should().Be(DateTimeKind.Utc);
+        result.WeekStart.Should().Be("2026-03-16");
+        result.WeekEnd.Should().Be("2026-03-22");
     }
 
     [Fact]
-    public async Task Handle_WeekStartAlreadyUtc_RemainsUtc()
+    public async Task Handle_WeekStartDateOnly_ReturnsMatchingWeekStartInResponse()
     {
-        var utcDate = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
+        var weekStart = new DateOnly(2026, 3, 16);
         var db = CreateDb();
         var familyId = FamilyId.New();
         db.Set<Domain.Family.Family>().Add(MakeFamily(familyId));
@@ -146,11 +149,11 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new GetWeeklyGridQuery(familyId.Value, utcDate, Guid.NewGuid()),
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
             CancellationToken.None);
 
-        result.WeekStart.Should().Be(utcDate);
-        result.WeekStart.Kind.Should().Be(DateTimeKind.Utc);
+        result.WeekStart.Should().Be("2026-03-16");
+        result.WeekEnd.Should().Be("2026-03-22");
     }
 
     // ---- Omitted / defaulted weekStart ----
@@ -165,7 +168,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
-        var weekStart = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+        var weekStart = DateOnly.FromDateTime(DateTime.UtcNow);
         var result = await handler.Handle(
             new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
             CancellationToken.None);
@@ -184,9 +187,9 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var memberId = MemberId.New();
         db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Bob")));
 
-        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
-        var eventTime = weekStart.AddDays(2).AddHours(9); // Wednesday 09:00 UTC
-        db.Set<Domain.Calendar.CalendarEvent>().Add(MakeEvent(familyId, "School Run", eventTime, memberId));
+        var weekStart = new DateOnly(2026, 3, 16);
+        var eventDate = weekStart.AddDays(2); // Wednesday
+        db.Set<Domain.Calendar.CalendarEvent>().Add(MakeEvent(familyId, "School Run", eventDate, new TimeOnly(9, 0), memberId));
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
@@ -194,7 +197,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
             new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
             CancellationToken.None);
 
-        var wednesdayCell = result.Members.First().Cells.Single(c => c.Date.Date == eventTime.Date);
+        var wednesdayCell = result.Members.First().Cells.Single(c => c.Date == eventDate.ToString("yyyy-MM-dd"));
         wednesdayCell.Events.Should().ContainSingle(e => e.Title == "School Run");
     }
 
@@ -206,9 +209,9 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var memberId = MemberId.New();
         db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Carol")));
 
-        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
+        var weekStart = new DateOnly(2026, 3, 16);
         var outsideEvent = weekStart.AddDays(8); // beyond the window
-        db.Set<Domain.Calendar.CalendarEvent>().Add(MakeEvent(familyId, "Future Event", outsideEvent, memberId));
+        db.Set<Domain.Calendar.CalendarEvent>().Add(MakeEvent(familyId, "Future Event", outsideEvent, null, memberId));
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
@@ -229,7 +232,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var memberId = MemberId.New();
         db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Dan")));
 
-        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
+        var weekStart = new DateOnly(2026, 3, 16);
         var dueDate = weekStart.AddDays(1); // Tuesday
         db.Set<HouseholdTask>().Add(MakeTask(familyId, "Take out bins", dueDate, memberId));
         await db.SaveChangesAsync();
@@ -239,7 +242,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
             new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
             CancellationToken.None);
 
-        var tuesdayCell = result.Members.First().Cells.Single(c => c.Date.Date == dueDate.Date);
+        var tuesdayCell = result.Members.First().Cells.Single(c => c.Date == dueDate.ToString("yyyy-MM-dd"));
         tuesdayCell.Tasks.Should().ContainSingle(t => t.Title == "Take out bins");
     }
 
@@ -251,7 +254,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var memberId = MemberId.New();
         db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Eve")));
 
-        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
+        var weekStart = new DateOnly(2026, 3, 16);
         var pastTask = weekStart.AddDays(-1); // before the window
         db.Set<HouseholdTask>().Add(MakeTask(familyId, "Old task", pastTask, memberId));
         await db.SaveChangesAsync();
@@ -278,7 +281,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new GetWeeklyGridQuery(familyId.Value, DateTime.UtcNow, Guid.NewGuid()),
+            new GetWeeklyGridQuery(familyId.Value, DateOnly.FromDateTime(DateTime.UtcNow), Guid.NewGuid()),
             CancellationToken.None);
 
         result.SharedCells.SelectMany(c => c.Routines).Should().Contain(r => r.Name == "Morning Walk");
@@ -296,13 +299,13 @@ public sealed class GetWeeklyGridQueryHandlerTests
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
-        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
+        var weekStart = new DateOnly(2026, 3, 16);
         var result = await handler.Handle(
             new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
             CancellationToken.None);
 
-        result.WeekStart.Should().Be(weekStart);
-        result.WeekEnd.Should().Be(weekStart.AddDays(6));
+        result.WeekStart.Should().Be("2026-03-16");
+        result.WeekEnd.Should().Be("2026-03-22");
     }
 
     [Fact]
@@ -316,7 +319,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new GetWeeklyGridQuery(familyId.Value, DateTime.UtcNow, Guid.NewGuid()),
+            new GetWeeklyGridQuery(familyId.Value, DateOnly.FromDateTime(DateTime.UtcNow), Guid.NewGuid()),
             CancellationToken.None);
 
         result.Members.Should().ContainSingle(m => m.Name == "Fred");
@@ -352,17 +355,17 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var handler = BuildHandler(db);
 
         // Week of Monday 16 March 2026 — Wednesday is 18 March
-        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
+        var weekStart = new DateOnly(2026, 3, 16);
         var result = await handler.Handle(
             new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
             CancellationToken.None);
 
         var cells = result.Members.First().Cells;
-        var wednesdayCell = cells.Single(c => c.Date.DayOfWeek == DayOfWeek.Wednesday);
+        var wednesdayCell = cells.Single(c => DateOnly.ParseExact(c.Date, "yyyy-MM-dd").DayOfWeek == DayOfWeek.Wednesday);
         wednesdayCell.Routines.Should().ContainSingle(r => r.Name == "Wednesday Task");
 
         // All other days must be empty
-        cells.Where(c => c.Date.DayOfWeek != DayOfWeek.Wednesday)
+        cells.Where(c => DateOnly.ParseExact(c.Date, "yyyy-MM-dd").DayOfWeek != DayOfWeek.Wednesday)
              .Should().AllSatisfy(c => c.Routines.Should().BeEmpty());
     }
 
@@ -377,7 +380,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new GetWeeklyGridQuery(familyId.Value, DateTime.UtcNow, Guid.NewGuid()),
+            new GetWeeklyGridQuery(familyId.Value, DateOnly.FromDateTime(DateTime.UtcNow), Guid.NewGuid()),
             CancellationToken.None);
 
         result.Members.First().Cells.Should().AllSatisfy(c =>
@@ -406,13 +409,13 @@ public sealed class GetWeeklyGridQueryHandlerTests
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
-        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc); // Monday
+        var weekStart = new DateOnly(2026, 3, 16); // Monday
         var result = await handler.Handle(
             new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
             CancellationToken.None);
 
         // Household routine goes to SharedCells, not member cells
-        var mondaySharedCell = result.SharedCells.Single(c => c.Date.DayOfWeek == DayOfWeek.Monday);
+        var mondaySharedCell = result.SharedCells.Single(c => DateOnly.ParseExact(c.Date, "yyyy-MM-dd").DayOfWeek == DayOfWeek.Monday);
         var item = mondaySharedCell.Routines.Should().ContainSingle().Which;
 
         item.Name.Should().Be("Morning Walk");
@@ -447,15 +450,15 @@ public sealed class GetWeeklyGridQueryHandlerTests
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
-        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc); // Week: Mon 16 – Sun 22 March
+        var weekStart = new DateOnly(2026, 3, 16); // Week: Mon 16 – Sun 22 March
         var result = await handler.Handle(
             new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
             CancellationToken.None);
 
         // SharedCells must have Carmen on Monday and Thursday
-        result.SharedCells.Single(c => c.Date.DayOfWeek == DayOfWeek.Monday)
+        result.SharedCells.Single(c => DateOnly.ParseExact(c.Date, "yyyy-MM-dd").DayOfWeek == DayOfWeek.Monday)
               .Routines.Should().ContainSingle(r => r.Name == "Carmen");
-        result.SharedCells.Single(c => c.Date.DayOfWeek == DayOfWeek.Thursday)
+        result.SharedCells.Single(c => DateOnly.ParseExact(c.Date, "yyyy-MM-dd").DayOfWeek == DayOfWeek.Thursday)
               .Routines.Should().ContainSingle(r => r.Name == "Carmen");
 
         // No member cell may contain Carmen
@@ -497,7 +500,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
-        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
+        var weekStart = new DateOnly(2026, 3, 16);
         var result = await handler.Handle(
             new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
             CancellationToken.None);
@@ -526,7 +529,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
-        var weekStart = new DateTime(2026, 3, 16, 0, 0, 0, DateTimeKind.Utc);
+        var weekStart = new DateOnly(2026, 3, 16);
         var result = await handler.Handle(
             new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
             CancellationToken.None);

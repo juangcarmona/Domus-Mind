@@ -2,6 +2,7 @@ using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Application.Features.Calendar;
+using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
 using Microsoft.EntityFrameworkCore;
@@ -44,9 +45,19 @@ public sealed class RescheduleEventCommandHandler
         if (!canAccess)
             throw new CalendarException(CalendarErrorCode.AccessDenied, "Access to this family is denied.");
 
+        Domain.Calendar.ValueObjects.EventTime newTime;
         try
         {
-            calendarEvent.Reschedule(command.NewStartTime, command.NewEndTime);
+            newTime = TemporalParser.ParseEventTime(command.Date, command.Time, command.EndDate, command.EndTime);
+        }
+        catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidOperationException)
+        {
+            throw new CalendarException(CalendarErrorCode.InvalidInput, ex.Message);
+        }
+
+        try
+        {
+            calendarEvent.Reschedule(newTime);
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("cancelled"))
         {
@@ -60,11 +71,15 @@ public sealed class RescheduleEventCommandHandler
         await _eventLogWriter.WriteAsync(calendarEvent.DomainEvents, cancellationToken);
         calendarEvent.ClearDomainEvents();
 
+        var (date, time, endDate, endTime) = TemporalParser.FormatEventTime(newTime);
+
         return new RescheduleEventResponse(
             command.CalendarEventId,
             calendarEvent.Title.Value,
-            command.NewStartTime,
-            command.NewEndTime,
+            date,
+            time,
+            endDate,
+            endTime,
             calendarEvent.Status.ToString());
     }
 }

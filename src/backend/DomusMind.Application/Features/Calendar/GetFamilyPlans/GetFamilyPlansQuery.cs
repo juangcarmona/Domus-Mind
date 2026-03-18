@@ -6,6 +6,6 @@ namespace DomusMind.Application.Features.Calendar.GetFamilyPlans;
 public sealed record GetFamilyPlansQuery(
     Guid FamilyId,
     Guid? MemberId,
-    DateTime? From,
-    DateTime? To,
+    DateOnly? From,
+    DateOnly? To,
     Guid RequestedByUserId) : IQuery<FamilyPlansResponse>;

@@ -277,15 +277,15 @@ public sealed class FamiliesController : ControllerBase
     }
 
     /// <summary>Returns an enriched, grouped, and filterable household timeline.</summary>
-    [HttpGet("{familyId:guid}/timeline/enriched")]
+        [HttpGet("{familyId:guid}/timeline/enriched")]
     [ProducesResponseType(typeof(EnrichedTimelineResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetEnrichedTimeline(
         Guid familyId,
         [FromQuery] string? types,
         [FromQuery] Guid? memberFilter,
-        [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to,
+        [FromQuery] string? from,
+        [FromQuery] string? to,
         [FromQuery] string? statuses,
         [FromServices] IQueryDispatcher dispatcher,
         CancellationToken cancellationToken)
@@ -300,9 +300,12 @@ public sealed class FamiliesController : ControllerBase
                 ? null
                 : (IReadOnlyCollection<string>)statuses.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
+            DateOnly? fromDate = from is not null ? DateOnly.ParseExact(from, "yyyy-MM-dd") : null;
+            DateOnly? toDate = to is not null ? DateOnly.ParseExact(to, "yyyy-MM-dd") : null;
+
             var response = await dispatcher.Dispatch(
                 new GetEnrichedTimelineQuery(
-                    familyId, typeFilter, memberFilter, from, to, statusFilter,
+                    familyId, typeFilter, memberFilter, fromDate, toDate, statusFilter,
                     _currentUser.UserId!.Value),
                 cancellationToken);
 
@@ -322,15 +325,13 @@ public sealed class FamiliesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetWeeklyGrid(
         Guid familyId,
-        [FromQuery] DateTime? weekStart,
+        [FromQuery] string? weekStart,
         [FromServices] IQueryDispatcher dispatcher,
         CancellationToken cancellationToken)
     {
-        // ASP.NET Core model binding can produce DateTimeKind.Unspecified for date-only strings.
-        // Treat the incoming value as a UTC date — only the calendar date part is used.
-        var start = DateTime.SpecifyKind(
-            (weekStart ?? DateTime.UtcNow).Date,
-            DateTimeKind.Utc);
+        var start = weekStart is not null
+            ? DateOnly.ParseExact(weekStart, "yyyy-MM-dd")
+            : DateOnly.FromDateTime(DateTime.UtcNow);
         try
         {
             var response = await dispatcher.Dispatch(

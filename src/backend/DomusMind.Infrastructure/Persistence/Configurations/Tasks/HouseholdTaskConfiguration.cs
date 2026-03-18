@@ -34,8 +34,21 @@ public sealed class HouseholdTaskConfiguration : IEntityTypeConfiguration<Househ
             .HasColumnName("description")
             .HasMaxLength(2000);
 
-        builder.Property(t => t.DueDate)
-            .HasColumnName("due_date");
+        // TaskSchedule stored as three columns: kind + due_date + due_time
+        builder.OwnsOne(t => t.Schedule, schedule =>
+        {
+            schedule.Property(s => s.Kind)
+                .HasConversion<string>()
+                .HasColumnName("task_schedule_kind")
+                .HasMaxLength(20)
+                .IsRequired();
+
+            schedule.Property(s => s.Date)
+                .HasColumnName("due_date");
+
+            schedule.Property(s => s.Time)
+                .HasColumnName("due_time");
+        });
 
         builder.Property(t => t.Status)
             .HasConversion<string>()

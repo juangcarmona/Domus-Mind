@@ -5,7 +5,7 @@ namespace DomusMind.Application.Features.Calendar.GetFamilyTimeline;
 
 public sealed record GetFamilyTimelineQuery(
     Guid FamilyId,
-    DateTime? From,
-    DateTime? To,
+    DateOnly? From,
+    DateOnly? To,
     Guid RequestedByUserId)
     : IQuery<FamilyTimelineResponse>;

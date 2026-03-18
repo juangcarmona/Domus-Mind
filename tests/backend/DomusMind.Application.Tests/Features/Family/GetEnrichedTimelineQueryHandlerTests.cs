@@ -62,7 +62,7 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
         var task = HouseholdTask.Create(
             TaskId.New(), familyId,
             TaskTitle.Create("Old Task"), null,
-            DateTime.UtcNow.AddDays(-2), DateTime.UtcNow);
+            TaskSchedule.WithDueDate(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2))), DateTime.UtcNow);
         task.ClearDomainEvents();
         db.Set<HouseholdTask>().Add(task);
         await db.SaveChangesAsync();
@@ -80,11 +80,11 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var today = DateTime.UtcNow.Date.AddHours(14);
+        var todayDate = DateOnly.FromDateTime(DateTime.UtcNow);
         var evt = CalendarEvent.Create(
             CalendarEventId.New(), familyId,
             EventTitle.Create("Morning Standup"), null,
-            today, today.AddHours(1), DateTime.UtcNow);
+            EventTime.Moment(todayDate, new TimeOnly(14, 0)), DateTime.UtcNow);
         db.Set<CalendarEvent>().Add(evt);
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
@@ -104,7 +104,7 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
         var task = HouseholdTask.Create(
             TaskId.New(), familyId,
             TaskTitle.Create("Future Task"), null,
-            DateTime.UtcNow.AddDays(30), DateTime.UtcNow);
+            TaskSchedule.WithDueDate(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30))), DateTime.UtcNow);
         task.ClearDomainEvents();
         db.Set<HouseholdTask>().Add(task);
         await db.SaveChangesAsync();
@@ -158,7 +158,7 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
             familyId,
             TaskTitle.Create("A Task"),
             null,
-            DateTime.UtcNow.AddDays(5),
+            TaskSchedule.WithDueDate(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(5))),
             DateTime.UtcNow);
 
         task.ClearDomainEvents();
@@ -203,7 +203,7 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
             var task = HouseholdTask.Create(
                 TaskId.New(), familyId,
                 TaskTitle.Create($"Task {i}"), null,
-                DateTime.UtcNow.AddDays(i + 1), DateTime.UtcNow);
+                TaskSchedule.WithDueDate(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(i + 1))), DateTime.UtcNow);
             task.ClearDomainEvents();
             db.Set<HouseholdTask>().Add(task);
         }

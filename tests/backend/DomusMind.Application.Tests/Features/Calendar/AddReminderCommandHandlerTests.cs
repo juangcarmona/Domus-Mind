@@ -25,14 +25,9 @@ public sealed class AddReminderCommandHandlerTests
     private static async Task<(DomusMindDbContext Db, Domain.Calendar.CalendarEvent Evt)> BuildWithEventAsync()
     {
         var db = CreateDb();
-        var calendarEvent = Domain.Calendar.CalendarEvent.Create(
-            CalendarEventId.New(),
-            FamilyId.New(),
-            EventTitle.Create("School Play"),
-            null,
-            DateTime.UtcNow.AddDays(7),
-            null,
-            DateTime.UtcNow);
+        var calendarEvent = CalendarTestHelpers.MakeEvent(
+            FamilyId.New(), "School Play",
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)));
         db.Set<Domain.Calendar.CalendarEvent>().Add(calendarEvent);
         await db.SaveChangesAsync();
         calendarEvent.ClearDomainEvents();

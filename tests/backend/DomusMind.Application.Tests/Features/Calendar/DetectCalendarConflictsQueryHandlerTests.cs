@@ -24,12 +24,19 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
     private static Domain.Calendar.CalendarEvent MakeEvent(
         FamilyId familyId,
         string title,
-        DateTime startTime,
-        DateTime? endTime = null)
-        => Domain.Calendar.CalendarEvent.Create(
+        DateOnly startDate,
+        TimeOnly startTime,
+        DateOnly? endDate = null,
+        TimeOnly? endTime = null)
+    {
+        var eventTime = (endDate.HasValue && endTime.HasValue)
+            ? EventTime.Range(startDate, startTime, endDate.Value, endTime.Value)
+            : EventTime.Moment(startDate, startTime);
+        return Domain.Calendar.CalendarEvent.Create(
             CalendarEventId.New(), familyId,
             EventTitle.Create(title), null,
-            startTime, endTime, DateTime.UtcNow);
+            eventTime, DateTime.UtcNow);
+    }
 
     [Fact]
     public async Task Handle_NoEvents_ReturnsNoConflicts()
@@ -38,7 +45,7 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new DetectCalendarConflictsQuery(Guid.NewGuid(), DateTime.UtcNow, null, Guid.NewGuid()),
+            new DetectCalendarConflictsQuery(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow), null, Guid.NewGuid()),
             CancellationToken.None);
 
         result.Conflicts.Should().BeEmpty();
@@ -52,7 +59,7 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
         var handler = BuildHandler(db, auth);
 
         var act = () => handler.Handle(
-            new DetectCalendarConflictsQuery(Guid.NewGuid(), DateTime.UtcNow, null, Guid.NewGuid()),
+            new DetectCalendarConflictsQuery(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow), null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<CalendarException>()
@@ -65,10 +72,10 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
         var db = CreateDb();
         var familyId = FamilyId.New();
         var participantId = MemberId.New();
-        var start = DateTime.UtcNow.AddDays(1);
+        var startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1));
 
-        var eventA = MakeEvent(familyId, "Event A", start, start.AddHours(2));
-        var eventB = MakeEvent(familyId, "Event B", start.AddHours(1), start.AddHours(3));
+        var eventA = MakeEvent(familyId, "Event A", startDate, new TimeOnly(9, 0), startDate, new TimeOnly(11, 0));
+        var eventB = MakeEvent(familyId, "Event B", startDate, new TimeOnly(10, 0), startDate, new TimeOnly(12, 0));
 
         eventA.AddParticipant(participantId);
         eventB.AddParticipant(participantId);
@@ -78,7 +85,7 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new DetectCalendarConflictsQuery(familyId.Value, start.AddHours(-1), start.AddHours(4), Guid.NewGuid()),
+            new DetectCalendarConflictsQuery(familyId.Value, startDate, startDate.AddDays(1), Guid.NewGuid()),
             CancellationToken.None);
 
         result.Conflicts.Should().HaveCount(1);
@@ -91,10 +98,10 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
         var db = CreateDb();
         var familyId = FamilyId.New();
         var participantId = MemberId.New();
-        var start = DateTime.UtcNow.AddDays(1);
+        var startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1));
 
-        var eventA = MakeEvent(familyId, "Morning", start.AddHours(8), start.AddHours(10));
-        var eventB = MakeEvent(familyId, "Evening", start.AddHours(18), start.AddHours(20));
+        var eventA = MakeEvent(familyId, "Morning", startDate, new TimeOnly(8, 0), startDate, new TimeOnly(10, 0));
+        var eventB = MakeEvent(familyId, "Evening", startDate, new TimeOnly(18, 0), startDate, new TimeOnly(20, 0));
 
         eventA.AddParticipant(participantId);
         eventB.AddParticipant(participantId);
@@ -104,7 +111,7 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new DetectCalendarConflictsQuery(familyId.Value, start, start.AddDays(1), Guid.NewGuid()),
+            new DetectCalendarConflictsQuery(familyId.Value, startDate, startDate.AddDays(1), Guid.NewGuid()),
             CancellationToken.None);
 
         result.Conflicts.Should().BeEmpty();
@@ -115,10 +122,10 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var start = DateTime.UtcNow.AddDays(1);
+        var startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1));
 
-        var eventA = MakeEvent(familyId, "Event A", start, start.AddHours(2));
-        var eventB = MakeEvent(familyId, "Event B", start.AddHours(1), start.AddHours(3));
+        var eventA = MakeEvent(familyId, "Event A", startDate, new TimeOnly(9, 0), startDate, new TimeOnly(11, 0));
+        var eventB = MakeEvent(familyId, "Event B", startDate, new TimeOnly(10, 0), startDate, new TimeOnly(12, 0));
 
         eventA.AddParticipant(MemberId.New());
         eventB.AddParticipant(MemberId.New()); // Different participants
@@ -128,7 +135,7 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new DetectCalendarConflictsQuery(familyId.Value, start.AddHours(-1), start.AddHours(4), Guid.NewGuid()),
+            new DetectCalendarConflictsQuery(familyId.Value, startDate, startDate.AddDays(1), Guid.NewGuid()),
             CancellationToken.None);
 
         result.Conflicts.Should().BeEmpty();
@@ -141,11 +148,11 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
         var familyA = FamilyId.New();
         var familyB = FamilyId.New();
         var participantId = MemberId.New();
-        var start = DateTime.UtcNow.AddDays(1);
+        var startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1));
 
         // Both events overlap but belong to different families
-        var eventA = MakeEvent(familyA, "Family A", start, start.AddHours(2));
-        var eventB = MakeEvent(familyB, "Family B", start.AddHours(1), start.AddHours(3));
+        var eventA = MakeEvent(familyA, "Family A", startDate, new TimeOnly(9, 0), startDate, new TimeOnly(11, 0));
+        var eventB = MakeEvent(familyB, "Family B", startDate, new TimeOnly(10, 0), startDate, new TimeOnly(12, 0));
         eventA.AddParticipant(participantId);
         eventB.AddParticipant(participantId);
 
@@ -154,7 +161,7 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new DetectCalendarConflictsQuery(familyA.Value, start.AddHours(-1), start.AddHours(4), Guid.NewGuid()),
+            new DetectCalendarConflictsQuery(familyA.Value, startDate, startDate.AddDays(1), Guid.NewGuid()),
             CancellationToken.None);
 
         result.Conflicts.Should().BeEmpty();

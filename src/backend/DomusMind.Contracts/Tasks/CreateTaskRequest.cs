@@ -4,4 +4,5 @@ public sealed record CreateTaskRequest(
     string Title,
     Guid FamilyId,
     string? Description,
-    DateTime? DueDate);
+    string? DueDate,
+    string? DueTime);

@@ -75,7 +75,7 @@ public sealed class GetMemberActivityQueryHandlerTests
         var evt = Domain.Calendar.CalendarEvent.Create(
             CalendarEventId.New(), familyId,
             EventTitle.Create("School Trip"), null,
-            DateTime.UtcNow.AddDays(3), null, DateTime.UtcNow);
+            EventTime.Day(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(3))), DateTime.UtcNow);
         evt.AddParticipant(memberId);
         db.Set<Domain.Calendar.CalendarEvent>().Add(evt);
         await db.SaveChangesAsync();
@@ -101,7 +101,7 @@ public sealed class GetMemberActivityQueryHandlerTests
         var task = HouseholdTask.Create(
             TaskId.New(), familyId,
             TaskTitle.Create("Fix Fence"), null,
-            DateTime.UtcNow.AddDays(1), DateTime.UtcNow);
+            TaskSchedule.WithDueDate(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1))), DateTime.UtcNow);
         task.Assign(memberId);
         task.ClearDomainEvents();
         db.Set<HouseholdTask>().Add(task);

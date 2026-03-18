@@ -2,6 +2,7 @@ using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Application.Features.Calendar;
+using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ValueObjects;
@@ -39,6 +40,16 @@ public sealed class ScheduleEventCommandHandler
         if (!canAccess)
             throw new CalendarException(CalendarErrorCode.AccessDenied, "Access to this family is denied.");
 
+        EventTime eventTime;
+        try
+        {
+            eventTime = TemporalParser.ParseEventTime(command.Date, command.Time, command.EndDate, command.EndTime);
+        }
+        catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidOperationException)
+        {
+            throw new CalendarException(CalendarErrorCode.InvalidInput, ex.Message);
+        }
+
         var id = CalendarEventId.New();
         var familyId = FamilyId.From(command.FamilyId);
         var title = EventTitle.Create(command.Title);
@@ -48,7 +59,7 @@ public sealed class ScheduleEventCommandHandler
         try
         {
             calendarEvent = Domain.Calendar.CalendarEvent.Create(
-                id, familyId, title, command.Description, command.StartTime, command.EndTime, now);
+                id, familyId, title, command.Description, eventTime, now);
         }
         catch (InvalidOperationException ex)
         {
@@ -60,12 +71,16 @@ public sealed class ScheduleEventCommandHandler
         await _eventLogWriter.WriteAsync(calendarEvent.DomainEvents, cancellationToken);
         calendarEvent.ClearDomainEvents();
 
+        var (date, time, endDate, endTime) = TemporalParser.FormatEventTime(eventTime);
+
         return new ScheduleEventResponse(
             id.Value,
             familyId.Value,
             title.Value,
-            command.StartTime,
-            command.EndTime,
+            date,
+            time,
+            endDate,
+            endTime,
             calendarEvent.Status.ToString(),
             now);
     }

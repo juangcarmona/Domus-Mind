@@ -1,12 +1,14 @@
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
+using DomusMind.Domain.Tasks.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace DomusMind.Application.Features.Family.GetEnrichedTimeline;
@@ -35,8 +37,7 @@ public sealed class GetEnrichedTimelineQueryHandler
             throw new FamilyException(FamilyErrorCode.AccessDenied, "Access to this family is denied.");
 
         var familyId = FamilyId.From(query.FamilyId);
-        var now = DateTime.UtcNow;
-        var today = now.Date;
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
         // --- Load all three sources ---
         var calendarEvents = await _dbContext.Set<CalendarEvent>()
@@ -73,32 +74,37 @@ public sealed class GetEnrichedTimelineQueryHandler
                     p.Value,
                     memberNameMap.GetValueOrDefault(p.Value, "?")))
                 .ToList();
+            var (date, _, _, _) = TemporalParser.FormatEventTime(e.Time);
             return new EnrichedTimelineEntry(
                 e.Id.Value,
                 "CalendarEvent",
                 e.Title.Value,
-                e.StartTime,
+                date,
                 e.Status.ToString(),
-                ComputePriority(e.StartTime, today),
-                ComputeGroup(e.StartTime, today),
-                e.StartTime.Date < today,
+                ComputePriority(e.Time.Date, today),
+                ComputeGroup(e.Time.Date, today),
+                e.Time.Date < today,
                 false,
                 null,
                 participants.Count > 0 ? participants : null);
         });
 
-        var taskEntries = tasks.Select(t => new EnrichedTimelineEntry(
-            t.Id.Value,
-            "Task",
-            t.Title.Value,
-            t.DueDate,
-            t.Status.ToString(),
-            ComputePriority(t.DueDate, today),
-            ComputeGroup(t.DueDate, today),
-            t.DueDate.HasValue && t.DueDate.Value.Date < today && t.Status == HouseholdTaskStatus.Pending,
-            !t.AssigneeId.HasValue,
-            t.AssigneeId?.Value,
-            null));
+        var taskEntries = tasks.Select(t =>
+        {
+            var (dueDate, _) = TemporalParser.FormatTaskSchedule(t.Schedule);
+            return new EnrichedTimelineEntry(
+                t.Id.Value,
+                "Task",
+                t.Title.Value,
+                dueDate,
+                t.Status.ToString(),
+                ComputePriority(t.Schedule.Date, today),
+                ComputeGroup(t.Schedule.Date, today),
+                t.Schedule.Date.HasValue && t.Schedule.Date.Value < today && t.Status == HouseholdTaskStatus.Pending,
+                !t.AssigneeId.HasValue,
+                t.AssigneeId?.Value,
+                null);
+        });
 
         var routineEntries = routines.Select(r => new EnrichedTimelineEntry(
             r.Id.Value,
@@ -122,7 +128,6 @@ public sealed class GetEnrichedTimelineQueryHandler
         if (query.MemberFilter.HasValue)
         {
             var memberId = query.MemberFilter.Value;
-            // Keep calendar events where member is a participant, tasks assigned to member, all routines
             var memberCalendarEventIds = calendarEvents
                 .Where(e => e.ParticipantIds.Any(p => p.Value == memberId))
                 .Select(e => e.Id.Value)
@@ -135,10 +140,10 @@ public sealed class GetEnrichedTimelineQueryHandler
         }
 
         if (query.From.HasValue)
-            allEntries = allEntries.Where(e => !e.EffectiveDate.HasValue || e.EffectiveDate.Value >= query.From.Value).ToList();
+            allEntries = allEntries.Where(e => e.EffectiveDate is null || string.Compare(e.EffectiveDate, query.From.Value.ToString("yyyy-MM-dd"), StringComparison.Ordinal) >= 0).ToList();
 
         if (query.To.HasValue)
-            allEntries = allEntries.Where(e => !e.EffectiveDate.HasValue || e.EffectiveDate.Value <= query.To.Value).ToList();
+            allEntries = allEntries.Where(e => e.EffectiveDate is null || string.Compare(e.EffectiveDate, query.To.Value.ToString("yyyy-MM-dd"), StringComparison.Ordinal) <= 0).ToList();
 
         if (query.StatusFilter is { Count: > 0 })
             allEntries = allEntries.Where(e => query.StatusFilter.Contains(e.Status)).ToList();
@@ -151,7 +156,7 @@ public sealed class GetEnrichedTimelineQueryHandler
             .OrderBy(g => Array.IndexOf(groupOrder, g.Key))
             .Select(g => new TimelineGroup(
                 g.Key,
-                g.OrderBy(e => e.EffectiveDate.HasValue ? 0 : 1)
+                g.OrderBy(e => e.EffectiveDate is null ? 1 : 0)
                  .ThenBy(e => e.EffectiveDate)
                  .ThenBy(e => e.Title)
                  .ToList()))
@@ -160,10 +165,10 @@ public sealed class GetEnrichedTimelineQueryHandler
         return new EnrichedTimelineResponse(groups, allEntries.Count);
     }
 
-    private static string ComputePriority(DateTime? effectiveDate, DateTime today)
+    private static string ComputePriority(DateOnly? effectiveDate, DateOnly today)
     {
         if (!effectiveDate.HasValue) return "Low";
-        var date = effectiveDate.Value.Date;
+        var date = effectiveDate.Value;
         if (date < today) return "High";
         if (date == today) return "High";
         if (date == today.AddDays(1)) return "Medium";
@@ -171,10 +176,10 @@ public sealed class GetEnrichedTimelineQueryHandler
         return "Low";
     }
 
-    private static string ComputeGroup(DateTime? effectiveDate, DateTime today)
+    private static string ComputeGroup(DateOnly? effectiveDate, DateOnly today)
     {
         if (!effectiveDate.HasValue) return "Undated";
-        var date = effectiveDate.Value.Date;
+        var date = effectiveDate.Value;
         if (date < today) return "Overdue";
         if (date == today) return "Today";
         if (date == today.AddDays(1)) return "Tomorrow";

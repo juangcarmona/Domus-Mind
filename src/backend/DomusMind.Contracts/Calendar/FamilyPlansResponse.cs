@@ -3,8 +3,10 @@ namespace DomusMind.Contracts.Calendar;
 public sealed record FamilyPlanItem(
     Guid EventId,
     string Title,
-    DateTime StartTime,
-    DateTime? EndTime,
+    string Date,
+    string? Time,
+    string? EndDate,
+    string? EndTime,
     string Status,
     IReadOnlyCollection<Guid> ParticipantMemberIds,
     IReadOnlyCollection<ParticipantProjection> Participants);

@@ -5,6 +5,7 @@ namespace DomusMind.Application.Features.Tasks.RescheduleTask;
 
 public sealed record RescheduleTaskCommand(
     Guid TaskId,
-    DateTime? NewDueDate,
+    string? DueDate,
+    string? DueTime,
     Guid RequestedByUserId)
     : ICommand<RescheduleTaskResponse>;

@@ -1,4 +1,5 @@
 using DomusMind.Domain.Abstractions;
+using DomusMind.Domain.Tasks.ValueObjects;
 
 namespace DomusMind.Domain.Tasks.Events;
 
@@ -7,5 +8,5 @@ public sealed record TaskCreated(
     Guid TaskId,
     Guid FamilyId,
     string Title,
-    DateTime? DueDate,
+    TaskSchedule Schedule,
     DateTime OccurredAtUtc) : IDomainEvent;

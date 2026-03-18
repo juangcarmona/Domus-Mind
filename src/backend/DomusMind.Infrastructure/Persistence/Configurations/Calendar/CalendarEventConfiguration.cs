@@ -43,13 +43,6 @@ public sealed class CalendarEventConfiguration : IEntityTypeConfiguration<Domain
             .HasColumnName("description")
             .HasMaxLength(2000);
 
-        builder.Property(e => e.StartTime)
-            .HasColumnName("start_time")
-            .IsRequired();
-
-        builder.Property(e => e.EndTime)
-            .HasColumnName("end_time");
-
         builder.Property(e => e.Status)
             .HasConversion<string>()
             .HasColumnName("status")
@@ -59,6 +52,29 @@ public sealed class CalendarEventConfiguration : IEntityTypeConfiguration<Domain
         builder.Property(e => e.CreatedAtUtc)
             .HasColumnName("created_at_utc")
             .IsRequired();
+
+        // EventTime stored as five columns: kind + date + time + end_date + end_time
+        builder.OwnsOne(e => e.Time, time =>
+        {
+            time.Property(t => t.Kind)
+                .HasConversion<string>()
+                .HasColumnName("event_time_kind")
+                .HasMaxLength(20)
+                .IsRequired();
+
+            time.Property(t => t.Date)
+                .HasColumnName("event_date")
+                .IsRequired();
+
+            time.Property(t => t.Time)
+                .HasColumnName("event_time");
+
+            time.Property(t => t.EndDate)
+                .HasColumnName("event_end_date");
+
+            time.Property(t => t.EndTime)
+                .HasColumnName("event_end_time");
+        });
 
         // Participant IDs stored as JSON text — list of member GUIDs.
         var participantConverter = new ValueConverter<List<MemberId>, string>(

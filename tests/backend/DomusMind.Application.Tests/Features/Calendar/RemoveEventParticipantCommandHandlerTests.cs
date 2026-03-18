@@ -25,14 +25,9 @@ public sealed class RemoveEventParticipantCommandHandlerTests
     private static async Task<(DomusMindDbContext Db, Domain.Calendar.CalendarEvent Evt)> BuildWithEventAsync()
     {
         var db = CreateDb();
-        var calendarEvent = Domain.Calendar.CalendarEvent.Create(
-            CalendarEventId.New(),
-            FamilyId.New(),
-            EventTitle.Create("Movie Night"),
-            null,
-            DateTime.UtcNow.AddDays(1),
-            null,
-            DateTime.UtcNow);
+        var calendarEvent = CalendarTestHelpers.MakeEvent(
+            FamilyId.New(), "Movie Night",
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)));
         db.Set<Domain.Calendar.CalendarEvent>().Add(calendarEvent);
         await db.SaveChangesAsync();
         calendarEvent.ClearDomainEvents();
