@@ -26,9 +26,7 @@ public sealed class CancelTaskCommandHandlerTests
     private static async Task<(DomusMindDbContext Db, HouseholdTask Task)> BuildWithTaskAsync()
     {
         var db = CreateDb();
-        var task = HouseholdTask.Create(
-            TaskId.New(), FamilyId.New(),
-            TaskTitle.Create("Order supplies"), null, null, DateTime.UtcNow);
+        var task = TaskTestHelpers.MakeTask(FamilyId.New(), "Order supplies");
         db.Set<HouseholdTask>().Add(task);
         await db.SaveChangesAsync();
         task.ClearDomainEvents();

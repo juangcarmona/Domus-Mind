@@ -1,6 +1,9 @@
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Domain.Abstractions;
+using DomusMind.Domain.Family;
+using DomusMind.Domain.Tasks;
+using DomusMind.Domain.Tasks.ValueObjects;
 
 namespace DomusMind.Application.Tests.Features.Tasks;
 
@@ -23,5 +26,27 @@ internal sealed class StubTasksEventLogWriter : IEventLogWriter
     {
         WrittenEvents.AddRange(domainEvents);
         return Task.CompletedTask;
+    }
+}
+
+/// <summary>Helpers for building HouseholdTask domain objects in tests.</summary>
+internal static class TaskTestHelpers
+{
+    public static HouseholdTask MakeTask(
+        FamilyId familyId,
+        string title,
+        DateOnly? dueDate = null,
+        TimeOnly? dueTime = null)
+    {
+        TaskSchedule schedule = (dueDate, dueTime) switch
+        {
+            (null, _) => TaskSchedule.NoSchedule(),
+            (not null, null) => TaskSchedule.WithDueDate(dueDate.Value),
+            (not null, not null) => TaskSchedule.WithDueDateTime(dueDate.Value, dueTime.Value),
+        };
+        return HouseholdTask.Create(
+            TaskId.New(), familyId,
+            TaskTitle.Create(title), null,
+            schedule, DateTime.UtcNow);
     }
 }

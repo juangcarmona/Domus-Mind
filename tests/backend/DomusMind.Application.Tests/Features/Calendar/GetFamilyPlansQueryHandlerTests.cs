@@ -21,13 +21,6 @@ public sealed class GetFamilyPlansQueryHandlerTests
         StubCalendarAuthorizationService? auth = null)
         => new(db, auth ?? new StubCalendarAuthorizationService());
 
-    private static Domain.Calendar.CalendarEvent MakeEvent(
-        FamilyId familyId, string title, DateTime? start = null)
-        => Domain.Calendar.CalendarEvent.Create(
-            CalendarEventId.New(), familyId,
-            EventTitle.Create(title), null,
-            start ?? DateTime.UtcNow.AddDays(1), null, DateTime.UtcNow);
-
     [Fact]
     public async Task Handle_AccessDenied_ThrowsCalendarException()
     {
@@ -44,14 +37,13 @@ public sealed class GetFamilyPlansQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ReturnsAllFamilyPlansOrderedByStartTime()
+    public async Task Handle_ReturnsAllFamilyPlansOrderedByDate()
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var now = DateTime.UtcNow;
         db.Set<Domain.Calendar.CalendarEvent>().AddRange(
-            MakeEvent(familyId, "Later", now.AddDays(5)),
-            MakeEvent(familyId, "Sooner", now.AddDays(1)));
+            CalendarTestHelpers.MakeEvent(familyId, "Later", new DateOnly(2026, 4, 10)),
+            CalendarTestHelpers.MakeEvent(familyId, "Sooner", new DateOnly(2026, 4, 1)));
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
@@ -70,9 +62,9 @@ public sealed class GetFamilyPlansQueryHandlerTests
         var familyId = FamilyId.New();
         var member = MemberId.New();
 
-        var myEvent = MakeEvent(familyId, "My Event");
+        var myEvent = CalendarTestHelpers.MakeEvent(familyId, "My Event", new DateOnly(2026, 4, 1));
         myEvent.AddParticipant(member);
-        var otherEvent = MakeEvent(familyId, "Other Event"); // no participants
+        var otherEvent = CalendarTestHelpers.MakeEvent(familyId, "Other Event", new DateOnly(2026, 4, 1));
 
         db.Set<Domain.Calendar.CalendarEvent>().AddRange(myEvent, otherEvent);
         await db.SaveChangesAsync();
@@ -91,15 +83,14 @@ public sealed class GetFamilyPlansQueryHandlerTests
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var now = DateTime.UtcNow;
         db.Set<Domain.Calendar.CalendarEvent>().AddRange(
-            MakeEvent(familyId, "In Range", now.AddDays(3)),
-            MakeEvent(familyId, "Out of Range", now.AddDays(10)));
+            CalendarTestHelpers.MakeEvent(familyId, "In Range", new DateOnly(2026, 4, 3)),
+            CalendarTestHelpers.MakeEvent(familyId, "Out of Range", new DateOnly(2026, 4, 20)));
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new GetFamilyPlansQuery(familyId.Value, null, now, now.AddDays(5), Guid.NewGuid()),
+            new GetFamilyPlansQuery(familyId.Value, null, new DateOnly(2026, 4, 1), new DateOnly(2026, 4, 5), Guid.NewGuid()),
             CancellationToken.None);
 
         result.Plans.Should().ContainSingle()
@@ -113,8 +104,8 @@ public sealed class GetFamilyPlansQueryHandlerTests
         var familyA = FamilyId.New();
         var familyB = FamilyId.New();
         db.Set<Domain.Calendar.CalendarEvent>().AddRange(
-            MakeEvent(familyA, "Family A Plan"),
-            MakeEvent(familyB, "Family B Plan"));
+            CalendarTestHelpers.MakeEvent(familyA, "Family A Plan", new DateOnly(2026, 4, 1)),
+            CalendarTestHelpers.MakeEvent(familyB, "Family B Plan", new DateOnly(2026, 4, 1)));
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 

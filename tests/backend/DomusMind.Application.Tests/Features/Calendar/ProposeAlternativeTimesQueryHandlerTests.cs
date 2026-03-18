@@ -21,13 +21,6 @@ public sealed class ProposeAlternativeTimesQueryHandlerTests
         StubCalendarAuthorizationService? auth = null)
         => new(db, auth ?? new StubCalendarAuthorizationService());
 
-    private static Domain.Calendar.CalendarEvent MakeEvent(
-        FamilyId familyId, string title, DateTime start, DateTime? end = null)
-        => Domain.Calendar.CalendarEvent.Create(
-            CalendarEventId.New(), familyId,
-            EventTitle.Create(title), null,
-            start, end, DateTime.UtcNow);
-
     [Fact]
     public async Task Handle_AccessDenied_ThrowsCalendarException()
     {
@@ -58,12 +51,33 @@ public sealed class ProposeAlternativeTimesQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_EmptyCalendar_ReturnsSuggestions()
+    public async Task Handle_DateOnlyEvent_ReturnsEmptySuggestions()
+    {
+        // Date-only events have no time, so no time-based alternatives can be proposed
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var evt = CalendarTestHelpers.MakeEvent(familyId, "All Day Event", new DateOnly(2026, 4, 1));
+        db.Set<Domain.Calendar.CalendarEvent>().Add(evt);
+        await db.SaveChangesAsync();
+
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new ProposeAlternativeTimesQuery(familyId.Value, evt.Id.Value, 3, Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.Suggestions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Handle_TimedEvent_ReturnsSuggestions()
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var start = DateTime.UtcNow.Date.AddDays(1).AddHours(10);
-        var evt = MakeEvent(familyId, "Meeting", start, start.AddHours(1));
+        var evt = CalendarTestHelpers.MakeEvent(
+            familyId, "Meeting",
+            new DateOnly(2026, 4, 1), new TimeOnly(10, 0),
+            new DateOnly(2026, 4, 1), new TimeOnly(11, 0));
         db.Set<Domain.Calendar.CalendarEvent>().Add(evt);
         await db.SaveChangesAsync();
 
@@ -81,8 +95,10 @@ public sealed class ProposeAlternativeTimesQueryHandlerTests
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var start = DateTime.UtcNow.Date.AddDays(1).AddHours(9);
-        var evt = MakeEvent(familyId, "Short Meeting", start, start.AddMinutes(30));
+        var evt = CalendarTestHelpers.MakeEvent(
+            familyId, "Short Meeting",
+            new DateOnly(2026, 4, 1), new TimeOnly(9, 0),
+            new DateOnly(2026, 4, 1), new TimeOnly(9, 30));
         db.Set<Domain.Calendar.CalendarEvent>().Add(evt);
         await db.SaveChangesAsync();
 
@@ -96,12 +112,15 @@ public sealed class ProposeAlternativeTimesQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_SuggestionsAreAfterEventStartTime()
+    public async Task Handle_SuggestionsAreAfterEventDate()
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
-        var start = DateTime.UtcNow.Date.AddDays(1).AddHours(10);
-        var evt = MakeEvent(familyId, "Meeting", start, start.AddHours(1));
+        var eventDate = new DateOnly(2026, 4, 1);
+        var evt = CalendarTestHelpers.MakeEvent(
+            familyId, "Meeting",
+            eventDate, new TimeOnly(10, 0),
+            eventDate, new TimeOnly(11, 0));
         db.Set<Domain.Calendar.CalendarEvent>().Add(evt);
         await db.SaveChangesAsync();
 
@@ -111,6 +130,8 @@ public sealed class ProposeAlternativeTimesQueryHandlerTests
             new ProposeAlternativeTimesQuery(familyId.Value, evt.Id.Value, 3, Guid.NewGuid()),
             CancellationToken.None);
 
-        result.Suggestions.Should().OnlyContain(s => s.ProposedStart > start);
+        // All suggestions should be on days strictly after the event date
+        result.Suggestions.Should().OnlyContain(
+            s => DateOnly.ParseExact(s.Date, "yyyy-MM-dd") > eventDate);
     }
 }

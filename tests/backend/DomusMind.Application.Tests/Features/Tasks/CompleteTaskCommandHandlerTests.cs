@@ -26,9 +26,7 @@ public sealed class CompleteTaskCommandHandlerTests
     private static async Task<(DomusMindDbContext Db, HouseholdTask Task)> BuildWithTaskAsync()
     {
         var db = CreateDb();
-        var task = HouseholdTask.Create(
-            TaskId.New(), FamilyId.New(),
-            TaskTitle.Create("Water the plants"), null, null, DateTime.UtcNow);
+        var task = TaskTestHelpers.MakeTask(FamilyId.New(), "Water the plants");
         db.Set<HouseholdTask>().Add(task);
         await db.SaveChangesAsync();
         task.ClearDomainEvents();

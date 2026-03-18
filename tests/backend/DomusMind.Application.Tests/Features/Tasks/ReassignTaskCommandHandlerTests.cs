@@ -25,10 +25,7 @@ public sealed class ReassignTaskCommandHandlerTests
 
     private static HouseholdTask BuildAssignedTask(FamilyId familyId, MemberId? assignee = null)
     {
-        var task = HouseholdTask.Create(
-            TaskId.New(), familyId,
-            TaskTitle.Create("Fix Fence"), null,
-            DateTime.UtcNow.AddDays(2), DateTime.UtcNow);
+        var task = TaskTestHelpers.MakeTask(familyId, "Fix Fence", new DateOnly(2026, 4, 15));
         if (assignee.HasValue)
             task.Assign(assignee.Value);
         task.ClearDomainEvents();

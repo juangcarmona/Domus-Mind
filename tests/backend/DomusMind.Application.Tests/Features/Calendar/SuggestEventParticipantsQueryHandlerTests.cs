@@ -23,11 +23,10 @@ public sealed class SuggestEventParticipantsQueryHandlerTests
         => new(db, auth ?? new StubCalendarAuthorizationService());
 
     private static Domain.Calendar.CalendarEvent MakeEvent(
-        FamilyId familyId, string title, DateTime? start = null)
-        => Domain.Calendar.CalendarEvent.Create(
-            CalendarEventId.New(), familyId,
-            EventTitle.Create(title), null,
-            start ?? DateTime.UtcNow.AddDays(1), null, DateTime.UtcNow);
+        FamilyId familyId, string title, DateOnly? date = null)
+        => CalendarTestHelpers.MakeEvent(
+            familyId, title,
+            date ?? DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)));
 
     private static Domain.Family.Family MakeFamily(FamilyId familyId, params (MemberId id, string name)[] members)
     {
