@@ -11,7 +11,6 @@ const NAV_ITEMS = [
   { to: "/week",     labelKey: "week"     },
   { to: "/tasks",    labelKey: "chores"   },
   { to: "/plans",    labelKey: "plans"    },
-  { to: "/people",   labelKey: "people"   },
   { to: "/areas",    labelKey: "areas"    },
 ] as const;
 

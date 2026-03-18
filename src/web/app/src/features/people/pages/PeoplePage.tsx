@@ -80,7 +80,8 @@ export function PeoplePage() {
                 >
                   <option value="Adult">{tOnboarding("people.roles.Adult")}</option>
                   <option value="Child">{tOnboarding("people.roles.Child")}</option>
-                  <option value="Teen">{tOnboarding("people.roles.Teen")}</option>
+                  <option value="Pet">{tOnboarding("people.roles.Pet")}</option>
+                  <option value="Caregiver">{tOnboarding("people.roles.Caregiver")}</option>
                 </select>
               </div>
             </div>

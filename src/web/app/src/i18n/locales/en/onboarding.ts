@@ -21,7 +21,7 @@ export default {
     save: "Save & continue",
     skip: "Skip for now",
     saving: "Saving…",
-    roles: { Adult: "Adult", Child: "Child", Teen: "Teen" },
+    roles: { Adult: "Adult", Child: "Child", Pet: "Pet", Caregiver: "Caregiver" },
   },
   done: {
     title: "Your household is ready",
