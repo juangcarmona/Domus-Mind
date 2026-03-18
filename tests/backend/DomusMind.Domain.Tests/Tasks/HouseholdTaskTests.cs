@@ -10,14 +10,14 @@ namespace DomusMind.Domain.Tests.Tasks;
 public sealed class HouseholdTaskTests
 {
     private static HouseholdTask BuildTask(
-        DateTime? dueDate = null,
+        DateOnly? dueDate = null,
         string title = "Clean Kitchen")
         => HouseholdTask.Create(
             TaskId.New(),
             FamilyId.New(),
             TaskTitle.Create(title),
             null,
-            dueDate,
+            dueDate.HasValue ? TaskSchedule.WithDueDate(dueDate.Value) : TaskSchedule.NoSchedule(),
             DateTime.UtcNow);
 
     // --- TaskTitle value object ---
@@ -65,14 +65,14 @@ public sealed class HouseholdTaskTests
     [Fact]
     public void Create_TaskCreatedEvent_ContainsCorrectData()
     {
-        var dueDate = DateTime.UtcNow.AddDays(3);
+        var dueDate = new DateOnly(2026, 4, 10);
         var task = BuildTask(dueDate, "Feed the cat");
 
         var evt = (TaskCreated)task.DomainEvents.Single();
         evt.TaskId.Should().Be(task.Id.Value);
         evt.FamilyId.Should().Be(task.FamilyId.Value);
         evt.Title.Should().Be("Feed the cat");
-        evt.DueDate.Should().Be(dueDate);
+        evt.Schedule.Date.Should().Be(dueDate);
     }
 
     // --- Assign ---
@@ -225,21 +225,21 @@ public sealed class HouseholdTaskTests
     public void Reschedule_PendingTask_UpdatesDueDate()
     {
         var task = BuildTask();
-        var newDue = DateTime.UtcNow.AddDays(10);
+        var newDue = new DateOnly(2026, 5, 1);
 
-        task.Reschedule(newDue);
+        task.Reschedule(TaskSchedule.WithDueDate(newDue));
 
-        task.DueDate.Should().Be(newDue);
+        task.Schedule.Date.Should().Be(newDue);
     }
 
     [Fact]
-    public void Reschedule_ToNull_ClearsDueDate()
+    public void Reschedule_ToNoSchedule_ClearsDueDate()
     {
-        var task = BuildTask(DateTime.UtcNow.AddDays(5));
+        var task = BuildTask(new DateOnly(2026, 4, 5));
 
-        task.Reschedule(null);
+        task.Reschedule(TaskSchedule.NoSchedule());
 
-        task.DueDate.Should().BeNull();
+        task.Schedule.HasSchedule.Should().BeFalse();
     }
 
     [Fact]
@@ -247,9 +247,9 @@ public sealed class HouseholdTaskTests
     {
         var task = BuildTask();
         task.ClearDomainEvents();
-        var newDue = DateTime.UtcNow.AddDays(7);
+        var newDue = new DateOnly(2026, 5, 10);
 
-        task.Reschedule(newDue);
+        task.Reschedule(TaskSchedule.WithDueDate(newDue));
 
         task.DomainEvents.Should().ContainSingle()
             .Which.Should().BeOfType<TaskRescheduled>();
@@ -260,7 +260,7 @@ public sealed class HouseholdTaskTests
     {
         var task = BuildTask();
         task.Complete();
-        var act = () => task.Reschedule(DateTime.UtcNow.AddDays(3));
+        var act = () => task.Reschedule(TaskSchedule.WithDueDate(new DateOnly(2026, 5, 1)));
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*completed*");
     }
@@ -270,7 +270,7 @@ public sealed class HouseholdTaskTests
     {
         var task = BuildTask();
         task.Cancel();
-        var act = () => task.Reschedule(DateTime.UtcNow.AddDays(3));
+        var act = () => task.Reschedule(TaskSchedule.WithDueDate(new DateOnly(2026, 5, 1)));
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*cancelled*");
     }
