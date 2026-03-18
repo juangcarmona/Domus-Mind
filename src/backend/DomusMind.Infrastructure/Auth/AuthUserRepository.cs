@@ -39,6 +39,7 @@ public sealed class AuthUserRepository : IAuthUserRepository
             Email = user.Email,
             PasswordHash = user.PasswordHash,
             CreatedAtUtc = DateTime.UtcNow,
+            MustChangePassword = user.MustChangePassword,
         };
 
         await _db.Set<AuthUser>().AddAsync(entity, cancellationToken);
@@ -53,6 +54,15 @@ public sealed class AuthUserRepository : IAuthUserRepository
                 cancellationToken);
     }
 
+    public async Task UpdateMustChangePasswordAsync(Guid userId, bool mustChangePassword, CancellationToken cancellationToken)
+    {
+        await _db.Set<AuthUser>()
+            .Where(u => u.UserId == userId)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(u => u.MustChangePassword, mustChangePassword),
+                cancellationToken);
+    }
+
     public async Task<bool> AnyUsersAsync(CancellationToken cancellationToken)
     {
         return await _db.Set<AuthUser>().AnyAsync(cancellationToken);
@@ -62,5 +72,5 @@ public sealed class AuthUserRepository : IAuthUserRepository
         => _db.SaveChangesAsync(cancellationToken);
 
     private static AuthUserRecord Map(AuthUser entity)
-        => new(entity.UserId, entity.Email, entity.PasswordHash);
+        => new(entity.UserId, entity.Email, entity.PasswordHash, entity.MustChangePassword);
 }

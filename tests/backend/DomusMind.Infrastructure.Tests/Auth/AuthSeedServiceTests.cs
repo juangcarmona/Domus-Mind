@@ -133,6 +133,9 @@ public sealed class AuthSeedServiceTests
         public Task UpdatePasswordHashAsync(Guid userId, string hash, CancellationToken ct)
             => Task.CompletedTask;
 
+        public Task UpdateMustChangePasswordAsync(Guid userId, bool mustChangePassword, CancellationToken ct)
+            => Task.CompletedTask;
+
         public Task<bool> AnyUsersAsync(CancellationToken ct)
             => Task.FromResult(Users.Count > 0);
 

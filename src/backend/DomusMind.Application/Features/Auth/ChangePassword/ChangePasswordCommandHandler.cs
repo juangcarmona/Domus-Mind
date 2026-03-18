@@ -40,6 +40,7 @@ public sealed class ChangePasswordCommandHandler : ICommandHandler<ChangePasswor
 
         var newHash = _hasher.Hash(command.NewPassword);
         await _users.UpdatePasswordHashAsync(command.UserId, newHash, cancellationToken);
+        await _users.UpdateMustChangePasswordAsync(command.UserId, false, cancellationToken);
 
         // Revoke all refresh tokens so existing sessions are invalidated
         await _refreshTokens.RevokeAllForUserAsync(command.UserId, cancellationToken);

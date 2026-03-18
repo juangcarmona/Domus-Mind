@@ -61,6 +61,23 @@ public sealed class Family : AggregateRoot<FamilyId>
         return member;
     }
 
+    public FamilyMember UpdateMember(MemberId memberId, MemberName name, MemberRole role, bool isManager, DateOnly? birthDate, DateTime updatedAtUtc)
+    {
+        if (isManager && role.Value != "Adult")
+            throw new InvalidOperationException(
+                "Manager role can only be assigned to adult members.");
+
+        var member = _members.SingleOrDefault(m => m.Id == memberId)
+            ?? throw new InvalidOperationException(
+                $"A member with id '{memberId.Value}' does not exist in this family.");
+
+        member.Update(name, role, isManager, birthDate);
+
+        RaiseDomainEvent(new Events.MemberUpdated(Guid.NewGuid(), Id.Value, memberId.Value, updatedAtUtc));
+
+        return member;
+    }
+
 #pragma warning disable CS8618
     // EF Core parameterless constructor
     private Family() : base(default) { }

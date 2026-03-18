@@ -5,6 +5,7 @@ public enum FamilyErrorCode
     FamilyNotFound,
     AccessDenied,
     MemberAlreadyExists,
+    MemberNotFound,
     InvalidInput,
     FamilyAlreadyExists,
 }

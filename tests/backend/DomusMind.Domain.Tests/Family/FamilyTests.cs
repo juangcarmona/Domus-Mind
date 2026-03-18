@@ -195,4 +195,72 @@ public sealed class FamilyTests
 
         family.DomainEvents.Should().BeEmpty();
     }
+
+    // ── Family.UpdateMember ───────────────────────────────────────────────────
+
+    [Fact]
+    public void UpdateMember_WithValidInput_UpdatesMemberProperties()
+    {
+        var family = BuildFamily();
+        var memberId = MemberId.New();
+        family.AddMember(memberId, MemberName.Create("Alice"), MemberRole.Adult, false, null, DateTime.UtcNow);
+        family.ClearDomainEvents();
+
+        var birthDate = new DateOnly(1990, 1, 15);
+        family.UpdateMember(memberId, MemberName.Create("Alice Updated"), MemberRole.Adult, true, birthDate, DateTime.UtcNow);
+
+        var member = family.Members.Single(m => m.Id == memberId);
+        member.Name.Value.Should().Be("Alice Updated");
+        member.IsManager.Should().BeTrue();
+        member.BirthDate.Should().Be(birthDate);
+    }
+
+    [Fact]
+    public void UpdateMember_EmitsMemberUpdatedEvent()
+    {
+        var family = BuildFamily();
+        var memberId = MemberId.New();
+        family.AddMember(memberId, MemberName.Create("Bob"), MemberRole.Adult, false, null, DateTime.UtcNow);
+        family.ClearDomainEvents();
+
+        family.UpdateMember(memberId, MemberName.Create("Bob"), MemberRole.Adult, false, null, DateTime.UtcNow);
+
+        family.DomainEvents.Should().HaveCount(1);
+        family.DomainEvents.Single().Should().BeOfType<MemberUpdated>();
+    }
+
+    [Fact]
+    public void UpdateMember_NonExistentMemberId_ThrowsInvalidOperationException()
+    {
+        var family = BuildFamily();
+
+        var act = () => family.UpdateMember(
+            MemberId.New(),
+            MemberName.Create("Ghost"),
+            MemberRole.Adult,
+            false,
+            null,
+            DateTime.UtcNow);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void UpdateMember_AssignManagerToNonAdult_ThrowsInvalidOperationException()
+    {
+        var family = BuildFamily();
+        var memberId = MemberId.New();
+        family.AddMember(memberId, MemberName.Create("Charlie"), MemberRole.Child, false, null, DateTime.UtcNow);
+        family.ClearDomainEvents();
+
+        var act = () => family.UpdateMember(
+            memberId,
+            MemberName.Create("Charlie"),
+            MemberRole.Child,
+            true, // cannot be manager as a child
+            null,
+            DateTime.UtcNow);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
 }

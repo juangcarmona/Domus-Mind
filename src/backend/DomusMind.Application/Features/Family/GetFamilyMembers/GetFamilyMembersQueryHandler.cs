@@ -46,7 +46,10 @@ public sealed class GetFamilyMembersQueryHandler
                 family.Id.Value,
                 m.Name.Value,
                 m.Role.Value,
-                m.JoinedAtUtc))
+                m.IsManager,
+                m.BirthDate,
+                m.JoinedAtUtc,
+                m.AuthUserId))
             .ToList()
             .AsReadOnly();
     }

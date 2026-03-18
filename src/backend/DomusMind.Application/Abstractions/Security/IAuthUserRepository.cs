@@ -10,6 +10,8 @@ public interface IAuthUserRepository
 
     Task UpdatePasswordHashAsync(Guid userId, string newPasswordHash, CancellationToken cancellationToken);
 
+    Task UpdateMustChangePasswordAsync(Guid userId, bool mustChangePassword, CancellationToken cancellationToken);
+
     Task<bool> AnyUsersAsync(CancellationToken cancellationToken);
 
     Task SaveChangesAsync(CancellationToken cancellationToken);

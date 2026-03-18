@@ -32,6 +32,14 @@ internal sealed class InMemoryAuthUserRepository : IAuthUserRepository
         return Task.CompletedTask;
     }
 
+    public Task UpdateMustChangePasswordAsync(Guid userId, bool mustChangePassword, CancellationToken ct)
+    {
+        var index = Users.FindIndex(u => u.UserId == userId);
+        if (index >= 0)
+            Users[index] = Users[index] with { MustChangePassword = mustChangePassword };
+        return Task.CompletedTask;
+    }
+
     public Task<bool> AnyUsersAsync(CancellationToken ct)
         => Task.FromResult(Users.Count > 0);
 

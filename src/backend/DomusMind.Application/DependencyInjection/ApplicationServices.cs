@@ -28,6 +28,8 @@ using DomusMind.Application.Features.Family.GetFamilyMembers;
 using DomusMind.Application.Features.Family.GetHouseholdTimeline;
 using DomusMind.Application.Features.Family.GetMemberActivity;
 using DomusMind.Application.Features.Family.GetMyFamily;
+using DomusMind.Application.Features.Family.InviteMember;
+using DomusMind.Application.Features.Family.UpdateMember;
 using DomusMind.Application.Features.Languages.GetSupportedLanguages;
 using DomusMind.Application.Features.Responsibilities.AssignPrimaryOwner;
 using DomusMind.Application.Features.Responsibilities.AssignSecondaryOwner;
@@ -77,6 +79,8 @@ public static class ApplicationServices
         services.AddScoped<ICommandHandler<AddMemberCommand, AddMemberResponse>, AddMemberCommandHandler>();
         services.AddScoped<ICommandHandler<CompleteOnboardingCommand, CompleteOnboardingResponse>, CompleteOnboardingCommandHandler>();
         services.AddScoped<ICommandHandler<UpdateFamilySettingsCommand, UpdateFamilySettingsResponse>, UpdateFamilySettingsCommandHandler>();
+        services.AddScoped<ICommandHandler<InviteMemberCommand, InviteMemberResponse>, InviteMemberCommandHandler>();
+        services.AddScoped<ICommandHandler<UpdateMemberCommand, UpdateMemberResponse>, UpdateMemberCommandHandler>();
         services.AddScoped<IQueryHandler<GetFamilyQuery, FamilyResponse>, GetFamilyQueryHandler>();
         services.AddScoped<IQueryHandler<GetMyFamilyQuery, FamilyResponse>, GetMyFamilyQueryHandler>();
         services.AddScoped<IQueryHandler<GetFamilyMembersQuery, IReadOnlyCollection<FamilyMemberResponse>>, GetFamilyMembersQueryHandler>();

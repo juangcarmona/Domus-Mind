@@ -24,5 +24,9 @@ public sealed class AuthUserConfiguration : IEntityTypeConfiguration<AuthUser>
 
         builder.Property(x => x.CreatedAtUtc)
             .IsRequired();
+
+        builder.Property(x => x.MustChangePassword)
+            .IsRequired()
+            .HasDefaultValue(false);
     }
 }

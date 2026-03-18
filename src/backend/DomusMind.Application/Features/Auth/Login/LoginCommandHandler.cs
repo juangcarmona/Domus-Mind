@@ -35,6 +35,6 @@ public sealed class LoginCommandHandler : ICommandHandler<LoginCommand, LoginRes
         var accessToken = _tokenGenerator.Generate(user.UserId, user.Email);
         var refreshToken = await _refreshTokens.CreateAsync(user.UserId, cancellationToken);
 
-        return new LoginResponse(accessToken, refreshToken, user.UserId, user.Email);
+        return new LoginResponse(accessToken, refreshToken, user.UserId, user.Email, user.MustChangePassword);
     }
 }
