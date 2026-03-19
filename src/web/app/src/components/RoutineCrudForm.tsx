@@ -295,7 +295,7 @@ export function RoutineCrudForm({
             {tCommon("back")}
           </button>
           <button type="submit" className="btn" disabled={submitting}>
-            {submitting ? tCommon("saving") : mode === "create" ? tRoutines("save") : tCommon("save")}
+            {submitting ? tCommon("saving") : tCommon("save")}
           </button>
         </div>
       </form>
