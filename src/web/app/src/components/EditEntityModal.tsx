@@ -133,6 +133,10 @@ export function EditEntityModal({ type, id, onClose, onEntitySaved }: EditEntity
             familyId={familyId}
             eventId={event.calendarEventId}
             initialTitle={event.title}
+            initialStartDate={event.date ?? null}
+            initialStartClock={event.time ?? null}
+            initialEndDate={event.endDate ?? null}
+            initialEndClock={event.endTimeValue ?? null}
             initialStartTime={event.startTime}
             initialEndTime={event.endTime}
             onCancel={onClose}

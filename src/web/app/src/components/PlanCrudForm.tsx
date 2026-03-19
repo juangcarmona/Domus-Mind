@@ -9,6 +9,10 @@ interface PlanCrudFormProps {
   familyId: string;
   eventId?: string;
   initialTitle?: string;
+  initialStartDate?: string | null;
+  initialStartClock?: string | null;
+  initialEndDate?: string | null;
+  initialEndClock?: string | null;
   initialStartTime?: string | null;
   initialEndTime?: string | null;
   initialDescription?: string | null;
@@ -40,6 +44,10 @@ export function PlanCrudForm({
   familyId,
   eventId,
   initialTitle,
+  initialStartDate,
+  initialStartClock,
+  initialEndDate,
+  initialEndClock,
   initialStartTime,
   initialEndTime,
   initialDescription,
@@ -51,10 +59,22 @@ export function PlanCrudForm({
   const { t: tCommon } = useTranslation("common");
 
   const [title, setTitle] = useState(initialTitle ?? "");
-  const [startDate, setStartDate] = useState(toLocalDateInput(initialStartTime));
-  const [startTime, setStartTime] = useState(toLocalTimeInput(initialStartTime));
-  const [endDate, setEndDate] = useState(toLocalDateInput(initialEndTime));
-  const [endTime, setEndTime] = useState(toLocalTimeInput(initialEndTime));
+  const [startDate, setStartDate] = useState(
+    initialStartDate ?? toLocalDateInput(initialStartTime),
+  );
+  const [startTime, setStartTime] = useState(
+    initialStartClock !== undefined
+      ? (initialStartClock ?? "")
+      : toLocalTimeInput(initialStartTime),
+  );
+  const [endDate, setEndDate] = useState(
+    initialEndDate ?? toLocalDateInput(initialEndTime),
+  );
+  const [endTime, setEndTime] = useState(
+    initialEndClock !== undefined
+      ? (initialEndClock ?? "")
+      : toLocalTimeInput(initialEndTime),
+  );
   const [description, setDescription] = useState(initialDescription ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
