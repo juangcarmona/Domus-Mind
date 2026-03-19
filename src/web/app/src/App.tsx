@@ -15,7 +15,6 @@ import { AppShell } from "./components/AppShell";
 import { LoginPage } from "./features/auth/pages/LoginPage";
 import { RegisterPage } from "./features/auth/pages/RegisterPage";
 import { OnboardingPage } from "./features/onboarding/pages/OnboardingPage";
-import { TimelinePage } from "./features/timeline/pages/TimelinePage";
 import { PeoplePage } from "./features/people/pages/PeoplePage";
 import { AreasPage } from "./features/areas/pages/AreasPage";
 import { PlanningPage } from "./features/planning/pages/PlanningPage";
@@ -59,17 +58,17 @@ function AuthedApp() {
   return (
     <AppShell>
       <Routes>
-        <Route path="/timeline" element={<TimelinePage />} />
         <Route path="/people" element={<PeoplePage />} />
         <Route path="/areas" element={<AreasPage />} />
         <Route path="/planning" element={<PlanningPage />} />
-        <Route path="/plans" element={<Navigate to="/planning" replace />} />
-        <Route path="/tasks" element={<Navigate to="/planning" replace />} />
         <Route path="/week" element={<WeekPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/timeline" element={<Navigate to="/planning" replace />} />
         <Route path="/agenda" element={<CoordinationPage />} />
         <Route path="/coordination" element={<Navigate to="/agenda" replace />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="*" element={<Navigate to="/agenda" replace />} />
+        <Route path="/plans" element={<Navigate to="/planning" replace />} />
+        <Route path="/tasks" element={<Navigate to="/planning" replace />} />
+        <Route path="*" element={<Navigate to="/planning" replace />} />
       </Routes>
     </AppShell>
   );
@@ -98,7 +97,7 @@ function UnauthApp() {
 
   return (
     <LoginPage
-      onSuccess={() => nav("/timeline")}
+      onSuccess={() => nav("/planning")}
       onGoToRegister={() => setPage("register")}
     />
   );

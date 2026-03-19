@@ -158,10 +158,10 @@ export function PlanningAddModal({ familyId, members, onClose, onSuccess, initia
               <button
                 type="button"
                 className="planning-choice-card"
-                onClick={() => setStep("plan")}
+                onClick={() => setStep("routine")}
               >
-                <span className="planning-choice-label">{t("planning.plan")}</span>
-                <span className="planning-choice-hint">{t("planning.planHint")}</span>
+                <span className="planning-choice-label">{t("planning.routine")}</span>
+                <span className="planning-choice-hint">{t("planning.routineHint")}</span>
               </button>
               <button
                 type="button"
@@ -174,10 +174,10 @@ export function PlanningAddModal({ familyId, members, onClose, onSuccess, initia
               <button
                 type="button"
                 className="planning-choice-card"
-                onClick={() => setStep("routine")}
+                onClick={() => setStep("plan")}
               >
-                <span className="planning-choice-label">{t("planning.routine")}</span>
-                <span className="planning-choice-hint">{t("planning.routineHint")}</span>
+                <span className="planning-choice-label">{t("planning.plan")}</span>
+                <span className="planning-choice-hint">{t("planning.planHint")}</span>
               </button>
             </div>
             <div className="modal-footer">
@@ -460,15 +460,15 @@ export function PlanningAddModal({ familyId, members, onClose, onSuccess, initia
                 </div>
               )}
               <div className="form-group">
-                <label htmlFor="pm-routine-kind">{tRoutines("kindLabel")}</label>
+                <label htmlFor="pm-routine-kind">{tRoutines("executionTypeLabel")}</label>
                 <select
                   id="pm-routine-kind"
                   className="form-control"
                   value={routineKind}
                   onChange={(e) => setRoutineKind(e.target.value)}
                 >
-                  <option value="Scheduled">{tRoutines("kindScheduled")}</option>
-                  <option value="Cue">{tRoutines("kindCue")}</option>
+                  <option value="Scheduled">{tRoutines("executionTypeGeneratesTasks")}</option>
+                  <option value="Cue">{tRoutines("executionTypeReminderOnly")}</option>
                 </select>
               </div>
               <div className="form-group">

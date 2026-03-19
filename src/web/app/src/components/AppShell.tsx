@@ -69,7 +69,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span />
         </button>
 
-        <NavLink to="/timeline" className="brand">
+        <NavLink to="/planning" className="brand">
           <HouseholdLogo className="brand-mark" />
           <span className="brand-name">{family?.name ?? "DomusMind"}</span>
         </NavLink>
@@ -124,7 +124,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           />
           <nav className="mobile-drawer" aria-label="Mobile navigation">
             <div className="mobile-drawer-header">
-              <NavLink to="/timeline" className="brand" onClick={() => setDrawerOpen(false)}>
+              <NavLink to="/planning" className="brand" onClick={() => setDrawerOpen(false)}>
                 <HouseholdLogo className="brand-mark" />
                 <span>{family?.name ?? "DomusMind"}</span>
               </NavLink>
