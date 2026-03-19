@@ -39,7 +39,6 @@ export function TaskCrudForm({
 }: TaskCrudFormProps) {
   const dispatch = useAppDispatch();
   const { t: tTasks } = useTranslation("tasks");
-  const { t: tPlans } = useTranslation("plans");
   const { t: tCommon } = useTranslation("common");
 
   const [title, setTitle] = useState(initialTitle ?? "");
@@ -53,11 +52,12 @@ export function TaskCrudForm({
     setSubmitting(true);
     setError(null);
 
+    if (!title.trim()) {
+      setSubmitting(false);
+      return;
+    }
+
     if (mode === "create") {
-      if (!title.trim()) {
-        setSubmitting(false);
-        return;
-      }
       const result = await dispatch(
         createTask({
           familyId,
@@ -107,7 +107,7 @@ export function TaskCrudForm({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            required={mode === "create"}
+            required
             autoFocus
             placeholder={tTasks("titlePlaceholder")}
           />
@@ -123,7 +123,7 @@ export function TaskCrudForm({
           />
         </div>
         <div className="form-group">
-          <label htmlFor="task-form-time">{tPlans("form.startTime")}</label>
+          <label htmlFor="task-form-time">{tTasks("timeLabel")}</label>
           <input
             id="task-form-time"
             className="form-control"
