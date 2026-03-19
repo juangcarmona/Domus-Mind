@@ -5,6 +5,7 @@ export default {
   titleLabel: "Titolo",
   titlePlaceholder: "es. Portare fuori la spazzatura",
   dueLabel: "Data di scadenza (opzionale)",
+  timeLabel: "Orario (opzionale)",
   loading: "Caricamento faccende…",
   empty: "Nessuna faccenda attiva.",
   emptyHint: "Aggiungi una faccenda — apparirà qui e nell'agenda.",

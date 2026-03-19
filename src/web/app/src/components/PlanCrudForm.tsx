@@ -95,6 +95,8 @@ export function PlanCrudForm({
         time: startTime || undefined,
         endDate: endDate || undefined,
         endTime: endTime || undefined,
+        title: title.trim(),
+        description: description.trim() || null,
       });
       setSubmitting(false);
       await Promise.resolve(onSuccess());
@@ -117,7 +119,6 @@ export function PlanCrudForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            disabled={mode === "edit"}
             autoFocus
           />
         </div>
@@ -174,7 +175,6 @@ export function PlanCrudForm({
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            disabled={mode === "edit"}
           />
         </div>
         {error && <p className="error-msg">{error}</p>}

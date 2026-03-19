@@ -5,6 +5,7 @@ export default {
   titleLabel: "Titre",
   titlePlaceholder: "ex. Sortir les poubelles",
   dueLabel: "Date d'échéance (facultatif)",
+  timeLabel: "Heure (facultatif)",
   loading: "Chargement des tâches…",
   empty: "Aucune tâche active.",
   emptyHint: "Ajoutez une tâche — elle apparaîtra ici et dans le calendrier.",

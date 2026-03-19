@@ -5,6 +5,7 @@ export default {
   titleLabel: "标题",
   titlePlaceholder: "例：倒垃圾",
   dueLabel: "截止日期（可选）",
+  timeLabel: "时间（可选）",
   loading: "加载家务…",
   empty: "暂无活动中家务。",
   emptyHint: "添加家务—它将显示在此处和时间线上。",

@@ -7,5 +7,6 @@ public sealed record RescheduleTaskCommand(
     Guid TaskId,
     string? DueDate,
     string? DueTime,
+    string? Title,
     Guid RequestedByUserId)
     : ICommand<RescheduleTaskResponse>;

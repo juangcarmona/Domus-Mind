@@ -5,6 +5,7 @@ export default {
   titleLabel: "Title",
   titlePlaceholder: "e.g. Take out the trash",
   dueLabel: "Due date (optional)",
+  timeLabel: "Time (optional)",
   loading: "Loading tasks…",
   empty: "No active tasks.",
   emptyHint: "Add a task — it will appear here and on the timeline.",

@@ -110,7 +110,15 @@ public sealed class EventsController : ControllerBase
         try
         {
             var response = await dispatcher.Dispatch(
-                new RescheduleEventCommand(id, request.Date, request.Time, request.EndDate, request.EndTime, _currentUser.UserId!.Value),
+                new RescheduleEventCommand(
+                    id,
+                    request.Date,
+                    request.Time,
+                    request.EndDate,
+                    request.EndTime,
+                    request.Title,
+                    request.Description,
+                    _currentUser.UserId!.Value),
                 cancellationToken);
 
             return Ok(response);

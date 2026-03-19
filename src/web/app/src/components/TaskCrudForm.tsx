@@ -62,7 +62,8 @@ export function TaskCrudForm({
         createTask({
           familyId,
           title: title.trim(),
-          dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+          dueDate: dueDate || null,
+          dueTime: dueTime || null,
         }),
       );
       setSubmitting(false);
@@ -80,7 +81,12 @@ export function TaskCrudForm({
     }
 
     try {
-      await domusmindApi.rescheduleTask(taskId, dueDate || null, dueTime || null);
+      await domusmindApi.rescheduleTask(
+        taskId,
+        dueDate || null,
+        dueTime || null,
+        title.trim() || null,
+      );
       setSubmitting(false);
       await Promise.resolve(onSuccess());
     } catch (err) {
@@ -102,7 +108,6 @@ export function TaskCrudForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required={mode === "create"}
-            disabled={mode === "edit"}
             autoFocus
             placeholder={tTasks("titlePlaceholder")}
           />
@@ -117,18 +122,16 @@ export function TaskCrudForm({
             onChange={(e) => setDueDate(e.target.value)}
           />
         </div>
-        {mode === "edit" && (
-          <div className="form-group">
-            <label htmlFor="task-form-time">{tPlans("form.startTime")}</label>
-            <input
-              id="task-form-time"
-              className="form-control"
-              type="time"
-              value={dueTime}
-              onChange={(e) => setDueTime(e.target.value)}
-            />
-          </div>
-        )}
+        <div className="form-group">
+          <label htmlFor="task-form-time">{tPlans("form.startTime")}</label>
+          <input
+            id="task-form-time"
+            className="form-control"
+            type="time"
+            value={dueTime}
+            onChange={(e) => setDueTime(e.target.value)}
+          />
+        </div>
         {error && <p className="error-msg">{error}</p>}
         <div className="modal-footer">
           <button type="button" className="btn btn-ghost" onClick={onCancel}>

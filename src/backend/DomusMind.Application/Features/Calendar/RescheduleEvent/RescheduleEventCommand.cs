@@ -9,5 +9,7 @@ public sealed record RescheduleEventCommand(
     string? Time,
     string? EndDate,
     string? EndTime,
+    string? Title,
+    string? Description,
     Guid RequestedByUserId)
     : ICommand<RescheduleEventResponse>;

@@ -256,6 +256,8 @@ export interface RescheduleEventRequest {
   time?: string;
   endDate?: string;
   endTime?: string;
+  title?: string;
+  description?: string | null;
 }
 
 export interface HouseholdAreaItem {
@@ -299,6 +301,7 @@ export interface CreateTaskRequest {
   familyId: string;
   description?: string;
   dueDate?: string | null;
+  dueTime?: string | null;
 }
 
 export interface CreateTaskResponse {
@@ -521,10 +524,15 @@ export const domusmindApi = {
   cancelTask: (taskId: string) =>
     request<unknown>(`/api/tasks/${taskId}/cancel`, { method: "POST" }),
 
-  rescheduleTask: (taskId: string, dueDate: string | null, dueTime?: string | null) =>
+  rescheduleTask: (
+    taskId: string,
+    dueDate: string | null,
+    dueTime?: string | null,
+    title?: string | null,
+  ) =>
     request<unknown>(`/api/tasks/${taskId}/reschedule`, {
       method: "POST",
-      body: JSON.stringify({ dueDate, dueTime: dueTime ?? null }),
+      body: JSON.stringify({ dueDate, dueTime: dueTime ?? null, title: title ?? null }),
     }),
 
   /* Languages */

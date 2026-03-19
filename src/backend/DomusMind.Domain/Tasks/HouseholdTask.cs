@@ -113,6 +113,17 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
             Guid.NewGuid(), Id.Value, newSchedule, DateTime.UtcNow));
     }
 
+    public void Rename(TaskTitle newTitle)
+    {
+        if (Status == HouseholdTaskStatus.Completed)
+            throw new InvalidOperationException("Cannot rename a completed task.");
+
+        if (Status == HouseholdTaskStatus.Cancelled)
+            throw new InvalidOperationException("Cannot rename a cancelled task.");
+
+        Title = newTitle;
+    }
+
 #pragma warning disable CS8618
     // EF Core parameterless constructor
     private HouseholdTask() : base(default) { }

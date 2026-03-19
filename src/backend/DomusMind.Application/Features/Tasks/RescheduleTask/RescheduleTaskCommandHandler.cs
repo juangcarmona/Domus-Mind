@@ -4,6 +4,7 @@ using DomusMind.Application.Abstractions.Security;
 using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Tasks;
 using DomusMind.Domain.Tasks;
+using DomusMind.Domain.Tasks.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace DomusMind.Application.Features.Tasks.RescheduleTask;
@@ -56,11 +57,19 @@ public sealed class RescheduleTaskCommandHandler
 
         try
         {
+            if (!string.IsNullOrWhiteSpace(command.Title))
+            {
+                task.Rename(TaskTitle.Create(command.Title));
+            }
             task.Reschedule(newSchedule);
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("completed"))
         {
             throw new TasksException(TasksErrorCode.TaskAlreadyCompleted, ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new TasksException(TasksErrorCode.InvalidInput, ex.Message);
         }
         catch (InvalidOperationException ex)
         {

@@ -5,6 +5,7 @@ using DomusMind.Application.Features.Calendar;
 using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
+using DomusMind.Domain.Calendar.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace DomusMind.Application.Features.Calendar.RescheduleEvent;
@@ -57,11 +58,22 @@ public sealed class RescheduleEventCommandHandler
 
         try
         {
+            if (!string.IsNullOrWhiteSpace(command.Title) || command.Description is not null)
+            {
+                var title = !string.IsNullOrWhiteSpace(command.Title)
+                    ? EventTitle.Create(command.Title)
+                    : calendarEvent.Title;
+                calendarEvent.Edit(title, command.Description);
+            }
             calendarEvent.Reschedule(newTime);
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("cancelled"))
         {
             throw new CalendarException(CalendarErrorCode.EventAlreadyCancelled, ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new CalendarException(CalendarErrorCode.InvalidInput, ex.Message);
         }
         catch (InvalidOperationException ex)
         {
