@@ -99,7 +99,7 @@ public sealed class TasksController : ControllerBase
         try
         {
             var response = await dispatcher.Dispatch(
-                new RescheduleTaskCommand(id, request.DueDate, request.DueTime, _currentUser.UserId!.Value),
+                new RescheduleTaskCommand(id, request.DueDate, request.DueTime, request.Title, _currentUser.UserId!.Value),
                 cancellationToken);
             return Ok(response);
         }

@@ -21,6 +21,7 @@ import { PlanningPage } from "./features/planning/pages/PlanningPage";
 import { SettingsPage } from "./features/settings/pages/SettingsPage";
 import { WeekPage } from "./features/week/pages/WeekPage";
 import { CoordinationPage } from "./features/coordination/pages/CoordinationPage";
+import { DetailPage } from "./features/detail/pages/DetailPage";
 
 function AuthedApp() {
   const dispatch = useAppDispatch();
@@ -63,6 +64,7 @@ function AuthedApp() {
         <Route path="/planning" element={<PlanningPage />} />
         <Route path="/week" element={<WeekPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/details/:type/:id" element={<DetailPage />} />
         <Route path="/timeline" element={<Navigate to="/planning" replace />} />
         <Route path="/agenda" element={<CoordinationPage />} />
         <Route path="/coordination" element={<Navigate to="/agenda" replace />} />

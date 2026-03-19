@@ -5,6 +5,7 @@ export default {
   titleLabel: "Título",
   titlePlaceholder: "p.ej. Sacar la basura",
   dueLabel: "Fecha límite (opcional)",
+  timeLabel: "Hora (opcional)",
   loading: "Cargando tareas…",
   empty: "No hay tareas activas.",
   emptyHint: "Agrega una tarea — aparecerá aquí y en la línea de tiempo.",

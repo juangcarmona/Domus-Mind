@@ -5,6 +5,7 @@ export default {
   titleLabel: "タイトル",
   titlePlaceholder: "例: ゴミを出す",
   dueLabel: "期日（任意）",
+  timeLabel: "時間（任意）",
   loading: "家事を読み込んでいます…",
   empty: "活動中の家事はありません。",
   emptyHint: "家事を追加すると、こことタイムラインに表示されます。",

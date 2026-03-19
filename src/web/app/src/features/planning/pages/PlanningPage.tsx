@@ -7,6 +7,7 @@ import { fetchRoutines, pauseRoutine, resumeRoutine } from "../../../store/routi
 import { completeTask, cancelTask, assignTask } from "../../../store/tasksSlice";
 import { ConfirmDialog } from "../../../components/ConfirmDialog";
 import { PlanningAddModal } from "../../../components/PlanningAddModal";
+import { EditEntityModal } from "../../../components/EditEntityModal";
 import { useDateFormatter } from "../../../hooks/useDateFormatter";
 import type { FamilyTimelineEventItem, EnrichedTimelineEntry, RoutineListItem } from "../../../api/domusmindApi";
 
@@ -97,6 +98,7 @@ export function PlanningPage() {
   const [addModal, setAddModal] = useState<"plan" | "task" | "routine" | "choose" | null>(null);
   const [cancelTarget, setCancelTarget] = useState<FamilyTimelineEventItem | null>(null);
   const [assignTarget, setAssignTarget] = useState<EnrichedTimelineEntry | null>(null);
+  const [editTarget, setEditTarget] = useState<{ type: "routine" | "task" | "event"; id: string } | null>(null);
 
   const memberMap = Object.fromEntries(members.map((m) => [m.memberId, m.name]));
 
@@ -249,6 +251,15 @@ export function PlanningPage() {
                     key={routine.routineId}
                     className="item-card"
                     style={{ borderLeft: `3px solid ${routine.color}` }}
+                    onClick={() => setEditTarget({ type: "routine", id: routine.routineId })}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setEditTarget({ type: "routine", id: routine.routineId });
+                      }
+                    }}
                   >
                     <div className="item-card-body">
                       <div className="item-card-title">{routine.name}</div>
@@ -274,14 +285,20 @@ export function PlanningPage() {
                       {routine.status === "Active" ? (
                         <button
                           className="btn btn-ghost btn-sm"
-                          onClick={() => handlePauseRoutine(routine.routineId)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePauseRoutine(routine.routineId);
+                          }}
                         >
                           {tRoutines("pause")}
                         </button>
                       ) : (
                         <button
                           className="btn btn-sm"
-                          onClick={() => handleResumeRoutine(routine.routineId)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleResumeRoutine(routine.routineId);
+                          }}
                         >
                           {tRoutines("resume")}
                         </button>
@@ -317,6 +334,15 @@ export function PlanningPage() {
                     key={task.entryId}
                     className={`item-card ${task.isOverdue ? "overdue" : ""}`}
                     style={task.isOverdue ? { borderLeft: "3px solid var(--danger)" } : undefined}
+                    onClick={() => setEditTarget({ type: "task", id: task.entryId })}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setEditTarget({ type: "task", id: task.entryId });
+                      }
+                    }}
                   >
                     <div className="item-card-body">
                       <div className="item-card-title">{task.title}</div>
@@ -335,21 +361,30 @@ export function PlanningPage() {
                     <div className="item-card-actions">
                       <button
                         className="btn btn-ghost btn-sm"
-                        onClick={() => setAssignTarget(task)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAssignTarget(task);
+                        }}
                         title={tTasks("assignTitle")}
                       >
                         {tTasks("assign")}
                       </button>
                       <button
                         className="btn btn-sm"
-                        onClick={() => handleCompleteTask(task.entryId)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCompleteTask(task.entryId);
+                        }}
                         title={tTasks("markDoneTitle")}
                       >
                         ✓ {tTasks("done")}
                       </button>
                       <button
                         className="btn btn-ghost btn-sm"
-                        onClick={() => handleCancelTask(task.entryId)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelTask(task.entryId);
+                        }}
                         title={tCommon("cancel")}
                       >
                         ✕
@@ -368,7 +403,20 @@ export function PlanningPage() {
               </div>
               <div className="item-list">
                 {doneTasks.slice(0, 10).map((task) => (
-                  <div key={task.entryId} className="item-card" style={{ opacity: 0.65 }}>
+                  <div
+                    key={task.entryId}
+                    className="item-card"
+                    style={{ opacity: 0.65 }}
+                    onClick={() => setEditTarget({ type: "task", id: task.entryId })}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setEditTarget({ type: "task", id: task.entryId });
+                      }
+                    }}
+                  >
                     <div className="item-card-body">
                       <div
                         className="item-card-title"
@@ -400,7 +448,19 @@ export function PlanningPage() {
           {activePlans.length > 0 && (
             <div className="item-list">
               {activePlans.map((plan) => (
-                <div key={plan.calendarEventId} className="item-card">
+                <div
+                  key={plan.calendarEventId}
+                  className="item-card"
+                  onClick={() => setEditTarget({ type: "event", id: plan.calendarEventId })}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setEditTarget({ type: "event", id: plan.calendarEventId });
+                    }
+                  }}
+                >
                   <div className="item-card-body">
                     <div className="item-card-title">{plan.title}</div>
                     <div className="item-card-subtitle">
@@ -420,7 +480,10 @@ export function PlanningPage() {
                     {plan.status !== "Cancelled" && (
                       <button
                         className="btn btn-ghost btn-sm"
-                        onClick={() => setCancelTarget(plan)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCancelTarget(plan);
+                        }}
                       >
                         {tPlans("cancelEvent")}
                       </button>
@@ -455,6 +518,20 @@ export function PlanningPage() {
           members={members}
           onAssign={handleAssign}
           onClose={() => setAssignTarget(null)}
+        />
+      )}
+
+      {editTarget && (
+        <EditEntityModal
+          type={editTarget.type}
+          id={editTarget.id}
+          onClose={() => setEditTarget(null)}
+          onEntitySaved={async () => {
+            setEditTarget(null);
+            loadPlans();
+            loadTasks();
+            await dispatch(fetchRoutines(familyId));
+          }}
         />
       )}
 

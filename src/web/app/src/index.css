@@ -379,12 +379,21 @@ p {
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
 }
 .entry-card.overdue {
   border-left: 3px solid var(--danger);
 }
 .entry-card.high-priority:not(.overdue) {
   border-left: 3px solid var(--accent);
+}
+.entry-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 24%, transparent);
 }
 
 .entry-type-dot {
@@ -485,6 +494,18 @@ p {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+}
+.item-card[role="button"] {
+  cursor: pointer;
+}
+.item-card[role="button"]:hover {
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 28%, transparent);
 }
 .item-card-body {
   flex: 1;
@@ -1123,6 +1144,22 @@ p {
   padding: 0.2rem 0.45rem;
   border-left: 3px solid var(--wg-item-accent, transparent);
   border-radius: 0.4rem;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    filter 0.15s;
+}
+.wg-item[role="button"] {
+  cursor: pointer;
+}
+.wg-item[role="button"]:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--primary) 60%,
+    var(--wg-item-accent, var(--border))
+  );
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 26%, transparent);
+  filter: brightness(1.03);
 }
 .wg-item-type,
 .wg-item-title {

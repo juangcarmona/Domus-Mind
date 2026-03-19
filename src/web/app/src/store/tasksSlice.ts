@@ -17,26 +17,29 @@ const initialState: TasksState = {
 export const createTask = createAsyncThunk(
   "tasks/create",
   async (
-    {
-      familyId,
-      title,
-      description,
-      dueDate,
-    }: {
-      familyId: string;
-      title: string;
-      description?: string;
-      dueDate?: string | null;
-    },
-    { rejectWithValue },
-  ) => {
-    try {
-      return await domusmindApi.createTask({
-        title,
+      {
         familyId,
+        title,
         description,
         dueDate,
-      });
+        dueTime,
+      }: {
+        familyId: string;
+        title: string;
+        description?: string;
+        dueDate?: string | null;
+        dueTime?: string | null;
+      },
+      { rejectWithValue },
+    ) => {
+      try {
+        return await domusmindApi.createTask({
+          title,
+          familyId,
+          description,
+          dueDate,
+          dueTime,
+        });
     } catch (err: unknown) {
       return rejectWithValue(
         (err as { message?: string }).message ?? "Failed to create chore",

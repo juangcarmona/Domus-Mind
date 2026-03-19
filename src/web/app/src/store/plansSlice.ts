@@ -10,6 +10,19 @@ interface PlansState {
   error: string | null;
 }
 
+function eventStartIso(date: string, time?: string | null): string {
+  return time ? `${date}T${time}:00` : `${date}T00:00:00`;
+}
+
+function eventEndIso(
+  date: string,
+  time?: string | null,
+  fallbackDate?: string,
+): string | null {
+  if (!date) return null;
+  return time ? `${date}T${time}:00` : `${(fallbackDate ?? date)}T00:00:00`;
+}
+
 const initialState: PlansState = {
   items: [],
   status: "idle",
@@ -65,8 +78,12 @@ export const scheduleEvent = createAsyncThunk(
       return {
         calendarEventId: res.calendarEventId,
         title: res.title,
-        startTime: res.startTime,
-        endTime: res.endTime,
+        startTime: eventStartIso(res.date, res.time),
+        endTime: res.endDate ? eventEndIso(res.endDate, res.endTime, res.date) : null,
+        date: res.date,
+        time: res.time,
+        endDate: res.endDate,
+        endTimeValue: res.endTime,
         status: res.status,
         participantMemberIds: [],
         participants: [],
@@ -108,7 +125,16 @@ const plansSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchPlans.fulfilled, (state, action) => {
-        state.items = action.payload;
+        state.items = action.payload.map((event) => {
+          if (event.date) {
+            return {
+              ...event,
+              startTime: eventStartIso(event.date, event.time),
+              endTime: event.endDate ? eventEndIso(event.endDate, event.endTime) : null,
+            };
+          }
+          return event;
+        });
         state.status = "success";
       })
       .addCase(fetchPlans.rejected, (state, action) => {

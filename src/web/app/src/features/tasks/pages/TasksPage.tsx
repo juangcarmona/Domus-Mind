@@ -85,6 +85,7 @@ export function TasksPage() {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [dueTime, setDueTime] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [assignTarget, setAssignTarget] = useState<EnrichedTimelineEntry | null>(null);
@@ -137,13 +138,15 @@ export function TasksPage() {
       createTask({
         familyId,
         title: title.trim(),
-        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        dueDate: dueDate || null,
+        dueTime: dueTime || null,
       }),
     );
     setSubmitting(false);
     if (createTask.fulfilled.match(result)) {
       setTitle("");
       setDueDate("");
+      setDueTime("");
       setShowForm(false);
       loadTasks();
     } else {
@@ -305,6 +308,16 @@ export function TasksPage() {
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="task-time">{t("timeLabel")}</label>
+              <input
+                id="task-time"
+                className="form-control"
+                type="time"
+                value={dueTime}
+                onChange={(e) => setDueTime(e.target.value)}
               />
             </div>
             {formError && <p className="error-msg">{formError}</p>}

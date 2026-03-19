@@ -11,7 +11,7 @@ export function SettingsPage() {
   const { t } = useTranslation("settings");
   const dispatch = useAppDispatch();
   const languagesStatus = useAppSelector((s) => s.languages.status);
-  const [activeTab, setActiveTab] = useState<SettingsTab>("account");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("household");
 
   useEffect(() => {
     if (languagesStatus === "idle") {
@@ -24,9 +24,9 @@ export function SettingsPage() {
       <h1 className="page-title">{t("title")}</h1>
       <SettingsTabs active={activeTab} onChange={setActiveTab} />
       <div role="tabpanel">
-        {activeTab === "account" && <AccountSettingsSection />}
         {activeTab === "household" && <HouseholdSettingsSection />}
         {activeTab === "members" && <MembersSettingsSection />}
+        {activeTab === "account" && <AccountSettingsSection />}
       </div>
     </div>
   );

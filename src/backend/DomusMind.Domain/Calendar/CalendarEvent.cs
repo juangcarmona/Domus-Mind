@@ -62,6 +62,15 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
             Guid.NewGuid(), Id.Value, newTime, DateTime.UtcNow));
     }
 
+    public void Edit(EventTitle newTitle, string? newDescription)
+    {
+        if (Status == EventStatus.Cancelled)
+            throw new InvalidOperationException("Cannot edit a cancelled event.");
+
+        Title = newTitle;
+        Description = string.IsNullOrWhiteSpace(newDescription) ? null : newDescription.Trim();
+    }
+
     public void Cancel()
     {
         if (Status == EventStatus.Cancelled)

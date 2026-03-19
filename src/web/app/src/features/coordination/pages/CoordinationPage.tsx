@@ -6,6 +6,7 @@ import { fetchTimeline } from "../../../store/timelineSlice";
 import { weekApi } from "../../week/api/weekApi";
 import type { WeeklyGridResponse } from "../../week/types";
 import type { ApiError } from "../../../api/domusmindApi";
+import { EditEntityModal, type EditableEntityType } from "../../../components/EditEntityModal";
 import { DayView } from "../components/DayView";
 import { MonthView } from "../components/MonthView";
 import { CoordinationWeekView } from "../components/CoordinationWeekView";
@@ -99,6 +100,9 @@ export function CoordinationPage() {
   const [grid, setGrid] = useState<WeeklyGridResponse | null>(null);
   const [gridLoading, setGridLoading] = useState(false);
   const [gridError, setGridError] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<{ type: EditableEntityType; id: string } | null>(
+    null,
+  );
 
   // Month grid cache: weekStart → WeeklyGridResponse (for month calendar dots)
   const [monthGridCache, setMonthGridCache] = useState<Record<string, WeeklyGridResponse>>({});
@@ -228,6 +232,10 @@ export function CoordinationPage() {
     dispatch(setSelectedDate(todayIso));
   }
 
+  function handleItemClick(type: "event" | "task" | "routine", id: string) {
+    setEditTarget({ type, id });
+  }
+
   function handlePrevWeek() {
     dispatch(setSelectedDate(addDays(selectedDate, -7)));
   }
@@ -301,6 +309,7 @@ export function CoordinationPage() {
         onPrevDay={handlePrevDay}
         onNextDay={handleNextDay}
         onToday={handleToday}
+        onItemClick={handleItemClick}
       />
 
       {/* ── Section 2: Mid-term navigation (Week / Month) ── */}
@@ -355,6 +364,7 @@ export function CoordinationPage() {
             error={gridError}
             selectedDate={selectedDate}
             onDayClick={handleDaySelect}
+            onItemClick={handleItemClick}
           />
         )}
 
@@ -388,7 +398,22 @@ export function CoordinationPage() {
           </p>
         )}
       </div>
+      {editTarget && (
+        <EditEntityModal
+          type={editTarget.type}
+          id={editTarget.id}
+          onClose={() => setEditTarget(null)}
+          onEntitySaved={async () => {
+            setEditTarget(null);
+            if (familyId) {
+              await Promise.all([
+                fetchGrid(weekStartForSelected),
+                dispatch(fetchTimeline({ familyId })),
+              ]);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
-

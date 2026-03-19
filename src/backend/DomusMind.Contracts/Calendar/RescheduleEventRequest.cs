@@ -4,4 +4,6 @@ public sealed record RescheduleEventRequest(
     string Date,
     string? Time,
     string? EndDate,
-    string? EndTime);
+    string? EndTime,
+    string? Title,
+    string? Description);

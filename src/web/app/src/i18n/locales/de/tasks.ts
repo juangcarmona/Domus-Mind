@@ -5,6 +5,7 @@ export default {
   titleLabel: "Titel",
   titlePlaceholder: "z.B. Müll rausbringen",
   dueLabel: "Fälligkeitsdatum (optional)",
+  timeLabel: "Uhrzeit (optional)",
   loading: "Aufgaben werden geladen…",
   empty: "Keine aktiven Aufgaben.",
   emptyHint: "Fügen Sie eine Aufgabe hinzu — sie erscheint hier und im Zeitstrahl.",
