@@ -63,6 +63,8 @@ export default {
       noMembers: "No members yet.",
       linkAccountError: "Failed to link account.",
       updateError: "Failed to update member.",
+      addMember: "Add member",
+      addError: "Failed to add member.",
       roles: {
         Adult: "Adult",
         Child: "Child",

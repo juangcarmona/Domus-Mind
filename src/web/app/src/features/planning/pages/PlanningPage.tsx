@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { fetchPlans, cancelEvent } from "../../../store/plansSlice";
 import { fetchTimeline } from "../../../store/timelineSlice";
@@ -78,6 +79,7 @@ function AssignModal({
 
 export function PlanningPage() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { family, members } = useAppSelector((s) => s.household);
   const { items: planItems, status: plansStatus } = useAppSelector((s) => s.plans);
   const { data: timeline, status: timelineStatus } = useAppSelector((s) => s.timeline);
@@ -181,6 +183,10 @@ export function PlanningPage() {
     return tRoutines("scopeHousehold");
   }
 
+  function openDetail(type: "routine" | "task" | "event", id: string) {
+    navigate(`/details/${type}/${id}`);
+  }
+
   if (!familyId) return null;
 
   const activePlans = planItems.filter((p) => p.status !== "Cancelled");
@@ -249,6 +255,15 @@ export function PlanningPage() {
                     key={routine.routineId}
                     className="item-card"
                     style={{ borderLeft: `3px solid ${routine.color}` }}
+                    onClick={() => openDetail("routine", routine.routineId)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openDetail("routine", routine.routineId);
+                      }
+                    }}
                   >
                     <div className="item-card-body">
                       <div className="item-card-title">{routine.name}</div>
@@ -274,14 +289,20 @@ export function PlanningPage() {
                       {routine.status === "Active" ? (
                         <button
                           className="btn btn-ghost btn-sm"
-                          onClick={() => handlePauseRoutine(routine.routineId)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePauseRoutine(routine.routineId);
+                          }}
                         >
                           {tRoutines("pause")}
                         </button>
                       ) : (
                         <button
                           className="btn btn-sm"
-                          onClick={() => handleResumeRoutine(routine.routineId)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleResumeRoutine(routine.routineId);
+                          }}
                         >
                           {tRoutines("resume")}
                         </button>
@@ -317,6 +338,15 @@ export function PlanningPage() {
                     key={task.entryId}
                     className={`item-card ${task.isOverdue ? "overdue" : ""}`}
                     style={task.isOverdue ? { borderLeft: "3px solid var(--danger)" } : undefined}
+                    onClick={() => openDetail("task", task.entryId)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openDetail("task", task.entryId);
+                      }
+                    }}
                   >
                     <div className="item-card-body">
                       <div className="item-card-title">{task.title}</div>
@@ -335,21 +365,30 @@ export function PlanningPage() {
                     <div className="item-card-actions">
                       <button
                         className="btn btn-ghost btn-sm"
-                        onClick={() => setAssignTarget(task)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAssignTarget(task);
+                        }}
                         title={tTasks("assignTitle")}
                       >
                         {tTasks("assign")}
                       </button>
                       <button
                         className="btn btn-sm"
-                        onClick={() => handleCompleteTask(task.entryId)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCompleteTask(task.entryId);
+                        }}
                         title={tTasks("markDoneTitle")}
                       >
                         ✓ {tTasks("done")}
                       </button>
                       <button
                         className="btn btn-ghost btn-sm"
-                        onClick={() => handleCancelTask(task.entryId)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelTask(task.entryId);
+                        }}
                         title={tCommon("cancel")}
                       >
                         ✕
@@ -368,7 +407,20 @@ export function PlanningPage() {
               </div>
               <div className="item-list">
                 {doneTasks.slice(0, 10).map((task) => (
-                  <div key={task.entryId} className="item-card" style={{ opacity: 0.65 }}>
+                  <div
+                    key={task.entryId}
+                    className="item-card"
+                    style={{ opacity: 0.65 }}
+                    onClick={() => openDetail("task", task.entryId)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openDetail("task", task.entryId);
+                      }
+                    }}
+                  >
                     <div className="item-card-body">
                       <div
                         className="item-card-title"
@@ -400,7 +452,19 @@ export function PlanningPage() {
           {activePlans.length > 0 && (
             <div className="item-list">
               {activePlans.map((plan) => (
-                <div key={plan.calendarEventId} className="item-card">
+                <div
+                  key={plan.calendarEventId}
+                  className="item-card"
+                  onClick={() => openDetail("event", plan.calendarEventId)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openDetail("event", plan.calendarEventId);
+                    }
+                  }}
+                >
                   <div className="item-card-body">
                     <div className="item-card-title">{plan.title}</div>
                     <div className="item-card-subtitle">
@@ -420,7 +484,10 @@ export function PlanningPage() {
                     {plan.status !== "Cancelled" && (
                       <button
                         className="btn btn-ghost btn-sm"
-                        onClick={() => setCancelTarget(plan)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCancelTarget(plan);
+                        }}
                       >
                         {tPlans("cancelEvent")}
                       </button>

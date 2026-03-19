@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { WeeklyGridResponse, WeeklyGridCell } from "../../week/types";
-import { eventToItem, taskToItem, routineToItem } from "../../week/components/WeeklyGridItem";
+import { weeklyGridItemMappers } from "../../week/components/weeklyGridItemMappers";
 
 interface DayViewProps {
   grid: WeeklyGridResponse | null;
@@ -11,9 +11,18 @@ interface DayViewProps {
   onPrevDay: () => void;
   onNextDay: () => void;
   onToday: () => void;
+  onItemClick: (type: "event" | "task" | "routine", id: string) => void;
 }
 
-function DayMemberSection({ name, cell }: { name: string; cell: WeeklyGridCell }) {
+function DayMemberSection({
+  name,
+  cell,
+  onItemClick,
+}: {
+  name: string;
+  cell: WeeklyGridCell;
+  onItemClick: (type: "event" | "task" | "routine", id: string) => void;
+}) {
   const { t: tWeek } = useTranslation("week");
   const events = cell.events ?? [];
   const tasks = cell.tasks ?? [];
@@ -27,9 +36,17 @@ function DayMemberSection({ name, cell }: { name: string; cell: WeeklyGridCell }
         <span className="today-summary-empty">{tWeek("todayEmpty")}</span>
       ) : (
         <div className="today-summary-items">
-          {events.map((e) => eventToItem(e))}
-          {tasks.map((t) => taskToItem(t))}
-          {routines.map((r) => routineToItem(r))}
+          {events.map((e) =>
+            weeklyGridItemMappers.eventToItem(e, () => onItemClick("event", e.eventId)),
+          )}
+          {tasks.map((t) =>
+            weeklyGridItemMappers.taskToItem(t, () => onItemClick("task", t.taskId)),
+          )}
+          {routines.map((r) =>
+            weeklyGridItemMappers.routineToItem(r, () =>
+              onItemClick("routine", r.routineId),
+            ),
+          )}
         </div>
       )}
     </div>
@@ -45,6 +62,7 @@ export function DayView({
   onPrevDay,
   onNextDay,
   onToday,
+  onItemClick,
 }: DayViewProps) {
   const { t, i18n } = useTranslation("coordination");
   const { t: tWeek } = useTranslation("week");
@@ -139,14 +157,22 @@ export function DayView({
       {members.length > 0 && hasAnyContent && (
         <div className="today-summary-body">
           {hasSharedItems && sharedCell && (
-            <DayMemberSection name={t("day.household")} cell={sharedCell} />
+            <DayMemberSection
+              name={t("day.household")}
+              cell={sharedCell}
+              onItemClick={onItemClick}
+            />
           )}
           {memberDays.map(({ member, cell }) => (
-            <DayMemberSection key={member.memberId} name={member.name} cell={cell} />
+            <DayMemberSection
+              key={member.memberId}
+              name={member.name}
+              cell={cell}
+              onItemClick={onItemClick}
+            />
           ))}
         </div>
       )}
     </div>
   );
 }
-

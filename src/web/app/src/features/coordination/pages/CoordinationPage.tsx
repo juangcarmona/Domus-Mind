@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { setSelectedDate } from "../../../store/coordinationSlice";
 import { fetchTimeline } from "../../../store/timelineSlice";
@@ -75,6 +76,7 @@ function getMemberColor(index: number): string {
 
 export function CoordinationPage() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation("coordination");
 
   const family = useAppSelector((s) => s.household.family);
@@ -228,6 +230,10 @@ export function CoordinationPage() {
     dispatch(setSelectedDate(todayIso));
   }
 
+  function handleItemClick(type: "event" | "task" | "routine", id: string) {
+    navigate(`/details/${type}/${id}`);
+  }
+
   function handlePrevWeek() {
     dispatch(setSelectedDate(addDays(selectedDate, -7)));
   }
@@ -301,6 +307,7 @@ export function CoordinationPage() {
         onPrevDay={handlePrevDay}
         onNextDay={handleNextDay}
         onToday={handleToday}
+        onItemClick={handleItemClick}
       />
 
       {/* ── Section 2: Mid-term navigation (Week / Month) ── */}
@@ -355,6 +362,7 @@ export function CoordinationPage() {
             error={gridError}
             selectedDate={selectedDate}
             onDayClick={handleDaySelect}
+            onItemClick={handleItemClick}
           />
         )}
 
@@ -391,4 +399,3 @@ export function CoordinationPage() {
     </div>
   );
 }
-

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../auth/AuthProvider";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
-import { linkMemberAccount, updateMember } from "../../../store/householdSlice";
+import { addMember, linkMemberAccount, updateMember } from "../../../store/householdSlice";
 
 const MEMBER_ROLES = ["Adult", "Child", "Pet", "Caregiver"] as const;
 
@@ -70,6 +70,11 @@ export function MembersManagementSection() {
     username: string;
     password: string;
   } | null>(null);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [addName, setAddName] = useState("");
+  const [addRole, setAddRole] = useState("Adult");
+  const [addSaving, setAddSaving] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
 
   if (!family) return null;
 
@@ -148,9 +153,89 @@ export function MembersManagementSection() {
     }
   }
 
+  async function handleAddMember(e: FormEvent) {
+    e.preventDefault();
+    if (!addName.trim()) return;
+    setAddSaving(true);
+    setAddError(null);
+    const result = await dispatch(
+      addMember({
+        familyId: family!.familyId,
+        name: addName.trim(),
+        role: addRole,
+      }),
+    );
+    setAddSaving(false);
+    if (addMember.fulfilled.match(result)) {
+      setAddName("");
+      setAddRole("Adult");
+      setShowAddMember(false);
+    } else {
+      setAddError((result.payload as string) ?? tM("addError"));
+    }
+  }
+
   return (
     <section className="settings-section">
       <h2 className="settings-section-title">{tM("title")}</h2>
+      {isCurrentUserManager && (
+        <div style={{ marginBottom: "0.85rem" }}>
+          <button type="button" className="btn" onClick={() => setShowAddMember(true)}>
+            + {tM("addMember")}
+          </button>
+        </div>
+      )}
+
+      {showAddMember && (
+        <div className="card" style={{ padding: "1rem", marginBottom: "0.75rem" }}>
+          <h3 style={{ marginBottom: "0.75rem" }}>{tM("addMember")}</h3>
+          <form onSubmit={handleAddMember}>
+            <div className="form-group">
+              <label>{tM("name")}</label>
+              <input
+                className="form-control"
+                type="text"
+                value={addName}
+                onChange={(e) => setAddName(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+            <div className="form-group">
+              <label>{tM("role")}</label>
+              <select
+                className="form-control"
+                value={addRole}
+                onChange={(e) => setAddRole(e.target.value)}
+              >
+                {(["Adult", "Child", "Pet"] as const).map((r) => (
+                  <option key={r} value={r}>
+                    {t(`household.members.roles.${r}` as never)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {addError && <p className="error-msg">{addError}</p>}
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <button type="submit" className="btn" disabled={addSaving}>
+                {addSaving ? tM("saving") : tM("addMember")}
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => {
+                  setShowAddMember(false);
+                  setAddError(null);
+                  setAddName("");
+                  setAddRole("Adult");
+                }}
+              >
+                {tM("cancel")}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {members.length === 0 ? (
         <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{tM("noMembers")}</p>
@@ -407,7 +492,7 @@ export function MembersManagementSection() {
                       {t(`household.members.roles.${m.role}` as never, m.role)}
                     </div>
                   </div>
-                  {isCurrentUserManager && (
+                  {(isCurrentUserManager || m.authUserId === user?.userId) && (
                     <button
                       type="button"
                       className="btn btn-ghost"
@@ -426,5 +511,3 @@ export function MembersManagementSection() {
     </section>
   );
 }
-
-

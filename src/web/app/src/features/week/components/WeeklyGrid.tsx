@@ -10,16 +10,19 @@ interface WeeklyGridProps {
   selectedDate?: string; // Optional: highlight selected day column
   onDayClick?: (date: string) => void; // Optional: handle day header click
   suppressTodaySummary?: boolean; // When true, don't render TodaySummary above the grid
+  onItemClick?: (type: "event" | "task" | "routine", id: string) => void;
 }
 
 function SharedRow({
   cells,
   label,
   today,
+  onItemClick,
 }: {
   cells: GridCell[];
   label: string;
   today: string;
+  onItemClick?: (type: "event" | "task" | "routine", id: string) => void;
 }) {
   return (
     <div className="wg-row wg-row--shared">
@@ -31,13 +34,20 @@ function SharedRow({
           key={cell.date}
           cell={cell}
           isToday={cell.date.slice(0, 10) === today}
+          onItemClick={onItemClick}
         />
       ))}
     </div>
   );
 }
 
-export function WeeklyGrid({ grid, selectedDate, onDayClick, suppressTodaySummary }: WeeklyGridProps) {
+export function WeeklyGrid({
+  grid,
+  selectedDate,
+  onDayClick,
+  suppressTodaySummary,
+  onItemClick,
+}: WeeklyGridProps) {
   const { t } = useTranslation("week");
   const now = new Date();
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -65,7 +75,9 @@ export function WeeklyGrid({ grid, selectedDate, onDayClick, suppressTodaySummar
 
   return (
     <>
-      {isCurrentWeek && !suppressTodaySummary && <TodaySummary grid={grid} today={todayIso} />}
+      {isCurrentWeek && !suppressTodaySummary && (
+        <TodaySummary grid={grid} today={todayIso} onItemClick={onItemClick} />
+      )}
       <div className="weekly-grid">
         <WeekHeader
           days={days}
@@ -74,10 +86,20 @@ export function WeeklyGrid({ grid, selectedDate, onDayClick, suppressTodaySummar
           onDayClick={onDayClick}
         />
         {hasSharedContent && (
-          <SharedRow cells={sharedCells} label={t("household")} today={todayIso} />
+          <SharedRow
+            cells={sharedCells}
+            label={t("household")}
+            today={todayIso}
+            onItemClick={onItemClick}
+          />
         )}
         {members.map((member) => (
-          <WeeklyGridRow key={member.memberId} member={member} today={todayIso} />
+          <WeeklyGridRow
+            key={member.memberId}
+            member={member}
+            today={todayIso}
+            onItemClick={onItemClick}
+          />
         ))}
       </div>
     </>

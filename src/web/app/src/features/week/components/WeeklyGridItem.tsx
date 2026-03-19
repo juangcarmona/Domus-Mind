@@ -1,5 +1,3 @@
-import type { WeeklyGridEventItem, WeeklyGridTaskItem, WeeklyGridRoutineItem } from "../types";
-
 type ItemType = "event" | "task" | "routine";
 
 interface WeeklyGridItemProps {
@@ -9,6 +7,7 @@ interface WeeklyGridItemProps {
   status?: string;
   subtitle?: string;
   color?: string | null;
+  onClick?: () => void;
 }
 
 export function WeeklyGridItem({
@@ -18,6 +17,7 @@ export function WeeklyGridItem({
   status,
   subtitle,
   color,
+  onClick,
 }: WeeklyGridItemProps) {
   const tooltipText = [title, time, subtitle, status ? `(${status})` : ""]
     .filter(Boolean)
@@ -32,51 +32,21 @@ export function WeeklyGridItem({
       className={`wg-item wg-item--${type}`}
       title={tooltipText}
       style={style}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
     >
       <span className="wg-item-title">{title} {time && `· ${time}`}</span>
     </div>
-  );
-}
-
-export function eventToItem(e: WeeklyGridEventItem) {
-  const time = new Date(e.startTime).toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-  const participantNames = e.participants?.map((p) => p.displayName).join(", ");
-  return (
-    <WeeklyGridItem
-      key={e.eventId}
-      type="event"
-      title={e.title}
-      time={time}
-      status={e.status}
-      subtitle={participantNames || undefined}
-    />
-  );
-}
-
-export function taskToItem(t: WeeklyGridTaskItem) {
-  return (
-    <WeeklyGridItem
-      key={t.taskId}
-      type="task"
-      title={t.title}
-      status={t.status}
-    />
-  );
-}
-
-export function routineToItem(r: WeeklyGridRoutineItem) {
-  return (
-    <WeeklyGridItem
-      key={`routine-${r.routineId}`}
-      type="routine"
-      title={r.name}
-      time={r.time ?? r.frequency}
-      status={r.kind}
-      color={r.color}
-    />
   );
 }

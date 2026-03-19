@@ -8,6 +8,7 @@ interface CoordinationWeekViewProps {
   error: string | null;
   selectedDate: string;
   onDayClick: (date: string) => void;
+  onItemClick: (type: "event" | "task" | "routine", id: string) => void;
 }
 
 export function CoordinationWeekView({
@@ -16,6 +17,7 @@ export function CoordinationWeekView({
   error,
   selectedDate,
   onDayClick,
+  onItemClick,
 }: CoordinationWeekViewProps) {
   const { t } = useTranslation("coordination");
   const { t: tCommon } = useTranslation("common");
@@ -36,6 +38,7 @@ export function CoordinationWeekView({
         grid={grid}
         selectedDate={selectedDate}
         onDayClick={onDayClick}
+        onItemClick={onItemClick}
         suppressTodaySummary
       />
     </div>

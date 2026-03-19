@@ -521,10 +521,10 @@ export const domusmindApi = {
   cancelTask: (taskId: string) =>
     request<unknown>(`/api/tasks/${taskId}/cancel`, { method: "POST" }),
 
-  rescheduleTask: (taskId: string, newDueDate: string | null) =>
+  rescheduleTask: (taskId: string, dueDate: string | null, dueTime?: string | null) =>
     request<unknown>(`/api/tasks/${taskId}/reschedule`, {
       method: "POST",
-      body: JSON.stringify({ newDueDate }),
+      body: JSON.stringify({ dueDate, dueTime: dueTime ?? null }),
     }),
 
   /* Languages */

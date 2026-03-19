@@ -1,15 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../auth/AuthProvider";
-import { useAppSelector } from "../../../store/hooks";
 import type { ApiError } from "../../../api/authApi";
 
 export function AccountSettingsSection() {
   const { t } = useTranslation("settings");
   const { t: tCommon } = useTranslation("common");
   const { user, changePassword, logout } = useAuth();
-  const family = useAppSelector((s) => s.household.family);
-  const members = useAppSelector((s) => s.household.members);
 
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
@@ -56,26 +53,6 @@ export function AccountSettingsSection() {
           <span className="settings-field-label">{t("account.userId")}</span>
           <span className="settings-field-value settings-field-mono">{user?.userId ?? "—"}</span>
         </div>
-      </div>
-
-      <div className="settings-field-group">
-        <h3 className="settings-subsection-title">{t("account.householdContext")}</h3>
-        {family ? (
-          <>
-            <div className="settings-field">
-              <span className="settings-field-label">{t("account.linkedFamily")}</span>
-              <span className="settings-field-value">{family.name}</span>
-            </div>
-            <div className="settings-field">
-              <span className="settings-field-label">{t("account.linkedMembers")}</span>
-              <span className="settings-field-value">
-                {members.map((m) => `${m.name} (${m.role})`).join(", ") || "—"}
-              </span>
-            </div>
-          </>
-        ) : (
-          <p className="settings-field-value">{t("account.noHousehold")}</p>
-        )}
       </div>
 
       <div className="settings-subsection">

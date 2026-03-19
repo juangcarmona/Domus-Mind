@@ -1,18 +1,21 @@
 import { useTranslation } from "react-i18next";
 import type { WeeklyGridResponse, WeeklyGridCell } from "../types";
-import { eventToItem, taskToItem, routineToItem } from "./WeeklyGridItem";
+import { weeklyGridItemMappers } from "./weeklyGridItemMappers";
 
 interface TodaySummaryProps {
   grid: WeeklyGridResponse;
   today: string; // ISO date string yyyy-mm-dd
+  onItemClick?: (type: "event" | "task" | "routine", id: string) => void;
 }
 
 function SummaryMemberSection({
   name,
   cell,
+  onItemClick,
 }: {
   name: string;
   cell: WeeklyGridCell;
+  onItemClick?: (type: "event" | "task" | "routine", id: string) => void;
 }) {
   const { t } = useTranslation("week");
   const events = cell.events ?? [];
@@ -27,16 +30,24 @@ function SummaryMemberSection({
         <span className="today-summary-empty">{t("todayEmpty")}</span>
       ) : (
         <div className="today-summary-items">
-          {events.map((e) => eventToItem(e))}
-          {tasks.map((t) => taskToItem(t))}
-          {routines.map((r) => routineToItem(r))}
+          {events.map((e) =>
+            weeklyGridItemMappers.eventToItem(e, () => onItemClick?.("event", e.eventId)),
+          )}
+          {tasks.map((t) =>
+            weeklyGridItemMappers.taskToItem(t, () => onItemClick?.("task", t.taskId)),
+          )}
+          {routines.map((r) =>
+            weeklyGridItemMappers.routineToItem(r, () =>
+              onItemClick?.("routine", r.routineId),
+            ),
+          )}
         </div>
       )}
     </div>
   );
 }
 
-export function TodaySummary({ grid, today }: TodaySummaryProps) {
+export function TodaySummary({ grid, today, onItemClick }: TodaySummaryProps) {
   const { t, i18n } = useTranslation("week");
 
   const todayDate = new Date(today);
@@ -86,6 +97,7 @@ export function TodaySummary({ grid, today }: TodaySummaryProps) {
             <SummaryMemberSection
               name={t("household")}
               cell={sharedTodayCell}
+              onItemClick={onItemClick}
             />
           )}
           {memberCells.map(({ member, cell }) => (
@@ -93,6 +105,7 @@ export function TodaySummary({ grid, today }: TodaySummaryProps) {
               key={member.memberId}
               name={member.name}
               cell={cell}
+              onItemClick={onItemClick}
             />
           ))}
         </div>
