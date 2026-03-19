@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { fetchPlans, cancelEvent } from "../../../store/plansSlice";
 import { fetchTimeline } from "../../../store/timelineSlice";
@@ -8,6 +7,7 @@ import { fetchRoutines, pauseRoutine, resumeRoutine } from "../../../store/routi
 import { completeTask, cancelTask, assignTask } from "../../../store/tasksSlice";
 import { ConfirmDialog } from "../../../components/ConfirmDialog";
 import { PlanningAddModal } from "../../../components/PlanningAddModal";
+import { EditEntityModal } from "../../../components/EditEntityModal";
 import { useDateFormatter } from "../../../hooks/useDateFormatter";
 import type { FamilyTimelineEventItem, EnrichedTimelineEntry, RoutineListItem } from "../../../api/domusmindApi";
 
@@ -79,7 +79,6 @@ function AssignModal({
 
 export function PlanningPage() {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const { family, members } = useAppSelector((s) => s.household);
   const { items: planItems, status: plansStatus } = useAppSelector((s) => s.plans);
   const { data: timeline, status: timelineStatus } = useAppSelector((s) => s.timeline);
@@ -99,6 +98,7 @@ export function PlanningPage() {
   const [addModal, setAddModal] = useState<"plan" | "task" | "routine" | "choose" | null>(null);
   const [cancelTarget, setCancelTarget] = useState<FamilyTimelineEventItem | null>(null);
   const [assignTarget, setAssignTarget] = useState<EnrichedTimelineEntry | null>(null);
+  const [editTarget, setEditTarget] = useState<{ type: "routine" | "task" | "event"; id: string } | null>(null);
 
   const memberMap = Object.fromEntries(members.map((m) => [m.memberId, m.name]));
 
@@ -183,10 +183,6 @@ export function PlanningPage() {
     return tRoutines("scopeHousehold");
   }
 
-  function openDetail(type: "routine" | "task" | "event", id: string) {
-    navigate(`/details/${type}/${id}`);
-  }
-
   if (!familyId) return null;
 
   const activePlans = planItems.filter((p) => p.status !== "Cancelled");
@@ -255,13 +251,13 @@ export function PlanningPage() {
                     key={routine.routineId}
                     className="item-card"
                     style={{ borderLeft: `3px solid ${routine.color}` }}
-                    onClick={() => openDetail("routine", routine.routineId)}
+                    onClick={() => setEditTarget({ type: "routine", id: routine.routineId })}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        openDetail("routine", routine.routineId);
+                        setEditTarget({ type: "routine", id: routine.routineId });
                       }
                     }}
                   >
@@ -338,13 +334,13 @@ export function PlanningPage() {
                     key={task.entryId}
                     className={`item-card ${task.isOverdue ? "overdue" : ""}`}
                     style={task.isOverdue ? { borderLeft: "3px solid var(--danger)" } : undefined}
-                    onClick={() => openDetail("task", task.entryId)}
+                    onClick={() => setEditTarget({ type: "task", id: task.entryId })}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        openDetail("task", task.entryId);
+                        setEditTarget({ type: "task", id: task.entryId });
                       }
                     }}
                   >
@@ -411,13 +407,13 @@ export function PlanningPage() {
                     key={task.entryId}
                     className="item-card"
                     style={{ opacity: 0.65 }}
-                    onClick={() => openDetail("task", task.entryId)}
+                    onClick={() => setEditTarget({ type: "task", id: task.entryId })}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        openDetail("task", task.entryId);
+                        setEditTarget({ type: "task", id: task.entryId });
                       }
                     }}
                   >
@@ -455,13 +451,13 @@ export function PlanningPage() {
                 <div
                   key={plan.calendarEventId}
                   className="item-card"
-                  onClick={() => openDetail("event", plan.calendarEventId)}
+                  onClick={() => setEditTarget({ type: "event", id: plan.calendarEventId })}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      openDetail("event", plan.calendarEventId);
+                      setEditTarget({ type: "event", id: plan.calendarEventId });
                     }
                   }}
                 >
@@ -522,6 +518,14 @@ export function PlanningPage() {
           members={members}
           onAssign={handleAssign}
           onClose={() => setAssignTarget(null)}
+        />
+      )}
+
+      {editTarget && (
+        <EditEntityModal
+          type={editTarget.type}
+          id={editTarget.id}
+          onClose={() => setEditTarget(null)}
         />
       )}
 

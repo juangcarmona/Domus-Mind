@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { setSelectedDate } from "../../../store/coordinationSlice";
 import { fetchTimeline } from "../../../store/timelineSlice";
 import { weekApi } from "../../week/api/weekApi";
 import type { WeeklyGridResponse } from "../../week/types";
 import type { ApiError } from "../../../api/domusmindApi";
+import { EditEntityModal, type EditableEntityType } from "../../../components/EditEntityModal";
 import { DayView } from "../components/DayView";
 import { MonthView } from "../components/MonthView";
 import { CoordinationWeekView } from "../components/CoordinationWeekView";
@@ -76,7 +76,6 @@ function getMemberColor(index: number): string {
 
 export function CoordinationPage() {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const { t, i18n } = useTranslation("coordination");
 
   const family = useAppSelector((s) => s.household.family);
@@ -101,6 +100,9 @@ export function CoordinationPage() {
   const [grid, setGrid] = useState<WeeklyGridResponse | null>(null);
   const [gridLoading, setGridLoading] = useState(false);
   const [gridError, setGridError] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<{ type: EditableEntityType; id: string } | null>(
+    null,
+  );
 
   // Month grid cache: weekStart → WeeklyGridResponse (for month calendar dots)
   const [monthGridCache, setMonthGridCache] = useState<Record<string, WeeklyGridResponse>>({});
@@ -231,7 +233,7 @@ export function CoordinationPage() {
   }
 
   function handleItemClick(type: "event" | "task" | "routine", id: string) {
-    navigate(`/details/${type}/${id}`);
+    setEditTarget({ type, id });
   }
 
   function handlePrevWeek() {
@@ -396,6 +398,13 @@ export function CoordinationPage() {
           </p>
         )}
       </div>
+      {editTarget && (
+        <EditEntityModal
+          type={editTarget.type}
+          id={editTarget.id}
+          onClose={() => setEditTarget(null)}
+        />
+      )}
     </div>
   );
 }
