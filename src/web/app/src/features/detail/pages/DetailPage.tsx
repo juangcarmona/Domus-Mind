@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { EditEntityModal, type EditableEntityType } from "../../../components/EditEntityModal";
+import { EditEntityModal, type EditableEntityType } from "../../editors/components/EditEntityModal";
 
 function isDetailType(value: string | undefined): value is EditableEntityType {
   return value === "task" || value === "routine" || value === "event";

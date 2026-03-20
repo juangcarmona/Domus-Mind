@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { domusmindApi } from "../api/domusmindApi";
-import { createTask } from "../store/tasksSlice";
-import { useAppDispatch } from "../store/hooks";
+import { domusmindApi } from "../../../api/domusmindApi";
+import { createTask } from "../../../store/tasksSlice";
+import { useAppDispatch } from "../../../store/hooks";
 
 interface TaskCrudFormProps {
   mode: "create" | "edit";

@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { domusmindApi } from "../api/domusmindApi";
-import { scheduleEvent } from "../store/plansSlice";
-import { useAppDispatch } from "../store/hooks";
+import { domusmindApi } from "../../../api/domusmindApi";
+import { scheduleEvent } from "../../../store/plansSlice";
+import { useAppDispatch } from "../../../store/hooks";
 
 interface PlanCrudFormProps {
   mode: "create" | "edit";

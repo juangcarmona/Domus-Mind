@@ -6,76 +6,15 @@ import { fetchTimeline } from "../../../store/timelineSlice";
 import { fetchRoutines, pauseRoutine, resumeRoutine } from "../../../store/routinesSlice";
 import { completeTask, cancelTask, assignTask } from "../../../store/tasksSlice";
 import { ConfirmDialog } from "../../../components/ConfirmDialog";
-import { PlanningAddModal } from "../../../components/PlanningAddModal";
-import { EditEntityModal } from "../../../components/EditEntityModal";
+import { PlanningAddModal } from "../components/PlanningAddModal";
+import { EditEntityModal } from "../../editors/components/EditEntityModal";
+import { AssignTaskModal } from "../components/AssignTaskModal";
 import { useDateFormatter } from "../../../hooks/useDateFormatter";
 import type { FamilyTimelineEventItem, EnrichedTimelineEntry, RoutineListItem } from "../../../api/domusmindApi";
 
 type PlanningTab = "routines" | "tasks" | "plans";
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
-
-function AssignModal({
-  entry,
-  members,
-  onAssign,
-  onClose,
-}: {
-  entry: EnrichedTimelineEntry;
-  members: { memberId: string; name: string }[];
-  onAssign: (taskId: string, memberId: string) => Promise<void>;
-  onClose: () => void;
-}) {
-  const { t } = useTranslation("tasks");
-  const { t: tCommon } = useTranslation("common");
-  const [memberId, setMemberId] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!memberId) return;
-    setSubmitting(true);
-    await onAssign(entry.entryId, memberId);
-    setSubmitting(false);
-    onClose();
-  }
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h2>{t("assign")} — {entry.title}</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="planning-assign-select">{t("assignTo")}</label>
-            <select
-              id="planning-assign-select"
-              className="form-control"
-              value={memberId}
-              onChange={(e) => setMemberId(e.target.value)}
-              required
-              autoFocus
-            >
-              <option value="">{tCommon("selectPerson")}</option>
-              {members.map((m) => (
-                <option key={m.memberId} value={m.memberId}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="modal-footer">
-            <button type="button" className="btn btn-ghost" onClick={onClose}>
-              {tCommon("cancel")}
-            </button>
-            <button type="submit" className="btn" disabled={submitting || !memberId}>
-              {submitting ? t("assigning") : t("assign")}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 export function PlanningPage() {
   const dispatch = useAppDispatch();
@@ -513,7 +452,7 @@ export function PlanningPage() {
       )}
 
       {assignTarget && (
-        <AssignModal
+        <AssignTaskModal
           entry={assignTarget}
           members={members}
           onAssign={handleAssign}

@@ -1,9 +1,9 @@
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { fetchPlans } from "../store/plansSlice";
-import { fetchRoutines } from "../store/routinesSlice";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchTimeline } from "../store/timelineSlice";
+import { fetchPlans } from "../../../store/plansSlice";
+import { fetchRoutines } from "../../../store/routinesSlice";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
+import { fetchTimeline } from "../../../store/timelineSlice";
 import { PlanCrudForm } from "./PlanCrudForm";
 import { RoutineCrudForm } from "./RoutineCrudForm";
 import { TaskCrudForm } from "./TaskCrudForm";

@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { createRoutine, updateRoutine } from "../store/routinesSlice";
-import { useAppDispatch } from "../store/hooks";
-import type { RoutineListItem } from "../api/domusmindApi";
+import { createRoutine, updateRoutine } from "../../../store/routinesSlice";
+import { useAppDispatch } from "../../../store/hooks";
+import type { RoutineListItem } from "../../../api/domusmindApi";
 
 interface RoutineCrudFormProps {
   mode: "create" | "edit";

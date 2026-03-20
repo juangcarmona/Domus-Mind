@@ -6,7 +6,7 @@ import { fetchTimeline } from "../../../store/timelineSlice";
 import { weekApi } from "../../week/api/weekApi";
 import type { WeeklyGridResponse } from "../../week/types";
 import type { ApiError } from "../../../api/domusmindApi";
-import { EditEntityModal, type EditableEntityType } from "../../../components/EditEntityModal";
+import { EditEntityModal, type EditableEntityType } from "../../editors/components/EditEntityModal";
 import { TodayBoard } from "../components/TodayBoard";
 import { MonthView } from "../components/MonthView";
 import { WeeklyHouseholdGrid } from "../components/WeeklyHouseholdGrid";
