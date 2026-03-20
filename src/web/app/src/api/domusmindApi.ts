@@ -549,7 +549,7 @@ export const domusmindApi = {
   /* Weekly grid */
   getWeeklyGrid: (familyId: string, weekStart?: string) => {
     const params = weekStart ? `?weekStart=${encodeURIComponent(weekStart)}` : "";
-    return request<import("../features/week/types").WeeklyGridResponse>(
+    return request<import("../features/today/types").WeeklyGridResponse>(
       `/api/families/${familyId}/weekly-grid${params}`,
     );
   },

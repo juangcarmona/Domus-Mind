@@ -18,6 +18,8 @@ export default {
   day: {
     title: "日",
     empty: "この日には予定がありません。",
+    todayEmpty: "予定なし",
+    todayNothingScheduled: "今日の予定はありません。",
     household: "家族全体",
     noMembers: "まだメンバーがいません。",
   },

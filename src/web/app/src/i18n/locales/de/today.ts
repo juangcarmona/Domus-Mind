@@ -18,6 +18,8 @@ export default {
   day: {
     title: "Tag",
     empty: "Für diesen Tag nichts geplant.",
+    todayEmpty: "Nichts geplant",
+    todayNothingScheduled: "Für heute nichts geplant.",
     household: "Haushalt",
     noMembers: "Noch keine Haushaltsmitglieder.",
   },

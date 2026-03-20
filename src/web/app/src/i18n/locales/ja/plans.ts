@@ -16,4 +16,13 @@ export default {
   yes: "はい、キャンセルします",
   no: "そのままにする",
   noPlans: "予定はありません。",
+  chooser: {
+    title: "何を追加しますか？",
+    routine: "ルーティン",
+    routineHint: "繰り返し行うこと",
+    task: "タスク",
+    taskHint: "やること",
+    plan: "予定",
+    planHint: "スケジュールされた活動",
+  },
 } as const;

@@ -16,4 +16,13 @@ export default {
   yes: "Yes, cancel it",
   no: "Keep it",
   noPlans: "No plans scheduled.",
+  chooser: {
+    title: "What are you adding?",
+    routine: "Routine",
+    routineHint: "Repeats over time",
+    task: "Task",
+    taskHint: "Something to do",
+    plan: "Plan",
+    planHint: "Scheduled activity",
+  },
 } as const;

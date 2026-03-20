@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import type { WeeklyGridResponse, WeeklyGridCell } from "../types";
-import { weeklyGridItemMappers } from "./weeklyGridItemMappers";
+import type { WeeklyGridResponse, WeeklyGridCell } from "../../types";
+import { weeklyGridItemMappers } from "../grid/weeklyGridItemMappers";
 
 interface TodayBoardProps {
   grid: WeeklyGridResponse | null;

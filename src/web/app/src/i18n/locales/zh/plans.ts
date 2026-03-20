@@ -16,4 +16,13 @@ export default {
   yes: "是，取消",
   no: "保留",
   noPlans: "暂无计划。",
+  chooser: {
+    title: "你在添加什么？",
+    routine: "例行",
+    routineHint: "定期重复",
+    task: "任务",
+    taskHint: "需要做的事",
+    plan: "计划",
+    planHint: "安排好的活动",
+  },
 } as const;

@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import type { WeeklyGridResponse } from "../types";
+import type { WeeklyGridResponse } from "../../types";
 import { WeeklyGrid } from "./WeeklyGrid";
 
 interface WeeklyHouseholdGridProps {

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { PlanCrudForm } from "../../editors/components/PlanCrudForm";
-import { RoutineCrudForm } from "../../editors/components/RoutineCrudForm";
-import { TaskCrudForm } from "../../editors/components/TaskCrudForm";
+import { PlanCrudForm } from "../../../editors/components/PlanCrudForm";
+import { RoutineCrudForm } from "../../../editors/components/RoutineCrudForm";
+import { TaskCrudForm } from "../../../editors/components/TaskCrudForm";
 
 type ConceptStep = "choose" | "plan" | "task" | "routine";
 

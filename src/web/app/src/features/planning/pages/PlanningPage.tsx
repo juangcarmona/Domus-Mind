@@ -6,9 +6,9 @@ import { fetchTimeline } from "../../../store/timelineSlice";
 import { fetchRoutines, pauseRoutine, resumeRoutine } from "../../../store/routinesSlice";
 import { completeTask, cancelTask, assignTask } from "../../../store/tasksSlice";
 import { ConfirmDialog } from "../../../components/ConfirmDialog";
-import { PlanningAddModal } from "../components/PlanningAddModal";
+import { PlanningAddModal } from "../components/modals/PlanningAddModal";
 import { EditEntityModal } from "../../editors/components/EditEntityModal";
-import { AssignTaskModal } from "../components/AssignTaskModal";
+import { AssignTaskModal } from "../components/modals/AssignTaskModal";
 import { useDateFormatter } from "../../../hooks/useDateFormatter";
 import type { FamilyTimelineEventItem, EnrichedTimelineEntry, RoutineListItem } from "../../../api/domusmindApi";
 
@@ -27,7 +27,6 @@ export function PlanningPage() {
   const { t: tPlans } = useTranslation("plans");
   const { t: tTasks } = useTranslation("tasks");
   const { t: tRoutines } = useTranslation("routines");
-  const { t: tTimeline } = useTranslation("timeline");
   const { t: tCommon } = useTranslation("common");
   const { t: tNav, i18n } = useTranslation("nav");
   const locale = i18n.language;
@@ -290,7 +289,7 @@ export function PlanningPage() {
                         {task.assigneeId && memberMap[task.assigneeId]
                           ? ` · ${memberMap[task.assigneeId]}`
                           : task.isUnassigned
-                            ? ` · ${tTimeline("unassigned")}`
+                            ? ` · ${tTasks("unassigned")}`
                             : ""}
                         {task.isOverdue && (
                           <span style={{ color: "var(--danger)" }}> · {tTasks("overdue")}</span>

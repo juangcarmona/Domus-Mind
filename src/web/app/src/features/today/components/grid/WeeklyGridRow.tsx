@@ -1,4 +1,4 @@
-import type { WeeklyGridMember } from "../types";
+import type { WeeklyGridMember } from "../../types";
 import { WeeklyGridCell } from "./WeeklyGridCell";
 
 interface WeeklyGridRowProps {

@@ -2,7 +2,7 @@ import type {
   WeeklyGridEventItem,
   WeeklyGridTaskItem,
   WeeklyGridRoutineItem,
-} from "../types";
+} from "../../types";
 import { WeeklyGridItem } from "./WeeklyGridItem";
 
 function eventToItem(e: WeeklyGridEventItem, onClick?: () => void) {

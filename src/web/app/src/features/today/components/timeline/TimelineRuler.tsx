@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import type { EnrichedTimelineResponse } from "../../../api/domusmindApi";
+import type { EnrichedTimelineResponse } from "../../../../api/domusmindApi";
 
 interface TimelineRulerProps {
   selectedDate: string; // ISO YYYY-MM-DD

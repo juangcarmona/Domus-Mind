@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import type { WeeklyGridResponse, WeeklyGridCell as GridCell } from "../types";
+import type { WeeklyGridResponse, WeeklyGridCell as GridCell } from "../../types";
 import { WeekHeader } from "./WeekHeader";
 import { WeeklyGridRow } from "./WeeklyGridRow";
 import { WeeklyGridCell as WGCell } from "./WeeklyGridCell";
@@ -48,7 +48,7 @@ export function WeeklyGrid({
   suppressTodaySummary,
   onItemClick,
 }: WeeklyGridProps) {
-  const { t } = useTranslation("week");
+  const { t } = useTranslation("today");
   const now = new Date();
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const members = grid.members ?? [];
@@ -88,7 +88,7 @@ export function WeeklyGrid({
         {hasSharedContent && (
           <SharedRow
             cells={sharedCells}
-            label={t("household")}
+            label={t("day.household")}
             today={todayIso}
             onItemClick={onItemClick}
           />

@@ -16,4 +16,13 @@ export default {
   yes: "Ja, absagen",
   no: "Behalten",
   noPlans: "Keine geplanten Termine.",
+  chooser: {
+    title: "Was möchtest du hinzufügen?",
+    routine: "Routine",
+    routineHint: "Wiederholt sich",
+    task: "Aufgabe",
+    taskHint: "Etwas zu erledigen",
+    plan: "Plan",
+    planHint: "Geplante Aktivität",
+  },
 } as const;

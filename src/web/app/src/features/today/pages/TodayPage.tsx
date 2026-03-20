@@ -3,14 +3,14 @@ import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { setSelectedDate } from "../../../store/todaySlice";
 import { fetchTimeline } from "../../../store/timelineSlice";
-import { weekApi } from "../../week/api/weekApi";
-import type { WeeklyGridResponse } from "../../week/types";
+import { weekApi } from "../api/weekApi";
+import type { WeeklyGridResponse } from "../types";
 import type { ApiError } from "../../../api/domusmindApi";
 import { EditEntityModal, type EditableEntityType } from "../../editors/components/EditEntityModal";
-import { TodayBoard } from "../components/TodayBoard";
+import { TodayBoard } from "../components/board/TodayBoard";
 import { MonthView } from "../components/MonthView";
-import { WeeklyHouseholdGrid } from "../components/WeeklyHouseholdGrid";
-import { TimelineRuler } from "../components/TimelineRuler";
+import { WeeklyHouseholdGrid } from "../components/grid/WeeklyHouseholdGrid";
+import { TimelineRuler } from "../components/timeline/TimelineRuler";
 
 // ---- Date helpers ----
 

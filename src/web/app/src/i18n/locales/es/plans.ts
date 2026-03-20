@@ -16,4 +16,13 @@ export default {
   yes: "Sí, cancelarlo",
   no: "Conservarlo",
   noPlans: "No hay planes programados.",
+  chooser: {
+    title: "¿Qué estás añadiendo?",
+    routine: "Rutina",
+    routineHint: "Se repite con el tiempo",
+    task: "Tarea",
+    taskHint: "Algo que hacer",
+    plan: "Plan",
+    planHint: "Actividad programada",
+  },
 } as const;

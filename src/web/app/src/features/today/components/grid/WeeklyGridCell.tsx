@@ -1,4 +1,4 @@
-import type { WeeklyGridCell as WeeklyGridCellType } from "../types";
+import type { WeeklyGridCell as WeeklyGridCellType } from "../../types";
 import { weeklyGridItemMappers } from "./weeklyGridItemMappers";
 
 interface WeeklyGridCellProps {

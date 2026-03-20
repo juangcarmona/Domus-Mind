@@ -8,7 +8,7 @@ interface WeekHeaderProps {
 }
 
 export function WeekHeader({ days, today, selectedDate, onDayClick }: WeekHeaderProps) {
-  const { i18n } = useTranslation("week");
+  const { i18n } = useTranslation("today");
 
   return (
     <div className="wg-header-row">

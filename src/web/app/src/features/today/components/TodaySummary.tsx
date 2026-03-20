@@ -17,7 +17,7 @@ function SummaryMemberSection({
   cell: WeeklyGridCell;
   onItemClick?: (type: "event" | "task" | "routine", id: string) => void;
 }) {
-  const { t } = useTranslation("week");
+  const { t } = useTranslation("today");
   const events = cell.events ?? [];
   const tasks = cell.tasks ?? [];
   const routines = cell.routines ?? [];
@@ -27,7 +27,7 @@ function SummaryMemberSection({
     <div className="today-summary-member">
       <div className="today-summary-member-name">{name}</div>
       {isEmpty ? (
-        <span className="today-summary-empty">{t("todayEmpty")}</span>
+        <span className="today-summary-empty">{t("day.todayEmpty")}</span>
       ) : (
         <div className="today-summary-items">
           {events.map((e) =>
@@ -48,7 +48,7 @@ function SummaryMemberSection({
 }
 
 export function TodaySummary({ grid, today, onItemClick }: TodaySummaryProps) {
-  const { t, i18n } = useTranslation("week");
+  const { t, i18n } = useTranslation("today");
 
   const todayDate = new Date(today);
   const todayLabel = todayDate.toLocaleDateString(i18n.language, {
@@ -86,16 +86,16 @@ export function TodaySummary({ grid, today, onItemClick }: TodaySummaryProps) {
   return (
     <div className="today-summary">
       <div className="today-summary-header">
-        <span className="today-summary-label">{t("today")}</span>
+        <span className="today-summary-label">{t("nav.today")}</span>
         <span className="today-summary-date">{todayLabel}</span>
       </div>
       {!hasAnyContent ? (
-        <p className="today-summary-empty">{t("todayNothingScheduled")}</p>
+        <p className="today-summary-empty">{t("day.todayNothingScheduled")}</p>
       ) : (
         <div className="today-summary-body">
           {hasSharedItems && sharedTodayCell && (
             <SummaryMemberSection
-              name={t("household")}
+              name={t("day.household")}
               cell={sharedTodayCell}
               onItemClick={onItemClick}
             />

@@ -18,6 +18,8 @@ export default {
   day: {
     title: "Giorno",
     empty: "Niente in programma per questo giorno.",
+    todayEmpty: "Niente in programma",
+    todayNothingScheduled: "Niente in programma per oggi.",
     household: "Famiglia",
     noMembers: "Nessun membro della famiglia ancora.",
   },
