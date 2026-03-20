@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { WeeklyGridResponse, WeeklyGridCell } from "../../week/types";
 import { weeklyGridItemMappers } from "../../week/components/weeklyGridItemMappers";
 
-interface DayViewProps {
+interface TodayBoardProps {
   grid: WeeklyGridResponse | null;
   selectedDate: string; // ISO YYYY-MM-DD
   loading: boolean;
@@ -53,7 +53,7 @@ function DayMemberSection({
   );
 }
 
-export function DayView({
+export function TodayBoard({
   grid,
   selectedDate,
   loading,
@@ -63,7 +63,7 @@ export function DayView({
   onNextDay,
   onToday,
   onItemClick,
-}: DayViewProps) {
+}: TodayBoardProps) {
   const { t, i18n } = useTranslation("coordination");
   const { t: tWeek } = useTranslation("week");
   const { t: tCommon } = useTranslation("common");

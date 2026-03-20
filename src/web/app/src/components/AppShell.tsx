@@ -7,7 +7,7 @@ import { UserAvatar } from "./UserAvatar";
 import { useAppSelector } from "../store/hooks";
 
 const NAV_ITEMS = [
-  { to: "/agenda", labelKey: "agenda" },
+  { to: "/", labelKey: "home" },
   { to: "/planning", labelKey: "planning" },
   { to: "/areas", labelKey: "areas" },
 ] as const;
@@ -69,7 +69,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span />
         </button>
 
-        <NavLink to="/planning" className="brand">
+        <NavLink to="/" className="brand">
           <HouseholdLogo className="brand-mark" />
           <span className="brand-name">{family?.name ?? "DomusMind"}</span>
         </NavLink>
@@ -124,7 +124,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           />
           <nav className="mobile-drawer" aria-label="Mobile navigation">
             <div className="mobile-drawer-header">
-              <NavLink to="/planning" className="brand" onClick={() => setDrawerOpen(false)}>
+              <NavLink to="/" className="brand" onClick={() => setDrawerOpen(false)}>
                 <HouseholdLogo className="brand-mark" />
                 <span>{family?.name ?? "DomusMind"}</span>
               </NavLink>

@@ -2,7 +2,7 @@ import { useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { EnrichedTimelineResponse } from "../../../api/domusmindApi";
 
-interface HorizontalTimelineRulerProps {
+interface TimelineRulerProps {
   selectedDate: string; // ISO YYYY-MM-DD
   today: string;        // ISO YYYY-MM-DD
   timelineData: EnrichedTimelineResponse | null;
@@ -35,12 +35,12 @@ function generateDayRange(startIso: string, endIso: string): string[] {
 
 type EventDot = { type: "event" | "task"; title: string };
 
-export function HorizontalTimelineRuler({
+export function TimelineRuler({
   selectedDate,
   today,
   timelineData,
   onSelectDay,
-}: HorizontalTimelineRulerProps) {
+}: TimelineRulerProps) {
   const { i18n, t } = useTranslation("coordination");
   const trackRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<HTMLButtonElement>(null);

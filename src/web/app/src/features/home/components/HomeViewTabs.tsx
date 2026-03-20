@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { ViewMode } from "../../../store/coordinationSlice";
 
-interface CoordinationViewTabsProps {
+interface HomeViewTabsProps {
   viewMode: ViewMode;
   onSelect: (mode: ViewMode) => void;
 }
@@ -13,7 +13,7 @@ const TABS: { mode: ViewMode; key: string }[] = [
   { mode: "month", key: "tabs.month" },
 ];
 
-export function CoordinationViewTabs({ viewMode, onSelect }: CoordinationViewTabsProps) {
+export function HomeViewTabs({ viewMode, onSelect }: HomeViewTabsProps) {
   const { t } = useTranslation("coordination");
 
   return (

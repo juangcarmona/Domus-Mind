@@ -6,7 +6,7 @@ export default {
   chores: "家务",
   planning: "规划",
   week: "周",
-  agenda: "日程",
+  home: "主页",
   signOut: "退出",
   settings: "设置",
 } as const;

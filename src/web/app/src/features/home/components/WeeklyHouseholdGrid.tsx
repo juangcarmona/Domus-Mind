@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { WeeklyGridResponse } from "../../week/types";
 import { WeeklyGrid } from "../../week/components/WeeklyGrid";
 
-interface CoordinationWeekViewProps {
+interface WeeklyHouseholdGridProps {
   grid: WeeklyGridResponse | null;
   loading: boolean;
   error: string | null;
@@ -11,14 +11,14 @@ interface CoordinationWeekViewProps {
   onItemClick: (type: "event" | "task" | "routine", id: string) => void;
 }
 
-export function CoordinationWeekView({
+export function WeeklyHouseholdGrid({
   grid,
   loading,
   error,
   selectedDate,
   onDayClick,
   onItemClick,
-}: CoordinationWeekViewProps) {
+}: WeeklyHouseholdGridProps) {
   const { t } = useTranslation("coordination");
   const { t: tCommon } = useTranslation("common");
 

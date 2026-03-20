@@ -7,10 +7,10 @@ import { weekApi } from "../../week/api/weekApi";
 import type { WeeklyGridResponse } from "../../week/types";
 import type { ApiError } from "../../../api/domusmindApi";
 import { EditEntityModal, type EditableEntityType } from "../../../components/EditEntityModal";
-import { DayView } from "../components/DayView";
+import { TodayBoard } from "../components/TodayBoard";
 import { MonthView } from "../components/MonthView";
-import { CoordinationWeekView } from "../components/CoordinationWeekView";
-import { HorizontalTimelineRuler } from "../components/HorizontalTimelineRuler";
+import { WeeklyHouseholdGrid } from "../components/WeeklyHouseholdGrid";
+import { TimelineRuler } from "../components/TimelineRuler";
 
 // ---- Date helpers ----
 
@@ -74,7 +74,7 @@ function getMemberColor(index: number): string {
 
 // ---- Component ----
 
-export function CoordinationPage() {
+export function HomePage() {
   const dispatch = useAppDispatch();
   const { t, i18n } = useTranslation("coordination");
 
@@ -300,7 +300,7 @@ export function CoordinationPage() {
   return (
     <div className="page-content coord-page">
       {/* ── Section 1: Day View (always visible, nav integrated inside) ── */}
-      <DayView
+      <TodayBoard
         grid={grid}
         selectedDate={selectedDate}
         loading={gridLoading}
@@ -358,7 +358,7 @@ export function CoordinationPage() {
         )}
 
         {midTermView === "week" && (
-          <CoordinationWeekView
+          <WeeklyHouseholdGrid
             grid={grid}
             loading={gridLoading}
             error={gridError}
@@ -386,7 +386,7 @@ export function CoordinationPage() {
 
       {/* ── Section 3: Horizontal Timeline Ruler ── */}
       <div className="coord-ruler-section">
-        <HorizontalTimelineRuler
+        <TimelineRuler
           selectedDate={selectedDate}
           today={todayIso}
           timelineData={timelineStatus === "success" ? timelineData : null}
