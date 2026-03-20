@@ -6,7 +6,7 @@ import plansReducer from "./plansSlice";
 import tasksReducer from "./tasksSlice";
 import routinesReducer from "./routinesSlice";
 import languagesReducer from "./languagesSlice";
-import coordinationReducer from "./coordinationSlice";
+import todayReducer from "./todaySlice";
 
 export const store = configureStore({
   reducer: {
@@ -17,7 +17,7 @@ export const store = configureStore({
     tasks: tasksReducer,
     routines: routinesReducer,
     languages: languagesReducer,
-    coordination: coordinationReducer,
+    today: todayReducer,
   },
 });
 

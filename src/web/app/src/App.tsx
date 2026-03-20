@@ -20,7 +20,7 @@ import { AreasPage } from "./features/areas/pages/AreasPage";
 import { PlanningPage } from "./features/planning/pages/PlanningPage";
 import { SettingsPage } from "./features/settings/pages/SettingsPage";
 import { WeekPage } from "./features/week/pages/WeekPage";
-import { HomePage } from "./features/home/pages/HomePage";
+import { TodayPage } from "./features/today/pages/TodayPage";
 import { DetailPage } from "./features/detail/pages/DetailPage";
 
 function AuthedApp() {
@@ -66,7 +66,7 @@ function AuthedApp() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/details/:type/:id" element={<DetailPage />} />
         <Route path="/timeline" element={<Navigate to="/planning" replace />} />
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<TodayPage />} />
         <Route path="/agenda" element={<Navigate to="/" replace />} />
         <Route path="/coordination" element={<Navigate to="/" replace />} />
         <Route path="/plans" element={<Navigate to="/planning" replace />} />

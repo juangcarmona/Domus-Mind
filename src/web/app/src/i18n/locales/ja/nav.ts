@@ -6,7 +6,7 @@ export default {
   chores: "家事",
   planning: "プランニング",
   week: "週間",
-  home: "ホーム",
+  today: "今日",
   signOut: "サインアウト",
   settings: "設定",
 } as const;

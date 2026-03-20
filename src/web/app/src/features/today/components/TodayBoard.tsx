@@ -64,7 +64,7 @@ export function TodayBoard({
   onToday,
   onItemClick,
 }: TodayBoardProps) {
-  const { t, i18n } = useTranslation("coordination");
+  const { t, i18n } = useTranslation("today");
   const { t: tWeek } = useTranslation("week");
   const { t: tCommon } = useTranslation("common");
 

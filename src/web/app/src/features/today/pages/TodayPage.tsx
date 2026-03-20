@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
-import { setSelectedDate } from "../../../store/coordinationSlice";
+import { setSelectedDate } from "../../../store/todaySlice";
 import { fetchTimeline } from "../../../store/timelineSlice";
 import { weekApi } from "../../week/api/weekApi";
 import type { WeeklyGridResponse } from "../../week/types";
@@ -74,16 +74,16 @@ function getMemberColor(index: number): string {
 
 // ---- Component ----
 
-export function HomePage() {
+export function TodayPage() {
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("coordination");
+  const { t, i18n } = useTranslation("today");
 
   const family = useAppSelector((s) => s.household.family);
   const familyId = family?.familyId ?? "";
   const firstDayOfWeek = family?.firstDayOfWeek ?? null;
   const members = useAppSelector((s) => s.household.members);
 
-  const selectedDate = useAppSelector((s) => s.coordination.selectedDate);
+  const selectedDate = useAppSelector((s) => s.today.selectedDate);
   const { data: timelineData, status: timelineStatus, error: timelineError } =
     useAppSelector((s) => s.timeline);
 

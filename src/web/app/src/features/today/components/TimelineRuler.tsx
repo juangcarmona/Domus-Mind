@@ -41,7 +41,7 @@ export function TimelineRuler({
   timelineData,
   onSelectDay,
 }: TimelineRulerProps) {
-  const { i18n, t } = useTranslation("coordination");
+  const { i18n, t } = useTranslation("today");
   const trackRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<HTMLButtonElement>(null);
 

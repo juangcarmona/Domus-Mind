@@ -5,7 +5,7 @@ import type {
   EnrichedTimelineEntry,
 } from "../../../api/domusmindApi";
 
-interface HomeTimelineProps {
+interface TodayTimelineProps {
   data: EnrichedTimelineResponse | null;
   loading: boolean;
   error: string | null;
@@ -30,7 +30,7 @@ function entryTypeClass(type: string): string {
   return "routine";
 }
 
-function HomeTimelineEntry({ entry }: { entry: EnrichedTimelineEntry }) {
+function TodayTimelineEntry({ entry }: { entry: EnrichedTimelineEntry }) {
   const isDone = entry.status === "Completed" || entry.status === "Cancelled";
   return (
     <div
@@ -55,15 +55,15 @@ function groupLabel(
   return t(key) ?? groupKey;
 }
 
-export function HomeTimeline({
+export function TodayTimeline({
   data,
   loading,
   error,
   selectedDate,
   onSelectDay,
-}: HomeTimelineProps) {
+}: TodayTimelineProps) {
   const { t: tTl } = useTranslation("timeline");
-  const { t } = useTranslation("coordination");
+  const { t } = useTranslation("today");
   const trackRef = useRef<HTMLDivElement>(null);
   const todayGroupRef = useRef<HTMLDivElement>(null);
 
@@ -156,7 +156,7 @@ export function HomeTimeline({
               </div>
               <div className="coord-tl-group-entries">
                 {group.entries.map((entry) => (
-                  <HomeTimelineEntry key={entry.entryId} entry={entry} />
+                  <TodayTimelineEntry key={entry.entryId} entry={entry} />
                 ))}
               </div>
             </div>

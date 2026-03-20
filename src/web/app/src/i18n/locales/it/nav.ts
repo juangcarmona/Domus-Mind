@@ -6,7 +6,7 @@ export default {
   chores: "Faccende",
   planning: "Pianificazione",
   week: "Settimana",
-  home: "Home",
+  today: "Oggi",
   signOut: "Esci",
   settings: "Impostazioni",
 } as const;

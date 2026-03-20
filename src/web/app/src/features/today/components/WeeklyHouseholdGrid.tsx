@@ -19,7 +19,7 @@ export function WeeklyHouseholdGrid({
   onDayClick,
   onItemClick,
 }: WeeklyHouseholdGridProps) {
-  const { t } = useTranslation("coordination");
+  const { t } = useTranslation("today");
   const { t: tCommon } = useTranslation("common");
 
   if (loading) {

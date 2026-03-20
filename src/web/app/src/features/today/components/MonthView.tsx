@@ -81,7 +81,7 @@ export function MonthView({
   onPrevMonth,
   onNextMonth,
 }: MonthViewProps) {
-  const { t, i18n } = useTranslation("coordination");
+  const { t, i18n } = useTranslation("today");
 
   // Use displayAnchor to decide which month to show, falling back to selectedDate
   const anchorIso = displayAnchor ?? selectedDate;

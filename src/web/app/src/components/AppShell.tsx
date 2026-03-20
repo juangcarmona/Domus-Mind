@@ -7,7 +7,7 @@ import { UserAvatar } from "./UserAvatar";
 import { useAppSelector } from "../store/hooks";
 
 const NAV_ITEMS = [
-  { to: "/", labelKey: "home" },
+  { to: "/", labelKey: "today" },
   { to: "/planning", labelKey: "planning" },
   { to: "/areas", labelKey: "areas" },
 ] as const;
