@@ -1,5 +1,12 @@
 type ItemType = "event" | "task" | "routine";
 
+/** Small Unicode glyphs that hint at type without using text labels. */
+const TYPE_GLYPH: Record<ItemType, string> = {
+  event: "◆",   // plan / scheduled event
+  task: "□",    // task / chore (checkbox metaphor)
+  routine: "↻", // repeating
+};
+
 interface WeeklyGridItemProps {
   type: ItemType;
   title: string;
@@ -19,6 +26,8 @@ export function WeeklyGridItem({
   color,
   onClick,
 }: WeeklyGridItemProps) {
+  const isCompleted = status?.toLowerCase() === "completed";
+
   const tooltipText = [title, time, subtitle, status ? `(${status})` : ""]
     .filter(Boolean)
     .join(" · ");
@@ -27,9 +36,17 @@ export function WeeklyGridItem({
     ? ({ ["--wg-item-accent" as string]: color } as React.CSSProperties)
     : undefined;
 
+  const classes = [
+    "wg-item",
+    `wg-item--${type}`,
+    isCompleted ? "wg-item--completed" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <div
-      className={`wg-item wg-item--${type}`}
+      className={classes}
       title={tooltipText}
       style={style}
       onClick={onClick}
@@ -49,7 +66,9 @@ export function WeeklyGridItem({
           : undefined
       }
     >
-      <span className="wg-item-title">{title} {time && `· ${time}`}</span>
+      <span className="wg-item-glyph" aria-hidden="true">{TYPE_GLYPH[type]}</span>
+      <span className="wg-item-title">{title}{time ? ` · ${time}` : ""}</span>
+      {subtitle && <span className="wg-item-sub">{subtitle}</span>}
     </div>
   );
 }

@@ -31,9 +31,9 @@ const initialState: PlansState = {
 
 export const fetchPlans = createAsyncThunk(
   "plans/fetch",
-  async (familyId: string, { rejectWithValue }) => {
+  async ({ familyId, from }: { familyId: string; from?: string }, { rejectWithValue }) => {
     try {
-      const res = await domusmindApi.getEvents(familyId);
+      const res = await domusmindApi.getEvents(familyId, from);
       return res.events;
     } catch (err: unknown) {
       return rejectWithValue(
@@ -106,12 +106,12 @@ export const scheduleEvent = createAsyncThunk(
 export const cancelEvent = createAsyncThunk(
   "plans/cancel",
   async (
-    { eventId, familyId }: { eventId: string; familyId: string },
+    { eventId, familyId, from }: { eventId: string; familyId: string; from?: string },
     { rejectWithValue, dispatch },
   ) => {
     try {
       await domusmindApi.cancelEvent(eventId);
-      dispatch(fetchPlans(familyId));
+      dispatch(fetchPlans({ familyId, from }));
       return eventId;
     } catch (err: unknown) {
       return rejectWithValue(

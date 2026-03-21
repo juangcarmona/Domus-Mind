@@ -1125,16 +1125,16 @@ p {
   overflow: hidden;
 }
 .wg-item--event {
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
-  color: var(--primary);
+  background: color-mix(in srgb, var(--wg-item-accent, var(--primary)) 12%, transparent);
+  color: color-mix(in srgb, var(--wg-item-accent, var(--primary)) 70%, var(--text));
 }
 .wg-item--task {
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
-  color: color-mix(in srgb, var(--accent) 80%, var(--text));
+  background: color-mix(in srgb, var(--wg-item-accent, var(--accent)) 15%, transparent);
+  color: color-mix(in srgb, var(--wg-item-accent, var(--accent)) 70%, var(--text));
 }
 .wg-item--routine {
-  background: color-mix(in srgb, var(--muted) 12%, transparent);
-  color: var(--muted);
+  background: color-mix(in srgb, var(--wg-item-accent, var(--muted)) 12%, transparent);
+  color: color-mix(in srgb, var(--wg-item-accent, var(--muted)) 70%, var(--text));
 }
 .wg-item {
   display: flex;
@@ -1170,6 +1170,32 @@ p {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+}
+
+/* Type glyph — tiny, inherits item color, aria-hidden in markup */
+.wg-item-glyph {
+  font-size: 0.6rem;
+  flex-shrink: 0;
+  opacity: 0.8;
+  line-height: 1;
+}
+
+/* Participant / assignee sub-label */
+.wg-item-sub {
+  font-size: 0.68rem;
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 72px;
+}
+
+/* Completed items */
+.wg-item--completed .wg-item-title {
+  text-decoration: line-through;
+  opacity: 0.55;
 }
 
 /* ---- Week grid: today column highlight ---- */
@@ -1637,32 +1663,67 @@ p {
   line-height: 1;
 }
 
-/* Per-member dots in month cells */
-.coord-month-dots {
+/* Per-day type distribution pips in month cells */
+.coord-month-type-pips {
   display: flex;
-  gap: 2px;
+  gap: 3px;
   align-items: center;
   justify-content: center;
-  flex-wrap: nowrap;
-  min-height: 6px;
+  min-height: 7px;
 }
 
-.coord-month-dot {
+.coord-month-pip {
   width: 5px;
   height: 5px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.coord-month-dot-overflow {
-  font-size: 0.55rem;
-  color: var(--muted);
-  line-height: 1;
+.coord-month-pip--event {
+  background: var(--primary);
+}
+
+.coord-month-pip--task {
+  background: var(--accent);
+}
+
+.coord-month-pip--routine {
+  background: var(--muted);
+  opacity: 0.7;
 }
 
 /* ================================================================
    Coordination Timeline
    ================================================================ */
+
+/* ---- Planning: history affordance ---- */
+.planning-history-trigger {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.planning-history-section {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border);
+}
+
+.planning-history-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.planning-history-empty {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+  margin: 0;
+}
 
 .coord-timeline-wrap {
   display: flex;

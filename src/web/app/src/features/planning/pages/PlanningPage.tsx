@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { fetchPlans, cancelEvent } from "../../../store/plansSlice";
-import { fetchTimeline } from "../../../store/timelineSlice";
 import { fetchRoutines, pauseRoutine, resumeRoutine } from "../../../store/routinesSlice";
 import { completeTask, cancelTask, assignTask } from "../../../store/tasksSlice";
+import { domusmindApi } from "../../../api/domusmindApi";
 import { ConfirmDialog } from "../../../components/ConfirmDialog";
 import { PlanningAddModal } from "../components/modals/PlanningAddModal";
 import { EditEntityModal } from "../../editors/components/EditEntityModal";
@@ -12,15 +12,22 @@ import { AssignTaskModal } from "../components/modals/AssignTaskModal";
 import { RoutinesTab } from "../components/RoutinesTab";
 import { TasksTab } from "../components/TasksTab";
 import { PlansTab } from "../components/PlansTab";
-import type { FamilyTimelineEventItem, EnrichedTimelineEntry } from "../../../api/domusmindApi";
+import type {
+  FamilyTimelineEventItem,
+  EnrichedTimelineEntry,
+} from "../../../api/domusmindApi";
 
 type PlanningTab = "routines" | "tasks" | "plans";
+
+function todayIso(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 export function PlanningPage() {
   const dispatch = useAppDispatch();
   const { family, members } = useAppSelector((s) => s.household);
   const { items: planItems, status: plansStatus } = useAppSelector((s) => s.plans);
-  const { data: timeline, status: timelineStatus } = useAppSelector((s) => s.timeline);
   const { items: routineItems, status: routinesStatus } = useAppSelector((s) => s.routines);
   const familyId = family?.familyId;
 
@@ -36,15 +43,66 @@ export function PlanningPage() {
   const [assignTarget, setAssignTarget] = useState<EnrichedTimelineEntry | null>(null);
   const [editTarget, setEditTarget] = useState<{ type: "routine" | "task" | "event"; id: string } | null>(null);
 
+  // ---- Tasks: local state (separate from shared timelineSlice) ----
+  const [activeTasks, setActiveTasks] = useState<EnrichedTimelineEntry[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(false);
+  const [taskHistory, setTaskHistory] = useState<EnrichedTimelineEntry[] | null>(null);
+  const [taskHistoryLoading, setTaskHistoryLoading] = useState(false);
+
+  // ---- Plans: history is local state, active plans live in plansSlice ----
+  const [pastPlans, setPastPlans] = useState<FamilyTimelineEventItem[] | null>(null);
+  const [pastPlansLoading, setPastPlansLoading] = useState(false);
+
   const memberMap = Object.fromEntries(members.map((m) => [m.memberId, m.name]));
 
-  function loadPlans() {
-    if (familyId) dispatch(fetchPlans(familyId));
-  }
+  const loadPlans = useCallback(() => {
+    if (familyId) dispatch(fetchPlans({ familyId, from: todayIso() }));
+  }, [familyId, dispatch]);
 
-  function loadTasks() {
-    if (familyId) dispatch(fetchTimeline({ familyId, types: "Task" }));
-  }
+  const loadActiveTasks = useCallback(async () => {
+    if (!familyId) return;
+    setTasksLoading(true);
+    try {
+      const res = await domusmindApi.getEnrichedTimeline(familyId, {
+        types: "Task",
+        statuses: "Pending",
+      });
+      setActiveTasks(
+        res.groups.flatMap((g) => g.entries),
+      );
+    } finally {
+      setTasksLoading(false);
+    }
+  }, [familyId]);
+
+  const loadTaskHistory = useCallback(async () => {
+    if (!familyId) return;
+    setTaskHistoryLoading(true);
+    try {
+      const res = await domusmindApi.getEnrichedTimeline(familyId, {
+        types: "Task",
+        statuses: "Completed,Cancelled",
+      });
+      setTaskHistory(res.groups.flatMap((g) => g.entries));
+    } finally {
+      setTaskHistoryLoading(false);
+    }
+  }, [familyId]);
+
+  const loadPastPlans = useCallback(async () => {
+    if (!familyId) return;
+    setPastPlansLoading(true);
+    try {
+      const res = await domusmindApi.getEvents(familyId, undefined, todayIso());
+      // Exclude today's events (today is already shown in active plans) and active-status items
+      // that might overlap due to the to= boundary being exclusive-ish; filter to truly past.
+      const today = todayIso();
+      const past = res.events.filter((e) => (e.date ?? "") < today);
+      setPastPlans(past);
+    } finally {
+      setPastPlansLoading(false);
+    }
+  }, [familyId]);
 
   function loadRoutines() {
     if (familyId && routinesStatus === "idle") dispatch(fetchRoutines(familyId));
@@ -52,8 +110,14 @@ export function PlanningPage() {
 
   useEffect(() => {
     loadPlans();
-    loadTasks();
+    loadActiveTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [familyId]);
+
+  useEffect(() => {
+    // Reset local task history when family changes so stale data isn't shown
+    setTaskHistory(null);
+    setPastPlans(null);
   }, [familyId]);
 
   useEffect(() => {
@@ -63,23 +127,25 @@ export function PlanningPage() {
 
   async function handleCancelPlan() {
     if (!cancelTarget || !familyId) return;
-    await dispatch(cancelEvent({ eventId: cancelTarget.calendarEventId, familyId }));
+    await dispatch(cancelEvent({ eventId: cancelTarget.calendarEventId, familyId, from: todayIso() }));
     setCancelTarget(null);
   }
 
   async function handleCompleteTask(taskId: string) {
     await dispatch(completeTask(taskId));
-    loadTasks();
+    setTaskHistory(null); // invalidate stale history
+    await loadActiveTasks();
   }
 
   async function handleCancelTask(taskId: string) {
     await dispatch(cancelTask(taskId));
-    loadTasks();
+    setTaskHistory(null); // invalidate stale history
+    await loadActiveTasks();
   }
 
   async function handleAssign(taskId: string, memberId: string) {
     await dispatch(assignTask({ taskId, assigneeId: memberId }));
-    loadTasks();
+    await loadActiveTasks();
   }
 
   async function handlePauseRoutine(routineId: string) {
@@ -94,13 +160,8 @@ export function PlanningPage() {
 
   if (!familyId) return null;
 
+  // Active plans: non-cancelled, start date >= today (enforced by from= parameter)
   const activePlans = planItems.filter((p) => p.status !== "Cancelled");
-
-  const tasks: EnrichedTimelineEntry[] =
-    timeline?.groups.flatMap((g) => g.entries.filter((e) => e.entryType === "Task")) ?? [];
-
-  const activeTasks = tasks.filter((t) => t.status !== "Completed" && t.status !== "Cancelled");
-  const doneTasks = tasks.filter((t) => t.status === "Completed" || t.status === "Cancelled");
 
   const tabs: { key: PlanningTab; label: string }[] = [
     { key: "routines", label: tRoutines("title") },
@@ -144,13 +205,15 @@ export function PlanningPage() {
       {activeTab === "tasks" && (
         <TasksTab
           activeTasks={activeTasks}
-          doneTasks={doneTasks}
-          timelineStatus={timelineStatus}
+          tasksLoading={tasksLoading}
+          taskHistory={taskHistory}
+          taskHistoryLoading={taskHistoryLoading}
           memberMap={memberMap}
           onEdit={(id) => setEditTarget({ type: "task", id })}
           onAssign={setAssignTarget}
           onComplete={handleCompleteTask}
           onCancel={handleCancelTask}
+          onLoadHistory={loadTaskHistory}
         />
       )}
 
@@ -158,8 +221,11 @@ export function PlanningPage() {
         <PlansTab
           activePlans={activePlans}
           plansStatus={plansStatus}
+          pastPlans={pastPlans}
+          pastPlansLoading={pastPlansLoading}
           onEdit={(id) => setEditTarget({ type: "event", id })}
           onCancelPlan={setCancelTarget}
+          onLoadPastPlans={loadPastPlans}
         />
       )}
 
@@ -172,7 +238,7 @@ export function PlanningPage() {
           onSuccess={() => {
             setAddModal(null);
             loadPlans();
-            loadTasks();
+            loadActiveTasks();
             dispatch(fetchRoutines(familyId));
           }}
         />
@@ -195,7 +261,7 @@ export function PlanningPage() {
           onEntitySaved={async () => {
             setEditTarget(null);
             loadPlans();
-            loadTasks();
+            await loadActiveTasks();
             await dispatch(fetchRoutines(familyId));
           }}
         />

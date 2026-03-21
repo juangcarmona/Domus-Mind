@@ -23,6 +23,9 @@ export default {
   yes: "はい、キャンセルします",
   no: "そのままにする",
   noPlans: "予定はありません。",
+  showPastPlans: "過去の予定を表示",
+  pastPlans: "過去の予定",
+  noPastPlans: "過去の予定はありません。",
   chooser: {
     title: "何を追加しますか？",
     routine: "ルーティン",
