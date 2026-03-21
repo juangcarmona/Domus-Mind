@@ -21,4 +21,5 @@ export default {
   completedCancelled: "已完成 / 已取消",
   createError: "创建家务失败",
   unassigned: "未分配",
+  colorLabel: "颜色",
 } as const;

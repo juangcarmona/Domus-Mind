@@ -49,6 +49,9 @@ public sealed class RescheduleEventCommandHandler
         Domain.Calendar.ValueObjects.EventTime newTime;
         try
         {
+            if (string.IsNullOrWhiteSpace(command.EndDate))
+                throw new CalendarException(CalendarErrorCode.InvalidInput, "A plan must have an end date. Use the same date as the start for single-day events.");
+
             newTime = TemporalParser.ParseEventTime(command.Date, command.Time, command.EndDate, command.EndTime);
         }
         catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidOperationException)
@@ -66,6 +69,10 @@ public sealed class RescheduleEventCommandHandler
                 calendarEvent.Edit(title, command.Description);
             }
             calendarEvent.Reschedule(newTime);
+            if (command.Color is not null)
+            {
+                calendarEvent.Repaint(EventColor.From(command.Color));
+            }
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("cancelled"))
         {
@@ -92,6 +99,7 @@ public sealed class RescheduleEventCommandHandler
             time,
             endDate,
             endTime,
-            calendarEvent.Status.ToString());
+            calendarEvent.Status.ToString(),
+            calendarEvent.Color.Value);
     }
 }

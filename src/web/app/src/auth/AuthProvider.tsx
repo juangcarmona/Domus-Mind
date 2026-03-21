@@ -6,29 +6,12 @@ import React, {
   useState,
 } from "react";
 import { authApi, type MeResponse } from "../api/authApi";
-
-// ── Token storage ─────────────────────────────────────────────────────────────
-
-const ACCESS_KEY = "dm_access_token";
-const REFRESH_KEY = "dm_refresh_token";
-
-function saveTokens(access: string, refresh: string) {
-  localStorage.setItem(ACCESS_KEY, access);
-  localStorage.setItem(REFRESH_KEY, refresh);
-}
-
-function clearTokens() {
-  localStorage.removeItem(ACCESS_KEY);
-  localStorage.removeItem(REFRESH_KEY);
-}
-
-function getAccessToken() {
-  return localStorage.getItem(ACCESS_KEY);
-}
-
-function getRefreshToken() {
-  return localStorage.getItem(REFRESH_KEY);
-}
+import {
+  getStoredToken as getAccessToken,
+  getRefreshToken,
+  saveTokens,
+  clearTokens,
+} from "../lib/tokenStorage";
 
 // ── Context ───────────────────────────────────────────────────────────────────
 

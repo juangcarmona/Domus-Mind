@@ -18,6 +18,7 @@ public sealed class HouseholdTaskTests
             TaskTitle.Create(title),
             null,
             dueDate.HasValue ? TaskSchedule.WithDueDate(dueDate.Value) : TaskSchedule.NoSchedule(),
+            TaskColor.From("#3B82F6"),
             DateTime.UtcNow);
 
     // --- TaskTitle value object ---

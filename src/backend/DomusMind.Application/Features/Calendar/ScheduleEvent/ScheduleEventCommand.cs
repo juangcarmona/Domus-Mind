@@ -11,5 +11,7 @@ public sealed record ScheduleEventCommand(
     string? EndDate,
     string? EndTime,
     string? Description,
+    string? Color,
+    IReadOnlyCollection<Guid>? ParticipantMemberIds,
     Guid RequestedByUserId)
     : ICommand<ScheduleEventResponse>;

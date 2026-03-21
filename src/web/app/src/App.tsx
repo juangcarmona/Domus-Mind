@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -10,35 +10,30 @@ import { useTranslation } from "react-i18next";
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { bootstrapHousehold } from "./store/householdSlice";
-import { UI_LANG_KEY, setUiLanguage } from "./i18n/index";
 import { AppShell } from "./components/AppShell";
 import { LoginPage } from "./features/auth/pages/LoginPage";
 import { RegisterPage } from "./features/auth/pages/RegisterPage";
 import { OnboardingPage } from "./features/onboarding/pages/OnboardingPage";
-import { PeoplePage } from "./features/people/pages/PeoplePage";
 import { AreasPage } from "./features/areas/pages/AreasPage";
 import { PlanningPage } from "./features/planning/pages/PlanningPage";
 import { SettingsPage } from "./features/settings/pages/SettingsPage";
-import { WeekPage } from "./features/week/pages/WeekPage";
-import { CoordinationPage } from "./features/coordination/pages/CoordinationPage";
-import { DetailPage } from "./features/detail/pages/DetailPage";
+import { TodayPage } from "./features/today/pages/TodayPage";
 
 function AuthedApp() {
   const dispatch = useAppDispatch();
-  const { bootstrapStatus, family } = useAppSelector((s) => s.household);
+  const { bootstrapStatus } = useAppSelector((s) => s.household);
+  const uiLanguage = useAppSelector((s) => s.ui.language);
   const { i18n } = useTranslation("common");
 
   useEffect(() => {
     dispatch(bootstrapHousehold());
   }, [dispatch]);
 
-  // Sync language precedence: explicit UI choice > household language > browser/fallback
+  // Keep i18n in sync with the language resolved by uiSlice
+  // (set from household.primaryLanguageCode after bootstrap / settings save).
   useEffect(() => {
-    const explicitChoice = localStorage.getItem(UI_LANG_KEY);
-    if (!explicitChoice && family?.primaryLanguageCode) {
-      setUiLanguage(family.primaryLanguageCode);
-    }
-  }, [family?.primaryLanguageCode, i18n]);
+    i18n.changeLanguage(uiLanguage);
+  }, [uiLanguage, i18n]);
 
   if (bootstrapStatus === "idle" || bootstrapStatus === "loading") {
     return <div className="loading-wrap">Loading your household…</div>;
@@ -59,18 +54,16 @@ function AuthedApp() {
   return (
     <AppShell>
       <Routes>
-        <Route path="/people" element={<PeoplePage />} />
         <Route path="/areas" element={<AreasPage />} />
         <Route path="/planning" element={<PlanningPage />} />
-        <Route path="/week" element={<WeekPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/details/:type/:id" element={<DetailPage />} />
         <Route path="/timeline" element={<Navigate to="/planning" replace />} />
-        <Route path="/agenda" element={<CoordinationPage />} />
-        <Route path="/coordination" element={<Navigate to="/agenda" replace />} />
+        <Route path="/" element={<TodayPage />} />
+        <Route path="/agenda" element={<Navigate to="/" replace />} />
+        <Route path="/coordination" element={<Navigate to="/" replace />} />
         <Route path="/plans" element={<Navigate to="/planning" replace />} />
         <Route path="/tasks" element={<Navigate to="/planning" replace />} />
-        <Route path="*" element={<Navigate to="/planning" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppShell>
   );
@@ -80,13 +73,7 @@ type AuthPage = "login" | "register";
 
 function UnauthApp() {
   const nav = useNavigate();
-  const [page, setPage] = [
-    (sessionStorage.getItem("dm_auth_page") as AuthPage) ?? "login",
-    (p: AuthPage) => {
-      sessionStorage.setItem("dm_auth_page", p);
-      nav(".", { replace: true });
-    },
-  ];
+  const [page, setPage] = useState<AuthPage>("login");
 
   if (page === "register") {
     return (
@@ -99,7 +86,7 @@ function UnauthApp() {
 
   return (
     <LoginPage
-      onSuccess={() => nav("/planning")}
+      onSuccess={() => nav("/")}
       onGoToRegister={() => setPage("register")}
     />
   );

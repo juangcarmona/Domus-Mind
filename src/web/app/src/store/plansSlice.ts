@@ -54,6 +54,8 @@ export const scheduleEvent = createAsyncThunk(
       endDate,
       endTime,
       description,
+      color,
+      participantMemberIds,
     }: {
       familyId: string;
       title: string;
@@ -62,6 +64,8 @@ export const scheduleEvent = createAsyncThunk(
       endDate?: string;
       endTime?: string;
       description?: string;
+      color?: string;
+      participantMemberIds?: string[];
     },
     { rejectWithValue },
   ) => {
@@ -74,6 +78,8 @@ export const scheduleEvent = createAsyncThunk(
         endDate,
         endTime,
         description,
+        color,
+        participantMemberIds,
       });
       return {
         calendarEventId: res.calendarEventId,
@@ -85,7 +91,8 @@ export const scheduleEvent = createAsyncThunk(
         endDate: res.endDate,
         endTimeValue: res.endTime,
         status: res.status,
-        participantMemberIds: [],
+        color: res.color,
+        participantMemberIds: participantMemberIds ?? [],
         participants: [],
       } as FamilyTimelineEventItem;
     } catch (err: unknown) {
@@ -130,6 +137,10 @@ const plansSlice = createSlice({
             return {
               ...event,
               startTime: eventStartIso(event.date, event.time),
+              // Preserve the raw end time string before endTime is overwritten
+              // with the computed ISO datetime. EditEntityModal reads endTimeValue
+              // to populate the end-time field of PlanCrudForm.
+              endTimeValue: event.endDate ? (event.endTime ?? null) : null,
               endTime: event.endDate ? eventEndIso(event.endDate, event.endTime) : null,
             };
           }

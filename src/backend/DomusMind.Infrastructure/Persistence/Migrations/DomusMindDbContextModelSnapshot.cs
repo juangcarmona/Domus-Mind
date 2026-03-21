@@ -451,6 +451,25 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("DomusMind.Domain.Calendar.CalendarEvent", b =>
                 {
+                    b.OwnsOne("DomusMind.Domain.Calendar.ValueObjects.EventColor", "Color", b1 =>
+                        {
+                            b1.Property<Guid>("CalendarEventId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(7)
+                                .HasColumnType("character varying(7)")
+                                .HasColumnName("color");
+
+                            b1.HasKey("CalendarEventId");
+
+                            b1.ToTable("calendar_events");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CalendarEventId");
+                        });
+
                     b.OwnsOne("DomusMind.Domain.Calendar.ValueObjects.EventTime", "Time", b1 =>
                         {
                             b1.Property<Guid>("CalendarEventId")
@@ -486,6 +505,9 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("CalendarEventId");
                         });
 
+                    b.Navigation("Color")
+                        .IsRequired();
+
                     b.Navigation("Time")
                         .IsRequired();
                 });
@@ -501,6 +523,25 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("DomusMind.Domain.Tasks.HouseholdTask", b =>
                 {
+                    b.OwnsOne("DomusMind.Domain.Tasks.ValueObjects.TaskColor", "Color", b1 =>
+                        {
+                            b1.Property<Guid>("HouseholdTaskId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(7)
+                                .HasColumnType("character varying(7)")
+                                .HasColumnName("color");
+
+                            b1.HasKey("HouseholdTaskId");
+
+                            b1.ToTable("household_tasks");
+
+                            b1.WithOwner()
+                                .HasForeignKey("HouseholdTaskId");
+                        });
+
                     b.OwnsOne("DomusMind.Domain.Tasks.ValueObjects.TaskSchedule", "Schedule", b1 =>
                         {
                             b1.Property<Guid>("HouseholdTaskId")
@@ -527,6 +568,9 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("HouseholdTaskId");
                         });
+
+                    b.Navigation("Color")
+                        .IsRequired();
 
                     b.Navigation("Schedule")
                         .IsRequired();

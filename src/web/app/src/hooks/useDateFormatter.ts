@@ -1,17 +1,13 @@
 import { useAppSelector } from "../store/hooks";
 
 /**
- * Returns a date formatter function that respects household settings:
- * - dateFormatPreference (e.g. "dd/MM/yyyy", "MM/dd/yyyy")
- * - locale (from i18n)
- *
- * The format string uses standard PHPish tokens (dd, MM, yyyy, HH, mm).
- * When format is provided, we use manual formatting for date-only parts
- * and fall back to Intl for time.
+ * Returns date formatter functions that respect household UI settings:
+ * - dateFormat from uiSlice (set from household.dateFormatPreference after bootstrap)
+ * - locale from uiSlice (set from household.primaryLanguageCode after bootstrap)
  */
-export function useDateFormatter(locale: string) {
-  const family = useAppSelector((s) => s.household.family);
-  const dateFormat = family?.dateFormatPreference;
+export function useDateFormatter() {
+  const dateFormat = useAppSelector((s) => s.ui.dateFormat);
+  const locale = useAppSelector((s) => s.ui.language);
 
   function formatDate(iso: string | null): string {
     if (!iso) return "";

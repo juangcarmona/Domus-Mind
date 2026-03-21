@@ -21,4 +21,5 @@ export default {
   completedCancelled: "Completadas / Canceladas",
   createError: "No se pudo crear la tarea",
   unassigned: "sin asignar",
+  colorLabel: "Color",
 } as const;

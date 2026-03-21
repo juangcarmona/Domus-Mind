@@ -21,4 +21,5 @@ export default {
   completedCancelled: "Terminées / Annulées",
   createError: "Impossible de créer la tâche",
   unassigned: "non attribué",
+  colorLabel: "Couleur",
 } as const;

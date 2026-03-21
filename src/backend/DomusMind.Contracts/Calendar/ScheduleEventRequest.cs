@@ -13,4 +13,6 @@ public sealed record ScheduleEventRequest(
     string? Time,
     string? EndDate,
     string? EndTime,
-    string? Description);
+    string? Description,
+    string? Color,
+    IReadOnlyCollection<Guid>? ParticipantMemberIds);

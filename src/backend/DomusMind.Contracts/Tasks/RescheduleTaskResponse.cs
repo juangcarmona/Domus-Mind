@@ -4,4 +4,5 @@ public sealed record RescheduleTaskResponse(
     Guid TaskId,
     string? DueDate,
     string? DueTime,
-    string Status);
+    string Status,
+    string Color);

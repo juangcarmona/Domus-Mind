@@ -42,7 +42,7 @@ public sealed class RescheduleEventCommandHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new RescheduleEventCommand(evt.Id.Value, newDate.ToString("yyyy-MM-dd"), null, null, null, null, null, Guid.NewGuid()),
+            new RescheduleEventCommand(evt.Id.Value, newDate.ToString("yyyy-MM-dd"), null, newDate.ToString("yyyy-MM-dd"), null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         result.CalendarEventId.Should().Be(evt.Id.Value);
@@ -58,7 +58,7 @@ public sealed class RescheduleEventCommandHandlerTests
         var handler = BuildHandler(db);
 
         await handler.Handle(
-            new RescheduleEventCommand(evt.Id.Value, newDate.ToString("yyyy-MM-dd"), null, null, null, null, null, Guid.NewGuid()),
+            new RescheduleEventCommand(evt.Id.Value, newDate.ToString("yyyy-MM-dd"), null, newDate.ToString("yyyy-MM-dd"), null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         var saved = await db.Set<Domain.Calendar.CalendarEvent>()
@@ -78,10 +78,11 @@ public sealed class RescheduleEventCommandHandlerTests
                 evt.Id.Value,
                 newDate.ToString("yyyy-MM-dd"),
                 null,
-                null,
+                newDate.ToString("yyyy-MM-dd"),
                 null,
                 "Updated event title",
                 "Updated description",
+                null,
                 Guid.NewGuid()),
             CancellationToken.None);
 
@@ -98,7 +99,7 @@ public sealed class RescheduleEventCommandHandlerTests
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(
-            new RescheduleEventCommand(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)).ToString("yyyy-MM-dd"), null, null, null, null, null, Guid.NewGuid()),
+            new RescheduleEventCommand(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)).ToString("yyyy-MM-dd"), null, null, null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<CalendarException>()
@@ -113,7 +114,7 @@ public sealed class RescheduleEventCommandHandlerTests
         var handler = BuildHandler(db, auth);
 
         var act = () => handler.Handle(
-            new RescheduleEventCommand(evt.Id.Value, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)).ToString("yyyy-MM-dd"), null, null, null, null, null, Guid.NewGuid()),
+            new RescheduleEventCommand(evt.Id.Value, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)).ToString("yyyy-MM-dd"), null, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)).ToString("yyyy-MM-dd"), null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<CalendarException>()
@@ -130,7 +131,7 @@ public sealed class RescheduleEventCommandHandlerTests
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(
-            new RescheduleEventCommand(evt.Id.Value, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)).ToString("yyyy-MM-dd"), null, null, null, null, null, Guid.NewGuid()),
+            new RescheduleEventCommand(evt.Id.Value, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)).ToString("yyyy-MM-dd"), null, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)).ToString("yyyy-MM-dd"), null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<CalendarException>()

@@ -24,7 +24,15 @@ internal static class TemporalParser
         var parsedDate = ParseDate(date, nameof(date));
 
         if (time is null)
+        {
+            // Date-only: either a single day or a multi-day range (no time component).
+            if (endDate is not null)
+            {
+                var parsedDayEndDate = ParseDate(endDate, nameof(endDate));
+                return EventTime.DayRange(parsedDate, parsedDayEndDate);
+            }
             return EventTime.Day(parsedDate);
+        }
 
         var parsedTime = ParseTime(time, nameof(time));
 

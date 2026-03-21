@@ -56,8 +56,10 @@ public sealed class GetWeeklyGridQueryHandler
         var events = await _dbContext.Set<CalendarEvent>()
             .AsNoTracking()
             .Where(e => e.FamilyId == familyId
-                     && e.Time.Date >= weekStart
+                     // Load any event whose date range overlaps the requested week.
+                     // EndDate: null means single-day / moment — treat as Date == EndDate.
                      && e.Time.Date < weekEnd
+                     && (e.Time.EndDate == null ? e.Time.Date >= weekStart : e.Time.EndDate >= weekStart)
                      && e.Status != EventStatus.Cancelled)
             .ToListAsync(cancellationToken);
 
@@ -99,7 +101,29 @@ public sealed class GetWeeklyGridQueryHandler
                         r.Scope.ToString()))
                     .ToList();
 
-                return new WeeklyGridCell(day.ToString("yyyy-MM-dd"), [], [], dayRoutines);
+                // Include calendar events that have no participants (household-wide)
+                // and whose date range covers this day (multi-day plans appear on each day).
+                var sharedEvents = events
+                    .Where(e => !e.ParticipantIds.Any()
+                             && e.Time.Date <= day
+                             && (e.Time.EndDate.HasValue ? e.Time.EndDate.Value >= day : e.Time.Date == day))
+                    .Select(e =>
+                    {
+                        var (date, time, endDate, endTime) = TemporalParser.FormatEventTime(e.Time);
+                        return new WeeklyGridEventItem(
+                            e.Id.Value,
+                            e.Title.Value,
+                            date,
+                            time,
+                            endDate,
+                            endTime,
+                            e.Status.ToString(),
+                            e.Color.Value,
+                            []);
+                    })
+                    .ToList();
+
+                return new WeeklyGridCell(day.ToString("yyyy-MM-dd"), sharedEvents, [], dayRoutines);
             })
             .ToList();
 
@@ -113,7 +137,8 @@ public sealed class GetWeeklyGridQueryHandler
                     .Select(day =>
                     {
                         var memberEvents = events
-                            .Where(e => e.Time.Date == day
+                            .Where(e => e.Time.Date <= day
+                                     && (e.Time.EndDate.HasValue ? e.Time.EndDate.Value >= day : e.Time.Date == day)
                                      && e.ParticipantIds.Any(p => p.Value == member.Id.Value))
                             .Select(e =>
                             {
@@ -132,6 +157,7 @@ public sealed class GetWeeklyGridQueryHandler
                                     endDate,
                                     endTime,
                                     e.Status.ToString(),
+                                    e.Color.Value,
                                     participants);
                             })
                             .ToList();
@@ -147,7 +173,8 @@ public sealed class GetWeeklyGridQueryHandler
                                     t.Title.Value,
                                     dueDate,
                                     dueTime,
-                                    t.Status.ToString());
+                                    t.Status.ToString(),
+                                    t.Color.Value);
                             })
                             .ToList();
 

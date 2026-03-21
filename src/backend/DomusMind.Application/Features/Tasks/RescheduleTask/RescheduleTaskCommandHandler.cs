@@ -62,6 +62,10 @@ public sealed class RescheduleTaskCommandHandler
                 task.Rename(TaskTitle.Create(command.Title));
             }
             task.Reschedule(newSchedule);
+            if (command.Color is not null)
+            {
+                task.Repaint(TaskColor.From(command.Color));
+            }
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("completed"))
         {
@@ -81,6 +85,6 @@ public sealed class RescheduleTaskCommandHandler
 
         var (dueDate, dueTime) = TemporalParser.FormatTaskSchedule(newSchedule);
 
-        return new RescheduleTaskResponse(command.TaskId, dueDate, dueTime, task.Status.ToString());
+        return new RescheduleTaskResponse(command.TaskId, dueDate, dueTime, task.Status.ToString(), task.Color.Value);
     }
 }

@@ -21,4 +21,5 @@ export default {
   completedCancelled: "Erledigt / Abgebrochen",
   createError: "Aufgabe konnte nicht erstellt werden",
   unassigned: "nicht zugewiesen",
+  colorLabel: "Farbe",
 } as const;

@@ -8,5 +8,6 @@ public sealed record RescheduleTaskCommand(
     string? DueDate,
     string? DueTime,
     string? Title,
+    string? Color,
     Guid RequestedByUserId)
     : ICommand<RescheduleTaskResponse>;

@@ -21,4 +21,5 @@ export default {
   completedCancelled: "Completate / Annullate",
   createError: "Impossibile creare la faccenda",
   unassigned: "non assegnato",
+  colorLabel: "Colore",
 } as const;

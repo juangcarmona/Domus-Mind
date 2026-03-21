@@ -31,7 +31,9 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
         => Domain.Calendar.CalendarEvent.Create(
             CalendarEventId.New(), familyId,
             EventTitle.Create(title), null,
-            EventTime.Day(date), DateTime.UtcNow);
+            EventTime.Day(date),
+            EventColor.From("#3B82F6"),
+            DateTime.UtcNow);
 
     private static HouseholdTask MakeTask(
         FamilyId familyId,
@@ -41,6 +43,7 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
             TaskId.New(), familyId,
             TaskTitle.Create(title), null,
             dueDate.HasValue ? TaskSchedule.WithDueDate(dueDate.Value) : TaskSchedule.NoSchedule(),
+            TaskColor.From("#3B82F6"),
             DateTime.UtcNow);
 
     private static Routine MakeRoutine(

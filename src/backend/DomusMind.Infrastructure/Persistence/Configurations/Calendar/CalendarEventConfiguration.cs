@@ -76,6 +76,14 @@ public sealed class CalendarEventConfiguration : IEntityTypeConfiguration<Domain
                 .HasColumnName("event_end_time");
         });
 
+        builder.OwnsOne(e => e.Color, color =>
+        {
+            color.Property(c => c.Value)
+                .HasColumnName("color")
+                .HasMaxLength(7)
+                .IsRequired();
+        });
+
         // Participant IDs stored as JSON text — list of member GUIDs.
         var participantConverter = new ValueConverter<List<MemberId>, string>(
             ids => JsonSerializer.Serialize(ids.Select(id => id.Value).ToList(), (JsonSerializerOptions?)null),

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { updateHouseholdSettings } from "../../../store/householdSlice";
-import { setUiLanguage } from "../../../i18n/index";
+
 import { FIRST_DAY_OPTIONS, DATE_FORMAT_OPTIONS } from "../types";
 
 export function HouseholdSettingsSection() {
@@ -44,10 +44,8 @@ export function HouseholdSettingsSection() {
 
     if (updateHouseholdSettings.fulfilled.match(result)) {
       setSuccess(t("household.saved"));
-      // Immediately apply language change in the UI
-      if (languageCode) {
-        setUiLanguage(languageCode);
-      }
+      // Language is now applied automatically via uiSlice extraReducers
+      // reacting to updateHouseholdSettings.fulfilled.
     } else {
       setError((result.payload as string) ?? tCommon("failed"));
     }

@@ -79,6 +79,7 @@ public sealed class GetFamilyTimelineQueryHandler
                     endDate,
                     endTime,
                     e.Status.ToString(),
+                    e.Color.Value,
                     e.ParticipantIds.Select(p => p.Value).ToList(),
                     participants);
             })

@@ -8,6 +8,7 @@ public sealed record FamilyPlanItem(
     string? EndDate,
     string? EndTime,
     string Status,
+    string Color,
     IReadOnlyCollection<Guid> ParticipantMemberIds,
     IReadOnlyCollection<ParticipantProjection> Participants);
 

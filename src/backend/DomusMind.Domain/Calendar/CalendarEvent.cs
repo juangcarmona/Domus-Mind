@@ -14,6 +14,7 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
     public EventTitle Title { get; private set; }
     public string? Description { get; private set; }
     public EventTime Time { get; private set; }
+    public EventColor Color { get; private set; }
     public EventStatus Status { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
@@ -26,6 +27,7 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
         EventTitle title,
         string? description,
         EventTime time,
+        EventColor color,
         DateTime createdAtUtc)
         : base(id)
     {
@@ -33,6 +35,7 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
         Title = title;
         Description = description;
         Time = time;
+        Color = color;
         Status = EventStatus.Scheduled;
         CreatedAtUtc = createdAtUtc;
     }
@@ -43,9 +46,10 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
         EventTitle title,
         string? description,
         EventTime time,
+        EventColor color,
         DateTime createdAtUtc)
     {
-        var calendarEvent = new CalendarEvent(id, familyId, title, description, time, createdAtUtc);
+        var calendarEvent = new CalendarEvent(id, familyId, title, description, time, color, createdAtUtc);
         calendarEvent.RaiseDomainEvent(new EventScheduled(
             Guid.NewGuid(), id.Value, familyId.Value, title.Value, time, createdAtUtc));
         return calendarEvent;
@@ -69,6 +73,14 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
 
         Title = newTitle;
         Description = string.IsNullOrWhiteSpace(newDescription) ? null : newDescription.Trim();
+    }
+
+    public void Repaint(EventColor newColor)
+    {
+        if (Status == EventStatus.Cancelled)
+            throw new InvalidOperationException("Cannot repaint a cancelled event.");
+
+        Color = newColor;
     }
 
     public void Cancel()

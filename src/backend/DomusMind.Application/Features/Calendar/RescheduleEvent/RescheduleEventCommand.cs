@@ -11,5 +11,6 @@ public sealed record RescheduleEventCommand(
     string? EndTime,
     string? Title,
     string? Description,
+    string? Color,
     Guid RequestedByUserId)
     : ICommand<RescheduleEventResponse>;

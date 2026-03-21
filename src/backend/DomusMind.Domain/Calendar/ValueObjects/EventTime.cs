@@ -2,7 +2,7 @@ using DomusMind.Domain.Abstractions;
 
 namespace DomusMind.Domain.Calendar.ValueObjects;
 
-public enum EventTimeKind { Day, Moment, Range }
+public enum EventTimeKind { Day, DayRange, Moment, Range }
 
 /// <summary>
 /// First-class temporal value for a calendar event.
@@ -35,9 +35,17 @@ public sealed class EventTime : ValueObject
         EndTime = endTime;
     }
 
-    /// <summary>Creates a date-only event (no time component).</summary>
+    /// <summary>Creates a date-only event covering a single day (no time component).</summary>
     public static EventTime Day(DateOnly date)
         => new(EventTimeKind.Day, date, null, null, null);
+
+    /// <summary>Creates a date-only event spanning multiple days (no time component).</summary>
+    public static EventTime DayRange(DateOnly startDate, DateOnly endDate)
+    {
+        if (endDate < startDate)
+            throw new ArgumentException("End date must not be before start date.", nameof(endDate));
+        return new(EventTimeKind.DayRange, startDate, null, endDate, null);
+    }
 
     /// <summary>Creates an event with an exact date and time (minute precision).</summary>
     public static EventTime Moment(DateOnly date, TimeOnly time)
@@ -66,8 +74,8 @@ public sealed class EventTime : ValueObject
         return new(EventTimeKind.Range, startDate, startTime, endDate, endTime);
     }
 
-    public bool HasTime => Kind != EventTimeKind.Day;
-    public bool HasRange => Kind == EventTimeKind.Range;
+    public bool HasTime => Kind != EventTimeKind.Day && Kind != EventTimeKind.DayRange;
+    public bool HasRange => Kind == EventTimeKind.Range || Kind == EventTimeKind.DayRange;
 
     protected override IEnumerable<object?> GetEqualityComponents()
     {

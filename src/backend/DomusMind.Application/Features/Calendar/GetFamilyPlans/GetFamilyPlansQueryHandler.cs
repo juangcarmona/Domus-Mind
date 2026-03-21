@@ -82,6 +82,7 @@ public sealed class GetFamilyPlansQueryHandler
                     endDate,
                     endTime,
                     e.Status.ToString(),
+                    e.Color.Value,
                     e.ParticipantIds.Select(p => p.Value).ToList(),
                     participants);
             })

@@ -50,6 +50,14 @@ public sealed class HouseholdTaskConfiguration : IEntityTypeConfiguration<Househ
                 .HasColumnName("due_time");
         });
 
+        builder.OwnsOne(t => t.Color, color =>
+        {
+            color.Property(c => c.Value)
+                .HasColumnName("color")
+                .HasMaxLength(7)
+                .IsRequired();
+        });
+
         builder.Property(t => t.Status)
             .HasConversion<string>()
             .HasColumnName("status")

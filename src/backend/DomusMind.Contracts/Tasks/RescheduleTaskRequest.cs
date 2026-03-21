@@ -1,3 +1,3 @@
 namespace DomusMind.Contracts.Tasks;
 
-public sealed record RescheduleTaskRequest(string? DueDate, string? DueTime, string? Title);
+public sealed record RescheduleTaskRequest(string? DueDate, string? DueTime, string? Title, string? Color);

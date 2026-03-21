@@ -35,7 +35,7 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
         return Domain.Calendar.CalendarEvent.Create(
             CalendarEventId.New(), familyId,
             EventTitle.Create(title), null,
-            eventTime, DateTime.UtcNow);
+            eventTime, EventColor.From("#3B82F6"), DateTime.UtcNow);
     }
 
     [Fact]

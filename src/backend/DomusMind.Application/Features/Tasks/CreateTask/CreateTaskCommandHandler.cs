@@ -49,12 +49,22 @@ public sealed class CreateTaskCommandHandler
             throw new TasksException(TasksErrorCode.InvalidInput, ex.Message);
         }
 
+        TaskColor taskColor;
+        try
+        {
+            taskColor = TaskColor.From(command.Color ?? "#3B82F6");
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new TasksException(TasksErrorCode.InvalidInput, ex.Message);
+        }
+
         var id = TaskId.New();
         var familyId = FamilyId.From(command.FamilyId);
         var title = TaskTitle.Create(command.Title);
         var now = DateTime.UtcNow;
 
-        var task = HouseholdTask.Create(id, familyId, title, command.Description, schedule, now);
+        var task = HouseholdTask.Create(id, familyId, title, command.Description, schedule, taskColor, now);
         _dbContext.Set<HouseholdTask>().Add(task);
 
         await _eventLogWriter.WriteAsync(task.DomainEvents, cancellationToken);
@@ -65,6 +75,6 @@ public sealed class CreateTaskCommandHandler
         return new CreateTaskResponse(
             id.Value, familyId.Value, title.Value,
             command.Description, dueDate, dueTime,
-            task.Status.ToString(), now);
+            task.Status.ToString(), taskColor.Value, now);
     }
 }

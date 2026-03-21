@@ -13,7 +13,8 @@ public sealed class HouseholdTaskReassignTests
         var task = HouseholdTask.Create(
             TaskId.New(), FamilyId.New(),
             TaskTitle.Create("Clean Kitchen"), null,
-            TaskSchedule.WithDueDate(new DateOnly(2026, 4, 1)), DateTime.UtcNow);
+            TaskSchedule.WithDueDate(new DateOnly(2026, 4, 1)),
+            TaskColor.From("#3B82F6"), DateTime.UtcNow);
         task.Assign(MemberId.New());
         task.ClearDomainEvents();
         return task;
@@ -24,7 +25,8 @@ public sealed class HouseholdTaskReassignTests
         var task = HouseholdTask.Create(
             TaskId.New(), FamilyId.New(),
             TaskTitle.Create("Fix Sink"), null,
-            TaskSchedule.NoSchedule(), DateTime.UtcNow);
+            TaskSchedule.NoSchedule(),
+            TaskColor.From("#3B82F6"), DateTime.UtcNow);
         task.ClearDomainEvents();
         return task;
     }

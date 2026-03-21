@@ -34,6 +34,9 @@ public sealed class ScheduleEventCommandHandler
         if (string.IsNullOrWhiteSpace(command.Title))
             throw new CalendarException(CalendarErrorCode.InvalidInput, "Event title is required.");
 
+        if (string.IsNullOrWhiteSpace(command.EndDate))
+            throw new CalendarException(CalendarErrorCode.InvalidInput, "A plan must have an end date. Use the same date as the start for single-day events.");
+
         var canAccess = await _authorizationService.CanAccessFamilyAsync(
             command.RequestedByUserId, command.FamilyId, cancellationToken);
 
@@ -50,6 +53,16 @@ public sealed class ScheduleEventCommandHandler
             throw new CalendarException(CalendarErrorCode.InvalidInput, ex.Message);
         }
 
+        EventColor color;
+        try
+        {
+            color = EventColor.From(command.Color ?? "#3B82F6");
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new CalendarException(CalendarErrorCode.InvalidInput, ex.Message);
+        }
+
         var id = CalendarEventId.New();
         var familyId = FamilyId.From(command.FamilyId);
         var title = EventTitle.Create(command.Title);
@@ -59,11 +72,19 @@ public sealed class ScheduleEventCommandHandler
         try
         {
             calendarEvent = Domain.Calendar.CalendarEvent.Create(
-                id, familyId, title, command.Description, eventTime, now);
+                id, familyId, title, command.Description, eventTime, color, now);
         }
         catch (InvalidOperationException ex)
         {
             throw new CalendarException(CalendarErrorCode.InvalidInput, ex.Message);
+        }
+
+        if (command.ParticipantMemberIds is not null)
+        {
+            foreach (var memberId in command.ParticipantMemberIds)
+            {
+                calendarEvent.AddParticipant(MemberId.From(memberId));
+            }
         }
 
         _dbContext.Set<Domain.Calendar.CalendarEvent>().Add(calendarEvent);
@@ -82,6 +103,7 @@ public sealed class ScheduleEventCommandHandler
             endDate,
             endTime,
             calendarEvent.Status.ToString(),
+            color.Value,
             now);
     }
 }
