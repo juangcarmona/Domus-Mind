@@ -117,12 +117,19 @@ Examples:
 * cat
 * rabbit
 
-Pets may:
+Pet identity is owned by the Family context. Pets can be registered as family members using the `Pet` role.
 
-* appear as participants in events
-* generate operational tasks (feeding, vet visits)
+**V1 operational scope for pets:**
 
-Pet identity is still owned by the Family context.
+- Pets may be added to the family for identity and reference purposes
+- Pets do **not** appear in coordination views (Today board, Week grid, Timeline) in V1
+- Pets **cannot** receive task assignments in V1
+- Pets **cannot** hold responsibility ownership in V1
+- Pets **can** be added as event participants (e.g. a vet appointment)
+
+The coordination surface filters members by operational roles (`Adult`, `Child`, `Caregiver`). The `Pet` role is intentionally excluded from this filter in V1.
+
+Pet-specific operational capabilities (feeding schedules, vet visit tracking, pet care responsibilities) are deferred to V2 or later.
 
 ---
 
