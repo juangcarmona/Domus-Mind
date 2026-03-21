@@ -6,6 +6,7 @@ using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ValueObjects;
+using DomusMind.Domain.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace DomusMind.Application.Features.Calendar.RescheduleEvent;
@@ -71,7 +72,7 @@ public sealed class RescheduleEventCommandHandler
             calendarEvent.Reschedule(newTime);
             if (command.Color is not null)
             {
-                calendarEvent.Repaint(EventColor.From(command.Color));
+                calendarEvent.Repaint(HexColor.From(command.Color));
             }
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("cancelled"))

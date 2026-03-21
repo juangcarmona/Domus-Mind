@@ -44,7 +44,7 @@ Examples:
 - `POST /api/events`
 - `POST /api/tasks`
 - `POST /api/routines`
-- `GET /api/families/{familyId}/timeline`
+- `GET /api/families/{familyId}/timeline` *(deprecated — use `/timeline/enriched`)*
 
 Rules:
 

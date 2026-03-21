@@ -2,6 +2,7 @@ using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Domain.Abstractions;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.ValueObjects;
 
@@ -48,7 +49,7 @@ internal static class TaskTestHelpers
             TaskId.New(), familyId,
             TaskTitle.Create(title), null,
             schedule,
-            TaskColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
     }
 }

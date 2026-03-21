@@ -227,7 +227,11 @@ public sealed class FamiliesController : ControllerBase
         }
     }
 
-    /// <summary>Returns a unified chronological timeline of events, tasks, and routines for the given family.</summary>
+    /// <summary>
+    /// [DEPRECATED] Returns a basic chronological timeline of events, tasks, and routines for the given family.
+    /// Use GET /api/families/{familyId}/timeline/enriched instead, which supports filtering, status, and cross-context enrichment.
+    /// This endpoint will be removed in V1.1.
+    /// </summary>
     [HttpGet("{familyId:guid}/timeline")]
     [ProducesResponseType(typeof(HouseholdTimelineResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

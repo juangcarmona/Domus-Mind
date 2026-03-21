@@ -3,6 +3,7 @@ using DomusMind.Application.Features.Calendar.DetectCalendarConflicts;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Infrastructure.Persistence;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,7 @@ public sealed class DetectCalendarConflictsQueryHandlerTests
         return Domain.Calendar.CalendarEvent.Create(
             CalendarEventId.New(), familyId,
             EventTitle.Create(title), null,
-            eventTime, EventColor.From("#3B82F6"), DateTime.UtcNow);
+            eventTime, HexColor.From("#3B82F6"), DateTime.UtcNow);
     }
 
     [Fact]

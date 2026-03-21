@@ -2,6 +2,7 @@ using DomusMind.Domain.Abstractions;
 using DomusMind.Domain.Calendar.Events;
 using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 
 namespace DomusMind.Domain.Calendar;
 
@@ -14,7 +15,7 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
     public EventTitle Title { get; private set; }
     public string? Description { get; private set; }
     public EventTime Time { get; private set; }
-    public EventColor Color { get; private set; }
+    public HexColor Color { get; private set; }
     public EventStatus Status { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
@@ -27,7 +28,7 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
         EventTitle title,
         string? description,
         EventTime time,
-        EventColor color,
+        HexColor color,
         DateTime createdAtUtc)
         : base(id)
     {
@@ -46,7 +47,7 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
         EventTitle title,
         string? description,
         EventTime time,
-        EventColor color,
+        HexColor color,
         DateTime createdAtUtc)
     {
         var calendarEvent = new CalendarEvent(id, familyId, title, description, time, color, createdAtUtc);
@@ -75,7 +76,7 @@ public sealed class CalendarEvent : AggregateRoot<CalendarEventId>
         Description = string.IsNullOrWhiteSpace(newDescription) ? null : newDescription.Trim();
     }
 
-    public void Repaint(EventColor newColor)
+    public void Repaint(HexColor newColor)
     {
         if (Status == EventStatus.Cancelled)
             throw new InvalidOperationException("Cannot repaint a cancelled event.");

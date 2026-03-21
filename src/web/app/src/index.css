@@ -1125,16 +1125,16 @@ p {
   overflow: hidden;
 }
 .wg-item--event {
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
-  color: var(--primary);
+  background: color-mix(in srgb, var(--wg-item-accent, var(--primary)) 12%, transparent);
+  color: color-mix(in srgb, var(--wg-item-accent, var(--primary)) 70%, var(--text));
 }
 .wg-item--task {
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
-  color: color-mix(in srgb, var(--accent) 80%, var(--text));
+  background: color-mix(in srgb, var(--wg-item-accent, var(--accent)) 15%, transparent);
+  color: color-mix(in srgb, var(--wg-item-accent, var(--accent)) 70%, var(--text));
 }
 .wg-item--routine {
-  background: color-mix(in srgb, var(--muted) 12%, transparent);
-  color: var(--muted);
+  background: color-mix(in srgb, var(--wg-item-accent, var(--muted)) 12%, transparent);
+  color: color-mix(in srgb, var(--wg-item-accent, var(--muted)) 70%, var(--text));
 }
 .wg-item {
   display: flex;
@@ -1170,6 +1170,32 @@ p {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+}
+
+/* Type glyph — tiny, inherits item color, aria-hidden in markup */
+.wg-item-glyph {
+  font-size: 0.6rem;
+  flex-shrink: 0;
+  opacity: 0.8;
+  line-height: 1;
+}
+
+/* Participant / assignee sub-label */
+.wg-item-sub {
+  font-size: 0.68rem;
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 72px;
+}
+
+/* Completed items */
+.wg-item--completed .wg-item-title {
+  text-decoration: line-through;
+  opacity: 0.55;
 }
 
 /* ---- Week grid: today column highlight ---- */
@@ -1192,6 +1218,24 @@ p {
   border-radius: 50%;
   background: var(--primary);
   margin: 0.15rem auto 0;
+}
+.wg-load-bar {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  margin: 0.2rem 0.25rem 0;
+}
+.wg-load-bar--low {
+  background: var(--primary);
+  opacity: 0.2;
+}
+.wg-load-bar--medium {
+  background: var(--primary);
+  opacity: 0.55;
+}
+.wg-load-bar--high {
+  background: var(--warning, #f59e0b);
+  opacity: 0.85;
 }
 .wg-cell--today {
   background: color-mix(in srgb, var(--primary) 6%, var(--surface));
@@ -1257,6 +1301,19 @@ p {
   font-size: 0.78rem;
   color: var(--muted);
   font-style: italic;
+}
+.today-household {
+  margin-top: 0.65rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+.today-household-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
 }
 
 /* ---- Week nav ---- */
@@ -1375,6 +1432,35 @@ p {
   display: flex;
   flex-direction: column;
   gap: 0;
+}
+
+/* ---- Floating action button ---- */
+.fab-add {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 1.75rem;
+  line-height: 1;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+}
+.fab-add:hover {
+  background: var(--primary-hover, var(--primary));
+  transform: scale(1.07);
+}
+.fab-add:active {
+  transform: scale(0.96);
 }
 
 /* ---- Controls bar (tabs + date nav) ---- */
@@ -1637,32 +1723,109 @@ p {
   line-height: 1;
 }
 
-/* Per-member dots in month cells */
-.coord-month-dots {
+/* Per-day type distribution pips in month cells */
+.coord-month-type-pips {
   display: flex;
-  gap: 2px;
+  gap: 3px;
   align-items: center;
   justify-content: center;
-  flex-wrap: nowrap;
-  min-height: 6px;
+  min-height: 7px;
 }
 
-.coord-month-dot {
+.coord-month-pip {
   width: 5px;
   height: 5px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.coord-month-dot-overflow {
-  font-size: 0.55rem;
-  color: var(--muted);
+.coord-month-pip--event {
+  background: var(--primary);
+}
+
+.coord-month-pip--task {
+  background: var(--accent);
+}
+
+.coord-month-pip--routine {
+  background: var(--muted);
+  opacity: 0.7;
+}
+
+/* Glyph+count indicators replacing old dot pips */
+.month-cell-pips {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-height: 10px;
+  margin-top: 1px;
+}
+
+.month-cell-pip {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 0.6rem;
   line-height: 1;
+  font-weight: 600;
+}
+
+.month-cell-pip-glyph {
+  font-size: 0.55rem;
+  line-height: 1;
+}
+
+.month-cell-pip--event {
+  color: var(--primary);
+}
+
+.month-cell-pip--task {
+  color: var(--accent);
+}
+
+.month-cell-pip--routine {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.6;
+  flex-shrink: 0;
 }
 
 /* ================================================================
    Coordination Timeline
    ================================================================ */
+
+/* ---- Planning: history affordance ---- */
+.planning-history-trigger {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.planning-history-section {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border);
+}
+
+.planning-history-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.planning-history-empty {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+  margin: 0;
+}
 
 .coord-timeline-wrap {
   display: flex;

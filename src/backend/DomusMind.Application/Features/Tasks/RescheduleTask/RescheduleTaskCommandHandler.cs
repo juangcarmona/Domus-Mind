@@ -3,6 +3,7 @@ using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Tasks;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -64,7 +65,7 @@ public sealed class RescheduleTaskCommandHandler
             task.Reschedule(newSchedule);
             if (command.Color is not null)
             {
-                task.Repaint(TaskColor.From(command.Color));
+                task.Repaint(HexColor.From(command.Color));
             }
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("completed"))

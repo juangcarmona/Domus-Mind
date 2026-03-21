@@ -17,6 +17,7 @@ export default {
   executionTypeReminderOnly: "Nur Erinnerung",
   colorLabel: "Farbe",
   frequencyLabel: "Häufigkeit",
+  frequencyDaily: "Täglich",
   frequencyWeekly: "Wöchentlich",
   frequencyMonthly: "Monatlich",
   frequencyYearly: "Jährlich",

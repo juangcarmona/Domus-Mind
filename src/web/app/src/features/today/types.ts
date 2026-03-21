@@ -37,6 +37,13 @@ export interface WeeklyGridCell {
   routines: WeeklyGridRoutineItem[];
 }
 
+/** Per-day item-type summary used by the month view density pips. */
+export interface DayTypeSummary {
+  events: number;
+  tasks: number;
+  routines: number;
+}
+
 export interface WeeklyGridMember {
   memberId: string;
   name: string;

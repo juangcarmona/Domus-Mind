@@ -1,4 +1,5 @@
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.Events;
@@ -22,7 +23,7 @@ public sealed class RoutineTests
             RoutineName.Create(name),
             scope,
             kind,
-            RoutineColor.From(color),
+            HexColor.From(color),
             schedule ?? RoutineSchedule.Weekly(new[] { DayOfWeek.Monday, DayOfWeek.Wednesday }),
             targetMembers,
             DateTime.UtcNow);
@@ -161,7 +162,7 @@ public sealed class RoutineTests
             RoutineName.Create("Prepare ski trip"),
             RoutineScope.Members,
             RoutineKind.Cue,
-            RoutineColor.From("#0EA5E9"),
+            HexColor.From("#0EA5E9"),
             newSchedule,
             new[] { memberId });
 
@@ -184,7 +185,7 @@ public sealed class RoutineTests
             RoutineName.Create("New Name"),
             RoutineScope.Members,
             RoutineKind.Scheduled,
-            RoutineColor.From("#F59E0B"),
+            HexColor.From("#F59E0B"),
             RoutineSchedule.Weekly(new[] { DayOfWeek.Friday }, new TimeOnly(20, 30)),
             new[] { memberId });
 
@@ -203,7 +204,7 @@ public sealed class RoutineTests
             RoutineName.Create("Combo"),
             RoutineScope.Members,
             RoutineKind.Scheduled,
-            RoutineColor.From("#F59E0B"),
+            HexColor.From("#F59E0B"),
             RoutineSchedule.Weekly(new[] { DayOfWeek.Friday }, new TimeOnly(20, 30)),
             new[] { memberId });
 
@@ -224,7 +225,7 @@ public sealed class RoutineTests
             RoutineName.Create("Updated"),
             RoutineScope.Members,
             RoutineKind.Cue,
-            RoutineColor.From("#A855F7"),
+            HexColor.From("#A855F7"),
             RoutineSchedule.Weekly(new[] { DayOfWeek.Monday }),
             Array.Empty<MemberId>());
 
@@ -329,5 +330,40 @@ public sealed class RoutineTests
 
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*already active*");
+    }
+
+    // --- RoutineSchedule.Daily ---
+
+    [Fact]
+    public void RoutineSchedule_Daily_HasCorrectFrequency()
+    {
+        var schedule = RoutineSchedule.Daily();
+
+        schedule.Frequency.Should().Be(RoutineFrequency.Daily);
+        schedule.DaysOfWeek.Should().BeEmpty();
+        schedule.DaysOfMonth.Should().BeEmpty();
+        schedule.MonthOfYear.Should().BeNull();
+        schedule.Time.Should().BeNull();
+    }
+
+    [Fact]
+    public void RoutineSchedule_Daily_WithTime_PreservesTime()
+    {
+        var time = new TimeOnly(8, 0);
+
+        var schedule = RoutineSchedule.Daily(time);
+
+        schedule.Frequency.Should().Be(RoutineFrequency.Daily);
+        schedule.Time.Should().Be(time);
+    }
+
+    [Fact]
+    public void RoutineSchedule_Daily_OccursOn_ReturnsTrueForAnyDate()
+    {
+        var schedule = RoutineSchedule.Daily();
+
+        schedule.OccursOn(DateOnly.FromDateTime(DateTime.UtcNow)).Should().BeTrue();
+        schedule.OccursOn(new DateOnly(2000, 1, 1)).Should().BeTrue();
+        schedule.OccursOn(new DateOnly(2099, 12, 31)).Should().BeTrue();
     }
 }

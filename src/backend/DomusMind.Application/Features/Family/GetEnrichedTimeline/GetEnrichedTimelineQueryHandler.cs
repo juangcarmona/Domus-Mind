@@ -86,7 +86,8 @@ public sealed class GetEnrichedTimelineQueryHandler
                 e.Time.Date < today,
                 false,
                 null,
-                participants.Count > 0 ? participants : null);
+                participants.Count > 0 ? participants : null,
+                e.Color.Value);
         });
 
         var taskEntries = tasks.Select(t =>
@@ -103,7 +104,8 @@ public sealed class GetEnrichedTimelineQueryHandler
                 t.Schedule.Date.HasValue && t.Schedule.Date.Value < today && t.Status == HouseholdTaskStatus.Pending,
                 !t.AssigneeId.HasValue,
                 t.AssigneeId?.Value,
-                null);
+                null,
+                t.Color.Value);
         });
 
         var routineEntries = routines.Select(r => new EnrichedTimelineEntry(
@@ -117,7 +119,8 @@ public sealed class GetEnrichedTimelineQueryHandler
             false,
             false,
             null,
-            null));
+            null,
+            r.Color.Value));
 
         var allEntries = calendarEntries.Concat(taskEntries).Concat(routineEntries).ToList();
 

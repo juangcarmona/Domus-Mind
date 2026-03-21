@@ -3,13 +3,11 @@ import type { WeeklyGridResponse, WeeklyGridCell as GridCell } from "../../types
 import { WeekHeader } from "./WeekHeader";
 import { WeeklyGridRow } from "./WeeklyGridRow";
 import { WeeklyGridCell as WGCell } from "./WeeklyGridCell";
-import { TodaySummary } from "./TodaySummary";
 
 interface WeeklyGridProps {
   grid: WeeklyGridResponse;
   selectedDate?: string; // Optional: highlight selected day column
   onDayClick?: (date: string) => void; // Optional: handle day header click
-  suppressTodaySummary?: boolean; // When true, don't render TodaySummary above the grid
   onItemClick?: (type: "event" | "task" | "routine", id: string) => void;
 }
 
@@ -45,7 +43,6 @@ export function WeeklyGrid({
   grid,
   selectedDate,
   onDayClick,
-  suppressTodaySummary,
   onItemClick,
 }: WeeklyGridProps) {
   const { t } = useTranslation("today");
@@ -71,19 +68,36 @@ export function WeeklyGrid({
             return d.toISOString().slice(0, 10);
           });
 
-  const isCurrentWeek = days.includes(todayIso);
+  // Compute per-day total item count across shared + all member cells
+  const dayCounts: Record<string, number> = {};
+  for (const day of days) {
+    const shared = sharedCells.find((c) => c.date.slice(0, 10) === day);
+    let count = 0;
+    if (shared) {
+      count += (shared.events?.length ?? 0)
+        + (shared.tasks?.filter((t) => t.status === "Active").length ?? 0)
+        + (shared.routines?.length ?? 0);
+    }
+    for (const member of members) {
+      const cell = (member.cells ?? []).find((c) => c.date.slice(0, 10) === day);
+      if (cell) {
+        count += (cell.events?.length ?? 0)
+          + (cell.tasks?.filter((t) => t.status === "Active").length ?? 0)
+          + (cell.routines?.length ?? 0);
+      }
+    }
+    dayCounts[day] = count;
+  }
 
   return (
     <>
-      {isCurrentWeek && !suppressTodaySummary && (
-        <TodaySummary grid={grid} today={todayIso} onItemClick={onItemClick} />
-      )}
       <div className="weekly-grid">
         <WeekHeader
           days={days}
           today={todayIso}
           selectedDate={selectedDate}
           onDayClick={onDayClick}
+          dayCounts={dayCounts}
         />
         {hasSharedContent && (
           <SharedRow

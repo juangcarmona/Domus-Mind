@@ -61,6 +61,8 @@ The Task aggregate owns:
 
 A **Task** represents a concrete executable instance of work.
 
+**"Task" is both the household-facing term and the internal domain term.** No translation is needed between layers.
+
 ---
 
 ## Routine
@@ -82,11 +84,6 @@ A **Routine is a definition**, not a task.
 
 It describes how operational behavior repeats over time.
 
-Routine definitions may produce:
-
-* **executable task instances**
-* **non-executable coordination cues used in read models**
-
 Routine does **not represent attendance commitments**.
 
 Fixed-time commitments belong to the **Calendar context**.
@@ -94,96 +91,37 @@ Fixed-time commitments belong to the **Calendar context**.
 Example distinction:
 
 ```
-Football practice every Tuesday → Calendar Event
-Pack sports bag before practice → Routine-generated Task
+Football practice every Tuesday → Calendar Event (Plan in household language)
+Pack sports bag before practice → Task (created explicitly by the user)
 ```
 
 ---
 
-# Routine Output Semantics
+# Routine Projection Model
 
-Routines may produce two different outputs.
+Routines are **projected on-the-fly** by the application layer.
 
-### Executable Tasks
+When building timeline views, weekly grids, or coordination dashboards, the application evaluates each active routine's recurrence schedule against the requested date range using `OccursOn(date)`. Matching routines surface as entries in the read model.
 
-Most routines generate **concrete task instances**.
+Routines do **not generate Task aggregates**.
 
-Examples:
+This keeps the domain clean:
 
-```
-daily pet feeding
-weekly trash
-monthly bill payment
-```
+* no background scheduling jobs required
+* no persisted occurrence records
+* read model is always consistent with current routine state
 
-These result in Task aggregates with lifecycle and completion tracking.
-
----
-
-### Coordination Cues (Read Model)
-
-Some routines may generate **lightweight coordination signals** for read models.
-
-Examples:
-
-```
-trash day
-laundry day
-cleaning day
-```
-
-These cues may appear in:
-
-* weekly household grids
-* timeline views
-* coordination dashboards
-
-They are **read-model artifacts**, not aggregates.
-
-They:
-
-* are not persisted domain entities
-* do not have lifecycle
-* do not emit domain events
-
----
-
-# Routine vs Task Instances
-
-Clear separation is required between:
-
-**Routine definition**
-
-and
-
-**Generated task instances**
-
-Routine owns:
-
-* recurrence rule
-* template task definition
-* assignment rules
-
-Generated tasks own:
-
-* task identity
-* assignment
-* due date
-* lifecycle state
+The separation between Routine (definition) and Task (one-off executable work item) is intentional and must be preserved.
 
 Example:
 
 ```
-Routine: Weekly Trash
-Recurrence: every Tuesday
-
-Generated Tasks:
-Trash — Mar 5
-Trash — Mar 12
-Trash — Mar 19
+Routine: Weekly Trash (every Tuesday, scope: Household)
+→ Appears as a read-model entry on each Tuesday in the timeline
+→ No Task aggregate is created from a Routine
 ```
 
-Each generated task is an independent **Task aggregate instance**.
+**Manually created tasks are independent.** A task created by a user happens to look similar to a routine entry in the timeline, but originates from a direct user action, not from routine evaluation.
 
 ---
 
@@ -197,15 +135,14 @@ Assignments reference members defined in the Family context.
 
 ## TaskOrigin
 
-Represents the source that generated a task.
+Represents the source that created a task.
 
 Possible origins:
 
 * manual
-* event
-* routine
-* responsibility domain
 * external integration
+
+> **Note:** Tasks are not generated automatically from routines or events in the current model. All tasks originate from explicit user or integration actions.
 
 ---
 
@@ -268,7 +205,7 @@ Rules:
 
 * routines must define a valid recurrence rule
 * routines define operational patterns, not fixed-time attendance
-* generated tasks must reference their originating routine
+* supported frequencies: Daily, Weekly, Monthly, Yearly
 
 ## Ownership Boundary
 
@@ -337,11 +274,10 @@ Task events:
 
 * `TaskCreated`
 * `TaskAssigned`
-* `TaskUnassigned`
-* `TaskStarted`
 * `TaskCompleted`
 * `TaskCancelled`
 * `TaskRescheduled`
+* `TaskReassigned`
 
 Routine events:
 

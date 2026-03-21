@@ -1,4 +1,5 @@
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.Events;
@@ -18,7 +19,7 @@ public sealed class HouseholdTaskTests
             TaskTitle.Create(title),
             null,
             dueDate.HasValue ? TaskSchedule.WithDueDate(dueDate.Value) : TaskSchedule.NoSchedule(),
-            TaskColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
 
     // --- TaskTitle value object ---

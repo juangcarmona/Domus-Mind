@@ -73,9 +73,11 @@ Internal domain terminology must remain invisible.
 | -------------- | ------------------ |
 | Family         | Household          |
 | Member         | Person             |
-| Task           | Chore              |
+| Task           | Task               |
 | Event          | Plan               |
 | Responsibility | Area               |
+
+> **Note:** Task uses the same word at both layers by design. "Task" is natural household language — it needs no translation.
 
 The system must always speak **household language**.
 

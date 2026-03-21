@@ -17,6 +17,7 @@ export default {
   executionTypeReminderOnly: "リマインダーのみ",
   colorLabel: "色",
   frequencyLabel: "頻度",
+  frequencyDaily: "毎日",
   frequencyWeekly: "毎週",
   frequencyMonthly: "毎月",
   frequencyYearly: "毎年",

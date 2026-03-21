@@ -13,6 +13,7 @@ interface TaskCrudFormProps {
   initialTitle?: string;
   initialDueDate?: string | null;
   initialColor?: string | null;
+  members?: { memberId: string; name: string }[];
   onCancel: () => void;
   onSuccess: () => void | Promise<void>;
 }
@@ -24,6 +25,7 @@ export function TaskCrudForm({
   initialTitle,
   initialDueDate,
   initialColor,
+  members,
   onCancel,
   onSuccess,
 }: TaskCrudFormProps) {
@@ -35,6 +37,7 @@ export function TaskCrudForm({
   const [dueDate, setDueDate] = useState(toLocalDateInput(initialDueDate));
   const [dueTime, setDueTime] = useState(toLocalTimeInput(initialDueDate));
   const [color, setColor] = useState(initialColor ?? "#3B82F6");
+  const [assigneeId, setAssigneeId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,6 +63,13 @@ export function TaskCrudForm({
       );
       setSubmitting(false);
       if (createTask.fulfilled.match(result)) {
+        if (assigneeId) {
+          try {
+            await domusmindApi.assignTask((result.payload as { taskId: string }).taskId, { assigneeId });
+          } catch (assignErr) {
+            console.error("Failed to assign task", assignErr);
+          }
+        }
         await Promise.resolve(onSuccess());
       } else {
         setError((result.payload as string) ?? tCommon("failed"));
@@ -134,6 +144,24 @@ export function TaskCrudForm({
             onChange={(e) => setColor(e.target.value.toUpperCase())}
           />
         </div>
+        {mode === "create" && members && members.length > 0 && (
+          <div className="form-group">
+            <label htmlFor="task-form-assignee">{tTasks("assignTo")}</label>
+            <select
+              id="task-form-assignee"
+              className="form-control"
+              value={assigneeId}
+              onChange={(e) => setAssigneeId(e.target.value)}
+            >
+              <option value="">{tTasks("unassigned")}</option>
+              {members.map((m) => (
+                <option key={m.memberId} value={m.memberId}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         {error && <p className="error-msg">{error}</p>}
         <div className="modal-footer">
           <button type="button" className="btn btn-ghost" onClick={onCancel}>

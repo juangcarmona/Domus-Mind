@@ -1,6 +1,7 @@
 using DomusMind.Application.Features.Tasks;
 using DomusMind.Application.Features.Tasks.UpdateRoutine;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
@@ -35,7 +36,7 @@ public sealed class UpdateRoutineCommandHandlerTests
             RoutineName.Create("Daily Standup"),
             RoutineScope.Members,
             RoutineKind.Scheduled,
-            RoutineColor.From("#7C3AED"),
+            HexColor.From("#7C3AED"),
             RoutineSchedule.Weekly(new[] { DayOfWeek.Monday, DayOfWeek.Wednesday }, new TimeOnly(9, 0)),
             new[] { memberId },
             DateTime.UtcNow);
@@ -220,5 +221,34 @@ public sealed class UpdateRoutineCommandHandlerTests
 
         await act.Should().ThrowAsync<TasksException>()
             .Where(e => e.Code == TasksErrorCode.InvalidInput);
+    }
+
+    [Fact]
+    public async Task Handle_UpdateToDaily_PersistsDailyFrequency()
+    {
+        var (db, routine, _) = await BuildWithRoutineAsync();
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new UpdateRoutineCommand(
+                routine.Id.Value,
+                "Daily Standup",
+                "Household",
+                "Scheduled",
+                "#7C3AED",
+                "Daily",
+                Array.Empty<DayOfWeek>(),
+                Array.Empty<int>(),
+                null,
+                null,
+                Array.Empty<Guid>(),
+                Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.Frequency.Should().Be("Daily");
+
+        var saved = await db.Set<Routine>()
+            .SingleOrDefaultAsync(r => r.Id == routine.Id);
+        saved!.Schedule.Frequency.Should().Be(RoutineFrequency.Daily);
     }
 }

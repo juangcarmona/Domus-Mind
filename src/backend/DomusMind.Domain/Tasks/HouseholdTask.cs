@@ -1,5 +1,6 @@
 using DomusMind.Domain.Abstractions;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.Events;
 using DomusMind.Domain.Tasks.ValueObjects;
@@ -12,7 +13,7 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
     public TaskTitle Title { get; private set; }
     public string? Description { get; private set; }
     public TaskSchedule Schedule { get; private set; }
-    public TaskColor Color { get; private set; }
+    public HexColor Color { get; private set; }
     public HouseholdTaskStatus Status { get; private set; }
     public MemberId? AssigneeId { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
@@ -23,7 +24,7 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
         TaskTitle title,
         string? description,
         TaskSchedule schedule,
-        TaskColor color,
+        HexColor color,
         DateTime createdAtUtc)
         : base(id)
     {
@@ -42,7 +43,7 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
         TaskTitle title,
         string? description,
         TaskSchedule schedule,
-        TaskColor color,
+        HexColor color,
         DateTime createdAtUtc)
     {
         var task = new HouseholdTask(id, familyId, title, description, schedule, color, createdAtUtc);
@@ -51,7 +52,7 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
         return task;
     }
 
-    public void Repaint(TaskColor newColor)
+    public void Repaint(HexColor newColor)
     {
         if (Status == HouseholdTaskStatus.Completed)
             throw new InvalidOperationException("Cannot repaint a completed task.");

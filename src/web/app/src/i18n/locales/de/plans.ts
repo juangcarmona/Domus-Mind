@@ -23,6 +23,9 @@ export default {
   yes: "Ja, absagen",
   no: "Behalten",
   noPlans: "Keine geplanten Termine.",
+  showPastPlans: "Vergangene Pläne anzeigen",
+  pastPlans: "Vergangene Pläne",
+  noPastPlans: "Keine vergangenen Pläne.",
   chooser: {
     title: "Was möchtest du hinzufügen?",
     routine: "Routine",

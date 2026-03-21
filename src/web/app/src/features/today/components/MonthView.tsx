@@ -1,12 +1,13 @@
 import { useTranslation } from "react-i18next";
+import type { DayTypeSummary } from "../types";
 
 interface MonthViewProps {
   selectedDate: string; // ISO YYYY-MM-DD — day to highlight as selected
   today: string; // ISO YYYY-MM-DD
   firstDayOfWeek?: string | null;
   displayAnchor?: string; // ISO YYYY-MM-DD — which month to show (defaults to selectedDate)
-  /** Per-day member dot colors: date ISO → array of CSS color strings (hex/var). Max 3 shown + overflow. */
-  dayDots?: Record<string, string[]>;
+  /** Per-day item-type summary for density pips (event/task/routine). */
+  daySummary?: Record<string, DayTypeSummary>;
   onSelectDay: (date: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -76,7 +77,7 @@ export function MonthView({
   today,
   firstDayOfWeek,
   displayAnchor,
-  dayDots,
+  daySummary,
   onSelectDay,
   onPrevMonth,
   onNextMonth,
@@ -178,22 +179,27 @@ export function MonthView({
                   aria-pressed={isSelected}
                 >
                   <span className="coord-month-day-num">{dayNum}</span>
-                  {dayDots && dayDots[iso] && dayDots[iso].length > 0 && (
-                    <span className="coord-month-dots">
-                      {dayDots[iso].slice(0, 3).map((color, idx) => (
-                        <span
-                          key={`${color}-${idx}`}
-                          className="coord-month-dot"
-                          style={{ background: color }}
-                        />
-                      ))}
-                      {dayDots[iso].length > 3 && (
-                        <span className="coord-month-dot-overflow">
-                          +{dayDots[iso].length - 3}
-                        </span>
-                      )}
-                    </span>
-                  )}
+                  {(() => {
+                    const s = daySummary?.[iso];
+                    if (!s || (s.events === 0 && s.tasks === 0 && s.routines === 0)) return null;
+                    return (
+                      <div className="month-cell-pips">
+                        {s.events > 0 && (
+                          <span className="month-cell-pip month-cell-pip--event">
+                            <span className="month-cell-pip-glyph">◆</span>{s.events}
+                          </span>
+                        )}
+                        {s.tasks > 0 && (
+                          <span className="month-cell-pip month-cell-pip--task">
+                            <span className="month-cell-pip-glyph">□</span>{s.tasks}
+                          </span>
+                        )}
+                        {s.routines > 0 && (
+                          <span className="month-cell-pip month-cell-pip--routine" aria-hidden="true" />
+                        )}
+                      </div>
+                    );
+                  })()}
                 </button>
               );
             })}

@@ -5,9 +5,10 @@ interface WeekHeaderProps {
   today: string;  // ISO date string for today
   selectedDate?: string; // Optional: highlight selected date
   onDayClick?: (date: string) => void; // Optional: handle day click
+  dayCounts?: Record<string, number>; // Optional: per-day item count for load indicator
 }
 
-export function WeekHeader({ days, today, selectedDate, onDayClick }: WeekHeaderProps) {
+export function WeekHeader({ days, today, selectedDate, onDayClick, dayCounts }: WeekHeaderProps) {
   const { i18n } = useTranslation("today");
 
   return (
@@ -51,6 +52,12 @@ export function WeekHeader({ days, today, selectedDate, onDayClick }: WeekHeader
             <span className="wg-day-name">{weekday}</span>
             <span className="wg-day-date">{dayNum}</span>
             {isToday && <span className="wg-today-dot" aria-hidden="true" />}
+            {(() => {
+              const count = dayCounts?.[iso.slice(0, 10)] ?? 0;
+              if (count === 0) return null;
+              const tier = count <= 2 ? "low" : count <= 5 ? "medium" : "high";
+              return <span className={`wg-load-bar wg-load-bar--${tier}`} aria-hidden="true" />;
+            })()}
           </div>
         );
       })}

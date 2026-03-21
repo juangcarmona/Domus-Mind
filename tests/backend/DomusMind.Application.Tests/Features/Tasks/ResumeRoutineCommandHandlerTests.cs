@@ -1,6 +1,7 @@
 using DomusMind.Application.Features.Tasks;
 using DomusMind.Application.Features.Tasks.ResumeRoutine;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
@@ -34,7 +35,7 @@ public sealed class ResumeRoutineCommandHandlerTests
             RoutineName.Create(name),
             scope,
             kind,
-            RoutineColor.From("#8B5CF6"),
+            HexColor.From("#8B5CF6"),
             RoutineSchedule.Weekly(
                 new[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
                 new TimeOnly(17, 0)),

@@ -4,6 +4,7 @@ using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Family.ValueObjects;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
@@ -63,7 +64,7 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
             TaskId.New(), familyId,
             TaskTitle.Create("Old Task"), null,
             TaskSchedule.WithDueDate(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2))),
-            TaskColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
         task.ClearDomainEvents();
         db.Set<HouseholdTask>().Add(task);
@@ -87,7 +88,7 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
             CalendarEventId.New(), familyId,
             EventTitle.Create("Morning Standup"), null,
             EventTime.Moment(todayDate, new TimeOnly(14, 0)),
-            EventColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
         db.Set<CalendarEvent>().Add(evt);
         await db.SaveChangesAsync();
@@ -109,7 +110,7 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
             TaskId.New(), familyId,
             TaskTitle.Create("Future Task"), null,
             TaskSchedule.WithDueDate(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30))),
-            TaskColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
         task.ClearDomainEvents();
         db.Set<HouseholdTask>().Add(task);
@@ -133,7 +134,7 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
             RoutineName.Create("Evening Clean"),
             RoutineScope.Household,
             RoutineKind.Cue,
-            RoutineColor.From("#7C3AED"),
+            HexColor.From("#7C3AED"),
             RoutineSchedule.Weekly(new[] { DayOfWeek.Monday }),
             Array.Empty<MemberId>(),
             DateTime.UtcNow);
@@ -165,7 +166,7 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
             TaskTitle.Create("A Task"),
             null,
             TaskSchedule.WithDueDate(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(5))),
-            TaskColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
 
         task.ClearDomainEvents();
@@ -176,7 +177,7 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
             RoutineName.Create("A Routine"),
             RoutineScope.Household,
             RoutineKind.Cue,
-            RoutineColor.From("#0EA5E9"),
+            HexColor.From("#0EA5E9"),
             RoutineSchedule.Weekly(new[] { DayOfWeek.Friday }),
             Array.Empty<MemberId>(),
             DateTime.UtcNow);
@@ -211,7 +212,7 @@ public sealed class GetEnrichedTimelineQueryHandlerTests
                 TaskId.New(), familyId,
                 TaskTitle.Create($"Task {i}"), null,
                 TaskSchedule.WithDueDate(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(i + 1))),
-                TaskColor.From("#3B82F6"),
+                HexColor.From("#3B82F6"),
                 DateTime.UtcNow);
             task.ClearDomainEvents();
             db.Set<HouseholdTask>().Add(task);

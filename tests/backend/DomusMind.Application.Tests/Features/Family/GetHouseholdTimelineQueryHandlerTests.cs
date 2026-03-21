@@ -3,6 +3,7 @@ using DomusMind.Application.Features.Family.GetHouseholdTimeline;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
@@ -32,7 +33,7 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
             CalendarEventId.New(), familyId,
             EventTitle.Create(title), null,
             EventTime.Day(date),
-            EventColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
 
     private static HouseholdTask MakeTask(
@@ -43,7 +44,7 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
             TaskId.New(), familyId,
             TaskTitle.Create(title), null,
             dueDate.HasValue ? TaskSchedule.WithDueDate(dueDate.Value) : TaskSchedule.NoSchedule(),
-            TaskColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
 
     private static Routine MakeRoutine(
@@ -54,7 +55,7 @@ public sealed class GetHouseholdTimelineQueryHandlerTests
             RoutineName.Create(name),
             RoutineScope.Household,
             RoutineKind.Cue,
-            RoutineColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             RoutineSchedule.Weekly(
                 new[] { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday,
                          DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday }),

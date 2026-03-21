@@ -33,7 +33,7 @@ function generateDayRange(startIso: string, endIso: string): string[] {
   return days;
 }
 
-type EventDot = { type: "event" | "task"; title: string };
+type EventDot = { type: "event" | "task"; title: string; color: string };
 
 export function TimelineRuler({
   selectedDate,
@@ -60,6 +60,7 @@ export function TimelineRuler({
         eventMap.get(key)!.push({
           type: entry.entryType === "CalendarEvent" ? "event" : "task",
           title: entry.title,
+          color: entry.color,
         });
       }
     }
@@ -120,7 +121,8 @@ export function TimelineRuler({
                 {dots.slice(0, 5).map((dot, idx) => (
                   <span
                     key={idx}
-                    className={`coord-ruler-dot coord-ruler-dot--${dot.type}`}
+                    className="coord-ruler-dot"
+                    style={{ background: dot.color || (dot.type === "event" ? "var(--primary)" : "var(--accent)") }}
                     title={dot.title}
                   />
                 ))}

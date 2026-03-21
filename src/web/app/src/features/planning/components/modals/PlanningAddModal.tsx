@@ -64,6 +64,7 @@ export function PlanningAddModal({ familyId, members, onClose, onSuccess, initia
           <TaskCrudForm
             mode="create"
             familyId={familyId}
+            members={members}
             onCancel={onClose}
             onSuccess={onSuccess}
           />

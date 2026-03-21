@@ -13,7 +13,8 @@ public sealed record EnrichedTimelineEntry(
     bool IsOverdue,
     bool IsUnassigned,
     Guid? AssigneeId,
-    IReadOnlyCollection<ParticipantProjection>? Participants);
+    IReadOnlyCollection<ParticipantProjection>? Participants,
+    string Color);
 
 public sealed record TimelineGroup(
     string GroupKey,

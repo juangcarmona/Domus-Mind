@@ -17,6 +17,7 @@ export default {
   executionTypeReminderOnly: "Solo promemoria",
   colorLabel: "Colore",
   frequencyLabel: "Frequenza",
+  frequencyDaily: "Giornaliero",
   frequencyWeekly: "Settimanale",
   frequencyMonthly: "Mensile",
   frequencyYearly: "Annuale",

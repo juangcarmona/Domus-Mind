@@ -41,7 +41,7 @@ Members may represent:
 * dependents
 * caregivers
 
-Members participate in responsibilities, plans, chores, and routines.
+Members participate in responsibilities, plans, tasks, and routines.
 
 ---
 
@@ -57,7 +57,7 @@ elderly relatives
 pets
 ```
 
-Dependents generate plans, chores, and responsibilities.
+Dependents generate plans, tasks, and responsibilities.
 
 ---
 
@@ -112,6 +112,10 @@ Plans appear in the **Household Timeline** and communicate what the household is
 
 Plans are the **household language representation** of calendar activities.
 
+Plans are **primarily one-time scheduled commitments** with a specific date, time, and optional participants. Recurring time-bound commitments (such as football practice every Tuesday) may be modeled as Calendar Events with a recurrence rule — they still appear in the household experience as **Plans**.
+
+A **Routine** is fundamentally different from a recurring Plan. A Routine represents repeating *operational household work* (trash, cleaning, bill review). A Plan represents a *scheduled commitment* that places participants at a specific time and place. The distinction is intentional and must be preserved.
+
 ---
 
 ## Event (Internal Model)
@@ -148,8 +152,8 @@ The **Household Timeline** represents the chronological sequence of things affec
 The timeline aggregates entries originating from multiple contexts, including:
 
 * plans
-* chores
 * tasks
+* routines
 * reminders
 
 The timeline answers the question:
@@ -160,44 +164,33 @@ The timeline answers the question:
 
 # Household Work
 
-## Chore (Household Term)
+## Task
 
-A **Chore** is a household-facing term representing an operational responsibility assigned to someone.
+A **Task** is the household concept representing a concrete action that must be completed.
 
 Examples:
 
 ```
-Trash → Juan
-Dishwasher → Lucía
-Laundry → Marta
+Buy groceries
+Prepare school bag
+Pay electricity bill
+Take dog to the vet
+Bring documents
 ```
 
-Chores are visible in the **Household Timeline** and represent ongoing operational work required to keep the household functioning.
+**Task** is both the household-facing term and the internal domain model term. There is no translation between them — a task is a task.
 
-Chores may originate from:
+Tasks:
 
-* routines
-* responsibilities
-* manual creation
+* belong to the **Tasks bounded context**
+* are created explicitly through user action
+* may be assigned to a member
+* carry a due date and a status lifecycle
+* originate from manual creation
 
-Chores are the **household-language representation of Tasks**.
+Tasks appear in the **Household Timeline** and in coordination views (Today board, Week grid).
 
----
-
-## Task (Internal Model)
-
-A **Task** is the internal domain concept representing an action that must be completed.
-
-Tasks belong to the **Tasks bounded context** and may originate from:
-
-* events
-* routines
-* responsibilities
-* manual input
-
-Tasks may be assigned to members.
-
-In the household experience, tasks typically appear as **Chores**.
+> **Historical note:** An earlier version of this document used the term "Chore" as the household-facing equivalent of Task. That distinction has been removed. "Task" is the single term used at all layers.
 
 ---
 
@@ -212,29 +205,30 @@ weekly grocery shopping
 school preparation
 house cleaning
 pet feeding
+weekly trash
+monthly bill review
 ```
 
-A routine defines **how operational work repeats over time**.
+A routine defines **how operational work repeats over time**. Routines have a frequency (daily, weekly, monthly, yearly) and an optional time and scope (household or specific members).
 
-Important clarification:
+Important clarifications:
 
-A routine is **not any recurring activity in the system**.
-
-Specifically:
-
-* routines generate **operational tasks**
+* routines define **recurring operational patterns** — they are not tasks
 * routines belong to the **Tasks context**
-* routines produce tasks according to recurrence rules
+* routines appear in read models (timeline, weekly grid) by being projected on-the-fly against their recurrence schedule
+* routines do **not generate Task aggregates** — tasks arise only from explicit user action
 
-Examples of things that are **not routines**:
+**Routines are not recurring Plans.** The boundary is:
 
-```
-weekly football practice
-monthly dentist appointment
-annual holiday trip
-```
+| Concept | Example | Where it lives |
+|---------|---------|----------------|
+| Routine | Trash every Tuesday | Tasks context |
+| Recurring Plan | Football practice every Tuesday | Calendar context (Event with recurrence rule) |
 
-These are **calendar plans**, not operational routines.
+The key question: *Is this operational household work, or a scheduled attendance commitment?*
+
+* Operational household work → **Routine**
+* Scheduled commitment with participants and a time slot → **Plan** (recurring Calendar Event)
 
 ---
 

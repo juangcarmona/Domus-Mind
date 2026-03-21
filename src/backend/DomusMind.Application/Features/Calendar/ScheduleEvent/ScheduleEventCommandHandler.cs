@@ -7,6 +7,7 @@ using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 
 namespace DomusMind.Application.Features.Calendar.ScheduleEvent;
 
@@ -53,10 +54,10 @@ public sealed class ScheduleEventCommandHandler
             throw new CalendarException(CalendarErrorCode.InvalidInput, ex.Message);
         }
 
-        EventColor color;
+        HexColor color;
         try
         {
-            color = EventColor.From(command.Color ?? "#3B82F6");
+            color = HexColor.From(command.Color ?? "#3B82F6");
         }
         catch (InvalidOperationException ex)
         {

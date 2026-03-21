@@ -25,6 +25,9 @@ public sealed class RoutineSchedule : ValueObject
         Time = time;
     }
 
+    public static RoutineSchedule Daily(TimeOnly? time = null)
+        => new RoutineSchedule(RoutineFrequency.Daily, Array.Empty<DayOfWeek>(), Array.Empty<int>(), null, time);
+
     public static RoutineSchedule Weekly(IEnumerable<DayOfWeek> daysOfWeek, TimeOnly? time = null)
     {
         var values = daysOfWeek.Distinct().ToArray();
@@ -60,6 +63,7 @@ public sealed class RoutineSchedule : ValueObject
     {
         return Frequency switch
         {
+            RoutineFrequency.Daily => true,
             RoutineFrequency.Weekly => DaysOfWeek.Contains(date.DayOfWeek),
             RoutineFrequency.Monthly => DaysOfMonth.Contains(date.Day),
             RoutineFrequency.Yearly => MonthOfYear == date.Month && DaysOfMonth.Contains(date.Day),

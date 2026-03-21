@@ -23,6 +23,9 @@ export default {
   yes: "Sì, annullalo",
   no: "Mantienilo",
   noPlans: "Nessun piano programmato.",
+  showPastPlans: "Mostra piani passati",
+  pastPlans: "Piani passati",
+  noPastPlans: "Nessun piano passato.",
   chooser: {
     title: "Cosa stai aggiungendo?",
     routine: "Routine",

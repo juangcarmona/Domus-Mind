@@ -4,6 +4,7 @@ using DomusMind.Application.Abstractions.Security;
 using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Tasks;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.ValueObjects;
 
@@ -49,10 +50,10 @@ public sealed class CreateTaskCommandHandler
             throw new TasksException(TasksErrorCode.InvalidInput, ex.Message);
         }
 
-        TaskColor taskColor;
+        HexColor taskColor;
         try
         {
-            taskColor = TaskColor.From(command.Color ?? "#3B82F6");
+            taskColor = HexColor.From(command.Color ?? "#3B82F6");
         }
         catch (InvalidOperationException ex)
         {

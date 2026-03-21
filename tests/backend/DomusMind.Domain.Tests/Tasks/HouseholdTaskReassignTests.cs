@@ -1,4 +1,5 @@
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Events;
 using DomusMind.Domain.Tasks.ValueObjects;
@@ -14,7 +15,7 @@ public sealed class HouseholdTaskReassignTests
             TaskId.New(), FamilyId.New(),
             TaskTitle.Create("Clean Kitchen"), null,
             TaskSchedule.WithDueDate(new DateOnly(2026, 4, 1)),
-            TaskColor.From("#3B82F6"), DateTime.UtcNow);
+            HexColor.From("#3B82F6"), DateTime.UtcNow);
         task.Assign(MemberId.New());
         task.ClearDomainEvents();
         return task;
@@ -26,7 +27,7 @@ public sealed class HouseholdTaskReassignTests
             TaskId.New(), FamilyId.New(),
             TaskTitle.Create("Fix Sink"), null,
             TaskSchedule.NoSchedule(),
-            TaskColor.From("#3B82F6"), DateTime.UtcNow);
+            HexColor.From("#3B82F6"), DateTime.UtcNow);
         task.ClearDomainEvents();
         return task;
     }

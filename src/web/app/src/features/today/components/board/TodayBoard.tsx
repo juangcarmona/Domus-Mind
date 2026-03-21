@@ -2,6 +2,9 @@ import { useTranslation } from "react-i18next";
 import type { WeeklyGridResponse, WeeklyGridCell } from "../../types";
 import { weeklyGridItemMappers } from "../grid/weeklyGridItemMappers";
 
+const ACTOR_ROLES = new Set(["Adult", "Caregiver", "Child"]);
+const ROLE_SORT_ORDER: Record<string, number> = { Adult: 0, Caregiver: 0, Child: 1 };
+
 interface TodayBoardProps {
   grid: WeeklyGridResponse | null;
   selectedDate: string; // ISO YYYY-MM-DD
@@ -101,9 +104,17 @@ export function TodayBoard({
     },
   }));
 
+  const actorDays = memberDays
+    .filter(({ member }) => ACTOR_ROLES.has(member.role))
+    .sort(
+      (a, b) =>
+        (ROLE_SORT_ORDER[a.member.role] ?? 9) -
+        (ROLE_SORT_ORDER[b.member.role] ?? 9),
+    );
+
   const hasAnyContent =
     hasSharedItems ||
-    memberDays.some(
+    actorDays.some(
       ({ cell }) =>
         (cell.events?.length ?? 0) > 0 ||
         (cell.tasks?.length ?? 0) > 0 ||
@@ -157,23 +168,40 @@ export function TodayBoard({
       )}
 
       {members.length > 0 && hasAnyContent && (
-        <div className="today-summary-body">
+        <>
+          <div className="today-summary-body">
+            {actorDays.map(({ member, cell }) => (
+              <DayMemberSection
+                key={member.memberId}
+                name={member.name}
+                cell={cell}
+                onItemClick={onItemClick}
+              />
+            ))}
+          </div>
           {hasSharedItems && sharedCell && (
-            <DayMemberSection
-              name={t("day.household")}
-              cell={sharedCell}
-              onItemClick={onItemClick}
-            />
+            <div className="today-household">
+              <div className="today-household-label">{t("day.household")}</div>
+              <div className="today-summary-items">
+                {sharedCell.events?.map((e) =>
+                  weeklyGridItemMappers.eventToItem(e, () =>
+                    onItemClick("event", e.eventId),
+                  ),
+                )}
+                {sharedCell.tasks?.map((task) =>
+                  weeklyGridItemMappers.taskToItem(task, () =>
+                    onItemClick("task", task.taskId),
+                  ),
+                )}
+                {sharedCell.routines?.map((r) =>
+                  weeklyGridItemMappers.routineToItem(r, () =>
+                    onItemClick("routine", r.routineId),
+                  ),
+                )}
+              </div>
+            </div>
           )}
-          {memberDays.map(({ member, cell }) => (
-            <DayMemberSection
-              key={member.memberId}
-              name={member.name}
-              cell={cell}
-              onItemClick={onItemClick}
-            />
-          ))}
-        </div>
+        </>
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 using DomusMind.Domain.Abstractions;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.Events;
 using DomusMind.Domain.Tasks.ValueObjects;
@@ -14,7 +15,7 @@ public sealed class Routine : AggregateRoot<RoutineId>
     public RoutineName Name { get; private set; }
     public RoutineScope Scope { get; private set; }
     public RoutineKind Kind { get; private set; }
-    public RoutineColor Color { get; private set; }
+    public HexColor Color { get; private set; }
     public RoutineSchedule Schedule { get; private set; }
     public RoutineStatus Status { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
@@ -28,7 +29,7 @@ public sealed class Routine : AggregateRoot<RoutineId>
         RoutineName name,
         RoutineScope scope,
         RoutineKind kind,
-        RoutineColor color,
+        HexColor color,
         RoutineSchedule schedule,
         IEnumerable<MemberId> targetMembers,
         DateTime createdAtUtc)
@@ -52,7 +53,7 @@ public sealed class Routine : AggregateRoot<RoutineId>
         RoutineName name,
         RoutineScope scope,
         RoutineKind kind,
-        RoutineColor color,
+        HexColor color,
         RoutineSchedule schedule,
         IEnumerable<MemberId>? targetMembers,
         DateTime createdAtUtc)
@@ -89,7 +90,7 @@ public sealed class Routine : AggregateRoot<RoutineId>
         RoutineName newName,
         RoutineScope newScope,
         RoutineKind newKind,
-        RoutineColor newColor,
+        HexColor newColor,
         RoutineSchedule newSchedule,
         IEnumerable<MemberId>? targetMembers)
     {

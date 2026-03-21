@@ -4,6 +4,7 @@ using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Family.ValueObjects;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
@@ -49,7 +50,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
             CalendarEventId.New(), familyId,
             EventTitle.Create(title), null,
             eventTime,
-            EventColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
         if (participant is not null)
             evt.AddParticipant(participant.Value);
@@ -69,7 +70,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
             TaskId.New(), familyId,
             TaskTitle.Create(title), null,
             schedule,
-            TaskColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
         if (assignee is not null)
             task.Assign(assignee.Value);
@@ -82,7 +83,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
             RoutineName.Create(name),
             RoutineScope.Household,
             RoutineKind.Cue,
-            RoutineColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             RoutineSchedule.Weekly(
                 new[] { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday,
                          DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday }),
@@ -350,7 +351,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
             RoutineName.Create("Wednesday Task"),
             RoutineScope.Members,
             RoutineKind.Scheduled,
-            RoutineColor.From("#FF0000"),
+            HexColor.From("#FF0000"),
             RoutineSchedule.Weekly(new[] { DayOfWeek.Wednesday }),
             new[] { memberId },
             DateTime.UtcNow);
@@ -405,7 +406,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
             RoutineName.Create("Morning Walk"),
             RoutineScope.Household,
             RoutineKind.Scheduled,
-            RoutineColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             RoutineSchedule.Weekly(new[] { DayOfWeek.Monday }),
             null,
             DateTime.UtcNow);
@@ -445,7 +446,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
             RoutineName.Create("Carmen"),
             RoutineScope.Household,
             RoutineKind.Scheduled,
-            RoutineColor.From("#FF8800"),
+            HexColor.From("#FF8800"),
             RoutineSchedule.Weekly(new[] { DayOfWeek.Monday, DayOfWeek.Thursday },
                 new TimeOnly(8, 30)),
             null,

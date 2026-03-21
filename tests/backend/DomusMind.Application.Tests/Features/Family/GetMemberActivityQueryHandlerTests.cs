@@ -6,6 +6,7 @@ using DomusMind.Domain.Family;
 using DomusMind.Domain.Family.ValueObjects;
 using DomusMind.Domain.Responsibilities;
 using DomusMind.Domain.Responsibilities.ValueObjects;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.ValueObjects;
 using DomusMind.Infrastructure.Persistence;
@@ -76,7 +77,7 @@ public sealed class GetMemberActivityQueryHandlerTests
             CalendarEventId.New(), familyId,
             EventTitle.Create("School Trip"), null,
             EventTime.Day(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(3))),
-            EventColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
         evt.AddParticipant(memberId);
         db.Set<Domain.Calendar.CalendarEvent>().Add(evt);
@@ -104,7 +105,7 @@ public sealed class GetMemberActivityQueryHandlerTests
             TaskId.New(), familyId,
             TaskTitle.Create("Fix Fence"), null,
             TaskSchedule.WithDueDate(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1))),
-            TaskColor.From("#3B82F6"),
+            HexColor.From("#3B82F6"),
             DateTime.UtcNow);
         task.Assign(memberId);
         task.ClearDomainEvents();

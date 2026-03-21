@@ -23,6 +23,9 @@ export default {
   yes: "Yes, cancel it",
   no: "Keep it",
   noPlans: "No plans scheduled.",
+  showPastPlans: "Show past plans",
+  pastPlans: "Past plans",
+  noPastPlans: "No past plans.",
   chooser: {
     title: "What are you adding?",
     routine: "Routine",

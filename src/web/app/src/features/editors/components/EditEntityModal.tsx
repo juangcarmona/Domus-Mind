@@ -39,7 +39,7 @@ export function EditEntityModal({ type, id, onClose, onEntitySaved }: EditEntity
       dispatch(fetchRoutines(familyId));
     }
     if (type === "event" && plansStatus === "idle") {
-      dispatch(fetchPlans(familyId));
+      dispatch(fetchPlans({ familyId }));
     }
   }, [dispatch, familyId, plansStatus, routinesStatus, timelineStatus, type]);
 
@@ -84,7 +84,7 @@ export function EditEntityModal({ type, id, onClose, onEntitySaved }: EditEntity
       return;
     }
 
-    await dispatch(fetchPlans(familyId));
+    await dispatch(fetchPlans({ familyId }));
   }
 
   async function handleSuccess() {
@@ -111,6 +111,7 @@ export function EditEntityModal({ type, id, onClose, onEntitySaved }: EditEntity
             taskId={task.entryId}
             initialTitle={task.title}
             initialDueDate={task.effectiveDate}
+            initialColor={task.color}
             onCancel={onClose}
             onSuccess={handleSuccess}
           />

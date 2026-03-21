@@ -23,6 +23,9 @@ export default {
   yes: "是，取消",
   no: "保留",
   noPlans: "暂无计划。",
+  showPastPlans: "查看过去的计划",
+  pastPlans: "过去的计划",
+  noPastPlans: "没有过去的计划。",
   chooser: {
     title: "你在添加什么？",
     routine: "例行",

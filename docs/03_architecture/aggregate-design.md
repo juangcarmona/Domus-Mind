@@ -229,6 +229,7 @@ Participant
 
 - an event must have a scheduled time
 - an event belongs to one family timeline
+- cancelled events cannot be modified
 - reminders must reference an existing event
 - participants must be family members or dependents
 
@@ -239,8 +240,8 @@ Participant
 EventScheduled
 EventRescheduled
 EventCancelled
-ReminderCreated
-ReminderTriggered
+ReminderAdded
+ReminderRemoved
 
 ```
 
@@ -279,17 +280,19 @@ TaskAssignment
 
 - a task must belong to a family
 - a task may have zero or one primary assignee
-- tasks generated from events must reference the originating event
+- completed tasks cannot return to pending
+- cancelled tasks cannot be completed
 
 ## Domain Events
 
 ```
 
 TaskCreated
-TaskCompleted
 TaskAssigned
-TaskGeneratedFromEvent
-TaskGeneratedFromRoutine
+TaskReassigned
+TaskCompleted
+TaskCancelled
+TaskRescheduled
 
 ```
 
@@ -324,7 +327,8 @@ pet feeding
 
 - routines must define recurrence rules
 - routines must belong to a family
-- generated tasks must reference the originating routine
+- supported frequencies: Daily, Weekly, Monthly, Yearly
+- routines are projected on-the-fly; they do not generate Task aggregates
 
 ## Domain Events
 
@@ -332,8 +336,8 @@ pet feeding
 
 RoutineCreated
 RoutineUpdated
-RoutineTriggered
-TaskGeneratedFromRoutine
+RoutinePaused
+RoutineResumed
 
 ```
 

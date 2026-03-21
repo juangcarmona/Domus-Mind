@@ -23,6 +23,9 @@ export default {
   yes: "Oui, l'annuler",
   no: "Le conserver",
   noPlans: "Aucun événement planifié.",
+  showPastPlans: "Afficher les événements passés",
+  pastPlans: "Événements passés",
+  noPastPlans: "Aucun événement passé.",
   chooser: {
     title: "Qu'ajoutez-vous ?",
     routine: "Routine",

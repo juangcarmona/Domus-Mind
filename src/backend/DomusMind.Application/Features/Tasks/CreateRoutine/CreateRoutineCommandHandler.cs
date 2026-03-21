@@ -3,6 +3,7 @@ using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Contracts.Tasks;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
@@ -62,7 +63,7 @@ public sealed class CreateRoutineCommandHandler
         {
             var scope = ParseScope(command.Scope);
             var kind = ParseKind(command.Kind);
-            var color = RoutineColor.From(command.Color);
+            var color = HexColor.From(command.Color);
             var schedule = BuildSchedule(command);
             var targetMembers = (command.TargetMemberIds ?? Array.Empty<Guid>())
                 .Distinct()
@@ -130,6 +131,8 @@ public sealed class CreateRoutineCommandHandler
 
         return frequency switch
         {
+            RoutineFrequency.Daily => RoutineSchedule.Daily(command.Time),
+
             RoutineFrequency.Weekly => RoutineSchedule.Weekly(
                 command.DaysOfWeek ?? Array.Empty<DayOfWeek>(),
                 command.Time),

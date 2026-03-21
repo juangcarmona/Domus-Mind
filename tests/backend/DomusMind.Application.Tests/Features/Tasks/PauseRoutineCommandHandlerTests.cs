@@ -1,6 +1,7 @@
 using DomusMind.Application.Features.Tasks;
 using DomusMind.Application.Features.Tasks.PauseRoutine;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
 using DomusMind.Domain.Tasks.ValueObjects;
@@ -30,7 +31,7 @@ public sealed class PauseRoutineCommandHandlerTests
             RoutineName.Create("Grocery Shopping"),
             RoutineScope.Household,
             RoutineKind.Cue,
-            RoutineColor.From("#8B5CF6"),
+            HexColor.From("#8B5CF6"),
             RoutineSchedule.Weekly(new[] { DayOfWeek.Sunday }, new TimeOnly(11, 0)),
             Array.Empty<MemberId>(),
             DateTime.UtcNow);

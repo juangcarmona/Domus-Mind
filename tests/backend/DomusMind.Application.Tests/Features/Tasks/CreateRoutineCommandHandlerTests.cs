@@ -136,4 +136,35 @@ public sealed class CreateRoutineCommandHandlerTests
         await act.Should().ThrowAsync<TasksException>()
             .Where(e => e.Code == TasksErrorCode.AccessDenied);
     }
+
+    [Fact]
+    public async Task Handle_DailyFrequency_CreatesRoutineWithDailySchedule()
+    {
+        var db = CreateDb();
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new CreateRoutineCommand(
+                "Morning Stretch",
+                Guid.NewGuid(),
+                "Household",
+                "Scheduled",
+                "#10B981",
+                "Daily",
+                Array.Empty<DayOfWeek>(),
+                Array.Empty<int>(),
+                null,
+                null,
+                Array.Empty<Guid>(),
+                Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.Frequency.Should().Be("Daily");
+        result.DaysOfWeek.Should().BeEmpty();
+        result.DaysOfMonth.Should().BeEmpty();
+
+        var saved = await db.Set<Routine>()
+            .SingleOrDefaultAsync(r => r.Id == RoutineId.From(result.RoutineId));
+        saved!.Schedule.Frequency.Should().Be(RoutineFrequency.Daily);
+    }
 }

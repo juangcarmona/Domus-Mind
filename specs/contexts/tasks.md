@@ -30,8 +30,6 @@ This context owns execution of household work.
 ## Owned Concepts
 
 - Task
-- TaskAssignment
-- TaskOrigin
 - Routine
 
 ---
@@ -42,7 +40,8 @@ This context owns execution of household work.
 - a task has at most one primary assignee
 - completed tasks cannot return to pending
 - cancelled tasks cannot be completed
-- routines must define valid recurrence rules
+- routines must define valid recurrence rules (Daily, Weekly, Monthly, Yearly)
+- routines do not generate Task aggregates; they are projected on-the-fly
 
 ---
 
@@ -50,6 +49,7 @@ This context owns execution of household work.
 
 - `TaskCreated`
 - `TaskAssigned`
+- `TaskReassigned`
 - `TaskCompleted`
 - `TaskCancelled`
 - `TaskRescheduled`
@@ -64,8 +64,6 @@ This context owns execution of household work.
 
 - `MemberAdded`
 - `MemberRemoved`
-- `EventScheduled`
-- `EventRescheduled`
 - `PrimaryOwnerAssigned`
 - `ResponsibilityTransferred`
 

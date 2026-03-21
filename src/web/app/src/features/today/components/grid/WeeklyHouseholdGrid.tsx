@@ -39,7 +39,6 @@ export function WeeklyHouseholdGrid({
         selectedDate={selectedDate}
         onDayClick={onDayClick}
         onItemClick={onItemClick}
-        suppressTodaySummary
       />
     </div>
   );

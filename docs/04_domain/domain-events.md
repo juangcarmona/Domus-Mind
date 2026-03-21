@@ -194,10 +194,15 @@ Operational actions.
 
 ```
 TaskCreated
+TaskAssigned
+TaskReassigned
 TaskCompleted
+TaskCancelled
+TaskRescheduled
 RoutineCreated
-RoutineTriggered
-TaskGeneratedFromRoutine
+RoutineUpdated
+RoutinePaused
+RoutineResumed
 ```
 
 ---

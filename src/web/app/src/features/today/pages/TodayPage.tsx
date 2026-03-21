@@ -4,25 +4,16 @@ import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { setSelectedDate } from "../../../store/todaySlice";
 import { fetchTimeline } from "../../../store/timelineSlice";
 import { weekApi } from "../api/weekApi";
-import type { WeeklyGridResponse } from "../types";
+import type { WeeklyGridResponse, DayTypeSummary } from "../types";
 import type { ApiError } from "../../../api/domusmindApi";
 import { EditEntityModal, type EditableEntityType } from "../../editors/components/EditEntityModal";
+import { PlanningAddModal } from "../../planning/components/modals/PlanningAddModal";
 import { TodayBoard } from "../components/board/TodayBoard";
 import { MonthView } from "../components/MonthView";
 import { WeeklyHouseholdGrid } from "../components/grid/WeeklyHouseholdGrid";
 import { TimelineRuler } from "../components/timeline/TimelineRuler";
 
 // ---- Date helpers ----
-
-const DAY_ORDER = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-];
 
 function startOfWeek(d: Date, firstDayOfWeek?: string | null): Date {
   const targetDay = DAY_ORDER.indexOf(
@@ -54,25 +45,18 @@ function addMonths(iso: string, n: number): string {
   return toIsoDate(d);
 }
 
-// ---- Member color palette (deterministic by index) ----
-const MEMBER_COLORS = [
-  "#b79ad9", // primary purple
-  "#f0c872", // accent yellow
-  "#6ec6a0", // teal-green
-  "#e07b84", // salmon
-  "#7bbde0", // sky blue
-  "#e09d6e", // orange
-  "#a0c46e", // lime
+// ---- Shared constants ----
+
+const DAY_ORDER = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
 ];
 
-/** Dot color used for unassigned entries (no assignee, no participants). */
-const UNASSIGNED_DOT_COLOR = "var(--muted)";
-
-function getMemberColor(index: number): string {
-  return MEMBER_COLORS[index % MEMBER_COLORS.length];
-}
-
-// ---- Component ----
 
 export function TodayPage() {
   const dispatch = useAppDispatch();
@@ -111,6 +95,7 @@ export function TodayPage() {
   const [editTarget, setEditTarget] = useState<{ type: EditableEntityType; id: string } | null>(
     null,
   );
+  const [addModal, setAddModal] = useState(false);
 
   // Month grid cache: weekStart → WeeklyGridResponse (for month calendar dots)
   const [monthGridCache, setMonthGridCache] = useState<Record<string, WeeklyGridResponse>>({});
@@ -264,46 +249,26 @@ export function TodayPage() {
     year: "numeric",
   })}`;
 
-  // ---- Month calendar dots: per-day member colors from weekly grid cache ----
-  const monthDayDots = useMemo(() => {
-    const dots: Record<string, string[]> = {};
-    if (Object.keys(monthGridCache).length === 0) return dots;
-
-    const memberIndexMap = new Map<string, number>();
-    members.forEach((m, idx) => memberIndexMap.set(m.memberId, idx));
+  // ---- Month calendar summary: per-day type counts from weekly grid cache ----
+  const monthDaySummary = useMemo(() => {
+    const summary: Record<string, DayTypeSummary> = {};
+    if (Object.keys(monthGridCache).length === 0) return summary;
 
     for (const weekGrid of Object.values(monthGridCache)) {
-      // Household-level shared cells (plans / tasks with no individual assignee)
-      for (const cell of weekGrid.sharedCells ?? []) {
+      const allCells = [
+        ...(weekGrid.sharedCells ?? []),
+        ...((weekGrid.members ?? []).flatMap((m) => m.cells)),
+      ];
+      for (const cell of allCells) {
         const dayKey = cell.date.slice(0, 10);
-        const hasItems =
-          (cell.events?.length ?? 0) > 0 || (cell.tasks?.length ?? 0) > 0;
-        if (hasItems) {
-          if (!dots[dayKey]) dots[dayKey] = [];
-          if (!dots[dayKey].includes(UNASSIGNED_DOT_COLOR)) {
-            dots[dayKey].push(UNASSIGNED_DOT_COLOR);
-          }
-        }
-      }
-      // Per-member cells
-      for (const member of weekGrid.members ?? []) {
-        const idx = memberIndexMap.get(member.memberId) ?? 0;
-        const color = getMemberColor(idx);
-        for (const cell of member.cells) {
-          const dayKey = cell.date.slice(0, 10);
-          const hasItems =
-            (cell.events?.length ?? 0) > 0 || (cell.tasks?.length ?? 0) > 0;
-          if (hasItems) {
-            if (!dots[dayKey]) dots[dayKey] = [];
-            if (!dots[dayKey].includes(color)) {
-              dots[dayKey].push(color);
-            }
-          }
-        }
+        if (!summary[dayKey]) summary[dayKey] = { events: 0, tasks: 0, routines: 0 };
+        summary[dayKey].events += cell.events?.length ?? 0;
+        summary[dayKey].tasks += cell.tasks?.length ?? 0;
+        summary[dayKey].routines += cell.routines?.length ?? 0;
       }
     }
-    return dots;
-  }, [monthGridCache, members]);
+    return summary;
+  }, [monthGridCache]);
 
   return (
     <div className="page-content coord-page">
@@ -383,7 +348,7 @@ export function TodayPage() {
               today={todayIso}
               firstDayOfWeek={firstDayOfWeek}
               displayAnchor={monthAnchor}
-              dayDots={monthDayDots}
+              daySummary={monthDaySummary}
               onSelectDay={handleDaySelect}
               onPrevMonth={() => setMonthAnchor(addMonths(monthAnchor, -1))}
               onNextMonth={() => setMonthAnchor(addMonths(monthAnchor, 1))}
@@ -419,6 +384,25 @@ export function TodayPage() {
                 dispatch(fetchTimeline({ familyId })),
               ]);
             }
+          }}
+        />
+      )}
+      <button
+        className="fab-add"
+        type="button"
+        aria-label={t("addItem")}
+        onClick={() => setAddModal(true)}
+      >
+        +
+      </button>
+      {addModal && (
+        <PlanningAddModal
+          familyId={familyId}
+          members={members}
+          onClose={() => setAddModal(false)}
+          onSuccess={() => {
+            setAddModal(false);
+            fetchGrid(weekStartForSelected);
           }}
         />
       )}

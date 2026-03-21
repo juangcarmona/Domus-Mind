@@ -17,6 +17,7 @@ export default {
   executionTypeReminderOnly: "仅提醒",
   colorLabel: "颜色",
   frequencyLabel: "频率",
+  frequencyDaily: "每天",
   frequencyWeekly: "每周",
   frequencyMonthly: "每月",
   frequencyYearly: "每年",

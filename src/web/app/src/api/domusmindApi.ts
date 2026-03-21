@@ -156,6 +156,7 @@ export interface EnrichedTimelineEntry {
   isUnassigned: boolean;
   assigneeId: string | null;
   participants: ParticipantProjection[] | null;
+  color: string;
 }
 
 export interface TimelineGroup {

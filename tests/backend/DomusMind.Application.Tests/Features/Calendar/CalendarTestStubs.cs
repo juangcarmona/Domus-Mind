@@ -4,6 +4,7 @@ using DomusMind.Domain.Abstractions;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Shared;
 
 namespace DomusMind.Application.Tests.Features.Calendar;
 
@@ -47,6 +48,6 @@ internal static class CalendarTestHelpers
         return Domain.Calendar.CalendarEvent.Create(
             CalendarEventId.New(), familyId,
             EventTitle.Create(title), null,
-            eventTime, EventColor.From("#3B82F6"), DateTime.UtcNow);
+            eventTime, HexColor.From("#3B82F6"), DateTime.UtcNow);
     }
 }

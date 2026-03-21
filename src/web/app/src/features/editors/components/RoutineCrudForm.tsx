@@ -39,7 +39,6 @@ export function RoutineCrudForm({
 
   const [routineName, setRoutineName] = useState(initialRoutine?.name ?? "");
   const [routineScope, setRoutineScope] = useState(initialRoutine?.scope ?? "Household");
-  const [routineKind, setRoutineKind] = useState(initialRoutine?.kind ?? "Scheduled");
   const [routineColor, setRoutineColor] = useState(initialRoutine?.color ?? "#3B82F6");
   const [routineFrequency, setRoutineFrequency] = useState(initialRoutine?.frequency ?? "Weekly");
   const [routineDaysOfWeek, setRoutineDaysOfWeek] = useState<number[]>(initialRoutine?.daysOfWeek ?? []);
@@ -60,7 +59,7 @@ export function RoutineCrudForm({
     const payload = {
       name: routineName.trim(),
       scope: routineScope,
-      kind: routineKind,
+      kind: "Scheduled",
       color: routineColor,
       frequency: routineFrequency,
       daysOfWeek: routineFrequency === "Weekly" ? routineDaysOfWeek : [],
@@ -171,6 +170,7 @@ export function RoutineCrudForm({
               setRoutineMonthOfYear("");
             }}
           >
+            <option value="Daily">{tRoutines("frequencyDaily")}</option>
             <option value="Weekly">{tRoutines("frequencyWeekly")}</option>
             <option value="Monthly">{tRoutines("frequencyMonthly")}</option>
             <option value="Yearly">{tRoutines("frequencyYearly")}</option>
@@ -241,18 +241,6 @@ export function RoutineCrudForm({
             </select>
           </div>
         )}
-        <div className="form-group">
-          <label htmlFor="routine-form-kind">{tRoutines("executionTypeLabel")}</label>
-          <select
-            id="routine-form-kind"
-            className="form-control"
-            value={routineKind}
-            onChange={(e) => setRoutineKind(e.target.value)}
-          >
-            <option value="Scheduled">{tRoutines("executionTypeGeneratesTasks")}</option>
-            <option value="Cue">{tRoutines("executionTypeReminderOnly")}</option>
-          </select>
-        </div>
         <div className="form-group">
           <label htmlFor="routine-form-time">{tRoutines("timeLabel")}</label>
           <input
