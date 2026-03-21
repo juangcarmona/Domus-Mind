@@ -12,6 +12,7 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
     public TaskTitle Title { get; private set; }
     public string? Description { get; private set; }
     public TaskSchedule Schedule { get; private set; }
+    public TaskColor Color { get; private set; }
     public HouseholdTaskStatus Status { get; private set; }
     public MemberId? AssigneeId { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
@@ -22,6 +23,7 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
         TaskTitle title,
         string? description,
         TaskSchedule schedule,
+        TaskColor color,
         DateTime createdAtUtc)
         : base(id)
     {
@@ -29,6 +31,7 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
         Title = title;
         Description = description;
         Schedule = schedule;
+        Color = color;
         Status = HouseholdTaskStatus.Pending;
         CreatedAtUtc = createdAtUtc;
     }
@@ -39,12 +42,24 @@ public sealed class HouseholdTask : AggregateRoot<TaskId>
         TaskTitle title,
         string? description,
         TaskSchedule schedule,
+        TaskColor color,
         DateTime createdAtUtc)
     {
-        var task = new HouseholdTask(id, familyId, title, description, schedule, createdAtUtc);
+        var task = new HouseholdTask(id, familyId, title, description, schedule, color, createdAtUtc);
         task.RaiseDomainEvent(new TaskCreated(
             Guid.NewGuid(), id.Value, familyId.Value, title.Value, schedule, createdAtUtc));
         return task;
+    }
+
+    public void Repaint(TaskColor newColor)
+    {
+        if (Status == HouseholdTaskStatus.Completed)
+            throw new InvalidOperationException("Cannot repaint a completed task.");
+
+        if (Status == HouseholdTaskStatus.Cancelled)
+            throw new InvalidOperationException("Cannot repaint a cancelled task.");
+
+        Color = newColor;
     }
 
     public void Assign(MemberId assigneeId)

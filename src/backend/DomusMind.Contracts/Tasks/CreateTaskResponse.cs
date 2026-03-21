@@ -8,4 +8,5 @@ public sealed record CreateTaskResponse(
     string? DueDate,
     string? DueTime,
     string Status,
+    string Color,
     DateTime CreatedAtUtc);

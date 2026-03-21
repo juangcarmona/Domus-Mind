@@ -139,6 +139,9 @@ export function EditEntityModal({ type, id, onClose, onEntitySaved }: EditEntity
             initialEndClock={event.endTimeValue ?? null}
             initialStartTime={event.startTime}
             initialEndTime={event.endTime}
+            initialColor={event.color}
+            initialParticipantMemberIds={event.participantMemberIds}
+            members={members}
             onCancel={onClose}
             onSuccess={handleSuccess}
           />

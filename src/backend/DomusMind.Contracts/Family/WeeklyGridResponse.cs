@@ -10,6 +10,7 @@ public sealed record WeeklyGridEventItem(
     string? EndDate,
     string? EndTime,
     string Status,
+    string Color,
     IReadOnlyCollection<ParticipantProjection> Participants);
 
 public sealed record WeeklyGridTaskItem(
@@ -17,7 +18,8 @@ public sealed record WeeklyGridTaskItem(
     string Title,
     string? DueDate,
     string? DueTime,
-    string Status);
+    string Status,
+    string Color);
 
 public sealed record WeeklyGridCell(
     string Date,

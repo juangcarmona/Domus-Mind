@@ -33,7 +33,7 @@ public sealed class CreateTaskCommandHandlerTests
         var familyId = Guid.NewGuid();
 
         var result = await handler.Handle(
-            new CreateTaskCommand("Buy milk", familyId, null, null, null, Guid.NewGuid()),
+            new CreateTaskCommand("Buy milk", familyId, null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         result.TaskId.Should().NotBeEmpty();
@@ -49,7 +49,7 @@ public sealed class CreateTaskCommandHandlerTests
         var handler = BuildHandler();
 
         var result = await handler.Handle(
-            new CreateTaskCommand("Take out trash", Guid.NewGuid(), null, "2026-04-10", null, Guid.NewGuid()),
+            new CreateTaskCommand("Take out trash", Guid.NewGuid(), null, "2026-04-10", null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         result.DueDate.Should().Be("2026-04-10");
@@ -62,7 +62,7 @@ public sealed class CreateTaskCommandHandlerTests
         var handler = BuildHandler();
 
         var result = await handler.Handle(
-            new CreateTaskCommand("Pick up kids", Guid.NewGuid(), null, "2026-04-10", "15:00", Guid.NewGuid()),
+            new CreateTaskCommand("Pick up kids", Guid.NewGuid(), null, "2026-04-10", "15:00", null, Guid.NewGuid()),
             CancellationToken.None);
 
         result.DueDate.Should().Be("2026-04-10");
@@ -76,7 +76,7 @@ public sealed class CreateTaskCommandHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new CreateTaskCommand("Take out trash", Guid.NewGuid(), null, null, null, Guid.NewGuid()),
+            new CreateTaskCommand("Take out trash", Guid.NewGuid(), null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         var saved = await db.Set<HouseholdTask>()
@@ -93,7 +93,7 @@ public sealed class CreateTaskCommandHandlerTests
         var handler = BuildHandler();
 
         var act = () => handler.Handle(
-            new CreateTaskCommand(title, Guid.NewGuid(), null, null, null, Guid.NewGuid()),
+            new CreateTaskCommand(title, Guid.NewGuid(), null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<TasksException>()
@@ -107,7 +107,7 @@ public sealed class CreateTaskCommandHandlerTests
         var handler = BuildHandler(auth: auth);
 
         var act = () => handler.Handle(
-            new CreateTaskCommand("Valid Title", Guid.NewGuid(), null, null, null, Guid.NewGuid()),
+            new CreateTaskCommand("Valid Title", Guid.NewGuid(), null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<TasksException>()

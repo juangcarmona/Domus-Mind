@@ -21,4 +21,5 @@ export default {
   completedCancelled: "Completed / Cancelled",
   createError: "Failed to create task",
   unassigned: "unassigned",
+  colorLabel: "Color",
 } as const;

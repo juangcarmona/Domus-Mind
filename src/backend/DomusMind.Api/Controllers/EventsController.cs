@@ -53,6 +53,8 @@ public sealed class EventsController : ControllerBase
                     request.EndDate,
                     request.EndTime,
                     request.Description,
+                    request.Color,
+                    request.ParticipantMemberIds,
                     _currentUser.UserId!.Value),
                 cancellationToken);
 
@@ -118,6 +120,7 @@ public sealed class EventsController : ControllerBase
                     request.EndTime,
                     request.Title,
                     request.Description,
+                    request.Color,
                     _currentUser.UserId!.Value),
                 cancellationToken);
 

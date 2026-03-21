@@ -8,6 +8,7 @@ export interface WeeklyGridEventItem {
   endDate: string | null;
   endTime: string | null;
   status: string;
+  color: string;
   participants: ParticipantProjection[];
 }
 
@@ -16,6 +17,7 @@ export interface WeeklyGridTaskItem {
   title: string;
   dueDate: string | null;
   status: string;
+  color: string;
 }
 
 export interface WeeklyGridRoutineItem {

@@ -69,6 +69,10 @@ public sealed class RescheduleEventCommandHandler
                 calendarEvent.Edit(title, command.Description);
             }
             calendarEvent.Reschedule(newTime);
+            if (command.Color is not null)
+            {
+                calendarEvent.Repaint(EventColor.From(command.Color));
+            }
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("cancelled"))
         {
@@ -95,6 +99,7 @@ public sealed class RescheduleEventCommandHandler
             time,
             endDate,
             endTime,
-            calendarEvent.Status.ToString());
+            calendarEvent.Status.ToString(),
+            calendarEvent.Color.Value);
     }
 }

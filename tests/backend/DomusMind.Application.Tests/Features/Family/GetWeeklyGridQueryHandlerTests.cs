@@ -48,7 +48,9 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var evt = Domain.Calendar.CalendarEvent.Create(
             CalendarEventId.New(), familyId,
             EventTitle.Create(title), null,
-            eventTime, DateTime.UtcNow);
+            eventTime,
+            EventColor.From("#3B82F6"),
+            DateTime.UtcNow);
         if (participant is not null)
             evt.AddParticipant(participant.Value);
         return evt;
@@ -66,7 +68,9 @@ public sealed class GetWeeklyGridQueryHandlerTests
         var task = HouseholdTask.Create(
             TaskId.New(), familyId,
             TaskTitle.Create(title), null,
-            schedule, DateTime.UtcNow);
+            schedule,
+            TaskColor.From("#3B82F6"),
+            DateTime.UtcNow);
         if (assignee is not null)
             task.Assign(assignee.Value);
         return task;

@@ -54,6 +54,8 @@ export const scheduleEvent = createAsyncThunk(
       endDate,
       endTime,
       description,
+      color,
+      participantMemberIds,
     }: {
       familyId: string;
       title: string;
@@ -62,6 +64,8 @@ export const scheduleEvent = createAsyncThunk(
       endDate?: string;
       endTime?: string;
       description?: string;
+      color?: string;
+      participantMemberIds?: string[];
     },
     { rejectWithValue },
   ) => {
@@ -74,6 +78,8 @@ export const scheduleEvent = createAsyncThunk(
         endDate,
         endTime,
         description,
+        color,
+        participantMemberIds,
       });
       return {
         calendarEventId: res.calendarEventId,
@@ -85,7 +91,8 @@ export const scheduleEvent = createAsyncThunk(
         endDate: res.endDate,
         endTimeValue: res.endTime,
         status: res.status,
-        participantMemberIds: [],
+        color: res.color,
+        participantMemberIds: participantMemberIds ?? [],
         participants: [],
       } as FamilyTimelineEventItem;
     } catch (err: unknown) {

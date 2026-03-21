@@ -21,4 +21,5 @@ export default {
   completedCancelled: "完了／キャンセル済み",
   createError: "家事を作成できませんでした",
   unassigned: "未割り当て",
+  colorLabel: "色",
 } as const;

@@ -118,6 +118,7 @@ public sealed class GetWeeklyGridQueryHandler
                             endDate,
                             endTime,
                             e.Status.ToString(),
+                            e.Color.Value,
                             []);
                     })
                     .ToList();
@@ -156,6 +157,7 @@ public sealed class GetWeeklyGridQueryHandler
                                     endDate,
                                     endTime,
                                     e.Status.ToString(),
+                                    e.Color.Value,
                                     participants);
                             })
                             .ToList();
@@ -171,7 +173,8 @@ public sealed class GetWeeklyGridQueryHandler
                                     t.Title.Value,
                                     dueDate,
                                     dueTime,
-                                    t.Status.ToString());
+                                    t.Status.ToString(),
+                                    t.Color.Value);
                             })
                             .ToList();
 

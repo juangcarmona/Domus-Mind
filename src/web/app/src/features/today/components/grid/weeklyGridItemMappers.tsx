@@ -15,6 +15,7 @@ function eventToItem(e: WeeklyGridEventItem, onClick?: () => void) {
       title={e.title}
       time={time}
       status={e.status}
+      color={e.color}
       subtitle={participantNames || undefined}
       onClick={onClick}
     />
@@ -28,6 +29,7 @@ function taskToItem(t: WeeklyGridTaskItem, onClick?: () => void) {
       type="task"
       title={t.title}
       status={t.status}
+      color={t.color}
       onClick={onClick}
     />
   );

@@ -47,6 +47,8 @@ internal static class TaskTestHelpers
         return HouseholdTask.Create(
             TaskId.New(), familyId,
             TaskTitle.Create(title), null,
-            schedule, DateTime.UtcNow);
+            schedule,
+            TaskColor.From("#3B82F6"),
+            DateTime.UtcNow);
     }
 }

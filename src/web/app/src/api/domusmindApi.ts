@@ -176,6 +176,8 @@ export interface ScheduleEventRequest {
   endDate?: string;
   endTime?: string;
   description?: string;
+  color?: string;
+  participantMemberIds?: string[];
 }
 
 export interface ScheduleEventResponse {
@@ -187,6 +189,7 @@ export interface ScheduleEventResponse {
   endDate: string | null;
   endTime: string | null;
   status: string;
+  color: string;
   createdAtUtc: string;
 }
 
@@ -196,6 +199,7 @@ export interface FamilyTimelineEventItem {
   startTime: string;
   endTime: string | null;
   status: string;
+  color: string;
   participantMemberIds: string[];
   participants: ParticipantProjection[];
   date?: string;
@@ -263,6 +267,7 @@ export interface RescheduleEventRequest {
   endTime?: string;
   title?: string;
   description?: string | null;
+  color?: string;
 }
 
 export interface HouseholdAreaItem {
@@ -307,6 +312,7 @@ export interface CreateTaskRequest {
   description?: string;
   dueDate?: string | null;
   dueTime?: string | null;
+  color?: string;
 }
 
 export interface CreateTaskResponse {
@@ -316,6 +322,7 @@ export interface CreateTaskResponse {
   description: string | null;
   dueDate: string | null;
   status: string;
+  color: string;
   createdAtUtc: string;
 }
 
@@ -534,10 +541,11 @@ export const domusmindApi = {
     dueDate: string | null,
     dueTime?: string | null,
     title?: string | null,
+    color?: string | null,
   ) =>
     request<unknown>(`/api/tasks/${taskId}/reschedule`, {
       method: "POST",
-      body: JSON.stringify({ dueDate, dueTime: dueTime ?? null, title: title ?? null }),
+      body: JSON.stringify({ dueDate, dueTime: dueTime ?? null, title: title ?? null, color: color ?? null }),
     }),
 
   /* Languages */

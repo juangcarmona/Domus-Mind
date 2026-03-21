@@ -35,7 +35,7 @@ public sealed class ScheduleEventCommandHandlerTests
         var handler = BuildHandler();
 
         var result = await handler.Handle(
-            new ScheduleEventCommand("School Trip", familyId, startDate.ToString("yyyy-MM-dd"), null, null, null, null, userId),
+            new ScheduleEventCommand("School Trip", familyId, startDate.ToString("yyyy-MM-dd"), null, startDate.ToString("yyyy-MM-dd"), null, null, null, null, userId),
             CancellationToken.None);
 
         result.CalendarEventId.Should().NotBeEmpty();
@@ -54,7 +54,7 @@ public sealed class ScheduleEventCommandHandlerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1));
 
         var result = await handler.Handle(
-            new ScheduleEventCommand("Medical Appointment", familyId, startDate.ToString("yyyy-MM-dd"), null, null, null, null, Guid.NewGuid()),
+            new ScheduleEventCommand("Medical Appointment", familyId, startDate.ToString("yyyy-MM-dd"), null, startDate.ToString("yyyy-MM-dd"), null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         var saved = await db.Set<Domain.Calendar.CalendarEvent>()
@@ -71,7 +71,7 @@ public sealed class ScheduleEventCommandHandlerTests
         var handler = BuildHandler();
 
         var act = () => handler.Handle(
-            new ScheduleEventCommand(title, Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)).ToString("yyyy-MM-dd"), null, null, null, null, Guid.NewGuid()),
+            new ScheduleEventCommand(title, Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)).ToString("yyyy-MM-dd"), null, null, null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<CalendarException>()
@@ -86,7 +86,7 @@ public sealed class ScheduleEventCommandHandlerTests
         var endDate = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(3));
 
         var act = () => handler.Handle(
-            new ScheduleEventCommand("Bad Event", Guid.NewGuid(), startDate.ToString("yyyy-MM-dd"), "18:00", endDate.ToString("yyyy-MM-dd"), "16:00", null, Guid.NewGuid()),
+            new ScheduleEventCommand("Bad Event", Guid.NewGuid(), startDate.ToString("yyyy-MM-dd"), "18:00", endDate.ToString("yyyy-MM-dd"), "16:00", null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<CalendarException>()
@@ -100,7 +100,7 @@ public sealed class ScheduleEventCommandHandlerTests
         var handler = BuildHandler(auth: auth);
 
         var act = () => handler.Handle(
-            new ScheduleEventCommand("Trip", Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)).ToString("yyyy-MM-dd"), null, null, null, null, Guid.NewGuid()),
+            new ScheduleEventCommand("Trip", Guid.NewGuid(), DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)).ToString("yyyy-MM-dd"), null, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)).ToString("yyyy-MM-dd"), null, null, null, null, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<CalendarException>()

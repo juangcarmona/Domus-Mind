@@ -73,6 +73,7 @@ export function PlanningAddModal({ familyId, members, onClose, onSuccess, initia
           <PlanCrudForm
             mode="create"
             familyId={familyId}
+            members={members}
             onCancel={onClose}
             onSuccess={onSuccess}
           />

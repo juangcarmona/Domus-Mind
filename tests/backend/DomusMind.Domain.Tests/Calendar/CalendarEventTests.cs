@@ -16,7 +16,7 @@ public sealed class CalendarEventTests
         var familyId = FamilyId.New();
         var eventTitle = EventTitle.Create(title);
         var eventTime = time ?? EventTime.Day(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)));
-        return Domain.Calendar.CalendarEvent.Create(id, familyId, eventTitle, null, eventTime, DateTime.UtcNow);
+        return Domain.Calendar.CalendarEvent.Create(id, familyId, eventTitle, null, eventTime, EventColor.From("#3B82F6"), DateTime.UtcNow);
     }
 
     // ── Create ─────────────────────────────────────────────────────────────────
@@ -80,7 +80,7 @@ public sealed class CalendarEventTests
         var id = CalendarEventId.New();
         var familyId = FamilyId.New();
         var evt = Domain.Calendar.CalendarEvent.Create(
-            id, familyId, EventTitle.Create("Trip"), null, time, DateTime.UtcNow);
+            id, familyId, EventTitle.Create("Trip"), null, time, EventColor.From("#3B82F6"), DateTime.UtcNow);
 
         evt.Time.Kind.Should().Be(EventTimeKind.Day);
         evt.Time.Date.Should().Be(date);
@@ -96,7 +96,7 @@ public sealed class CalendarEventTests
         var id = CalendarEventId.New();
         var familyId = FamilyId.New();
         var evt = Domain.Calendar.CalendarEvent.Create(
-            id, familyId, EventTitle.Create("Meeting"), null, time, DateTime.UtcNow);
+            id, familyId, EventTitle.Create("Meeting"), null, time, EventColor.From("#3B82F6"), DateTime.UtcNow);
 
         evt.Time.Kind.Should().Be(EventTimeKind.Moment);
         evt.Time.Date.Should().Be(date);
@@ -110,7 +110,7 @@ public sealed class CalendarEventTests
         var familyId = FamilyId.New();
         var time = EventTime.Day(DateOnly.FromDateTime(DateTime.UtcNow.AddHours(2)));
         var evt = Domain.Calendar.CalendarEvent.Create(
-            id, familyId, EventTitle.Create("Trip"), null, time, DateTime.UtcNow);
+            id, familyId, EventTitle.Create("Trip"), null, time, EventColor.From("#3B82F6"), DateTime.UtcNow);
 
         var domainEvt = evt.DomainEvents.OfType<EventScheduled>().Single();
         domainEvt.CalendarEventId.Should().Be(id.Value);

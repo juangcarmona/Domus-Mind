@@ -18,6 +18,9 @@ interface PlanCrudFormProps {
   initialStartTime?: string | null;
   initialEndTime?: string | null;
   initialDescription?: string | null;
+  initialColor?: string | null;
+  initialParticipantMemberIds?: string[];
+  members?: { memberId: string; name: string }[];
   onCancel: () => void;
   onSuccess: () => void | Promise<void>;
 }
@@ -34,6 +37,9 @@ export function PlanCrudForm({
   initialStartTime,
   initialEndTime,
   initialDescription,
+  initialColor,
+  initialParticipantMemberIds,
+  members,
   onCancel,
   onSuccess,
 }: PlanCrudFormProps) {
@@ -59,6 +65,13 @@ export function PlanCrudForm({
       : toLocalTimeInput(initialEndTime),
   );
   const [description, setDescription] = useState(initialDescription ?? "");
+  const [color, setColor] = useState(initialColor ?? "#3B82F6");
+  const [scope, setScope] = useState<"Household" | "Members">(
+    (initialParticipantMemberIds?.length ?? 0) > 0 ? "Members" : "Household",
+  );
+  const [participantMemberIds, setParticipantMemberIds] = useState<string[]>(
+    initialParticipantMemberIds ?? [],
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -94,6 +107,8 @@ export function PlanCrudForm({
           endDate: endDate,
           endTime: endTime || undefined,
           description: description.trim() || undefined,
+          color,
+          participantMemberIds: participantMemberIds.length > 0 ? participantMemberIds : undefined,
         }),
       );
       setSubmitting(false);
@@ -118,6 +133,7 @@ export function PlanCrudForm({
         endTime: endTime || undefined,
         title: title.trim(),
         description: description.trim() || null,
+        color,
       });
       setSubmitting(false);
       await Promise.resolve(onSuccess());
@@ -197,6 +213,64 @@ export function PlanCrudForm({
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
+        <div className="form-group">
+          <label htmlFor="plan-form-color">{tPlans("form.colorLabel")}</label>
+          <input
+            id="plan-form-color"
+            className="form-control"
+            type="color"
+            value={color}
+            onChange={(e) => setColor(e.target.value.toUpperCase())}
+          />
+        </div>
+        {members && members.length > 0 && (
+          <>
+            <div className="form-group">
+              <label htmlFor="plan-form-scope">{tPlans("form.scopeLabel")}</label>
+              <select
+                id="plan-form-scope"
+                className="form-control"
+                value={scope}
+                onChange={(e) => {
+                  const next = e.target.value as "Household" | "Members";
+                  setScope(next);
+                  if (next === "Household") {
+                    setParticipantMemberIds([]);
+                  }
+                }}
+              >
+                <option value="Household">{tPlans("form.scopeHousehold")}</option>
+                <option value="Members">{tPlans("form.scopeMembers")}</option>
+              </select>
+            </div>
+            {scope === "Members" && (
+              <div className="form-group">
+                <label>{tPlans("form.targetMembersLabel")}</label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                  {members.map((m) => (
+                    <label
+                      key={m.memberId}
+                      style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={participantMemberIds.includes(m.memberId)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setParticipantMemberIds((prev) => [...prev, m.memberId]);
+                          } else {
+                            setParticipantMemberIds((prev) => prev.filter((id) => id !== m.memberId));
+                          }
+                        }}
+                      />
+                      {m.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
         {error && <p className="error-msg">{error}</p>}
         <div className="modal-footer">
           <button type="button" className="btn btn-ghost" onClick={onCancel}>

@@ -7,4 +7,5 @@ public sealed record RescheduleEventResponse(
     string? Time,
     string? EndDate,
     string? EndTime,
-    string Status);
+    string Status,
+    string Color);

@@ -12,6 +12,7 @@ interface TaskCrudFormProps {
   taskId?: string;
   initialTitle?: string;
   initialDueDate?: string | null;
+  initialColor?: string | null;
   onCancel: () => void;
   onSuccess: () => void | Promise<void>;
 }
@@ -22,6 +23,7 @@ export function TaskCrudForm({
   taskId,
   initialTitle,
   initialDueDate,
+  initialColor,
   onCancel,
   onSuccess,
 }: TaskCrudFormProps) {
@@ -32,6 +34,7 @@ export function TaskCrudForm({
   const [title, setTitle] = useState(initialTitle ?? "");
   const [dueDate, setDueDate] = useState(toLocalDateInput(initialDueDate));
   const [dueTime, setDueTime] = useState(toLocalTimeInput(initialDueDate));
+  const [color, setColor] = useState(initialColor ?? "#3B82F6");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +55,7 @@ export function TaskCrudForm({
           title: title.trim(),
           dueDate: dueDate || null,
           dueTime: dueTime || null,
+          color,
         }),
       );
       setSubmitting(false);
@@ -74,6 +78,7 @@ export function TaskCrudForm({
         dueDate || null,
         dueTime || null,
         title.trim() || null,
+        color,
       );
       setSubmitting(false);
       await Promise.resolve(onSuccess());
@@ -117,6 +122,16 @@ export function TaskCrudForm({
             type="time"
             value={dueTime}
             onChange={(e) => setDueTime(e.target.value)}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="task-form-color">{tTasks("colorLabel")}</label>
+          <input
+            id="task-form-color"
+            className="form-control"
+            type="color"
+            value={color}
+            onChange={(e) => setColor(e.target.value.toUpperCase())}
           />
         </div>
         {error && <p className="error-msg">{error}</p>}

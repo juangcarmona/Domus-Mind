@@ -9,4 +9,5 @@ public sealed record ScheduleEventResponse(
     string? EndDate,
     string? EndTime,
     string Status,
+    string Color,
     DateTime CreatedAtUtc);
