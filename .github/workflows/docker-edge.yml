@@ -9,8 +9,10 @@ on:
     paths:
       - 'src/backend/**'
       - 'src/web/app/**'
+      - 'deploy/docker-compose.yml'
       - 'DomusMind.slnx'
       - '.github/workflows/docker-edge.yml'
+      - '.github/workflows/release.yml'
   workflow_dispatch:
 
 concurrency:

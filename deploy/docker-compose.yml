@@ -18,7 +18,7 @@ services:
     # Access through the api service only.
 
   api:
-    image: ghcr.io/juangcarmona/domusmind-api:${VERSION:-edge}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-juangcarmona}/domusmind-api:${VERSION:-edge}
     restart: unless-stopped
     depends_on:
       postgres:
@@ -37,7 +37,7 @@ services:
       - "${API_PORT:-8080}:8080"
 
   web:
-    image: ghcr.io/juangcarmona/domusmind-web:${VERSION:-edge}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-juangcarmona}/domusmind-web:${VERSION:-edge}
     restart: unless-stopped
     depends_on:
       - api
