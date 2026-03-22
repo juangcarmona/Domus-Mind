@@ -24,6 +24,7 @@ permissions:
 jobs:
   build-push:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -39,13 +40,24 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # GHCR requires lowercase image names; repository_owner may be mixed-case.
+      - name: Normalise image names
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "API_IMAGE=ghcr.io/${OWNER}/domusmind-api" >> "$GITHUB_ENV"
+          echo "WEB_IMAGE=ghcr.io/${OWNER}/domusmind-web" >> "$GITHUB_ENV"
+
       - name: Build and push API image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: src/backend/DomusMind.Api/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/domusmind-api:edge
+          tags: ${{ env.API_IMAGE }}:edge
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=edge
           cache-from: type=gha,scope=api
           cache-to:   type=gha,scope=api,mode=max
 
@@ -55,6 +67,10 @@ jobs:
           context: src/web/app
           file: src/web/app/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/domusmind-web:edge
+          tags: ${{ env.WEB_IMAGE }}:edge
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=edge
           cache-from: type=gha,scope=web
           cache-to:   type=gha,scope=web,mode=max

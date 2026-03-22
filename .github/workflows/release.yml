@@ -6,9 +6,10 @@ name: release
 
 on:
   push:
+    # Single glob covers stable (v1.0.0) and prerelease (v1.0.0-alpha.1).
+    # Uses * wildcards — GitHub glob does not treat bare + as a quantifier.
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+      - 'v[0-9]*.[0-9]*.[0-9]*'
   workflow_dispatch:
 
 # One release at a time; do NOT cancel in-progress releases.
@@ -16,9 +17,8 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
-permissions:
-  contents: write   # create GitHub Release
-  packages: write   # push to GHCR
+# Per-job permissions are set on each job below; no global grants.
+permissions: {}
 
 # ─────────────────────────────────────────────────────────────────────────────
 jobs:
@@ -29,6 +29,9 @@ jobs:
   parse-version:
     name: Parse version
     runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
     outputs:
       version:        ${{ steps.parse.outputs.version }}
       is_prerelease:  ${{ steps.parse.outputs.is_prerelease }}
@@ -50,23 +53,35 @@ jobs:
             IS_PRERELEASE=false
           fi
 
-          REGISTRY="ghcr.io/${{ github.repository_owner }}"
+          # GHCR requires lowercase image names.
+          OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          REGISTRY="ghcr.io/${OWNER}"
+          MINOR="$(echo "${VERSION}" | cut -d. -f1,2)"
+
+          echo "version=${VERSION}"             >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=${IS_PRERELEASE}" >> "$GITHUB_OUTPUT"
 
           if [ "$IS_PRERELEASE" = "true" ]; then
             # Prerelease: exact tag only — must not move 'latest'
-            TAGS_API="${REGISTRY}/domusmind-api:${VERSION}"
-            TAGS_WEB="${REGISTRY}/domusmind-web:${VERSION}"
+            echo "image_tags_api<<EOF"                         >> "$GITHUB_OUTPUT"
+            echo "${REGISTRY}/domusmind-api:${VERSION}"        >> "$GITHUB_OUTPUT"
+            echo "EOF"                                         >> "$GITHUB_OUTPUT"
+            echo "image_tags_web<<EOF"                         >> "$GITHUB_OUTPUT"
+            echo "${REGISTRY}/domusmind-web:${VERSION}"        >> "$GITHUB_OUTPUT"
+            echo "EOF"                                         >> "$GITHUB_OUTPUT"
           else
             # Stable: exact tag + minor alias (major.minor) + latest
-            MINOR="$(echo "$VERSION" | cut -d. -f1,2)"
-            TAGS_API="${REGISTRY}/domusmind-api:${VERSION},${REGISTRY}/domusmind-api:${MINOR},${REGISTRY}/domusmind-api:latest"
-            TAGS_WEB="${REGISTRY}/domusmind-web:${VERSION},${REGISTRY}/domusmind-web:${MINOR},${REGISTRY}/domusmind-web:latest"
+            echo "image_tags_api<<EOF"                         >> "$GITHUB_OUTPUT"
+            echo "${REGISTRY}/domusmind-api:${VERSION}"        >> "$GITHUB_OUTPUT"
+            echo "${REGISTRY}/domusmind-api:${MINOR}"          >> "$GITHUB_OUTPUT"
+            echo "${REGISTRY}/domusmind-api:latest"            >> "$GITHUB_OUTPUT"
+            echo "EOF"                                         >> "$GITHUB_OUTPUT"
+            echo "image_tags_web<<EOF"                         >> "$GITHUB_OUTPUT"
+            echo "${REGISTRY}/domusmind-web:${VERSION}"        >> "$GITHUB_OUTPUT"
+            echo "${REGISTRY}/domusmind-web:${MINOR}"          >> "$GITHUB_OUTPUT"
+            echo "${REGISTRY}/domusmind-web:latest"            >> "$GITHUB_OUTPUT"
+            echo "EOF"                                         >> "$GITHUB_OUTPUT"
           fi
-
-          echo "version=${VERSION}"               >> "$GITHUB_OUTPUT"
-          echo "is_prerelease=${IS_PRERELEASE}"   >> "$GITHUB_OUTPUT"
-          echo "image_tags_api=${TAGS_API}"       >> "$GITHUB_OUTPUT"
-          echo "image_tags_web=${TAGS_WEB}"       >> "$GITHUB_OUTPUT"
 
   # ---------------------------------------------------------------------------
   # Backend: restore → build → test
@@ -74,6 +89,9 @@ jobs:
   backend:
     name: Backend — build & test
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -99,6 +117,9 @@ jobs:
   web:
     name: Web — build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: src/web/app
@@ -125,7 +146,11 @@ jobs:
   images:
     name: Build & push images
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [parse-version, backend, web]
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
@@ -147,6 +172,10 @@ jobs:
           file: src/backend/DomusMind.Api/Dockerfile
           push: true
           tags: ${{ needs.parse-version.outputs.image_tags_api }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ needs.parse-version.outputs.version }}
           cache-from: type=gha,scope=api
           cache-to:   type=gha,scope=api,mode=max
 
@@ -157,6 +186,10 @@ jobs:
           file: src/web/app/Dockerfile
           push: true
           tags: ${{ needs.parse-version.outputs.image_tags_web }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ needs.parse-version.outputs.version }}
           cache-from: type=gha,scope=web
           cache-to:   type=gha,scope=web,mode=max
 
@@ -166,7 +199,10 @@ jobs:
   github-release:
     name: GitHub Release
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: [parse-version, images]
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
