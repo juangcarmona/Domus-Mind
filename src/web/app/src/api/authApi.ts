@@ -1,5 +1,4 @@
-// Base URL is proxied via Vite in dev, or set explicitly in prod.
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const BASE_URL = "";
 
 export interface ApiError {
   status: number;

@@ -1,7 +1,14 @@
 # Build context: repository root (e.g., /path/to/repo-root)
-# docker build -f src/backend/DomusMind.Api/Dockerfile -t domusmind-api .
+# docker build -f src/backend/DomusMind.Api/Dockerfile -t domusmind .
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM node:24-alpine AS web-build
+WORKDIR /src/web/app
+COPY src/web/app/package.json src/web/app/package-lock.json ./
+RUN npm ci
+COPY src/web/app/ ./
+RUN npm run build
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS backend-build
 WORKDIR /src
 
 # Copy project files first — restore layer is cached until any .csproj changes
@@ -11,23 +18,19 @@ COPY src/backend/DomusMind.Contracts/DomusMind.Contracts.csproj             src/
 COPY src/backend/DomusMind.Domain/DomusMind.Domain.csproj                   src/backend/DomusMind.Domain/
 COPY src/backend/DomusMind.Infrastructure/DomusMind.Infrastructure.csproj   src/backend/DomusMind.Infrastructure/
 
-RUN dotnet restore src/backend/DomusMind.Api/DomusMind.Api.csproj
-
-# Copy source and publish
+# Copy backend source and pre-built frontend dist for publish
 COPY src/backend/ src/backend/
+COPY --from=web-build /src/web/app/dist/ src/web/app/dist/
 RUN dotnet publish src/backend/DomusMind.Api/DomusMind.Api.csproj \
     -c Release \
-    -o /app/publish \
-    --no-restore
+    -o /app/publish
 
-# ────────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=backend-build /app/publish .
 
-# HTTP only — TLS is terminated by the reverse proxy / docker host
 EXPOSE 8080
-ENV ASPNETCORE_URLS=http://+:8080 \
+ENV ASPNETCORE_URLS=http://0.0.0.0:8080 \
     ASPNETCORE_ENVIRONMENT=Production
 
 ENTRYPOINT ["dotnet", "DomusMind.Api.dll"]

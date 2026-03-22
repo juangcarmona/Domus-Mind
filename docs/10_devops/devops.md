@@ -14,15 +14,14 @@ This document defines the application lifecycle for that model: from code commit
 
 DomusMind is deployed as a Docker Compose stack.
 
-The production stack includes three services:
+The production stack includes two services:
 
 | Service | Image | Purpose |
 |---|---|---|
 | `postgres` | `postgres:16-alpine` | Relational database (family state, events, auth) |
-| `domusmind-api` | `ghcr.io/domusmind/api` | ASP.NET Core modular monolith |
-| `domusmind-web` | `ghcr.io/domusmind/web` | React SPA served via nginx |
+| `domusmind` | `ghcr.io/<owner>/domusmind` | ASP.NET Core app serving API and static web |
 
-The web app and API are the only ingress surfaces. PostgreSQL is internal to the Docker network — it is never exposed to the host unless explicitly configured.
+The DomusMind app is the ingress surface. PostgreSQL is internal to the Docker network — it is never exposed to the host unless explicitly configured.
 
 ---
 
@@ -76,28 +75,18 @@ services:
       retries: 5
     restart: unless-stopped
 
-  api:
-    image: ghcr.io/domusmind/api:${VERSION:-latest}
+  domusmind:
+    image: ghcr.io/${IMAGE_OWNER}/domusmind:${VERSION:-latest}
     environment:
       ConnectionStrings__domusmind: Host=postgres;Database=domusmind;Username=${DB_USER};Password=${DB_PASSWORD}
-      Jwt__Secret: ${JWT_SECRET}
+      Jwt__SigningKey: ${JWT_SECRET}
       Jwt__Issuer: ${JWT_ISSUER:-domusmind}
-      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_URLS: http://0.0.0.0:8080
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "${API_PORT:-8080}:8080"
-    restart: unless-stopped
-
-  web:
-    image: ghcr.io/domusmind/web:${VERSION:-latest}
-    environment:
-      VITE_API_BASE_URL: ${API_BASE_URL}
-    depends_on:
-      - api
-    ports:
-      - "${WEB_PORT:-3000}:3000"
+      - "${APP_PORT:-24365}:8080"
     restart: unless-stopped
 
 volumes:
@@ -122,10 +111,8 @@ Required variables:
 | `DB_PASSWORD` | PostgreSQL password | *(generate a strong password)* |
 | `JWT_SECRET` | JWT signing secret, minimum 32 characters | *(generate randomly)* |
 | `JWT_ISSUER` | Token issuer identifier | `domusmind` |
-| `API_BASE_URL` | URL the web app uses to reach the API | `https://api.domusmind.home` |
 | `VERSION` | Image version to run | `1.0.0` or `latest` |
-| `API_PORT` | Host port for the API | `8080` |
-| `WEB_PORT` | Host port for the web app | `3000` |
+| `APP_PORT` | Host port for the DomusMind app | `24365` |
 
 The `JWT_SECRET` must be generated per installation. DomusMind may provide a setup helper command in a future release (see Open Decisions).
 
@@ -175,11 +162,10 @@ Users who want to control their own update schedule pin to a specific version in
 
 1. Restore and build the .NET solution
 2. Run backend unit and integration tests
-3. Build and test the React frontend
-4. Build the `api` Docker image and push to `ghcr.io/domusmind/api` with version tags
-5. Build the `web` Docker image and push to `ghcr.io/domusmind/web` with version tags
-6. Generate release notes from the commit log since the previous tag
-7. Publish a GitHub Release with:
+3. Run frontend build validation as part of the unified container build
+4. Build the `domusmind` Docker image and push to `ghcr.io/<owner>/domusmind` with version tags
+5. Generate release notes from the commit log since the previous tag
+6. Publish a GitHub Release with:
    - `docker-compose.yml`
    - `.env.example`
    - `CHANGELOG.md` entry for this version
@@ -209,7 +195,7 @@ docker compose pull
 # 5. Restart the stack
 docker compose up -d
 
-# Migrations run automatically on API startup.
+# Migrations run automatically on app startup.
 # The stack is live within seconds.
 ```
 
@@ -219,19 +205,11 @@ No CLI tooling, no package manager, no cloud account.
 
 ## Reverse Proxy Integration
 
-DomusMind is designed to sit behind a reverse proxy for HTTPS termination and external access. The stack itself serves plain HTTP within the Docker network.
+DomusMind is designed to sit behind a reverse proxy for HTTPS termination and external access. The stack itself serves plain HTTP from a single app container.
 
-Recommended patterns:
-
-**Separate subdomains (cleanest):**
-- `https://domusmind.home.example.com` → `http://[host]:3000` (web)
-- `https://api.domusmind.home.example.com` → `http://[host]:8080` (API)
-- Set `API_BASE_URL=https://api.domusmind.home.example.com` in `.env`
-
-**Single domain with path routing (avoid CORS configuration):**
-- `https://domusmind.home.example.com` → web (root)
-- `https://domusmind.home.example.com/api` → API (`/api` prefix)
-- Requires `VITE_API_BASE_URL=/api` and the API configured with a base path
+Recommended pattern:
+- `https://domusmind.home.example.com` → `http://[host]:24365` (or your configured `APP_PORT`)
+- API remains available under `/api` on the same origin
 
 Compatible reverse proxies: Nginx Proxy Manager, Caddy, Traefik, HAProxy, Home Assistant Nginx Add-on.
 
@@ -283,5 +261,5 @@ Patch releases are unscheduled and released as needed.
 | OD-2 | Should images be on Docker Hub (public, no auth to pull) or ghcr.io (GitHub-linked)? | ghcr.io is free for public repos; Docker Hub has wider tooling support |
 | OD-3 | Should DomusMind provide a `domusmind-setup` CLI to generate `.env` and validate the config? | Reduces friction for non-technical users |
 | OD-4 | First-run bootstrap: is there an admin registration page, or does the first `CreateFamily` call auto-promote the user? | Relevant to the initial onboarding UX |
-| OD-5 | Should the web app be served from its own nginx container or should the API serve the built SPA? | Separate container is cleaner; same container reduces surface area |
+| OD-5 | Should the web app be served from its own nginx container or should the API serve the built SPA? | Resolved: API serves the built SPA in self-hosted packaging |
 | OD-6 | Should DomusMind publish a Watchtower-compatible label scheme for automatic update notifications? | Optional convenience for technically-minded home users |

@@ -1,6 +1,6 @@
 # DomusMind — Self-hosted Installation
 
-DomusMind runs as a Docker Compose stack: **postgres**, **api**, and **web**.
+DomusMind runs as a Docker Compose stack: **postgres** and **domusmind**.
 
 ## Prerequisites
 
@@ -31,8 +31,8 @@ cp .env.example .env
 # 5. Start the stack
 docker compose up -d
 
-# 6. Open the web UI
-#    http://localhost        (or http://localhost:${WEB_PORT} if you changed WEB_PORT)
+# 6. Open the app
+#    http://localhost:${APP_PORT}
 ```
 
 ## Image tags
@@ -52,7 +52,7 @@ docker compose pull
 docker compose up -d
 ```
 
-Migrations run automatically on API startup. Back up your `postgres_data`
+Migrations run automatically on app startup. Back up your `postgres_data`
 volume before upgrading.
 
 ## Volumes
@@ -73,8 +73,7 @@ docker run --rm \
 
 ```bash
 # View logs
-docker compose logs -f api
-docker compose logs -f web
+docker compose logs -f domusmind
 
 # Check configuration before starting
 docker compose config

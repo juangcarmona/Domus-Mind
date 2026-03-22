@@ -15,10 +15,10 @@ services:
       timeout: 5s
       retries: 5
     # Postgres is intentionally not exposed on a host port.
-    # Access through the api service only.
+    # Access through the domusmind service only.
 
-  api:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-juangcarmona}/domusmind-api:${VERSION:-edge}
+  domusmind:
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-juangcarmona}/domusmind:${VERSION:-edge}
     restart: unless-stopped
     depends_on:
       postgres:
@@ -34,19 +34,7 @@ services:
       # BootstrapAdmin__Email:        ${BOOTSTRAP_ADMIN_EMAIL}
       # BootstrapAdmin__Password:     ${BOOTSTRAP_ADMIN_PASSWORD}
     ports:
-      - "${API_PORT:-8080}:8080"
-
-  web:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-juangcarmona}/domusmind-web:${VERSION:-edge}
-    restart: unless-stopped
-    depends_on:
-      - api
-    environment:
-      # API_BASE_URL is injected into the nginx reverse-proxy template at
-      # container start. It must point to the api service on the docker network.
-      API_BASE_URL: ${API_BASE_URL:-http://api:8080}
-    ports:
-      - "${WEB_PORT:-80}:80"
+      - "${APP_PORT:-24365}:8080"
 
 volumes:
   postgres_data:

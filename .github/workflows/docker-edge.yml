@@ -46,33 +46,18 @@ jobs:
       - name: Normalise image names
         run: |
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          echo "API_IMAGE=ghcr.io/${OWNER}/domusmind-api" >> "$GITHUB_ENV"
-          echo "WEB_IMAGE=ghcr.io/${OWNER}/domusmind-web" >> "$GITHUB_ENV"
+          echo "DOMUSMIND_IMAGE=ghcr.io/${OWNER}/domusmind" >> "$GITHUB_ENV"
 
-      - name: Build and push API image
+      - name: Build and push DomusMind image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: src/backend/DomusMind.Api/Dockerfile
           push: true
-          tags: ${{ env.API_IMAGE }}:edge
+          tags: ${{ env.DOMUSMIND_IMAGE }}:edge
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.version=edge
-          cache-from: type=gha,scope=api
-          cache-to:   type=gha,scope=api,mode=max
-
-      - name: Build and push web image
-        uses: docker/build-push-action@v6
-        with:
-          context: src/web/app
-          file: src/web/app/Dockerfile
-          push: true
-          tags: ${{ env.WEB_IMAGE }}:edge
-          labels: |
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.version=edge
-          cache-from: type=gha,scope=web
-          cache-to:   type=gha,scope=web,mode=max
+          cache-from: type=gha,scope=domusmind
+          cache-to:   type=gha,scope=domusmind,mode=max

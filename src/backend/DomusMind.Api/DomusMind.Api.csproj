@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <FrontendDistDir>$(MSBuildProjectDirectory)/../../web/app/dist</FrontendDistDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +20,13 @@
     <ProjectReference Include="..\DomusMind.Application\DomusMind.Application.csproj" />
     <ProjectReference Include="..\DomusMind.Contracts\DomusMind.Contracts.csproj" />
     <ProjectReference Include="..\DomusMind.Infrastructure\DomusMind.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(FrontendDistDir)')">
+    <Content Include="$(FrontendDistDir)/**/*">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <LinkBase>wwwroot</LinkBase>
+    </Content>
   </ItemGroup>
 
 </Project>
