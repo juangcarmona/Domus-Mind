@@ -1,0 +1,52 @@
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB:       domusmind
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d domusmind"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Postgres is intentionally not exposed on a host port.
+    # Access through the api service only.
+
+  api:
+    image: ghcr.io/${GHCR_OWNER}/domusmind-api:${VERSION:-edge}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__domusmind: "Host=postgres;Database=domusmind;Username=${DB_USER};Password=${DB_PASSWORD}"
+      Jwt__SigningKey: ${JWT_SECRET}
+      Jwt__Issuer:    ${JWT_ISSUER:-domusmind}
+      Jwt__Audience:  ${JWT_ISSUER:-domusmind}
+      # First-run bootstrap admin — disable after initial setup.
+      # BootstrapAdmin__Enabled:     true
+      # BootstrapAdmin__Email:        ${BOOTSTRAP_ADMIN_EMAIL}
+      # BootstrapAdmin__Password:     ${BOOTSTRAP_ADMIN_PASSWORD}
+    ports:
+      - "${API_PORT:-8080}:8080"
+
+  web:
+    image: ghcr.io/${GHCR_OWNER}/domusmind-web:${VERSION:-edge}
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      # API_BASE_URL is injected into the nginx reverse-proxy template at
+      # container start. It must point to the api service on the docker network.
+      API_BASE_URL: ${API_BASE_URL:-http://api:8080}
+    ports:
+      - "${WEB_PORT:-80}:80"
+
+volumes:
+  postgres_data:

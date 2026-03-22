@@ -1,0 +1,23 @@
+server {
+    listen       80;
+    server_name  _;
+    root         /usr/share/nginx/html;
+    index        index.html;
+
+    # Proxy /api/* requests to the backend.
+    # ${API_BASE_URL} is replaced by envsubst at container start (see Dockerfile).
+    # Default in docker-compose.yml: http://api:8080 (internal docker network).
+    location /api/ {
+        proxy_pass         ${API_BASE_URL};
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_read_timeout 60s;
+    }
+
+    # SPA fallback — serve index.html for all non-file routes
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
