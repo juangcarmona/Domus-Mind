@@ -17,7 +17,7 @@ DomusMind runs as a Docker Compose stack: **postgres**, **api**, and **web**.
 cp .env.example .env
 
 # 3. Edit .env and fill in at minimum:
-#    GHCR_OWNER   — GitHub username or org that published the release
+#    IMAGE_OWNER  — GitHub username or org that published the release
 #    DB_PASSWORD  — a strong random password for the database
 #    JWT_SECRET   — at least 32 random characters (openssl rand -hex 32)
 #    VERSION      — the release tag without the leading v, e.g. 1.0.0
