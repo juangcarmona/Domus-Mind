@@ -33,25 +33,6 @@ Household identity and membership.
 
 ---
 
-# Responsibilities
-
-Household ownership structure.
-
-| Slice | Phase |
-|-------|-------|
-| create-responsibility-domain | V1 |
-| assign-primary-owner | V1 |
-| assign-secondary-owner | V1 |
-| transfer-responsibility | V1 |
-| view-responsibility-balance | V1.1 |
-| detect-overload | V1.1 |
-| view-responsibility-visibility | V1.1 |
-| suggest-owner | V1.1 |
-| rebalance-responsibilities | V2+ |
-| reassign-responsibility | V2+ |
-
----
-
 # Calendar
 
 Planning and coordination.
@@ -101,8 +82,7 @@ Household coordination surfaces.
 | view-family-timeline-enriched | V1 |
 | view-weekly-household-grid | V1 |
 | view-member-activity | V1.1 |
-| view-responsibility-balance | V1.1 |
-| view-responsibility-overload | V1.1 |
+| view-household-areas | V1.1 |
 
 ---
 
@@ -127,4 +107,3 @@ Operational and metadata capabilities.
 |-------|-------|
 | view-supported-languages | V1 |
 | system-health-check | V1 |
-

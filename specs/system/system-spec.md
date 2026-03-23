@@ -16,14 +16,15 @@ It is the entry point for executable product scope.
 
 ## V1 Scope
 
-DomusMind V1 includes four core bounded contexts:
+DomusMind V1 includes three core bounded contexts:
 
 - Family
-- Responsibilities
 - Calendar
 - Tasks
 
 These contexts provide the minimum viable household operating model.
+
+Areas are a lightweight supporting concept used for optional classification inside timeline-oriented read models.
 
 ---
 
@@ -32,11 +33,11 @@ These contexts provide the minimum viable household operating model.
 V1 supports the following capability groups:
 
 - family structure management
-- responsibility ownership
 - event scheduling
 - task execution
 - routine management
 - unified family timeline
+- optional classification of entries using areas
 
 ---
 
@@ -45,24 +46,23 @@ V1 supports the following capability groups:
 ### Family
 Owns household identity and structure.
 
-### Responsibilities
-Owns accountability and ownership of household domains.
-
 ### Calendar
 Owns events, schedules, participants, and reminders.
 
 ### Tasks
 Owns tasks, routines, assignment, and completion.
 
+### Areas
+Lightweight classification used by read models to improve recognition and filtering.
+
 ---
 
 ## Context Dependencies
 
-- Responsibilities depends on Family
 - Calendar depends on Family
 - Tasks depends on Family
 - Tasks may react to Calendar events
-- Tasks may reference Responsibility domains
+- Areas are a supporting concept inside Calendar, Timeline, and Tasks read models
 
 ---
 
@@ -71,12 +71,6 @@ Owns tasks, routines, assignment, and completion.
 ### Family
 - create-family
 - add-member
-
-### Responsibilities
-- create-responsibility-domain
-- assign-primary-owner
-- assign-secondary-owner
-- transfer-responsibility
 
 ### Calendar
 - schedule-event
@@ -99,6 +93,9 @@ Owns tasks, routines, assignment, and completion.
 - update-routine
 - pause-routine
 - resume-routine
+
+### Supporting Read Models
+- get-household-areas
 
 ---
 
@@ -132,11 +129,11 @@ The following are explicitly outside V1:
 
 Every feature spec must map to:
 
-- one bounded context
-- one aggregate
+- one bounded context when it mutates domain state
+- one aggregate when it mutates domain state
 - one vertical slice
 
-No feature may bypass aggregate boundaries.
+Supporting read models may compose data without introducing a new bounded context.
 
 ---
 
@@ -146,8 +143,8 @@ DomusMind V1 is complete when:
 
 - household identity can be created
 - members can be managed
-- responsibilities can be assigned
 - events can be scheduled
 - tasks can be executed
 - routines can be maintained
 - timeline can be queried
+- entries can optionally be classified with areas where available

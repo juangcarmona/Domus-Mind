@@ -157,12 +157,16 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
 
                     b.ToTable("family_members", (string)null);
                 });
-
-            modelBuilder.Entity("DomusMind.Domain.Responsibilities.ResponsibilityDomain", b =>
+            modelBuilder.Entity("DomusMind.Domain.Areas.Area", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("color");
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone")
@@ -178,18 +182,9 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
-                    b.Property<Guid?>("PrimaryOwnerId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("primary_owner_id");
-
-                    b.Property<string>("_secondaryOwnerIds")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("secondary_owner_ids");
-
                     b.HasKey("Id");
 
-                    b.ToTable("responsibility_domains", (string)null);
+                    b.ToTable("areas", (string)null);
                 });
 
             modelBuilder.Entity("DomusMind.Domain.Tasks.HouseholdTask", b =>

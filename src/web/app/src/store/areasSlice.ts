@@ -30,69 +30,6 @@ export const fetchAreas = createAsyncThunk(
   },
 );
 
-export const createArea = createAsyncThunk(
-  "areas/create",
-  async (
-    { familyId, name }: { familyId: string; name: string },
-    { rejectWithValue },
-  ) => {
-    try {
-      const res = await domusmindApi.createArea({ name, familyId });
-      return {
-        areaId: res.responsibilityDomainId,
-        name: res.name,
-        primaryOwnerId: null,
-        primaryOwnerName: null,
-        secondaryOwnerIds: [],
-      } as HouseholdAreaItem;
-    } catch (err: unknown) {
-      return rejectWithValue(
-        (err as { message?: string }).message ?? "Failed to create area",
-      );
-    }
-  },
-);
-
-export const assignPrimaryOwner = createAsyncThunk(
-  "areas/assignPrimary",
-  async (
-    { areaId, memberId, familyId }: { areaId: string; memberId: string; familyId: string },
-    { rejectWithValue, dispatch },
-  ) => {
-    try {
-      await domusmindApi.assignPrimaryOwner(areaId, { memberId });
-      dispatch(fetchAreas(familyId));
-      return { areaId, memberId };
-    } catch (err: unknown) {
-      return rejectWithValue(
-        (err as { message?: string }).message ?? "Failed to assign owner",
-      );
-    }
-  },
-);
-
-export const transferArea = createAsyncThunk(
-  "areas/transfer",
-  async (
-    {
-      areaId,
-      newPrimaryOwnerId,
-      familyId,
-    }: { areaId: string; newPrimaryOwnerId: string; familyId: string },
-    { rejectWithValue, dispatch },
-  ) => {
-    try {
-      await domusmindApi.transferArea(areaId, { newPrimaryOwnerId });
-      dispatch(fetchAreas(familyId));
-      return { areaId, newPrimaryOwnerId };
-    } catch (err: unknown) {
-      return rejectWithValue(
-        (err as { message?: string }).message ?? "Failed to transfer area",
-      );
-    }
-  },
-);
-
 const areasSlice = createSlice({
   name: "areas",
   initialState,
@@ -110,9 +47,6 @@ const areasSlice = createSlice({
       .addCase(fetchAreas.rejected, (state, action) => {
         state.status = "error";
         state.error = action.payload as string;
-      })
-      .addCase(createArea.fulfilled, (state, action) => {
-        state.items.push(action.payload);
       });
   },
 });

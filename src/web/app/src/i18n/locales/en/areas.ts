@@ -1,17 +1,6 @@
 export default {
   title: "Areas",
-  add: "+ New area",
-  createHeading: "Create area",
-  nameLabel: "Area name",
-  namePlaceholder: "e.g. Finance, School, Maintenance",
   loading: "Loading areas…",
   empty: "No areas yet.",
-  emptyHint: "Areas define who is responsible for what in your household.",
-  owner: "Owner",
-  noOwner: "No owner assigned",
-  secondary: "secondary",
-  assign: "Assign owner",
-  transfer: "Transfer ownership",
-  responsible: "Person responsible",
-  createError: "Failed to create area",
+  emptyHint: "Areas are lightweight labels that help group and visually organize household activity.",
 } as const;

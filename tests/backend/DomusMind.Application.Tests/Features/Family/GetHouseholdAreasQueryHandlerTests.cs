@@ -1,14 +1,13 @@
-using DomusMind.Application.Features.Responsibilities;
-using DomusMind.Application.Features.Responsibilities.GetHouseholdAreas;
+using DomusMind.Application.Features.Family;
+using DomusMind.Application.Features.Family.GetHouseholdAreas;
+using DomusMind.Domain.Areas;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Family.ValueObjects;
-using DomusMind.Domain.Responsibilities;
-using DomusMind.Domain.Responsibilities.ValueObjects;
 using DomusMind.Infrastructure.Persistence;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
-namespace DomusMind.Application.Tests.Features.Responsibilities;
+namespace DomusMind.Application.Tests.Features.Family;
 
 public sealed class GetHouseholdAreasQueryHandlerTests
 {
@@ -19,8 +18,8 @@ public sealed class GetHouseholdAreasQueryHandlerTests
 
     private static GetHouseholdAreasQueryHandler BuildHandler(
         DomusMindDbContext db,
-        StubResponsibilitiesAuthorizationService? auth = null)
-        => new(db, auth ?? new StubResponsibilitiesAuthorizationService());
+        StubFamilyTimelineAuthorizationService? auth = null)
+        => new(db, auth ?? new StubFamilyTimelineAuthorizationService());
 
     private static Domain.Family.Family MakeFamily(FamilyId familyId, MemberId memberId, string name = "Alice")
     {
@@ -30,29 +29,36 @@ public sealed class GetHouseholdAreasQueryHandlerTests
         return family;
     }
 
-    private static ResponsibilityDomain MakeDomain(FamilyId familyId, string name, MemberId? owner = null)
-    {
-        var d = ResponsibilityDomain.Create(
-            ResponsibilityDomainId.New(), familyId,
-            ResponsibilityAreaName.Create(name), DateTime.UtcNow);
-        if (owner.HasValue) d.AssignPrimaryOwner(owner.Value);
-        d.ClearDomainEvents();
-        return d;
-    }
+    private static Area MakeArea(FamilyId familyId, string name, string? color = null)
+        => new(Guid.NewGuid(), familyId, name, color, DateTime.UtcNow);
 
     [Fact]
-    public async Task Handle_AccessDenied_ThrowsResponsibilitiesException()
+    public async Task Handle_AccessDenied_ThrowsFamilyException()
     {
         var db = CreateDb();
-        var auth = new StubResponsibilitiesAuthorizationService { CanAccess = false };
+        var auth = new StubFamilyTimelineAuthorizationService { CanAccess = false };
         var handler = BuildHandler(db, auth);
 
         var act = () => handler.Handle(
             new GetHouseholdAreasQuery(Guid.NewGuid(), Guid.NewGuid()),
             CancellationToken.None);
 
-        await act.Should().ThrowAsync<ResponsibilitiesException>()
-            .Where(e => e.Code == ResponsibilitiesErrorCode.AccessDenied);
+        await act.Should().ThrowAsync<FamilyException>()
+            .Where(e => e.Code == FamilyErrorCode.AccessDenied);
+    }
+
+    [Fact]
+    public async Task Handle_FamilyNotFound_ThrowsFamilyException()
+    {
+        var db = CreateDb();
+        var handler = BuildHandler(db);
+
+        var act = () => handler.Handle(
+            new GetHouseholdAreasQuery(Guid.NewGuid(), Guid.NewGuid()),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FamilyException>()
+            .Where(e => e.Code == FamilyErrorCode.FamilyNotFound);
     }
 
     [Fact]
@@ -63,9 +69,9 @@ public sealed class GetHouseholdAreasQueryHandlerTests
         var member = MemberId.New();
 
         db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, member));
-        db.Set<ResponsibilityDomain>().AddRange(
-            MakeDomain(familyId, "Finance"),
-            MakeDomain(familyId, "Maintenance"));
+        db.Set<Area>().AddRange(
+            MakeArea(familyId, "House", "#3B82F6"),
+            MakeArea(familyId, "Pets", "#22C55E"));
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
@@ -74,38 +80,18 @@ public sealed class GetHouseholdAreasQueryHandlerTests
             CancellationToken.None);
 
         result.Areas.Should().HaveCount(2);
+        result.Areas.Select(a => a.Name).Should().Equal("House", "Pets");
     }
 
     [Fact]
-    public async Task Handle_AreaWithPrimaryOwner_IncludesOwnerName()
-    {
-        var db = CreateDb();
-        var familyId = FamilyId.New();
-        var member = MemberId.New();
-
-        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, member, "Alice"));
-        db.Set<ResponsibilityDomain>().Add(MakeDomain(familyId, "Finance", member));
-        await db.SaveChangesAsync();
-        var handler = BuildHandler(db);
-
-        var result = await handler.Handle(
-            new GetHouseholdAreasQuery(familyId.Value, Guid.NewGuid()),
-            CancellationToken.None);
-
-        var area = result.Areas.Single();
-        area.PrimaryOwnerId.Should().Be(member.Value);
-        area.PrimaryOwnerName.Should().Be("Alice");
-    }
-
-    [Fact]
-    public async Task Handle_AreaWithNoOwner_HasNullOwner()
+    public async Task Handle_IncludesConfiguredColor()
     {
         var db = CreateDb();
         var familyId = FamilyId.New();
         var member = MemberId.New();
 
         db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, member));
-        db.Set<ResponsibilityDomain>().Add(MakeDomain(familyId, "Chores"));
+        db.Set<Area>().Add(MakeArea(familyId, "Leisure", "#A855F7"));
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
@@ -113,9 +99,7 @@ public sealed class GetHouseholdAreasQueryHandlerTests
             new GetHouseholdAreasQuery(familyId.Value, Guid.NewGuid()),
             CancellationToken.None);
 
-        var area = result.Areas.Single();
-        area.PrimaryOwnerId.Should().BeNull();
-        area.PrimaryOwnerName.Should().BeNull();
+        result.Areas.Single().Color.Should().Be("#A855F7");
     }
 
     [Fact]
@@ -130,9 +114,9 @@ public sealed class GetHouseholdAreasQueryHandlerTests
         db.Set<Domain.Family.Family>().AddRange(
             MakeFamily(familyA, memberA),
             MakeFamily(familyB, memberB));
-        db.Set<ResponsibilityDomain>().AddRange(
-            MakeDomain(familyA, "Finance"),
-            MakeDomain(familyB, "Maintenance"));
+        db.Set<Area>().AddRange(
+            MakeArea(familyA, "House"),
+            MakeArea(familyB, "Admin"));
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
@@ -141,6 +125,6 @@ public sealed class GetHouseholdAreasQueryHandlerTests
             CancellationToken.None);
 
         result.Areas.Should().ContainSingle()
-            .Which.Name.Should().Be("Finance");
+            .Which.Name.Should().Be("House");
     }
 }

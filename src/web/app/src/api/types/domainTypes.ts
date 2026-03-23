@@ -1,37 +1,11 @@
 export interface HouseholdAreaItem {
   areaId: string;
   name: string;
-  primaryOwnerId: string | null;
-  primaryOwnerName: string | null;
-  secondaryOwnerIds: string[];
+  color: string | null;
 }
 
 export interface HouseholdAreasResponse {
   areas: HouseholdAreaItem[];
-}
-
-export interface CreateResponsibilityDomainRequest {
-  name: string;
-  familyId: string;
-}
-
-export interface CreateResponsibilityDomainResponse {
-  responsibilityDomainId: string;
-  familyId: string;
-  name: string;
-  createdAtUtc: string;
-}
-
-export interface AssignPrimaryOwnerRequest {
-  memberId: string;
-}
-
-export interface AssignSecondaryOwnerRequest {
-  memberId: string;
-}
-
-export interface TransferResponsibilityRequest {
-  newPrimaryOwnerId: string;
 }
 
 export interface CreateTaskRequest {

@@ -5,9 +5,10 @@ This document describes how bounded contexts collaborate inside DomusMind.
 Core contexts in V1:
 
 * Family
-* Responsibility
 * Calendar
-* Tasks 
+* Tasks
+
+Areas are a lightweight supporting concept used by read models. They are not a bounded context.
 
 ---
 
@@ -15,11 +16,9 @@ Core contexts in V1:
 
 Family is the upstream identity provider.
 
-Responsibility defines accountability using Family members.
-
 Calendar defines time structure using Family participants.
-
-Tasks defines operational work referencing members, responsibilities, and events.
+Tasks defines operational work referencing members and events.
+Areas improve recognition and filtering in timeline-oriented views.
 
 ---
 
@@ -27,24 +26,22 @@ Tasks defines operational work referencing members, responsibilities, and events
 
 The dependency structure is **not a linear chain**.
 
-Responsibility and Calendar both depend on Family, while Tasks depends on Family and may react to both Calendar and Responsibility.
+Calendar and Tasks both depend on Family.
+Areas are applied inside read models and do not introduce new cross-context dependencies.
 
 ```
         Family
         /   \
        ↓     ↓
-Responsibility   Calendar
-        \       /
-         ↓     ↓
-           Tasks
+   Calendar  Tasks
 ```
 
 Dependency interpretation:
 
 * **Family** provides identity and relationship structure
-* **Responsibility** depends on Family for ownership assignments
 * **Calendar** depends on Family for participant identity
-* **Tasks** depends on Family for assignees and may react to Calendar and Responsibility events
+* **Tasks** depends on Family for assignees and may react to Calendar events
+* **Areas** classify entries without owning workflow or domain rules
 
 ---
 
@@ -57,124 +54,20 @@ No context may directly modify another context's aggregates.
 Communication rules:
 
 * identity flows from Family
-* accountability flows from Responsibility
 * time flows from Calendar
 * execution happens in Tasks
+* areas remain lightweight labels in projections and UI-facing views
 
 Contexts react to events rather than forming direct structural dependencies.
 
 ---
 
-# Context Interaction Examples
-
-## Member Added
-
-Family emits:
-
-```
-MemberAdded
-```
-
-Other contexts may react:
-
-* Responsibility may update assignment validity
-* Calendar may validate participants
-* Tasks may validate task assignments
-
----
-
-## Event Scheduled
-
-Calendar emits:
-
-```
-EventScheduled
-```
-
-Tasks may react:
-
-```
-Generate preparation tasks
-```
-
-Example:
-
-Event: School Trip
-
-Generated tasks:
-
-* prepare backpack
-* sign permission form
-
----
-
-## Responsibility Assigned
-
-Responsibility emits:
-
-```
-PrimaryOwnerAssigned
-```
-
-Tasks may react:
-
-```
-suggest or auto-assign tasks
-```
-
----
-
-# Context Boundaries
-
-Each context owns specific responsibilities.
-
-Family owns:
-
-* household identity
-* members
-* dependents
-* pets
-
-Responsibility owns:
-
-* responsibility domains
-* ownership assignments
-
-Calendar owns:
-
-* events
-* schedules
-* reminders
-
-Tasks owns:
-
-* tasks
-* routines
-* completion state
-
-Contexts must not leak responsibilities across boundaries.
-
----
-
-# Design Principle
-
-DomusMind follows **strict bounded contexts**.
-
-Contexts communicate through events and identifiers.
-
-No context should require direct access to another context's internal model.
-
-Dependencies represent **identity and information flow**, not permission to modify state.
-
----
-
 # Summary
 
-The DomusMind core model is built around four cooperating contexts:
+The DomusMind core model is built around three cooperating contexts:
 
 * **Family** → identity
-* **Responsibility** → accountability
 * **Calendar** → time
 * **Tasks** → execution
 
-Responsibility and Calendar both depend on Family, while Tasks integrates signals from Family, Calendar, and Responsibility to coordinate household work.
+Areas support readability across household views without becoming their own module.

@@ -5,7 +5,6 @@ using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Family;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Family;
-using DomusMind.Domain.Responsibilities;
 using DomusMind.Domain.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -84,30 +83,10 @@ public sealed class GetMemberActivityQueryHandler
             })
             .ToList();
 
-        // Responsibility domains where member is primary or secondary owner (load all, filter in-memory)
-        var allDomains = await _dbContext.Set<ResponsibilityDomain>()
-            .AsNoTracking()
-            .Where(d => d.FamilyId == familyId)
-            .ToListAsync(cancellationToken);
-
-        var responsibilityActivities = allDomains
-            .Where(d => (d.PrimaryOwnerId.HasValue && d.PrimaryOwnerId.Value.Value == memberId.Value)
-                     || d.SecondaryOwnerIds.Any(s => s.Value == memberId.Value))
-            .Select(d =>
-            {
-                var role = d.PrimaryOwnerId.HasValue && d.PrimaryOwnerId.Value.Value == memberId.Value
-                    ? "PrimaryOwner"
-                    : "SecondaryOwner";
-                return new MemberResponsibilityActivity(d.Id.Value, d.Name.Value, role);
-            })
-            .OrderBy(r => r.DomainName)
-            .ToList();
-
         return new MemberActivityResponse(
             member.Id.Value,
             member.Name.Value,
             memberEvents,
-            taskActivities,
-            responsibilityActivities);
+            taskActivities);
     }
 }

@@ -1,11 +1,6 @@
 import { request } from "./request";
 import type {
   HouseholdAreasResponse,
-  CreateResponsibilityDomainRequest,
-  CreateResponsibilityDomainResponse,
-  AssignPrimaryOwnerRequest,
-  AssignSecondaryOwnerRequest,
-  TransferResponsibilityRequest,
   CreateTaskRequest,
   CreateTaskResponse,
   AssignTaskRequest,
@@ -18,21 +13,9 @@ import type {
 } from "./types/calendarTypes";
 
 export const domainApi = {
-  /* Responsibility Domains / Areas */
+  /* Areas */
   getAreas: (familyId: string) =>
-    request<HouseholdAreasResponse>(`/api/responsibility-domains?familyId=${familyId}`),
-
-  createArea: (body: CreateResponsibilityDomainRequest) =>
-    request<CreateResponsibilityDomainResponse>("/api/responsibility-domains", { method: "POST", body: JSON.stringify(body) }),
-
-  assignPrimaryOwner: (areaId: string, body: AssignPrimaryOwnerRequest) =>
-    request<unknown>(`/api/responsibility-domains/${areaId}/primary-owner`, { method: "POST", body: JSON.stringify(body) }),
-
-  assignSecondaryOwner: (areaId: string, body: AssignSecondaryOwnerRequest) =>
-    request<unknown>(`/api/responsibility-domains/${areaId}/secondary-owners`, { method: "POST", body: JSON.stringify(body) }),
-
-  transferArea: (areaId: string, body: TransferResponsibilityRequest) =>
-    request<unknown>(`/api/responsibility-domains/${areaId}/transfer`, { method: "POST", body: JSON.stringify(body) }),
+    request<HouseholdAreasResponse>(`/api/families/${familyId}/areas`),
 
   /* Tasks */
   createTask: (body: CreateTaskRequest) =>

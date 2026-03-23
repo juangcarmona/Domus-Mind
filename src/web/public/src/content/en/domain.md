@@ -1,23 +1,5 @@
----
-title: "Domain Model"
-description: "Operational structure of household life."
----
+# Domain
 
-## Core entities
+DomusMind centers the household around family, plans, tasks, and routines.
 
-- Family
-- Member
-- Responsibility Domain
-- Event
-- Timeline
-- Task
-- Routine
-- Property
-- Document
-- Inventory
-- Meal Planning
-- Pets
-
-## System view
-
-The model represents people, obligations, assets, logistics, and time as coherent state with explicit ownership.
+Areas are lightweight labels that help classify activity without creating a new domain.

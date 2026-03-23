@@ -10,6 +10,7 @@ using DomusMind.Application.Features.Family.UpdateFamilySettings;
 using DomusMind.Application.Features.Family.GetEnrichedTimeline;
 using DomusMind.Application.Features.Family.GetFamily;
 using DomusMind.Application.Features.Family.GetFamilyMembers;
+using DomusMind.Application.Features.Family.GetHouseholdAreas;
 using DomusMind.Application.Features.Family.GetHouseholdTimeline;
 using DomusMind.Application.Features.Family.GetMemberActivity;
 using DomusMind.Application.Features.Family.GetMemberDetails;
@@ -223,6 +224,30 @@ public sealed class FamiliesController : ControllerBase
         {
             var response = await dispatcher.Dispatch(
                 new GetFamilyMembersQuery(familyId, _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (FamilyException ex)
+        {
+            return MapFamilyException(ex);
+        }
+    }
+
+    /// <summary>Returns the lightweight areas used to classify household activity.</summary>
+    [HttpGet("{familyId:guid}/areas")]
+    [ProducesResponseType(typeof(HouseholdAreasResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetHouseholdAreas(
+        Guid familyId,
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new GetHouseholdAreasQuery(familyId, _currentUser.UserId!.Value),
                 cancellationToken);
 
             return Ok(response);

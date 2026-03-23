@@ -117,19 +117,18 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "responsibility_domains",
+                name: "areas",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     family_id = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    primary_owner_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    created_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    secondary_owner_ids = table.Column<string>(type: "text", nullable: false)
+                    color = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: true),
+                    created_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_responsibility_domains", x => x.id);
+                    table.PrimaryKey("PK_areas", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -317,7 +316,7 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                 name: "refresh_tokens");
 
             migrationBuilder.DropTable(
-                name: "responsibility_domains");
+                name: "areas");
 
             migrationBuilder.DropTable(
                 name: "routine_target_members");

@@ -16,14 +16,8 @@ public sealed record MemberTaskActivity(
     string? DueTime,
     string Status);
 
-public sealed record MemberResponsibilityActivity(
-    Guid DomainId,
-    string DomainName,
-    string Role);
-
 public sealed record MemberActivityResponse(
     Guid MemberId,
     string MemberName,
     IReadOnlyCollection<MemberCalendarActivity> CalendarEvents,
-    IReadOnlyCollection<MemberTaskActivity> Tasks,
-    IReadOnlyCollection<MemberResponsibilityActivity> Responsibilities);
+    IReadOnlyCollection<MemberTaskActivity> Tasks);

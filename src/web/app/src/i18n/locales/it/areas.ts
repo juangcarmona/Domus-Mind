@@ -1,17 +1,6 @@
 export default {
   title: "Aree",
-  add: "+ Nuova area",
-  createHeading: "Crea area",
-  nameLabel: "Nome area",
-  namePlaceholder: "es. Finanze, Scuola, Manutenzione",
   loading: "Caricamento aree…",
   empty: "Nessuna area ancora.",
-  emptyHint: "Le aree definiscono chi è responsabile di cosa nella tua famiglia.",
-  owner: "Responsabile",
-  noOwner: "Nessun responsabile",
-  secondary: "secondario",
-  assign: "Assegna responsabile",
-  transfer: "Trasferisci responsabilità",
-  responsible: "Persona responsabile",
-  createError: "Impossibile creare l'area",
+  emptyHint: "Le aree sono etichette leggere che aiutano a raggruppare e organizzare visivamente l’attività domestica.",
 } as const;

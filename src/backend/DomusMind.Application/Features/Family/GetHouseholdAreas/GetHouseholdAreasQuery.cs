@@ -1,7 +1,7 @@
 using DomusMind.Application.Abstractions.Messaging;
-using DomusMind.Contracts.Responsibilities;
+using DomusMind.Contracts.Family;
 
-namespace DomusMind.Application.Features.Responsibilities.GetHouseholdAreas;
+namespace DomusMind.Application.Features.Family.GetHouseholdAreas;
 
 public sealed record GetHouseholdAreasQuery(
     Guid FamilyId,

@@ -4,8 +4,6 @@ using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Family.ValueObjects;
-using DomusMind.Domain.Responsibilities;
-using DomusMind.Domain.Responsibilities.ValueObjects;
 using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.ValueObjects;
@@ -122,32 +120,6 @@ public sealed class GetMemberActivityQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_IncludesResponsibilityDomainAsPrimaryOwner()
-    {
-        var db = CreateDb();
-        var familyId = FamilyId.New();
-        var memberId = MemberId.New();
-
-        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, memberId));
-
-        var domain = ResponsibilityDomain.Create(
-            ResponsibilityDomainId.New(), familyId,
-            ResponsibilityAreaName.Create("Finance"), DateTime.UtcNow);
-        domain.AssignPrimaryOwner(memberId);
-        domain.ClearDomainEvents();
-        db.Set<ResponsibilityDomain>().Add(domain);
-        await db.SaveChangesAsync();
-        var handler = BuildHandler(db);
-
-        var result = await handler.Handle(
-            new GetMemberActivityQuery(familyId.Value, memberId.Value, Guid.NewGuid()),
-            CancellationToken.None);
-
-        result.Responsibilities.Should().ContainSingle()
-            .Which.Role.Should().Be("PrimaryOwner");
-    }
-
-    [Fact]
     public async Task Handle_EmptyActivity_ReturnsAllEmptyCollections()
     {
         var db = CreateDb();
@@ -164,6 +136,5 @@ public sealed class GetMemberActivityQueryHandlerTests
 
         result.CalendarEvents.Should().BeEmpty();
         result.Tasks.Should().BeEmpty();
-        result.Responsibilities.Should().BeEmpty();
     }
 }

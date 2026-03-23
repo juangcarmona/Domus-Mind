@@ -25,6 +25,7 @@ using DomusMind.Application.Features.Family.GetEnrichedTimeline;
 using DomusMind.Application.Features.Family.GetFamily;
 using DomusMind.Application.Features.Family.GetWeeklyGrid;
 using DomusMind.Application.Features.Family.GetFamilyMembers;
+using DomusMind.Application.Features.Family.GetHouseholdAreas;
 using DomusMind.Application.Features.Family.GetHouseholdTimeline;
 using DomusMind.Application.Features.Family.GetMemberActivity;
 using DomusMind.Application.Features.Family.GetMemberDetails;
@@ -40,15 +41,6 @@ using DomusMind.Application.Features.Family.RegenerateTemporaryPassword;
 using DomusMind.Application.Features.Languages.GetSupportedLanguages;
 using DomusMind.Application.Features.Setup.GetSetupStatus;
 using DomusMind.Application.Features.Setup.InitializeSystem;
-using DomusMind.Application.Features.Responsibilities.AssignPrimaryOwner;
-using DomusMind.Application.Features.Responsibilities.AssignSecondaryOwner;
-using DomusMind.Application.Features.Responsibilities.CreateResponsibilityDomain;
-using DomusMind.Application.Features.Responsibilities.DetectResponsibilityOverload;
-using DomusMind.Application.Features.Responsibilities.GetHouseholdAreas;
-using DomusMind.Application.Features.Responsibilities.GetResponsibilityBalance;
-using DomusMind.Application.Features.Responsibilities.GetResponsibilityVisibility;
-using DomusMind.Application.Features.Responsibilities.SuggestResponsibilityOwner;
-using DomusMind.Application.Features.Responsibilities.TransferResponsibility;
 using DomusMind.Application.Features.Tasks.AssignTask;
 using DomusMind.Application.Features.Tasks.CancelTask;
 using DomusMind.Application.Features.Tasks.CompleteTask;
@@ -64,7 +56,6 @@ using DomusMind.Contracts.Auth;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
 using DomusMind.Contracts.Languages;
-using DomusMind.Contracts.Responsibilities;
 using DomusMind.Contracts.Setup;
 using DomusMind.Contracts.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -103,12 +94,6 @@ public static class ApplicationServices
         services.AddScoped<IQueryHandler<GetMemberDetailsQuery, MemberDetailResponse>, GetMemberDetailsQueryHandler>();
         services.AddScoped<IQueryHandler<GetHouseholdTimelineQuery, HouseholdTimelineResponse>, GetHouseholdTimelineQueryHandler>();
 
-        // Responsibilities slices
-        services.AddScoped<ICommandHandler<CreateResponsibilityDomainCommand, CreateResponsibilityDomainResponse>, CreateResponsibilityDomainCommandHandler>();
-        services.AddScoped<ICommandHandler<AssignPrimaryOwnerCommand, AssignPrimaryOwnerResponse>, AssignPrimaryOwnerCommandHandler>();
-        services.AddScoped<ICommandHandler<AssignSecondaryOwnerCommand, AssignSecondaryOwnerResponse>, AssignSecondaryOwnerCommandHandler>();
-        services.AddScoped<ICommandHandler<TransferResponsibilityCommand, TransferResponsibilityResponse>, TransferResponsibilityCommandHandler>();
-
         // Calendar slices
         services.AddScoped<ICommandHandler<ScheduleEventCommand, ScheduleEventResponse>, ScheduleEventCommandHandler>();
         services.AddScoped<ICommandHandler<RescheduleEventCommand, RescheduleEventResponse>, RescheduleEventCommandHandler>();
@@ -138,14 +123,8 @@ public static class ApplicationServices
         services.AddScoped<IQueryHandler<ProposeAlternativeTimesQuery, ProposeAlternativeTimesResponse>, ProposeAlternativeTimesQueryHandler>();
         services.AddScoped<IQueryHandler<GetFamilyPlansQuery, FamilyPlansResponse>, GetFamilyPlansQueryHandler>();
 
-        // Chore coordination slices (Phase 6)
-        services.AddScoped<IQueryHandler<SuggestResponsibilityOwnerQuery, SuggestResponsibilityOwnerResponse>, SuggestResponsibilityOwnerQueryHandler>();
-        services.AddScoped<IQueryHandler<GetResponsibilityBalanceQuery, ResponsibilityBalanceResponse>, GetResponsibilityBalanceQueryHandler>();
-        services.AddScoped<IQueryHandler<DetectResponsibilityOverloadQuery, ResponsibilityOverloadResponse>, DetectResponsibilityOverloadQueryHandler>();
-
         // Household system slices (Phase 6)
         services.AddScoped<IQueryHandler<GetHouseholdAreasQuery, HouseholdAreasResponse>, GetHouseholdAreasQueryHandler>();
-        services.AddScoped<IQueryHandler<GetResponsibilityVisibilityQuery, ResponsibilityVisibilityResponse>, GetResponsibilityVisibilityQueryHandler>();
         services.AddScoped<IQueryHandler<GetMemberActivityQuery, MemberActivityResponse>, GetMemberActivityQueryHandler>();
 
         // Timeline enrichment slices (Phase 6)

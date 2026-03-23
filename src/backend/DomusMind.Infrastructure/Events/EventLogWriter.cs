@@ -58,11 +58,6 @@ public sealed class EventLogWriter : IEventLogWriter
             return "Family";
         }
 
-        if (eventNamespace.Contains(".Responsibilities.", StringComparison.Ordinal))
-        {
-            return "Responsibilities";
-        }
-
         if (eventNamespace.Contains(".Calendar.", StringComparison.Ordinal))
         {
             return "Calendar";

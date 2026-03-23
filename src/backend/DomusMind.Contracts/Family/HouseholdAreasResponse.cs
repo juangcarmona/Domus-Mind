@@ -1,11 +1,9 @@
-namespace DomusMind.Contracts.Responsibilities;
+namespace DomusMind.Contracts.Family;
 
 public sealed record HouseholdAreaItem(
     Guid AreaId,
     string Name,
-    Guid? PrimaryOwnerId,
-    string? PrimaryOwnerName,
-    IReadOnlyCollection<Guid> SecondaryOwnerIds);
+    string? Color);
 
 public sealed record HouseholdAreasResponse(
     IReadOnlyCollection<HouseholdAreaItem> Areas);

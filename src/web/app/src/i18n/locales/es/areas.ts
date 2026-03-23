@@ -1,17 +1,6 @@
 export default {
   title: "Áreas",
-  add: "+ Nueva área",
-  createHeading: "Crear área",
-  nameLabel: "Nombre del área",
-  namePlaceholder: "p.ej. Finanzas, Escuela, Mantenimiento",
   loading: "Cargando áreas…",
   empty: "Aún no hay áreas.",
-  emptyHint: "Las áreas definen quién es responsable de qué en su hogar.",
-  owner: "Propietario",
-  noOwner: "Sin propietario asignado",
-  secondary: "secundario",
-  assign: "Asignar propietario",
-  transfer: "Transferir propiedad",
-  responsible: "Persona responsable",
-  createError: "No se pudo crear el área",
+  emptyHint: "Las áreas son etiquetas ligeras que ayudan a agrupar y organizar visualmente la actividad del hogar.",
 } as const;

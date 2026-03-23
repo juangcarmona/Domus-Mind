@@ -23,8 +23,8 @@ public sealed class DomusMindDbContext : DbContext, IDomusMindDbContext
 
     public DbSet<UserFamilyAccess> UserFamilyAccesses => Set<UserFamilyAccess>();
 
-    public DbSet<Domain.Responsibilities.ResponsibilityDomain> ResponsibilityDomains
-        => Set<Domain.Responsibilities.ResponsibilityDomain>();
+    public DbSet<Domain.Areas.Area> Areas
+        => Set<Domain.Areas.Area>();
 
     public DbSet<Domain.Calendar.CalendarEvent> CalendarEvents
         => Set<Domain.Calendar.CalendarEvent>();
