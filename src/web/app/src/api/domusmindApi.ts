@@ -78,6 +78,8 @@ export interface FamilyMemberResponse {
 export interface AddMemberRequest {
   name: string;
   role: string;
+  birthDate?: string | null;
+  isManager?: boolean;
 }
 
 export interface AddMemberResponse {

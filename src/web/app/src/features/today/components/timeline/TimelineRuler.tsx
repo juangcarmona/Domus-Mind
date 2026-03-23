@@ -66,14 +66,9 @@ export function TimelineRuler({
     }
   }
 
-  // Auto-scroll to center the selected date
+  // Auto-scroll to center the selected date in the viewport
   useEffect(() => {
-    if (selectedRef.current && trackRef.current) {
-      const track = trackRef.current;
-      const el = selectedRef.current;
-      const offset = el.offsetLeft - track.clientWidth / 2 + el.offsetWidth / 2;
-      track.scrollLeft = Math.max(0, offset);
-    }
+    selectedRef.current?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
   }, [selectedDate]);
 
   return (

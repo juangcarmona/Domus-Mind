@@ -101,7 +101,7 @@ public sealed class FamiliesController : ControllerBase
         try
         {
             var response = await dispatcher.Dispatch(
-                new AddMemberCommand(familyId, request.Name, request.Role, _currentUser.UserId!.Value),
+                new AddMemberCommand(familyId, request.Name, request.Role, request.BirthDate, request.IsManager, _currentUser.UserId!.Value),
                 cancellationToken);
 
             return Created(

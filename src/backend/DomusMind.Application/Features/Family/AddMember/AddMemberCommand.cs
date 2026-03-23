@@ -7,5 +7,7 @@ public sealed record AddMemberCommand(
     Guid FamilyId,
     string Name,
     string Role,
+    DateOnly? BirthDate,
+    bool IsManager,
     Guid RequestedByUserId)
     : ICommand<AddMemberResponse>;

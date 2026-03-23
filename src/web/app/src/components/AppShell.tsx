@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthProvider";
 import { HouseholdLogo } from "./HouseholdLogo";
 import { UserAvatar } from "./UserAvatar";
+import { ThemeToggle } from "./ThemeToggle";
 import { useAppSelector } from "../store/hooks";
 
 const NAV_ITEMS = [
@@ -90,6 +91,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Avatar + dropdown */}
         <div className="header-end" ref={avatarMenuRef}>
           <UserAvatar name={userName} onClick={() => setAvatarMenuOpen((o) => !o)} />
+          <ThemeToggle />
           {avatarMenuOpen && (
             <div className="avatar-menu" role="menu">
               <NavLink

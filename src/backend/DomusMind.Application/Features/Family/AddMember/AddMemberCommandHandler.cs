@@ -55,7 +55,7 @@ public sealed class AddMemberCommandHandler : ICommandHandler<AddMemberCommand, 
 
         try
         {
-            family.AddMember(memberId, name, role, now);
+            family.AddMember(memberId, name, role, command.IsManager, command.BirthDate, now);
         }
         catch (InvalidOperationException ex)
         {

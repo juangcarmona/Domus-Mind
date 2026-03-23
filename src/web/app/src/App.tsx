@@ -23,6 +23,22 @@ import { SettingsPage } from "./features/settings/pages/SettingsPage";
 import { TodayPage } from "./features/today/pages/TodayPage";
 import { setupApi } from "./api/setupApi";
 
+/** Keeps document.documentElement[data-theme] in sync with Redux ui.theme. */
+function ThemeApplier() {
+  const theme = useAppSelector((s) => s.ui.theme);
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.setAttribute("data-theme", "dark");
+    } else if (theme === "light") {
+      root.setAttribute("data-theme", "light");
+    } else {
+      root.removeAttribute("data-theme");
+    }
+  }, [theme]);
+  return null;
+}
+
 function AuthedApp() {
   const dispatch = useAppDispatch();
   const { bootstrapStatus } = useAppSelector((s) => s.household);
@@ -151,6 +167,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ThemeApplier />
         <AppRoutes />
       </BrowserRouter>
     </AuthProvider>

@@ -86,11 +86,11 @@ export const fetchMembers = createAsyncThunk(
 export const addMember = createAsyncThunk(
   "household/addMember",
   async (
-    { familyId, name, role }: { familyId: string; name: string; role: string },
+    { familyId, name, role, birthDate, isManager }: { familyId: string; name: string; role: string; birthDate?: string | null; isManager?: boolean },
     { rejectWithValue },
   ) => {
     try {
-      return await domusmindApi.addMember(familyId, { name, role });
+      return await domusmindApi.addMember(familyId, { name, role, birthDate, isManager });
     } catch (err: unknown) {
       return rejectWithValue((err as { message?: string }).message ?? "Failed to add person");
     }
