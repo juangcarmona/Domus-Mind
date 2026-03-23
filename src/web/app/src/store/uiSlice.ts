@@ -41,6 +41,9 @@ const uiSlice = createSlice({
       state.theme = action.payload;
       localStorage.setItem(THEME_KEY, action.payload);
     },
+    setUiLanguage(state, action: PayloadAction<string>) {
+      state.language = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -61,5 +64,5 @@ const uiSlice = createSlice({
   },
 });
 
-export const { setTheme } = uiSlice.actions;
+export const { setTheme, setUiLanguage } = uiSlice.actions;
 export default uiSlice.reducer;

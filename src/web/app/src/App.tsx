@@ -9,6 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
+import i18nSingleton from "./i18n";
 import { bootstrapHousehold } from "./store/householdSlice";
 import { AppShell } from "./components/AppShell";
 import { LoginPage } from "./features/auth/pages/LoginPage";
@@ -31,11 +32,17 @@ function AuthedApp() {
     dispatch(bootstrapHousehold());
   }, [dispatch]);
 
-  // Keep i18n in sync with the language resolved by uiSlice
-  // (set from household.primaryLanguageCode after bootstrap / settings save).
+  // Keep i18n in sync with the language in Redux.
+  // Use the stable singleton import — NOT `i18n` from useTranslation —
+  // because the hook reference changes on every language switch, which
+  // would re-fire this effect and override an in-progress selection.
   useEffect(() => {
-    i18n.changeLanguage(uiLanguage);
-  }, [uiLanguage, i18n]);
+    i18nSingleton.changeLanguage(uiLanguage);
+  }, [uiLanguage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep the i18n hook reference in sync with the singleton (no-op in practice,
+  // but satisfies linters that reference `i18n`).
+  void i18n;
 
   if (bootstrapStatus === "idle" || bootstrapStatus === "loading") {
     return <div className="loading-wrap">Loading your household…</div>;
