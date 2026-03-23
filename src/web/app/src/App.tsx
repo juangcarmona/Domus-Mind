@@ -13,11 +13,13 @@ import { bootstrapHousehold } from "./store/householdSlice";
 import { AppShell } from "./components/AppShell";
 import { LoginPage } from "./features/auth/pages/LoginPage";
 import { RegisterPage } from "./features/auth/pages/RegisterPage";
+import { SetupPage } from "./features/setup/pages/SetupPage";
 import { OnboardingPage } from "./features/onboarding/pages/OnboardingPage";
 import { AreasPage } from "./features/areas/pages/AreasPage";
 import { PlanningPage } from "./features/planning/pages/PlanningPage";
 import { SettingsPage } from "./features/settings/pages/SettingsPage";
 import { TodayPage } from "./features/today/pages/TodayPage";
+import { setupApi } from "./api/setupApi";
 
 function AuthedApp() {
   const dispatch = useAppDispatch();
@@ -94,9 +96,28 @@ function UnauthApp() {
 
 function AppRoutes() {
   const { user, isLoading } = useAuth();
+  const [setupStatus, setSetupStatus] = useState<"loading" | "needed" | "done">("loading");
 
-  if (isLoading) {
+  useEffect(() => {
+    setupApi
+      .getStatus()
+      .then(({ isInitialized }) => setSetupStatus(isInitialized ? "done" : "needed"))
+      .catch(() => setSetupStatus("done")); // on API error, fall through to normal auth flow
+  }, []);
+
+  if (setupStatus === "loading" || isLoading) {
     return <div className="loading-wrap">Loading\u2026</div>;
+  }
+
+  if (setupStatus === "needed") {
+    return (
+      <Routes>
+        <Route
+          path="*"
+          element={<SetupPage onInitialized={() => setSetupStatus("done")} />}
+        />
+      </Routes>
+    );
   }
 
   if (!user) {

@@ -191,21 +191,80 @@ Current implemented baseline:
 
 ## Bootstrap Identity
 
-For local-first setup, DomusMind may create an initial admin user from configuration when the auth store is empty.
+DomusMind uses a **two-path first-run model** backed by a server-enforced initialization state persisted in the `system_initialization` table. Once the system is initialized, all bootstrap paths become permanent no-ops.
+
+---
+
+### Primary path — UI-driven setup
+
+The default path for all installations is the setup endpoint, which enables a guided first-run wizard.
+
+```
+GET  /api/setup/status       → { isInitialized: false }   (unauthenticated)
+POST /api/setup/initialize   → 201 Created                 (unauthenticated, usable once)
+GET  /api/setup/status       → { isInitialized: true }    (all subsequent calls)
+```
 
 Rules:
 
-* bootstrap only runs when explicitly enabled
-* bootstrap must be idempotent
-* bootstrap must never log plaintext passwords
+* the setup endpoint is permanently routeable but server-gated
+* `POST /api/setup/initialize` returns `409 Conflict` once initialization is complete
+* initialization is atomic: the admin user is created and the system is marked initialized in the same request
+* no special configuration is required for this path
+
+```mermaid
+sequenceDiagram
+Client->>API: GET /api/setup/status
+API->>SystemInitializationRepository: IsInitializedAsync
+SystemInitializationRepository-->>API: false
+API-->>Client: { isInitialized: false }
+
+Client->>API: POST /api/setup/initialize { email, password }
+API->>InitializeSystemCommandHandler: Handle
+InitializeSystemCommandHandler->>SystemInitializationRepository: IsInitializedAsync
+SystemInitializationRepository-->>InitializeSystemCommandHandler: false
+InitializeSystemCommandHandler->>PasswordHasher: hash password
+InitializeSystemCommandHandler->>AuthUserRepository: AddAsync + SaveChangesAsync
+InitializeSystemCommandHandler->>SystemInitializationRepository: MarkInitializedAsync
+API-->>Client: 201 { userId, email }
+
+Client->>API: POST /api/setup/initialize (again)
+API-->>Client: 409 Conflict { code: "setup.already_initialized" }
+```
+
+---
+
+### Fallback path — headless / recovery bootstrap
+
+For headless deployments (containers, CI, scripted recovery), a configuration-driven fallback bootstrap is available.
+
+Rules:
+
+* **disabled by default** in production (`BootstrapAdmin:Enabled = false`)
+* **no-op if the system is already initialized** — the flag has no effect on initialized systems
+* must never log plaintext passwords
+* intended only for recovery scenarios or environments where UI-driven setup is not possible
+* disable in configuration once initialization is complete
+
+Configuration:
+
+```yaml
+BootstrapAdmin:
+  Enabled: true
+  Email:   admin@example.com
+  Password: <strong-password>
+```
 
 ```mermaid
 sequenceDiagram
 AppStartup->>AuthSeedService: SeedAdminAsync
-AuthSeedService->>AuthUserRepository: any users?
-alt no users exist
+AuthSeedService->>SystemInitializationRepository: IsInitializedAsync
+alt system already initialized
+    AuthSeedService-->>AppStartup: skip (no-op)
+else not initialized and Enabled = true
     AuthSeedService->>PasswordHasher: hash configured password
-    AuthSeedService->>AuthUserRepository: create bootstrap admin
+    AuthSeedService->>AuthUserRepository: AddAsync + SaveChangesAsync
+    AuthSeedService->>SystemInitializationRepository: MarkInitializedAsync
 end
 ```
 

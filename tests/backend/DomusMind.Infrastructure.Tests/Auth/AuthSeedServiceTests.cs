@@ -1,4 +1,5 @@
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Application.Abstractions.System;
 using DomusMind.Infrastructure.Auth;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,12 +13,14 @@ public sealed class AuthSeedServiceTests
     private static IServiceProvider BuildServices(
         BootstrapAdminOptions options,
         InMemoryAuthUserRepository repo,
+        InMemorySystemInitializationState? initState = null,
         IPasswordHasher? hasher = null)
     {
         var services = new ServiceCollection();
 
         services.AddSingleton<IAuthUserRepository>(repo);
         services.AddSingleton<IPasswordHasher>(hasher ?? new PasswordHasher());
+        services.AddSingleton<ISystemInitializationState>(initState ?? new InMemorySystemInitializationState());
         services.AddSingleton(Options.Create(options));
         services.AddLogging();
 
@@ -25,7 +28,7 @@ public sealed class AuthSeedServiceTests
     }
 
     [Fact]
-    public async Task SeedAdminAsync_WhenEnabledAndNoUsers_CreatesAdmin()
+    public async Task SeedAdminAsync_WhenEnabledAndNotInitialized_CreatesAdmin()
     {
         var repo = new InMemoryAuthUserRepository();
         var options = new BootstrapAdminOptions
@@ -43,6 +46,23 @@ public sealed class AuthSeedServiceTests
     }
 
     [Fact]
+    public async Task SeedAdminAsync_WhenEnabledAndNotInitialized_MarksSystemAsInitialized()
+    {
+        var repo = new InMemoryAuthUserRepository();
+        var initState = new InMemorySystemInitializationState();
+        var options = new BootstrapAdminOptions
+        {
+            Enabled = true,
+            Email = "admin@domusmind.local",
+            Password = "SecureAdmin1!",
+        };
+
+        await AuthSeedService.SeedAdminAsync(BuildServices(options, repo, initState), CancellationToken.None);
+
+        initState.IsInitialized.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task SeedAdminAsync_WhenDisabled_DoesNotCreateAnyUser()
     {
         var repo = new InMemoryAuthUserRepository();
@@ -54,10 +74,10 @@ public sealed class AuthSeedServiceTests
     }
 
     [Fact]
-    public async Task SeedAdminAsync_WhenUsersAlreadyExist_DoesNotCreateAnotherUser()
+    public async Task SeedAdminAsync_WhenAlreadyInitialized_SkipsEvenIfBootstrapEnabled()
     {
-        var existingUser = new AuthUserRecord(Guid.NewGuid(), "existing@example.com", "hash");
-        var repo = new InMemoryAuthUserRepository([existingUser]);
+        var repo = new InMemoryAuthUserRepository();
+        var initState = new InMemorySystemInitializationState(alreadyInitialized: true);
         var options = new BootstrapAdminOptions
         {
             Enabled = true,
@@ -65,10 +85,9 @@ public sealed class AuthSeedServiceTests
             Password = "SecureAdmin1!",
         };
 
-        await AuthSeedService.SeedAdminAsync(BuildServices(options, repo), CancellationToken.None);
+        await AuthSeedService.SeedAdminAsync(BuildServices(options, repo, initState), CancellationToken.None);
 
-        repo.Users.Should().HaveCount(1);
-        repo.Users[0].Email.Should().Be("existing@example.com");
+        repo.Users.Should().BeEmpty();
     }
 
     [Fact]
@@ -83,14 +102,14 @@ public sealed class AuthSeedServiceTests
             Password = "SecureAdmin1!",
         };
 
-        await AuthSeedService.SeedAdminAsync(BuildServices(options, repo, hasher), CancellationToken.None);
+        await AuthSeedService.SeedAdminAsync(BuildServices(options, repo, hasher: hasher), CancellationToken.None);
 
         hasher.LastHashed.Should().Be("SecureAdmin1!");
         repo.Users[0].PasswordHash.Should().NotBe("SecureAdmin1!");
     }
 
     [Fact]
-    public async Task SeedAdminAsync_IsIdempotent_SecondCallNoOp()
+    public async Task SeedAdminAsync_IsIdempotent_SecondCallIsNoOp()
     {
         var repo = new InMemoryAuthUserRepository();
         var options = new BootstrapAdminOptions
@@ -108,6 +127,25 @@ public sealed class AuthSeedServiceTests
     }
 
     // ── Test helpers ──────────────────────────────────────────────────────────
+
+    private sealed class InMemorySystemInitializationState : ISystemInitializationState
+    {
+        public bool IsInitialized { get; private set; }
+
+        public InMemorySystemInitializationState(bool alreadyInitialized = false)
+        {
+            IsInitialized = alreadyInitialized;
+        }
+
+        public Task<bool> IsInitializedAsync(CancellationToken ct)
+            => Task.FromResult(IsInitialized);
+
+        public Task MarkInitializedAsync(CancellationToken ct)
+        {
+            IsInitialized = true;
+            return Task.CompletedTask;
+        }
+    }
 
     private sealed class InMemoryAuthUserRepository : IAuthUserRepository
     {

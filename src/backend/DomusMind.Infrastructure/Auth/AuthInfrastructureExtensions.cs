@@ -1,5 +1,7 @@
 using System.Text;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Application.Abstractions.System;
+using DomusMind.Infrastructure.Initialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,6 +77,7 @@ public static class AuthInfrastructureExtensions
         services.AddScoped<IFamilyAuthorizationService, FamilyAuthorizationService>();
         services.AddScoped<IFamilyAccessGranter, FamilyAccessGranter>();
         services.AddScoped<IUserFamilyAccessReader, UserFamilyAccessReader>();
+        services.AddScoped<ISystemInitializationState, SystemInitializationRepository>();
 
         return services;
     }

@@ -22,17 +22,43 @@ cp .env.example .env
 #    JWT_SECRET   — at least 32 random characters (openssl rand -hex 32)
 #    VERSION      — the release tag without the leading v, e.g. 1.0.0
 
-# 4. (First run only) Enable the bootstrap admin in .env:
-#    Uncomment BootstrapAdmin__ lines in docker-compose.yml,
-#    set BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD in .env.
-#    The admin account is created on startup.
-#    Disable this again after your first login.
-
-# 5. Start the stack
+# 4. Start the stack
 docker compose up -d
 
-# 6. Open the web UI
+# 5. Open the web UI and complete the first-run setup wizard
 #    http://localhost        (or http://localhost:${WEB_PORT} if you changed WEB_PORT)
+#
+#    The wizard is served at the root URL on first visit.
+#    Create the initial administrator account through the UI.
+#    The setup endpoint is permanently server-gated: it cannot be called twice.
+```
+
+## Headless / recovery bootstrap (optional)
+
+If you cannot use the UI-driven setup wizard (scripted provisioning, CI, disaster recovery),
+you can seed the initial admin via environment variables.
+
+This path is **disabled by default** and becomes a **permanent no-op once the system is
+initialized** (whether by the UI wizard or a previous bootstrap run). It does not override
+or re-initialize an already-initialized system.
+
+To enable for a single run:
+
+```bash
+# Uncomment BootstrapAdmin__ lines in docker-compose.yml:
+#   BootstrapAdmin__Enabled:  true
+#   BootstrapAdmin__Email:    ${BOOTSTRAP_ADMIN_EMAIL}
+#   BootstrapAdmin__Password: ${BOOTSTRAP_ADMIN_PASSWORD}
+
+# Set credentials in .env:
+#   BOOTSTRAP_ADMIN_EMAIL=admin@example.com
+#   BOOTSTRAP_ADMIN_PASSWORD=<strong-password>
+
+docker compose up -d
+
+# Disable the bootstrap block in docker-compose.yml when done.
+# On all subsequent restarts the setting is ignored because the system
+# is already marked as initialized.
 ```
 
 ## Image tags
