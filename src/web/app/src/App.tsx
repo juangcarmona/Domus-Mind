@@ -9,15 +9,18 @@ import {
 import { useTranslation } from "react-i18next";
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
+import i18nSingleton from "./i18n";
 import { bootstrapHousehold } from "./store/householdSlice";
 import { AppShell } from "./components/AppShell";
 import { LoginPage } from "./features/auth/pages/LoginPage";
 import { RegisterPage } from "./features/auth/pages/RegisterPage";
+import { SetupPage } from "./features/setup/pages/SetupPage";
 import { OnboardingPage } from "./features/onboarding/pages/OnboardingPage";
 import { AreasPage } from "./features/areas/pages/AreasPage";
 import { PlanningPage } from "./features/planning/pages/PlanningPage";
 import { SettingsPage } from "./features/settings/pages/SettingsPage";
 import { TodayPage } from "./features/today/pages/TodayPage";
+import { setupApi } from "./api/setupApi";
 
 function AuthedApp() {
   const dispatch = useAppDispatch();
@@ -29,11 +32,17 @@ function AuthedApp() {
     dispatch(bootstrapHousehold());
   }, [dispatch]);
 
-  // Keep i18n in sync with the language resolved by uiSlice
-  // (set from household.primaryLanguageCode after bootstrap / settings save).
+  // Keep i18n in sync with the language in Redux.
+  // Use the stable singleton import — NOT `i18n` from useTranslation —
+  // because the hook reference changes on every language switch, which
+  // would re-fire this effect and override an in-progress selection.
   useEffect(() => {
-    i18n.changeLanguage(uiLanguage);
-  }, [uiLanguage, i18n]);
+    i18nSingleton.changeLanguage(uiLanguage);
+  }, [uiLanguage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep the i18n hook reference in sync with the singleton (no-op in practice,
+  // but satisfies linters that reference `i18n`).
+  void i18n;
 
   if (bootstrapStatus === "idle" || bootstrapStatus === "loading") {
     return <div className="loading-wrap">Loading your household…</div>;
@@ -94,9 +103,28 @@ function UnauthApp() {
 
 function AppRoutes() {
   const { user, isLoading } = useAuth();
+  const [setupStatus, setSetupStatus] = useState<"loading" | "needed" | "done">("loading");
 
-  if (isLoading) {
+  useEffect(() => {
+    setupApi
+      .getStatus()
+      .then(({ isInitialized }) => setSetupStatus(isInitialized ? "done" : "needed"))
+      .catch(() => setSetupStatus("done")); // on API error, fall through to normal auth flow
+  }, []);
+
+  if (setupStatus === "loading" || isLoading) {
     return <div className="loading-wrap">Loading\u2026</div>;
+  }
+
+  if (setupStatus === "needed") {
+    return (
+      <Routes>
+        <Route
+          path="*"
+          element={<SetupPage onInitialized={() => setSetupStatus("done")} />}
+        />
+      </Routes>
+    );
   }
 
   if (!user) {

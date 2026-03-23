@@ -32,6 +32,8 @@ using DomusMind.Application.Features.Family.InviteMember;
 using DomusMind.Application.Features.Family.LinkMemberAccount;
 using DomusMind.Application.Features.Family.UpdateMember;
 using DomusMind.Application.Features.Languages.GetSupportedLanguages;
+using DomusMind.Application.Features.Setup.GetSetupStatus;
+using DomusMind.Application.Features.Setup.InitializeSystem;
 using DomusMind.Application.Features.Responsibilities.AssignPrimaryOwner;
 using DomusMind.Application.Features.Responsibilities.AssignSecondaryOwner;
 using DomusMind.Application.Features.Responsibilities.CreateResponsibilityDomain;
@@ -57,6 +59,7 @@ using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
 using DomusMind.Contracts.Languages;
 using DomusMind.Contracts.Responsibilities;
+using DomusMind.Contracts.Setup;
 using DomusMind.Contracts.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -139,6 +142,10 @@ public static class ApplicationServices
 
         // Languages
         services.AddScoped<IQueryHandler<GetSupportedLanguagesQuery, SupportedLanguagesResponse>, GetSupportedLanguagesQueryHandler>();
+
+        // Setup slices
+        services.AddScoped<IQueryHandler<GetSetupStatusQuery, SetupStatusResponse>, GetSetupStatusQueryHandler>();
+        services.AddScoped<ICommandHandler<InitializeSystemCommand, InitializeSystemResponse>, InitializeSystemCommandHandler>();
 
         return services;
     }

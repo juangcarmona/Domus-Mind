@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { updateHouseholdSettings } from "../../../store/householdSlice";
+import { setUiLanguage } from "../../../store/uiSlice";
 
 import { FIRST_DAY_OPTIONS, DATE_FORMAT_OPTIONS } from "../types";
 
@@ -75,7 +76,10 @@ export function HouseholdSettingsSection() {
               id="household-lang"
               className="form-control"
               value={languageCode}
-              onChange={(e) => setLanguageCode(e.target.value)}
+              onChange={(e) => {
+                setLanguageCode(e.target.value);
+                if (e.target.value) dispatch(setUiLanguage(e.target.value));
+              }}
             >
               <option value="">—</option>
               {allLanguages.map((l) => (

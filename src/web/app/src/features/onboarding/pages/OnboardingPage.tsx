@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { createFamily, completeOnboarding } from "../../../store/householdSlice";
 import { fetchSupportedLanguages } from "../../../store/languagesSlice";
+import { setUiLanguage } from "../../../store/uiSlice";
 import { HouseholdLogo } from "../../../components/HouseholdLogo";
 
 // Step 0: language selection
@@ -55,7 +56,9 @@ export function OnboardingPage() {
 
   function handleLangSelect(code: string) {
     setSelectedLang(code);
-    i18n.changeLanguage(code);
+    // Drive language through Redux so the AuthedApp effect applies it
+    // via the stable singleton — avoids the useEffect re-fire bug.
+    dispatch(setUiLanguage(code));
   }
 
   function handleLangContinue() {

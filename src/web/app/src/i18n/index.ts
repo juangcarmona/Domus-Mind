@@ -8,6 +8,7 @@ import enCommon from "./locales/en/common";
 import enLang from "./locales/en/lang";
 import enNav from "./locales/en/nav";
 import enOnboarding from "./locales/en/onboarding";
+import enSetup from "./locales/en/setup";
 import enAreas from "./locales/en/areas";
 import enPlans from "./locales/en/plans";
 import enTasks from "./locales/en/tasks";
@@ -21,6 +22,7 @@ import deCommon from "./locales/de/common";
 import deLang from "./locales/de/lang";
 import deNav from "./locales/de/nav";
 import deOnboarding from "./locales/de/onboarding";
+import deSetup from "./locales/de/setup";
 import deAreas from "./locales/de/areas";
 import dePlans from "./locales/de/plans";
 import deTasks from "./locales/de/tasks";
@@ -34,6 +36,7 @@ import esCommon from "./locales/es/common";
 import esLang from "./locales/es/lang";
 import esNav from "./locales/es/nav";
 import esOnboarding from "./locales/es/onboarding";
+import esSetup from "./locales/es/setup";
 import esAreas from "./locales/es/areas";
 import esPlans from "./locales/es/plans";
 import esTasks from "./locales/es/tasks";
@@ -52,6 +55,7 @@ import frPlans from "./locales/fr/plans";
 import frTasks from "./locales/fr/tasks";
 import frRoutines from "./locales/fr/routines";
 import frSettings from "./locales/fr/settings";
+import frSetup from "./locales/fr/setup";
 import frToday from "./locales/fr/today";
 
 // Italian
@@ -60,6 +64,7 @@ import itCommon from "./locales/it/common";
 import itLang from "./locales/it/lang";
 import itNav from "./locales/it/nav";
 import itOnboarding from "./locales/it/onboarding";
+import itSetup from "./locales/it/setup";
 import itAreas from "./locales/it/areas";
 import itPlans from "./locales/it/plans";
 import itTasks from "./locales/it/tasks";
@@ -73,6 +78,7 @@ import jaCommon from "./locales/ja/common";
 import jaLang from "./locales/ja/lang";
 import jaNav from "./locales/ja/nav";
 import jaOnboarding from "./locales/ja/onboarding";
+import jaSetup from "./locales/ja/setup";
 import jaAreas from "./locales/ja/areas";
 import jaPlans from "./locales/ja/plans";
 import jaTasks from "./locales/ja/tasks";
@@ -86,6 +92,7 @@ import zhCommon from "./locales/zh/common";
 import zhLang from "./locales/zh/lang";
 import zhNav from "./locales/zh/nav";
 import zhOnboarding from "./locales/zh/onboarding";
+import zhSetup from "./locales/zh/setup";
 import zhAreas from "./locales/zh/areas";
 import zhPlans from "./locales/zh/plans";
 import zhTasks from "./locales/zh/tasks";
@@ -97,13 +104,13 @@ export const SUPPORTED_LANG_CODES = ["en", "de", "es", "fr", "it", "ja", "zh"] a
 export type SupportedLangCode = (typeof SUPPORTED_LANG_CODES)[number];
 
 const resources = {
-  en: { auth: enAuth, common: enCommon, lang: enLang, nav: enNav, onboarding: enOnboarding, areas: enAreas, plans: enPlans, tasks: enTasks, routines: enRoutines, settings: enSettings, today: enToday },
-  de: { auth: deAuth, common: deCommon, lang: deLang, nav: deNav, onboarding: deOnboarding, areas: deAreas, plans: dePlans, tasks: deTasks, routines: deRoutines, settings: deSettings, today: deToday },
-  es: { auth: esAuth, common: esCommon, lang: esLang, nav: esNav, onboarding: esOnboarding, areas: esAreas, plans: esPlans, tasks: esTasks, routines: esRoutines, settings: esSettings, today: esToday },
-  fr: { auth: frAuth, common: frCommon, lang: frLang, nav: frNav, onboarding: frOnboarding, areas: frAreas, plans: frPlans, tasks: frTasks, routines: frRoutines, settings: frSettings, today: frToday },
-  it: { auth: itAuth, common: itCommon, lang: itLang, nav: itNav, onboarding: itOnboarding, areas: itAreas, plans: itPlans, tasks: itTasks, routines: itRoutines, settings: itSettings, today: itToday },
-  ja: { auth: jaAuth, common: jaCommon, lang: jaLang, nav: jaNav, onboarding: jaOnboarding, areas: jaAreas, plans: jaPlans, tasks: jaTasks, routines: jaRoutines, settings: jaSettings, today: jaToday },
-  zh: { auth: zhAuth, common: zhCommon, lang: zhLang, nav: zhNav, onboarding: zhOnboarding, areas: zhAreas, plans: zhPlans, tasks: zhTasks, routines: zhRoutines, settings: zhSettings, today: zhToday },
+  en: { auth: enAuth, common: enCommon, lang: enLang, nav: enNav, onboarding: enOnboarding, setup: enSetup, areas: enAreas, plans: enPlans, tasks: enTasks, routines: enRoutines, settings: enSettings, today: enToday },
+  de: { auth: deAuth, common: deCommon, lang: deLang, nav: deNav, onboarding: deOnboarding, setup: deSetup, areas: deAreas, plans: dePlans, tasks: deTasks, routines: deRoutines, settings: deSettings, today: deToday },
+  es: { auth: esAuth, common: esCommon, lang: esLang, nav: esNav, onboarding: esOnboarding, setup: esSetup, areas: esAreas, plans: esPlans, tasks: esTasks, routines: esRoutines, settings: esSettings, today: esToday },
+  fr: { auth: frAuth, common: frCommon, lang: frLang, nav: frNav, onboarding: frOnboarding, setup: frSetup, areas: frAreas, plans: frPlans, tasks: frTasks, routines: frRoutines, settings: frSettings, today: frToday },
+  it: { auth: itAuth, common: itCommon, lang: itLang, nav: itNav, onboarding: itOnboarding, setup: itSetup, areas: itAreas, plans: itPlans, tasks: itTasks, routines: itRoutines, settings: itSettings, today: itToday },
+  ja: { auth: jaAuth, common: jaCommon, lang: jaLang, nav: jaNav, onboarding: jaOnboarding, setup: jaSetup, areas: jaAreas, plans: jaPlans, tasks: jaTasks, routines: jaRoutines, settings: jaSettings, today: jaToday },
+  zh: { auth: zhAuth, common: zhCommon, lang: zhLang, nav: zhNav, onboarding: zhOnboarding, setup: zhSetup, areas: zhAreas, plans: zhPlans, tasks: zhTasks, routines: zhRoutines, settings: zhSettings, today: zhToday },
 };
 
 i18n
