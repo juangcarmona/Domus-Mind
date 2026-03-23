@@ -27,11 +27,14 @@ using DomusMind.Application.Features.Family.GetWeeklyGrid;
 using DomusMind.Application.Features.Family.GetFamilyMembers;
 using DomusMind.Application.Features.Family.GetHouseholdTimeline;
 using DomusMind.Application.Features.Family.GetMemberActivity;
+using DomusMind.Application.Features.Family.GetMemberDetails;
 using DomusMind.Application.Features.Family.GetMyFamily;
 using DomusMind.Application.Features.Family.InviteMember;
 using DomusMind.Application.Features.Family.LinkMemberAccount;
 using DomusMind.Application.Features.Family.UpdateMember;
+using DomusMind.Application.Features.Family.UpdateMemberProfile;
 using DomusMind.Application.Features.Family.DisableMemberAccess;
+using DomusMind.Application.Features.Family.EnableMemberAccess;
 using DomusMind.Application.Features.Family.ProvisionMemberAccess;
 using DomusMind.Application.Features.Family.RegenerateTemporaryPassword;
 using DomusMind.Application.Features.Languages.GetSupportedLanguages;
@@ -88,13 +91,16 @@ public static class ApplicationServices
         services.AddScoped<ICommandHandler<UpdateFamilySettingsCommand, UpdateFamilySettingsResponse>, UpdateFamilySettingsCommandHandler>();
         services.AddScoped<ICommandHandler<InviteMemberCommand, InviteMemberResponse>, InviteMemberCommandHandler>();
         services.AddScoped<ICommandHandler<UpdateMemberCommand, UpdateMemberResponse>, UpdateMemberCommandHandler>();
+        services.AddScoped<ICommandHandler<UpdateMemberProfileCommand, UpdateMemberProfileResponse>, UpdateMemberProfileCommandHandler>();
         services.AddScoped<ICommandHandler<LinkMemberAccountCommand, LinkMemberAccountResponse>, LinkMemberAccountCommandHandler>();
         services.AddScoped<ICommandHandler<ProvisionMemberAccessCommand, ProvisionMemberAccessResponse>, ProvisionMemberAccessCommandHandler>();
         services.AddScoped<ICommandHandler<RegenerateTemporaryPasswordCommand, RegenerateTemporaryPasswordResponse>, RegenerateTemporaryPasswordCommandHandler>();
         services.AddScoped<ICommandHandler<DisableMemberAccessCommand, DisableMemberAccessResponse>, DisableMemberAccessCommandHandler>();
+        services.AddScoped<ICommandHandler<EnableMemberAccessCommand, EnableMemberAccessResponse>, EnableMemberAccessCommandHandler>();
         services.AddScoped<IQueryHandler<GetFamilyQuery, FamilyResponse>, GetFamilyQueryHandler>();
         services.AddScoped<IQueryHandler<GetMyFamilyQuery, FamilyResponse>, GetMyFamilyQueryHandler>();
-        services.AddScoped<IQueryHandler<GetFamilyMembersQuery, IReadOnlyCollection<FamilyMemberResponse>>, GetFamilyMembersQueryHandler>();
+        services.AddScoped<IQueryHandler<GetFamilyMembersQuery, IReadOnlyCollection<MemberDirectoryItemResponse>>, GetFamilyMembersQueryHandler>();
+        services.AddScoped<IQueryHandler<GetMemberDetailsQuery, MemberDetailResponse>, GetMemberDetailsQueryHandler>();
         services.AddScoped<IQueryHandler<GetHouseholdTimelineQuery, HouseholdTimelineResponse>, GetHouseholdTimelineQueryHandler>();
 
         // Responsibilities slices

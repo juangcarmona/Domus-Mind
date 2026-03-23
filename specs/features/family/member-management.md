@@ -1,8 +1,29 @@
 # Design Spec — Member Management
 
-> **Status**: Proposed  
+> **Status**: Phase 1 — Implemented  
 > **Context**: Family  
 > **Governs**: Member classification, lifecycle, roles, identity enrichment, and read models
+
+---
+
+## Phase 1 — Scope and status
+
+Phase 1 establishes the minimal foundation for household member management:
+
+- stable member directory with correct ordering and server-computed UI flags
+- 5-state account access model with first-login distinguishment
+- admin access actions (provision, disable, enable, regenerate password)
+- server-computed authorization projection so the client never re-derives permission rules
+
+What Phase 1 explicitly defers (documented in §8 for future expansion):
+
+- contact methods, addresses, emergency info
+- documents metadata (passports, insurance, medical)
+- full member profile page
+- MemberKind/ResidencyType redesign (Guest, ExternalCollaborator, etc.)
+- membership lifecycle states (Planned → Active → Inactive → Archived)
+- automated expiry
+- extended relationship types
 
 ---
 
@@ -10,86 +31,125 @@
 
 Before introducing anything new, this is the exact current state.
 
-### Family Aggregate — Current Entities
+### Family Aggregate — Current Entities (Phase 1 baseline)
 
-| Entity | Current Fields | Phase |
-|--------|---------------|-------|
-| `Member` | MemberId, FamilyId, name, role (Adult/Child/Caregiver), birthDate?, notes? | V1 |
-| `Dependent` | DependentId, FamilyId, name, birthDate?, notes? | Specified but no slice shipped |
-| `Pet` | PetId, FamilyId, name, petName | V1 |
-| `Relationship` | RelationshipId, FamilyId, fromId, toId, type | V1.1 (slice deferred) |
+`FamilyMember` is the single member entity. `Role` is `MemberRole` value object with values `Adult`, `Child`, `Caregiver`, `Pet`.
 
-### Current Member Roles (MemberRole value object)
-`Adult` · `Child` · `Caregiver`
-
-### Current Events (Family Context)
-`FamilyCreated` · `MemberAdded` · `MemberRemoved` · `DependentAdded` · `DependentRemoved` · `PetAdded` · `PetRemoved` · `RelationshipAssigned` · `RelationshipRemoved`
-
-### Current Slices (Family)
-
-| Slice | Status |
-|-------|--------|
-| create-family | V1 |
-| add-member | V1 |
-| add-initial-members | V1 |
-| view-family | V1 |
-| view-family-members | V1 |
-| update-household-settings | V1 |
-| identify-self | V1 |
-| assign-relationship | V1.1 |
-| remove-member | V1.1 |
-
-### What is NOT modeled at all
-- Member lifecycle status (no active/inactive/planned/archived)
-- Temporal membership (no start/end dates)
-- External or non-resident members (no guest, collaborator, service provider kind)
-- Household-level authorization roles (no manager/observer/collaborator distinction)
-- Display identity (no preferred name, nickname, avatar)
-- Contact information (no email, phone, messaging handles)
-- Account linking (no Member ↔ User connection)
-- Relationship extended types (no grandparent, extended family, service relation)
+Fields: `MemberId`, `FamilyId`, `Name`, `Role`, `IsManager`, `BirthDate?`, `JoinedAtUtc`, `AuthUserId?`
 
 ---
 
-## 1. Capability Definition
+## Phase 1 — Implementation
 
-### What this module does
+### Slice set (Phase 1)
 
-Member Management is the capability that governs **who belongs to a household, in what capacity, for how long, and what they are allowed to see and do**.
+| Slice | Direction | Handler |
+|-------|-----------|---------|
+| `view-member-directory` | Query | `GetFamilyMembersQuery` → `IReadOnlyCollection<MemberDirectoryItemResponse>` |
+| `view-member-details` | Query | `GetMemberDetailsQuery` → `MemberDetailResponse` |
+| `update-member-core-details` | Command | `UpdateMemberCommand` (existing) |
+| `grant-member-access` | Command | `ProvisionMemberAccessCommand` (existing) |
+| `disable-member-access` | Command | `DisableMemberAccessCommand` (existing) |
+| `enable-member-access` | Command | `EnableMemberAccessCommand` (new in Phase 1) |
+| `regenerate-member-password` | Command | `RegenerateTemporaryPasswordCommand` (existing) |
 
-It answers:
+### API endpoints
 
-- Who lives here permanently?
-- Who is visiting and until when?
-- Who helps us without living here?
-- What can each person do in the system?
-- How does the household recognize and identify each person?
+```
+GET  /api/families/{familyId}/members               → MemberDirectoryItemResponse[]
+GET  /api/families/{familyId}/members/{memberId}    → MemberDetailResponse
+POST /api/families/{familyId}/members/{memberId}/enable-access  → EnableMemberAccessResponse
+```
 
-### What problems it solves
+### MemberAccessStatus (5-state model)
 
-1. **Classification gap** — the current model cannot represent a cleaning lady, a visiting grandparent, or a summer guest. They either can't be added or must be misrepresented.
-2. **Lifecycle gap** — there is no way to model that someone is "planned to arrive in March" or "has left the household" while preserving their history.
-3. **Temporal gap** — a 3-month exchange student, a weekend babysitter, a nanny employed until August — none of these can be modeled without date-bounded membership.
-4. **Authorization gap** — there is no mechanism to limit what a service provider or guest can see or do in the system.
-5. **Identity gap** — the current `name` field is insufficient; households need to identify members by preferred name, nickname, or avatar without requiring a legal name.
+Computed by the backend on each request. The disambiguation between `InvitedOrProvisioned` and `PasswordResetRequired` uses `AuthUser.LastLoginAtUtc`:
 
-### What is explicitly OUT OF SCOPE for V1.1
+| Status | Condition |
+|--------|-----------|
+| `NoAccess` | No `AuthUserId` linked |
+| `InvitedOrProvisioned` | Has account, `MustChangePassword = true`, `LastLoginAtUtc = null` |
+| `PasswordResetRequired` | Has account, `MustChangePassword = true`, `LastLoginAtUtc` is set |
+| `Active` | Has account, not disabled, `MustChangePassword = false` |
+| `Disabled` | Has account, `IsDisabled = true` |
 
-- Medical and sensitive data (allergies, medications, conditions) — deferred to V2
-- Emergency contacts — deferred to V2
-- Presence schedule (expected hours/days per week) — deferred to V2
-- Document references (passport, insurance, school documents) — deferred to V2
-- Skill tags (driver, medical, handyman) — deferred to V2
-- Communication preferences (language, timezone, quiet hours) — deferred to V2
-- Contextual permissions (per area, per child) — deferred to V3
-- Financial participation model — deferred to V3
-- Multi-family identity merging — deferred to V3
-- Automated membership expiry (background processing) — deferred to V2; V1.1 uses manual deactivation only
-- Children having linked accounts — deferred to V2 (requires parental consent modeling)
+`LastLoginAtUtc` is set by `LoginCommandHandler` on each successful login.
+
+### MemberDirectoryItemResponse — server-computed projection
+
+```
+MemberId, FamilyId, Name, Role, IsManager, BirthDate?, JoinedAtUtc,
+AuthUserId?, AccessStatus, LinkedEmail?,
+IsCurrentUser   ← true when AuthUserId == requestedByUserId
+HasAccount      ← AuthUserId != null
+CanGrantAccess  ← isRequestingManager && !hasAccount && role != Pet
+CanEdit         ← isRequestingManager || isCurrentUser
+AvatarInitial   ← Name[0].ToUpperInvariant()
+```
+
+The client must not re-derive these values from raw data. They are authoritative.
+
+### Sort order (directory)
+
+Adults and Caregivers first (group 0) → Children (group 1) → Pets (group 2).
+Within each group: managers first, then alphabetical by name.
+
+### Permission rules
+
+| Action | Required |
+|--------|----------|
+| View directory | Family access |
+| Edit own profile | self |
+| Edit any member | manager |
+| Provision access | manager, role ≠ Pet |
+| Disable access | manager, not self |
+| Enable access | manager |
+| Regenerate password | manager, not self |
 
 ---
 
-## 2. Domain Model Proposal
+## Phase 1 infrastructure changes
+
+- `AuthUser.LastLoginAtUtc` (`DateTime?`) — set on every successful login
+- Migration: `AddLastLoginAtUtcToAuthUser`
+- `IAuthUserRepository` extended: `EnableUserAsync`, `UpdateLastLoginAtAsync`
+- `AuthUserStatusProjection` extended: `DateTime? LastLoginAtUtc`
+
+---
+
+## §8 — Extension seam for future rich member data
+
+Future phases (V2+) should add the following through a dedicated member-profile slice, NOT by extending `MemberDirectoryItemResponse`:
+
+- **Contact methods**: email addresses, phone numbers, messaging handles
+- **Addresses**: home, work, other
+- **Emergency information**: emergency contact name/phone, relationship
+- **Notes**: free-text household notes (non-sensitive)
+- **Documents metadata**: document type, issuing authority, expiry date — no file content
+
+This seam lives in a future `MemberProfileResponse` returned by a `view-member-profile` query. The directory and detail responses (`MemberDirectoryItemResponse`, `MemberDetailResponse`) deliberately do not grow with these fields.
+
+---
+
+> The sections below are roadmap proposals for V1.1 and later. They have not yet been implemented.
+> Phase 1 implementation is fully described above.
+
+---
+
+## Future roadmap — Domain Model Proposals (V1.1+)
+
+### Decision: MemberKind extended classification (V1.1)
+
+Phase 1 keeps `MemberRole` with values `Adult`, `Child`, `Caregiver`, `Pet`. Future phases will introduce:
+
+- `Guest` — temporary presence with defined period
+- `ExternalCollaborator` — non-resident helper (nanny, babysitter, au pair)
+- `ServiceProvider` — external service (cleaning, maintenance)
+- `ExtendedFamily` — non-resident family-related person
+
+Migration of existing values: `Adult → Adult`, `Child → Child`, `Caregiver → Caregiver` (no breaking change).
+
+### 2. Domain Model Proposal
 
 ### Decision: Retire `Dependent` as a separate entity
 

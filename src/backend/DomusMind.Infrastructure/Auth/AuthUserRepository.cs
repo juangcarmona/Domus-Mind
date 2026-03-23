@@ -41,7 +41,7 @@ public sealed class AuthUserRepository : IAuthUserRepository
         var result = await _db.Set<AuthUser>()
             .AsNoTracking()
             .Where(u => userIds.Contains(u.UserId))
-            .Select(u => new AuthUserStatusProjection(u.UserId, u.Email, u.IsDisabled, u.MustChangePassword))
+            .Select(u => new AuthUserStatusProjection(u.UserId, u.Email, u.IsDisabled, u.MustChangePassword, u.LastLoginAtUtc))
             .ToListAsync(cancellationToken);
 
         return result.ToDictionary(p => p.UserId);
@@ -97,6 +97,24 @@ public sealed class AuthUserRepository : IAuthUserRepository
             .Where(u => u.UserId == userId)
             .ExecuteUpdateAsync(
                 s => s.SetProperty(u => u.IsDisabled, true),
+                cancellationToken);
+    }
+
+    public async Task EnableUserAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        await _db.Set<AuthUser>()
+            .Where(u => u.UserId == userId)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(u => u.IsDisabled, false),
+                cancellationToken);
+    }
+
+    public async Task UpdateLastLoginAtAsync(Guid userId, DateTime lastLoginAtUtc, CancellationToken cancellationToken)
+    {
+        await _db.Set<AuthUser>()
+            .Where(u => u.UserId == userId)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(u => u.LastLoginAtUtc, lastLoginAtUtc),
                 cancellationToken);
     }
 

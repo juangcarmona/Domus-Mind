@@ -61,18 +61,36 @@ export interface SupportedLanguageItem {
   sortOrder: number;
 }
 
+export type MemberAccessStatus =
+  | "NoAccess"
+  | "InvitedOrProvisioned"
+  | "PasswordResetRequired"
+  | "Active"
+  | "Disabled";
+
 export interface FamilyMemberResponse {
   memberId: string;
   familyId: string;
   name: string;
+  /** Optional preferred display name. When set, the UI uses this instead of name. */
+  preferredName: string | null;
   role: string;
   isManager: boolean;
   birthDate: string | null;
   joinedAtUtc: string;
   authUserId: string | null;
-  /** "None" | "PasswordChangeRequired" | "Active" | "Disabled" */
-  accessStatus: "None" | "PasswordChangeRequired" | "Active" | "Disabled";
+  accessStatus: MemberAccessStatus;
   linkedEmail: string | null;
+  /** True when this member is the currently authenticated user. */
+  isCurrentUser: boolean;
+  /** True when the member has a linked login account. */
+  hasAccount: boolean;
+  /** True when the requesting user (a manager) can provision access for this member. */
+  canGrantAccess: boolean;
+  /** True when the requesting user may edit this member. */
+  canEdit: boolean;
+  /** First letter of the effective display name, upper-cased, for the avatar placeholder. */
+  avatarInitial: string;
 }
 
 export interface AddMemberRequest {
@@ -114,6 +132,10 @@ export interface RegenerateTemporaryPasswordResponse {
 }
 
 export interface DisableMemberAccessResponse {
+  memberId: string;
+}
+
+export interface EnableMemberAccessResponse {
   memberId: string;
 }
 
@@ -164,6 +186,30 @@ export interface UpdateMemberResponse {
   isManager: boolean;
   birthDate: string | null;
   joinedAtUtc: string;
+}
+
+/** Phase 2 member detail — includes profile seam fields. */
+export interface MemberDetailResponse extends FamilyMemberResponse {
+  lastLoginAtUtc: string | null;
+  primaryPhone: string | null;
+  primaryEmail: string | null;
+  householdNote: string | null;
+}
+
+export interface UpdateMemberProfileRequest {
+  preferredName?: string | null;
+  primaryPhone?: string | null;
+  primaryEmail?: string | null;
+  householdNote?: string | null;
+}
+
+export interface UpdateMemberProfileResponse {
+  memberId: string;
+  familyId: string;
+  preferredName: string | null;
+  primaryPhone: string | null;
+  primaryEmail: string | null;
+  householdNote: string | null;
 }
 
 export interface ParticipantProjection {
@@ -462,11 +508,26 @@ export const domusmindApi = {
       { method: "POST" },
     ),
 
+  enableMemberAccess: (familyId: string, memberId: string) =>
+    request<EnableMemberAccessResponse>(
+      `/api/families/${familyId}/members/${memberId}/enable-access`,
+      { method: "POST" },
+    ),
+
+  getMemberDetails: (familyId: string, memberId: string) =>
+    request<MemberDetailResponse>(`/api/families/${familyId}/members/${memberId}`),
+
   updateMember: (familyId: string, memberId: string, body: UpdateMemberRequest) =>
     request<UpdateMemberResponse>(`/api/families/${familyId}/members/${memberId}`, {
       method: "PUT",
       body: JSON.stringify(body),
     }),
+
+  updateMemberProfile: (familyId: string, memberId: string, body: UpdateMemberProfileRequest) =>
+    request<UpdateMemberProfileResponse>(
+      `/api/families/${familyId}/members/${memberId}/profile`,
+      { method: "PATCH", body: JSON.stringify(body) },
+    ),
 
   completeOnboarding: (familyId: string, body: CompleteOnboardingRequest) =>
     request<CompleteOnboardingResponse>(`/api/families/${familyId}/onboarding`, {

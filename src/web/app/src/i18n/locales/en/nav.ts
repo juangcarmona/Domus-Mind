@@ -7,6 +7,7 @@ export default {
   planning: "Planning",
   week: "Week",
   today: "Today",
+  members: "Members",
   signOut: "Sign out",
   settings: "Settings",
 } as const;

@@ -21,6 +21,8 @@ import { AreasPage } from "./features/areas/pages/AreasPage";
 import { PlanningPage } from "./features/planning/pages/PlanningPage";
 import { SettingsPage } from "./features/settings/pages/SettingsPage";
 import { TodayPage } from "./features/today/pages/TodayPage";
+import { MembersPage } from "./features/members/pages/MembersPage";
+import { MemberDetailPage } from "./features/members/pages/MemberDetailPage";
 import { setupApi } from "./api/setupApi";
 
 /** Keeps document.documentElement[data-theme] in sync with Redux ui.theme. */
@@ -82,6 +84,8 @@ function AuthedApp() {
       <Routes>
         <Route path="/areas" element={<AreasPage />} />
         <Route path="/planning" element={<PlanningPage />} />
+        <Route path="/members" element={<MembersPage />} />
+        <Route path="/members/:memberId" element={<MemberDetailPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/timeline" element={<Navigate to="/planning" replace />} />
         <Route path="/" element={<TodayPage />} />

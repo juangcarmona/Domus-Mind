@@ -9,6 +9,7 @@ import {
   type LinkMemberAccountRequest,
   type ProvisionMemberAccessRequest,
   type UpdateMemberRequest,
+  type UpdateMemberProfileRequest,
 } from "../api/domusmindApi";
 
 const FAMILY_KEY = "dm_family_id";
@@ -87,10 +88,12 @@ export const addMember = createAsyncThunk(
   "household/addMember",
   async (
     { familyId, name, role, birthDate, isManager }: { familyId: string; name: string; role: string; birthDate?: string | null; isManager?: boolean },
-    { rejectWithValue },
+    { dispatch, rejectWithValue },
   ) => {
     try {
-      return await domusmindApi.addMember(familyId, { name, role, birthDate, isManager });
+      const response = await domusmindApi.addMember(familyId, { name, role, birthDate, isManager });
+      dispatch(fetchMembers(familyId));
+      return response;
     } catch (err: unknown) {
       return rejectWithValue((err as { message?: string }).message ?? "Failed to add person");
     }
@@ -173,6 +176,39 @@ export const disableMemberAccess = createAsyncThunk(
       return response;
     } catch (err: unknown) {
       return rejectWithValue((err as { message?: string }).message ?? "Failed to disable access");
+    }
+  },
+);
+
+export const enableMemberAccess = createAsyncThunk(
+  "household/enableMemberAccess",
+  async (
+    { familyId, memberId }: { familyId: string; memberId: string },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const response = await domusmindApi.enableMemberAccess(familyId, memberId);
+      dispatch(fetchMembers(familyId));
+      return response;
+    } catch (err: unknown) {
+      return rejectWithValue((err as { message?: string }).message ?? "Failed to enable access");
+    }
+  },
+);
+
+export const updateMemberProfile = createAsyncThunk(
+  "household/updateMemberProfile",
+  async (
+    { familyId, memberId, ...body }: { familyId: string; memberId: string } & UpdateMemberProfileRequest,
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const response = await domusmindApi.updateMemberProfile(familyId, memberId, body);
+      // Re-fetch to get the updated directory item with all server-computed fields
+      dispatch(fetchMembers(familyId));
+      return response;
+    } catch (err: unknown) {
+      return rejectWithValue((err as { message?: string }).message ?? "Failed to update profile");
     }
   },
 );
@@ -277,28 +313,28 @@ const householdSlice = createSlice({
       .addCase(fetchMembers.fulfilled, (state, action) => {
         state.members = action.payload;
       })
-      .addCase(addMember.fulfilled, (state, action) => {
-        state.members.push({
-          ...action.payload,
-          isManager: false,
-          birthDate: null,
-          authUserId: null,
-          accessStatus: "None",
-          linkedEmail: null,
-        });
+      .addCase(addMember.fulfilled, (_state, _action) => {
+        // Re-fetch to get full server-computed fields (canEdit, hasAccount, etc.)
+        // The optimistic push is skipped — fetchMembers is dispatched by the thunk.
       })
       .addCase(completeOnboarding.fulfilled, (state, action) => {
         state.members = action.payload.members.map((m) => ({
           memberId: m.memberId,
           familyId: action.payload.familyId,
           name: m.name,
+          preferredName: null,
           role: m.role,
           isManager: m.isManager,
           birthDate: m.birthDate,
           joinedAtUtc: m.joinedAtUtc,
           authUserId: null,
-          accessStatus: "None" as const,
+          accessStatus: "NoAccess" as const,
           linkedEmail: null,
+          isCurrentUser: false,
+          hasAccount: false,
+          canGrantAccess: false,
+          canEdit: false,
+          avatarInitial: m.name?.[0]?.toUpperCase() ?? "?",
         }));
         state.bootstrapStatus = "ready";
         state.error = null;
@@ -314,6 +350,16 @@ const householdSlice = createSlice({
             role: action.payload.role,
             isManager: action.payload.isManager,
             birthDate: action.payload.birthDate,
+          };
+        }
+      })
+      .addCase(updateMemberProfile.fulfilled, (state, action) => {
+        // preferredName update is reflected immediately in store
+        const idx = state.members.findIndex((m) => m.memberId === action.payload.memberId);
+        if (idx !== -1) {
+          state.members[idx] = {
+            ...state.members[idx],
+            preferredName: action.payload.preferredName,
           };
         }
       })

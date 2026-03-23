@@ -180,6 +180,12 @@ public sealed class AuthSeedServiceTests
         public Task DisableUserAsync(Guid userId, CancellationToken ct)
             => Task.CompletedTask;
 
+        public Task EnableUserAsync(Guid userId, CancellationToken ct)
+            => Task.CompletedTask;
+
+        public Task UpdateLastLoginAtAsync(Guid userId, DateTime lastLoginAtUtc, CancellationToken ct)
+            => Task.CompletedTask;
+
         public Task<IReadOnlyDictionary<Guid, AuthUserStatusProjection>> GetStatusByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct)
             => Task.FromResult<IReadOnlyDictionary<Guid, AuthUserStatusProjection>>(new Dictionary<Guid, AuthUserStatusProjection>());
 

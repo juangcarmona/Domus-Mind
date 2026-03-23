@@ -41,5 +41,7 @@ public sealed class AuthUserConfiguration : IEntityTypeConfiguration<AuthUser>
         builder.Property(x => x.MemberId);
 
         builder.Property(x => x.CreatedByUserId);
+
+        builder.Property(x => x.LastLoginAtUtc);
     }
 }

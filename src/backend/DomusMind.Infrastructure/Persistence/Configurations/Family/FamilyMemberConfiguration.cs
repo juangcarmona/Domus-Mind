@@ -53,6 +53,26 @@ public sealed class FamilyMemberConfiguration : IEntityTypeConfiguration<FamilyM
             .HasColumnName("auth_user_id")
             .IsRequired(false);
 
+        builder.Property(m => m.PreferredName)
+            .HasColumnName("preferred_name")
+            .HasMaxLength(100)
+            .IsRequired(false);
+
+        builder.Property(m => m.PrimaryPhone)
+            .HasColumnName("primary_phone")
+            .HasMaxLength(50)
+            .IsRequired(false);
+
+        builder.Property(m => m.PrimaryEmail)
+            .HasColumnName("primary_email")
+            .HasMaxLength(200)
+            .IsRequired(false);
+
+        builder.Property(m => m.HouseholdNote)
+            .HasColumnName("household_note")
+            .HasMaxLength(500)
+            .IsRequired(false);
+
         // Shadow FK to parent family
         builder.Property<FamilyId>("FamilyId")
             .HasConversion(

@@ -5,7 +5,8 @@ public sealed record AuthUserStatusProjection(
     Guid UserId,
     string Email,
     bool IsDisabled,
-    bool MustChangePassword);
+    bool MustChangePassword,
+    DateTime? LastLoginAtUtc);
 
 public interface IAuthUserRepository
 {
@@ -26,6 +27,10 @@ public interface IAuthUserRepository
     Task UpdatePasswordChangedAtAsync(Guid userId, DateTime changedAtUtc, CancellationToken cancellationToken);
 
     Task DisableUserAsync(Guid userId, CancellationToken cancellationToken);
+
+    Task EnableUserAsync(Guid userId, CancellationToken cancellationToken);
+
+    Task UpdateLastLoginAtAsync(Guid userId, DateTime lastLoginAtUtc, CancellationToken cancellationToken);
 
     Task<bool> AnyUsersAsync(CancellationToken cancellationToken);
 

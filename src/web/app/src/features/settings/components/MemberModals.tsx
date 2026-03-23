@@ -14,6 +14,13 @@ export interface MemberFormValues {
   isManager: boolean;
 }
 
+export interface ProfileFormValues {
+  preferredName: string;
+  primaryPhone: string;
+  primaryEmail: string;
+  householdNote: string;
+}
+
 // ── Edit member modal ────────────────────────────────────────────────────────
 
 interface EditMemberModalProps {
@@ -284,7 +291,7 @@ export function GrantAccessModal({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h2 style={{ marginBottom: "0.25rem" }}>{tM("provisionAccess")}</h2>
+        <h2 style={{ marginBottom: "0.25rem" }}>{t("household.members.provisionAccess" as never)}</h2>
         <p style={{ fontSize: "0.85rem", color: "var(--muted)", marginBottom: "0.85rem" }}>
           {memberName} — {tM("provisionAccessSubtitle")}
         </p>
@@ -317,6 +324,95 @@ export function GrantAccessModal({
             <button type="button" className="btn btn-ghost" onClick={onClose}>{tM("cancel")}</button>
             <button type="submit" className="btn" disabled={saving}>
               {saving ? tM("saving") : tM("provisionAccess")}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Edit profile modal ───────────────────────────────────────────────────────
+
+interface EditProfileModalProps {
+  member: {
+    preferredName?: string | null;
+    primaryPhone?: string | null;
+    primaryEmail?: string | null;
+    householdNote?: string | null;
+  };
+  saving: boolean;
+  error: string | null;
+  onSave: (values: ProfileFormValues) => void;
+  onClose: () => void;
+}
+
+export function EditProfileModal({ member, saving, error, onSave, onClose }: EditProfileModalProps) {
+  const { t } = useTranslation("settings");
+  const tM = (key: string) => t(`household.members.${key}` as never);
+
+  const [preferredName, setPreferredName] = useState(member.preferredName ?? "");
+  const [primaryPhone, setPrimaryPhone] = useState(member.primaryPhone ?? "");
+  const [primaryEmail, setPrimaryEmail] = useState(member.primaryEmail ?? "");
+  const [householdNote, setHouseholdNote] = useState(member.householdNote ?? "");
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    onSave({ preferredName: preferredName.trim(), primaryPhone: primaryPhone.trim(), primaryEmail: primaryEmail.trim(), householdNote: householdNote.trim() });
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h2 style={{ marginBottom: "1rem" }}>{tM("editProfileTitle")}</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>{tM("preferredName")}</label>
+            <input
+              className="form-control"
+              type="text"
+              value={preferredName}
+              onChange={(e) => setPreferredName(e.target.value)}
+              placeholder={tM("preferredNamePlaceholder")}
+              autoFocus
+            />
+          </div>
+          <div className="form-group">
+            <label>{tM("primaryPhone")}</label>
+            <input
+              className="form-control"
+              type="tel"
+              value={primaryPhone}
+              onChange={(e) => setPrimaryPhone(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
+          <div className="form-group">
+            <label>{tM("primaryEmail")}</label>
+            <input
+              className="form-control"
+              type="email"
+              value={primaryEmail}
+              onChange={(e) => setPrimaryEmail(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
+          <div className="form-group">
+            <label>{tM("householdNote")}</label>
+            <textarea
+              className="form-control"
+              value={householdNote}
+              onChange={(e) => setHouseholdNote(e.target.value)}
+              placeholder={tM("householdNotePlaceholder")}
+              rows={3}
+              style={{ resize: "vertical" }}
+            />
+          </div>
+          {error && <p className="error-msg">{error}</p>}
+          <div className="modal-footer">
+            <button type="button" className="btn btn-ghost" onClick={onClose}>{tM("cancel")}</button>
+            <button type="submit" className="btn" disabled={saving}>
+              {saving ? tM("saving") : tM("save")}
             </button>
           </div>
         </form>

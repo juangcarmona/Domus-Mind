@@ -11,9 +11,7 @@ export function MembersSettingsSection() {
   const { user } = useAuth();
   const dispatch = useAppDispatch();
   const { family, members } = useAppSelector((s) => s.household);
-  const me = members.find(
-    (m) => m.authUserId === user?.userId || (user?.memberId != null && m.memberId === user?.memberId),
-  );
+  const me = members.find((m) => m.isCurrentUser);
   const tM = (key: string) => t(`household.members.${key}` as never);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -42,8 +40,13 @@ export function MembersSettingsSection() {
     }
   }
 
+  // Effective display name: preferredName if set, else name
+  const displayName = me?.preferredName || me?.name;
+  const avatarInitial = displayName?.[0]?.toUpperCase() ?? "?";
+
   return (
     <>
+      {/* ── Section A: My Profile ─────────────────────────────────────────── */}
       {me && (
         <section className="settings-section">
           <h2 className="settings-section-title">{t("membersTab.myProfile")}</h2>
@@ -72,11 +75,16 @@ export function MembersSettingsSection() {
                 flexShrink: 0,
               }}
             >
-              {me.name[0]?.toUpperCase()}
+              {avatarInitial}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 700, fontSize: "1.05rem", display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                <span>{me.name}</span>
+                <span>{displayName}</span>
+                {me.name !== displayName && (
+                  <span style={{ fontSize: "0.8rem", color: "var(--muted)", fontStyle: "italic" }}>
+                    ({me.name})
+                  </span>
+                )}
                 {me.isManager && (
                   <span
                     style={{
@@ -112,17 +120,18 @@ export function MembersSettingsSection() {
                 )}
               </div>
               <div style={{ fontSize: "0.8rem", color: "var(--muted)", marginTop: "0.15rem" }}>
-                {user?.email}
+                {me.linkedEmail ?? user?.email ?? ""}
               </div>
             </div>
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              style={{ flexShrink: 0 }}
-              onClick={() => { setIsEditing(true); setEditError(null); }}
-            >
-              {t("membersTab.editProfile")}
-            </button>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", flexShrink: 0, alignItems: "flex-end" }}>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => { setIsEditing(true); setEditError(null); }}
+              >
+                {t("membersTab.editProfile")}
+              </button>
+            </div>
           </div>
 
           {isEditing && (
@@ -137,6 +146,7 @@ export function MembersSettingsSection() {
         </section>
       )}
 
+      {/* ── Section B: Household Members ─────────────────────────────────── */}
       <MembersManagementSection />
     </>
   );

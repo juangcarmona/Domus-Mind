@@ -54,6 +54,20 @@ internal sealed class InMemoryAuthUserRepository : IAuthUserRepository
         return Task.CompletedTask;
     }
 
+    public Task EnableUserAsync(Guid userId, CancellationToken ct)
+    {
+        var index = Users.FindIndex(u => u.UserId == userId);
+        if (index >= 0)
+            Users[index] = Users[index] with { IsDisabled = false };
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateLastLoginAtAsync(Guid userId, DateTime lastLoginAtUtc, CancellationToken ct)
+    {
+        // no-op in test stub (LastLoginAtUtc not tracked in AuthUserRecord)
+        return Task.CompletedTask;
+    }
+
     public Task<IReadOnlyDictionary<Guid, AuthUserStatusProjection>> GetStatusByIdsAsync(
         IReadOnlyCollection<Guid> userIds,
         CancellationToken ct)
@@ -62,7 +76,7 @@ internal sealed class InMemoryAuthUserRepository : IAuthUserRepository
             .Where(u => userIds.Contains(u.UserId))
             .ToDictionary(
                 u => u.UserId,
-                u => new AuthUserStatusProjection(u.UserId, u.Email, u.IsDisabled, u.MustChangePassword));
+                u => new AuthUserStatusProjection(u.UserId, u.Email, u.IsDisabled, u.MustChangePassword, null));
         return Task.FromResult(result);
     }
 

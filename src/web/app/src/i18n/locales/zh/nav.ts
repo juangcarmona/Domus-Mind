@@ -7,6 +7,7 @@ export default {
   planning: "规划",
   week: "周",
   today: "今天",
+  members: "成员",
   signOut: "退出",
   settings: "设置",
 } as const;

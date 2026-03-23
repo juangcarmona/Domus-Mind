@@ -7,6 +7,7 @@ export default {
   planning: "プランニング",
   week: "週間",
   today: "今日",
+  members: "メンバー",
   signOut: "サインアウト",
   settings: "設定",
 } as const;

@@ -5,12 +5,14 @@ using DomusMind.Application.Features.Family.AddMember;
 using DomusMind.Application.Features.Family.CompleteOnboarding;
 using DomusMind.Application.Features.Family.CreateFamily;
 using DomusMind.Application.Features.Family.DisableMemberAccess;
+using DomusMind.Application.Features.Family.EnableMemberAccess;
 using DomusMind.Application.Features.Family.UpdateFamilySettings;
 using DomusMind.Application.Features.Family.GetEnrichedTimeline;
 using DomusMind.Application.Features.Family.GetFamily;
 using DomusMind.Application.Features.Family.GetFamilyMembers;
 using DomusMind.Application.Features.Family.GetHouseholdTimeline;
 using DomusMind.Application.Features.Family.GetMemberActivity;
+using DomusMind.Application.Features.Family.GetMemberDetails;
 using DomusMind.Application.Features.Family.GetMyFamily;
 using DomusMind.Application.Features.Family.GetWeeklyGrid;
 using DomusMind.Application.Features.Family.InviteMember;
@@ -18,6 +20,7 @@ using DomusMind.Application.Features.Family.LinkMemberAccount;
 using DomusMind.Application.Features.Family.ProvisionMemberAccess;
 using DomusMind.Application.Features.Family.RegenerateTemporaryPassword;
 using DomusMind.Application.Features.Family.UpdateMember;
+using DomusMind.Application.Features.Family.UpdateMemberProfile;
 using DomusMind.Contracts.Family;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -208,7 +211,7 @@ public sealed class FamiliesController : ControllerBase
 
     /// <summary>Returns all members of the given family.</summary>
     [HttpGet("{familyId:guid}/members")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<FamilyMemberResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IReadOnlyCollection<MemberDirectoryItemResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetFamilyMembers(
@@ -248,6 +251,59 @@ public sealed class FamiliesController : ControllerBase
         {
             var response = await dispatcher.Dispatch(
                 new GetHouseholdTimelineQuery(familyId, _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (FamilyException ex)
+        {
+            return MapFamilyException(ex);
+        }
+    }
+
+    /// <summary>Returns the details of a single family member.</summary>
+    [HttpGet("{familyId:guid}/members/{memberId:guid}")]
+    [ProducesResponseType(typeof(MemberDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetMemberDetails(
+        Guid familyId,
+        Guid memberId,
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new GetMemberDetailsQuery(familyId, memberId, _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (FamilyException ex)
+        {
+            return MapFamilyException(ex);
+        }
+    }
+
+    /// <summary>
+    /// Re-enables a disabled member's login access. Manager only.
+    /// </summary>
+    [HttpPost("{familyId:guid}/members/{memberId:guid}/enable-access")]
+    [ProducesResponseType(typeof(EnableMemberAccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> EnableMemberAccess(
+        Guid familyId,
+        Guid memberId,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new EnableMemberAccessCommand(familyId, memberId, _currentUser.UserId!.Value),
                 cancellationToken);
 
             return Ok(response);
@@ -447,6 +503,43 @@ public sealed class FamiliesController : ControllerBase
                     request.BirthDate,
                     request.IsManager,
                     _currentUser.UserId!.Value),
+                cancellationToken);
+
+            return Ok(response);
+        }
+        catch (FamilyException ex)
+        {
+            return MapFamilyException(ex);
+        }
+    }
+
+    /// <summary>
+    /// Updates the lightweight profile fields for a member: preferred name, contact phone/email, household note.
+    /// The member themselves or a household manager may call this endpoint.
+    /// </summary>
+    [HttpPatch("{familyId:guid}/members/{memberId:guid}/profile")]
+    [ProducesResponseType(typeof(UpdateMemberProfileResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateMemberProfile(
+        Guid familyId,
+        Guid memberId,
+        [FromBody] UpdateMemberProfileRequest request,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new UpdateMemberProfileCommand(
+                    familyId,
+                    memberId,
+                    _currentUser.UserId!.Value,
+                    request.PreferredName,
+                    request.PrimaryPhone,
+                    request.PrimaryEmail,
+                    request.HouseholdNote),
                 cancellationToken);
 
             return Ok(response);

@@ -31,6 +31,9 @@ public sealed class AuthUser
     /// <summary>UTC timestamp of the last successful password change.</summary>
     public DateTime? PasswordChangedAtUtc { get; set; }
 
+    /// <summary>UTC timestamp of the last successful login. Null until the first login occurs.</summary>
+    public DateTime? LastLoginAtUtc { get; set; }
+
     /// <summary>
     /// The household family member this auth user is linked to.
     /// Null for the bootstrap admin and for users created before the

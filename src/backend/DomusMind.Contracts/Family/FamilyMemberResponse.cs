@@ -4,9 +4,11 @@ namespace DomusMind.Contracts.Family;
 public enum MemberAccessStatus
 {
     /// <summary>No login account has been provisioned.</summary>
-    None,
-    /// <summary>Account exists and is active. Member must still change the temporary password.</summary>
-    PasswordChangeRequired,
+    NoAccess,
+    /// <summary>Account exists but the member has never logged in (provisioned / invited, awaiting first login).</summary>
+    InvitedOrProvisioned,
+    /// <summary>Account exists and the member has logged in before, but must change the password.</summary>
+    PasswordResetRequired,
     /// <summary>Account exists, active and in normal use.</summary>
     Active,
     /// <summary>Account has been disabled by an admin.</summary>
