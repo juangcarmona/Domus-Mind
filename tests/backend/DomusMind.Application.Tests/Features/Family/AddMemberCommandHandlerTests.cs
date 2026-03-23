@@ -42,7 +42,7 @@ public sealed class AddMemberCommandHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new AddMemberCommand(family.Id.Value, "Alice", "Adult", userId),
+            new AddMemberCommand(family.Id.Value, "Alice", "Adult", null, false, userId),
             CancellationToken.None);
 
         result.MemberId.Should().NotBeEmpty();
@@ -59,7 +59,7 @@ public sealed class AddMemberCommandHandlerTests
         var handler = BuildHandler(db);
 
         var result = await handler.Handle(
-            new AddMemberCommand(family.Id.Value, "Bob", "Child", userId),
+            new AddMemberCommand(family.Id.Value, "Bob", "Child", null, false, userId),
             CancellationToken.None);
 
         var saved = await db.Set<FamilyMember>().FindAsync(MemberId.From(result.MemberId));
@@ -74,7 +74,7 @@ public sealed class AddMemberCommandHandlerTests
         var handler = BuildHandler(db, auth);
 
         var act = () => handler.Handle(
-            new AddMemberCommand(family.Id.Value, "Charlie", "Adult", Guid.NewGuid()),
+            new AddMemberCommand(family.Id.Value, "Charlie", "Adult", null, false, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<FamilyException>()
@@ -88,7 +88,7 @@ public sealed class AddMemberCommandHandlerTests
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(
-            new AddMemberCommand(Guid.NewGuid(), "Dave", "Adult", Guid.NewGuid()),
+            new AddMemberCommand(Guid.NewGuid(), "Dave", "Adult", null, false, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<FamilyException>()
@@ -104,7 +104,7 @@ public sealed class AddMemberCommandHandlerTests
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(
-            new AddMemberCommand(family.Id.Value, name, "Adult", Guid.NewGuid()),
+            new AddMemberCommand(family.Id.Value, name, "Adult", null, false, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<FamilyException>()
@@ -118,7 +118,7 @@ public sealed class AddMemberCommandHandlerTests
         var handler = BuildHandler(db);
 
         var act = () => handler.Handle(
-            new AddMemberCommand(family.Id.Value, "Eve", "Owner", Guid.NewGuid()),
+            new AddMemberCommand(family.Id.Value, "Eve", "Owner", null, false, Guid.NewGuid()),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ArgumentException>();

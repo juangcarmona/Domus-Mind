@@ -297,6 +297,8 @@ const householdSlice = createSlice({
           birthDate: m.birthDate,
           joinedAtUtc: m.joinedAtUtc,
           authUserId: null,
+          accessStatus: "None" as const,
+          linkedEmail: null,
         }));
         state.bootstrapStatus = "ready";
         state.error = null;

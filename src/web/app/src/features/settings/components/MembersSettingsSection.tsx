@@ -11,7 +11,9 @@ export function MembersSettingsSection() {
   const { user } = useAuth();
   const dispatch = useAppDispatch();
   const { family, members } = useAppSelector((s) => s.household);
-  const me = members.find((m) => m.authUserId === user?.userId);
+  const me = members.find(
+    (m) => m.authUserId === user?.userId || (user?.memberId != null && m.memberId === user?.memberId),
+  );
   const tM = (key: string) => t(`household.members.${key}` as never);
 
   const [isEditing, setIsEditing] = useState(false);

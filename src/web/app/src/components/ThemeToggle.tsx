@@ -12,7 +12,6 @@ function useResolvedTheme(): "light" | "dark" {
 
 export function ThemeToggle() {
   const dispatch = useAppDispatch();
-  const theme = useAppSelector((s) => s.ui.theme);
   const resolved = useResolvedTheme();
   const isDark = resolved === "dark";
 

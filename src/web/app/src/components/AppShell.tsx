@@ -51,8 +51,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const members = useAppSelector((s) => s.household.members);
-  const currentMember = members.find((m) => m.authUserId === user?.userId);
-  const userName = user?.displayName ?? currentMember?.name ?? user?.email ?? "";
+  const currentMember = members.find(
+    (m) => m.authUserId === user?.userId || (user?.memberId != null && m.memberId === user?.memberId),
+  );
+  const userName = user?.displayName ?? user?.memberName ?? currentMember?.name ?? user?.email ?? "";
 
   return (
     <div className="app-layout">

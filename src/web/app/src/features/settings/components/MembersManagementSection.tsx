@@ -51,7 +51,9 @@ export function MembersManagementSection() {
   const dispatch = useAppDispatch();
   const { family, members } = useAppSelector((s) => s.household);
   const isCurrentUserManager = members.some(
-    (m) => m.authUserId === user?.userId && m.isManager,
+    (m) =>
+      (m.authUserId === user?.userId || (user?.memberId != null && m.memberId === user?.memberId)) &&
+      m.isManager,
   );
 
   const tM = (key: string) => t(`household.members.${key}` as never);
@@ -85,7 +87,9 @@ export function MembersManagementSection() {
 
   if (!family) return null;
 
-  const myMemberId = members.find((m) => m.authUserId === user?.userId)?.memberId;
+  const myMemberId = members.find(
+    (m) => m.authUserId === user?.userId || (user?.memberId != null && m.memberId === user?.memberId),
+  )?.memberId;
 
   const roleOrder = (role: string) => {
     switch (role) {
