@@ -13,437 +13,27 @@ import {
 import {
   AddMemberModal,
   EditMemberModal,
-  EditProfileModal,
   GrantAccessModal,
   type MemberFormValues,
   type ProfileFormValues,
 } from "./MemberModals";
+import { MemberGroup } from "./MemberGroup";
+import { MemberDetailPanel } from "./MemberDetailPanel";
 import type { FamilyMemberResponse, MemberAccessStatus } from "../../../api/domusmindApi";
 import { domusmindApi, type MemberDetailResponse } from "../../../api/domusmindApi";
 
-// -- Access status badge -------------------------------------------------------
-
-function AccessStatusBadge({
-  status,
-  tM,
-}: {
-  status: MemberAccessStatus;
-  tM: (key: string) => string;
-}) {
-  const map: Record<MemberAccessStatus, { label: string; color: string }> = {
-    NoAccess: { label: tM("noAccessBadge"), color: "var(--muted)" },
-    InvitedOrProvisioned: { label: tM("invitedOrProvisioned"), color: "#3b82f6" },
-    PasswordResetRequired: { label: tM("passwordChangeRequired"), color: "#f5a623" },
-    Active: { label: tM("accountActive"), color: "#22c55e" },
-    Disabled: { label: tM("accountDisabled"), color: "#ef4444" },
-  };
-  const badge = map[status] ?? map["NoAccess"];
-  return (
-    <span
-      style={{
-        fontSize: "0.68rem",
-        padding: "0.1rem 0.4rem",
-        borderRadius: 4,
-        background: `color-mix(in srgb, ${badge.color} 18%, transparent)`,
-        color: badge.color,
-        whiteSpace: "nowrap",
-      }}
-    >
-      {badge.label}
-    </span>
-  );
+function accessPriority(status: MemberAccessStatus): number {
+  if (status === "Active") return 0;
+  if (status === "InvitedOrProvisioned" || status === "PasswordResetRequired") return 1;
+  if (status === "Disabled") return 2;
+  return 3;
 }
-
-// -- Avatar circle ---------------------------------------------------------------
-
-function Avatar({ initial, size = 36 }: { initial: string; size?: number }) {
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: "50%",
-        background: "color-mix(in srgb, var(--primary) 15%, transparent)",
-        color: "var(--primary)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontWeight: 700,
-        fontSize: size >= 40 ? "1rem" : "0.85rem",
-        flexShrink: 0,
-      }}
-    >
-      {initial}
-    </div>
-  );
-}
-
-// -- Member card ----------------------------------------------------------------
-
-interface MemberCardProps {
-  m: FamilyMemberResponse;
-  isCurrentUserManager: boolean;
-  onSelect: (m: FamilyMemberResponse) => void;
-  onEdit: (id: string) => void;
-  onGrantAccess: (id: string) => void;
-  onRegenPassword: (id: string) => void;
-  onDisable: (id: string) => void;
-  onEnable: (id: string) => void;
-  regenMemberId: string | null;
-  regenResult: string | null;
-  regenSaving: boolean;
-  regenError: string | null;
-  disableSaving: string | null;
-  disableError: { memberId: string; message: string } | null;
-  enableSaving: string | null;
-  enableError: { memberId: string; message: string } | null;
-  tM: (key: string) => string;
-}
-
-function MemberCard({
-  m,
-  isCurrentUserManager,
-  onSelect,
-  onEdit,
-  onGrantAccess,
-  onRegenPassword,
-  onDisable,
-  onEnable,
-  regenMemberId,
-  regenResult,
-  regenSaving,
-  regenError,
-  disableSaving,
-  disableError,
-  enableSaving,
-  enableError,
-  tM,
-}: MemberCardProps) {
-  const { t } = useTranslation("settings");
-  const displayName = m.preferredName || m.name;
-
-  return (
-    <div className="item-card" style={{ flexWrap: "wrap" }}>
-      <button
-        type="button"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.75rem",
-          flex: 1,
-          minWidth: 0,
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          textAlign: "left",
-          padding: 0,
-          color: "inherit",
-        }}
-        onClick={() => onSelect(m)}
-        aria-label={displayName + " details"}
-      >
-        <Avatar initial={m.avatarInitial} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 600, display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-            <span>{displayName}</span>
-            {m.isManager && (
-              <span style={{ fontSize: "0.68rem", padding: "0.1rem 0.4rem", borderRadius: 4, background: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "var(--primary)" }}>
-                {tM("managerBadge")}
-              </span>
-            )}
-            <AccessStatusBadge status={m.accessStatus} tM={tM} />
-          </div>
-          <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-            {t(`household.members.roles.${m.role}` as never, m.role)}
-            {m.linkedEmail && <span style={{ marginLeft: 8 }}>{m.linkedEmail}</span>}
-          </div>
-        </div>
-      </button>
-
-      <div style={{ display: "flex", gap: "0.35rem", flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
-        {m.canEdit && (
-          <button type="button" className="btn btn-ghost" style={{ fontSize: "0.78rem", padding: "0.2rem 0.55rem" }} onClick={() => onEdit(m.memberId)}>
-            {tM("edit")}
-          </button>
-        )}
-        {m.canGrantAccess && (
-          <button type="button" className="btn btn-ghost" style={{ fontSize: "0.78rem", padding: "0.2rem 0.55rem" }} onClick={() => onGrantAccess(m.memberId)}>
-            {tM("provisionAccess")}
-          </button>
-        )}
-        {isCurrentUserManager && m.hasAccount && m.accessStatus !== "Disabled" && (
-          <>
-            <button type="button" className="btn btn-ghost" style={{ fontSize: "0.78rem", padding: "0.2rem 0.55rem" }} disabled={regenSaving && regenMemberId === m.memberId} onClick={() => onRegenPassword(m.memberId)}>
-              {regenSaving && regenMemberId === m.memberId ? tM("saving") : tM("regeneratePassword")}
-            </button>
-            <button type="button" className="btn btn-ghost" style={{ fontSize: "0.78rem", padding: "0.2rem 0.55rem", color: "#ef4444" }} disabled={disableSaving === m.memberId} onClick={() => onDisable(m.memberId)}>
-              {disableSaving === m.memberId ? tM("saving") : tM("disableAccess")}
-            </button>
-          </>
-        )}
-        {isCurrentUserManager && m.hasAccount && m.accessStatus === "Disabled" && (
-          <button type="button" className="btn btn-ghost" style={{ fontSize: "0.78rem", padding: "0.2rem 0.55rem", color: "#22c55e" }} disabled={enableSaving === m.memberId} onClick={() => onEnable(m.memberId)}>
-            {enableSaving === m.memberId ? tM("saving") : tM("enableAccess")}
-          </button>
-        )}
-      </div>
-
-      {regenMemberId === m.memberId && regenResult && (
-        <div style={{ width: "100%", marginTop: "0.5rem", background: "color-mix(in srgb, var(--primary) 8%, transparent)", borderRadius: 6, padding: "0.5rem 0.75rem", fontFamily: "monospace", fontSize: "0.85rem" }}>
-          <span style={{ color: "var(--muted)", marginRight: 8 }}>{tM("newTemporaryPassword")}:</span>
-          <strong>{regenResult}</strong>
-          <button type="button" className="btn btn-ghost" style={{ fontSize: "0.7rem", padding: "0.1rem 0.5rem", marginLeft: 8 }} onClick={() => navigator.clipboard?.writeText(regenResult!)}>
-            {tM("copy")}
-          </button>
-          <div style={{ fontSize: "0.75rem", color: "#f5a623", marginTop: "0.25rem" }}>{tM("credentialsSaveWarning")}</div>
-        </div>
-      )}
-      {regenMemberId === m.memberId && regenError && <p className="error-msg" style={{ marginTop: "0.25rem", width: "100%" }}>{regenError}</p>}
-      {disableError?.memberId === m.memberId && <p className="error-msg" style={{ marginTop: "0.25rem", width: "100%" }}>{disableError.message}</p>}
-      {enableError?.memberId === m.memberId && <p className="error-msg" style={{ marginTop: "0.25rem", width: "100%" }}>{enableError.message}</p>}
-    </div>
-  );
-}
-
-// -- Member detail side panel --------------------------------------------------
-
-interface DetailPanelProps {
-  member: FamilyMemberResponse;
-  detail: MemberDetailResponse | null;
-  loadingDetail: boolean;
-  isCurrentUserManager: boolean;
-  familyId: string;
-  onClose: () => void;
-  onEditCore: (id: string) => void;
-  onGrantAccess: (id: string) => void;
-  onRegenPassword: (id: string) => void;
-  onDisable: (id: string) => void;
-  onEnable: (id: string) => void;
-  onProfileSave: (values: ProfileFormValues) => void;
-  profileSaving: boolean;
-  profileError: string | null;
-  tM: (key: string) => string;
-}
-
-function DetailPanel({
-  member, detail, loadingDetail, isCurrentUserManager,
-  onClose, onEditCore, onGrantAccess, onRegenPassword, onDisable, onEnable,
-  onProfileSave, profileSaving, profileError, tM,
-}: DetailPanelProps) {
-  const { t } = useTranslation("settings");
-  const [activeTab, setActiveTab] = useState<"core" | "access" | "contacts" | "notes">("core");
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const displayName = member.preferredName || member.name;
-
-  function TabBtn({ id, label }: { id: typeof activeTab; label: string }) {
-    return (
-      <button type="button" onClick={() => setActiveTab(id)}
-        style={{ padding: "0.4rem 0.75rem", fontSize: "0.82rem", border: "none", borderBottom: activeTab === id ? "2px solid var(--primary)" : "2px solid transparent", background: "none", cursor: "pointer", color: activeTab === id ? "var(--primary)" : "var(--muted)", fontWeight: activeTab === id ? 600 : 400 }}>
-        {label}
-      </button>
-    );
-  }
-
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", justifyContent: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)" }} onClick={onClose} />
-      <div style={{ position: "relative", width: "min(420px, 95vw)", height: "100%", background: "var(--surface, #fff)", boxShadow: "-4px 0 24px rgba(0,0,0,0.18)", display: "flex", flexDirection: "column", overflow: "hidden" }} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem 1rem 0.75rem", borderBottom: "1px solid var(--border, #eee)" }}>
-          <Avatar initial={member.avatarInitial} size={44} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: "1rem", display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-              <span>{displayName}</span>
-              {member.isManager && (
-                <span style={{ fontSize: "0.68rem", padding: "0.1rem 0.4rem", borderRadius: 4, background: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "var(--primary)" }}>
-                  {tM("managerBadge")}
-                </span>
-              )}
-            </div>
-            <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
-              {t(`household.members.roles.${member.role}` as never, member.role)}
-            </div>
-          </div>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={onClose} aria-label={tM("closePanel")}>✕</button>
-        </div>
-
-        {/* Tabs */}
-        <div style={{ display: "flex", borderBottom: "1px solid var(--border, #eee)", padding: "0 0.5rem" }}>
-          <TabBtn id="core" label={tM("profile")} />
-          <TabBtn id="access" label={tM("access")} />
-          <TabBtn id="contacts" label={tM("contacts")} />
-          <TabBtn id="notes" label={tM("notes")} />
-        </div>
-
-        {/* Body */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "1rem" }}>
-          {loadingDetail && <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>Loading…</p>}
-
-          {!loadingDetail && activeTab === "core" && (
-            <div>
-              <div className="settings-field-group" style={{ marginBottom: "1rem" }}>
-                <div className="settings-field">
-                  <span className="settings-field-label">{tM("name")}</span>
-                  <span className="settings-field-value">{member.name}</span>
-                </div>
-                {detail?.preferredName && (
-                  <div className="settings-field">
-                    <span className="settings-field-label">{tM("preferredName")}</span>
-                    <span className="settings-field-value">{detail.preferredName}</span>
-                  </div>
-                )}
-                <div className="settings-field">
-                  <span className="settings-field-label">{tM("role")}</span>
-                  <span className="settings-field-value">{t(`household.members.roles.${member.role}` as never, member.role)}</span>
-                </div>
-                {member.birthDate && (
-                  <div className="settings-field">
-                    <span className="settings-field-label">{tM("birthDate")}</span>
-                    <span className="settings-field-value">{new Date(member.birthDate).toLocaleDateString()}</span>
-                  </div>
-                )}
-              </div>
-              {member.canEdit && (
-                <>
-                  <button type="button" className="btn btn-ghost" style={{ fontSize: "0.82rem", padding: "0.3rem 0.75rem", marginRight: "0.4rem" }} onClick={() => onEditCore(member.memberId)}>
-                    {tM("edit")}
-                  </button>
-                  <button type="button" className="btn btn-ghost" style={{ fontSize: "0.82rem", padding: "0.3rem 0.75rem" }} onClick={() => setIsEditingProfile(true)}>
-                    {tM("editProfile")}
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-
-          {!loadingDetail && activeTab === "access" && (
-            <div>
-              <div className="settings-field-group" style={{ marginBottom: "1rem" }}>
-                <div className="settings-field">
-                  <span className="settings-field-label">{tM("access")}</span>
-                  <AccessStatusBadge status={member.accessStatus} tM={tM} />
-                </div>
-                {member.linkedEmail && (
-                  <div className="settings-field">
-                    <span className="settings-field-label">{tM("email")}</span>
-                    <span className="settings-field-value">{member.linkedEmail}</span>
-                  </div>
-                )}
-                {detail?.lastLoginAtUtc && (
-                  <div className="settings-field">
-                    <span className="settings-field-label">{tM("lastLogin")}</span>
-                    <span className="settings-field-value">{new Date(detail.lastLoginAtUtc).toLocaleString()}</span>
-                  </div>
-                )}
-                {member.hasAccount && !detail?.lastLoginAtUtc && (
-                  <div className="settings-field">
-                    <span className="settings-field-label">{tM("lastLogin")}</span>
-                    <span className="settings-field-value" style={{ color: "var(--muted)" }}>{tM("neverLoggedIn")}</span>
-                  </div>
-                )}
-              </div>
-              <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-                {member.canGrantAccess && (
-                  <button type="button" className="btn btn-ghost" style={{ fontSize: "0.82rem", padding: "0.3rem 0.75rem" }} onClick={() => onGrantAccess(member.memberId)}>
-                    {tM("provisionAccess")}
-                  </button>
-                )}
-                {isCurrentUserManager && member.hasAccount && member.accessStatus !== "Disabled" && (
-                  <>
-                    <button type="button" className="btn btn-ghost" style={{ fontSize: "0.82rem", padding: "0.3rem 0.75rem" }} onClick={() => onRegenPassword(member.memberId)}>
-                      {tM("regeneratePassword")}
-                    </button>
-                    <button type="button" className="btn btn-ghost" style={{ fontSize: "0.82rem", padding: "0.3rem 0.75rem", color: "#ef4444" }} onClick={() => onDisable(member.memberId)}>
-                      {tM("disableAccess")}
-                    </button>
-                  </>
-                )}
-                {isCurrentUserManager && member.hasAccount && member.accessStatus === "Disabled" && (
-                  <button type="button" className="btn btn-ghost" style={{ fontSize: "0.82rem", padding: "0.3rem 0.75rem", color: "#22c55e" }} onClick={() => onEnable(member.memberId)}>
-                    {tM("enableAccess")}
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {!loadingDetail && activeTab === "contacts" && (
-            <div>
-              <div className="settings-field-group" style={{ marginBottom: "1rem" }}>
-                <div className="settings-field">
-                  <span className="settings-field-label">{tM("primaryPhone")}</span>
-                  <span className="settings-field-value">{detail?.primaryPhone || <span style={{ color: "var(--muted)" }}>—</span>}</span>
-                </div>
-                <div className="settings-field">
-                  <span className="settings-field-label">{tM("primaryEmail")}</span>
-                  <span className="settings-field-value">{detail?.primaryEmail || <span style={{ color: "var(--muted)" }}>—</span>}</span>
-                </div>
-              </div>
-              {member.canEdit && (
-                <button type="button" className="btn btn-ghost" style={{ fontSize: "0.82rem", padding: "0.3rem 0.75rem" }} onClick={() => setIsEditingProfile(true)}>
-                  {tM("editProfile")}
-                </button>
-              )}
-            </div>
-          )}
-
-          {!loadingDetail && activeTab === "notes" && (
-            <div>
-              <div style={{ background: "color-mix(in srgb, var(--primary) 5%, transparent)", borderRadius: 8, padding: "0.75rem", fontSize: "0.88rem", minHeight: 72, marginBottom: "0.75rem", color: detail?.householdNote ? "inherit" : "var(--muted)" }}>
-                {detail?.householdNote || tM("householdNotePlaceholder")}
-              </div>
-              {(member.canEdit || isCurrentUserManager) && (
-                <button type="button" className="btn btn-ghost" style={{ fontSize: "0.82rem", padding: "0.3rem 0.75rem" }} onClick={() => setIsEditingProfile(true)}>
-                  {tM("editProfile")}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {isEditingProfile && (
-        <EditProfileModal
-          member={detail ?? member}
-          saving={profileSaving}
-          error={profileError}
-          onSave={(values) => { onProfileSave(values); setIsEditingProfile(false); }}
-          onClose={() => setIsEditingProfile(false)}
-        />
-      )}
-    </div>
-  );
-}
-
-// -- Member group label --------------------------------------------------------
-
-function MemberGroup({
-  title, members, ...rest
-}: {
-  title: string;
-  members: FamilyMemberResponse[];
-} & Omit<MemberCardProps, "m">) {
-  if (members.length === 0) return null;
-  return (
-    <div style={{ marginBottom: "1.25rem" }}>
-      <div style={{ fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", marginBottom: "0.4rem", paddingLeft: "0.25rem" }}>
-        {title}
-      </div>
-      <div className="item-list">
-        {members.map((m) => <MemberCard key={m.memberId} m={m} {...rest} />)}
-      </div>
-    </div>
-  );
-}
-
-// -- Main component ------------------------------------------------------------
 
 export function MembersManagementSection() {
   const { t } = useTranslation("settings");
   const dispatch = useAppDispatch();
   const { family, members } = useAppSelector((s) => s.household);
   const isCurrentUserManager = members.some((m) => m.isCurrentUser && m.isManager);
-  const tM = (key: string) => t(`household.members.${key}` as never);
 
   const [showAddMember, setShowAddMember] = useState(false);
   const [addSaving, setAddSaving] = useState(false);
@@ -477,12 +67,7 @@ export function MembersManagementSection() {
 
   if (!family) return null;
 
-  const accessPriority = (m: FamilyMemberResponse) => {
-    if (m.accessStatus === "Active") return 0;
-    if (m.accessStatus === "InvitedOrProvisioned" || m.accessStatus === "PasswordResetRequired") return 1;
-    if (m.accessStatus === "Disabled") return 2;
-    return 3;
-  };
+  const tM = (key: string) => t(`household.members.${key}` as never);
 
   const sortedOthers = members
     .filter((m) => !m.isCurrentUser)
@@ -490,7 +75,7 @@ export function MembersManagementSection() {
     .sort((a, b) => {
       const md = (b.isManager ? 1 : 0) - (a.isManager ? 1 : 0);
       if (md !== 0) return md;
-      const ad = accessPriority(a) - accessPriority(b);
+      const ad = accessPriority(a.accessStatus) - accessPriority(b.accessStatus);
       if (ad !== 0) return ad;
       return (a.preferredName || a.name).localeCompare(b.preferredName || b.name);
     });
@@ -571,8 +156,11 @@ export function MembersManagementSection() {
     setRegenSaving(true);
     const result = await dispatch(regeneratePassword({ familyId: family!.familyId, memberId }));
     setRegenSaving(false);
-    if (regeneratePassword.fulfilled.match(result)) { setRegenResult(result.payload.temporaryPassword); }
-    else { setRegenError((result.payload as string) ?? tM("regenError")); }
+    if (regeneratePassword.fulfilled.match(result)) {
+      setRegenResult(result.payload.temporaryPassword);
+    } else {
+      setRegenError((result.payload as string) ?? tM("regenError"));
+    }
   }
 
   async function handleDisable(memberId: string) {
@@ -606,8 +194,11 @@ export function MembersManagementSection() {
     setAddError(null);
     const result = await dispatch(addMember({ familyId: family!.familyId, name, role, birthDate: birthDate || null, isManager }));
     setAddSaving(false);
-    if (addMember.fulfilled.match(result)) { setShowAddMember(false); }
-    else { setAddError((result.payload as string) ?? tM("addError")); }
+    if (addMember.fulfilled.match(result)) {
+      setShowAddMember(false);
+    } else {
+      setAddError((result.payload as string) ?? tM("addError"));
+    }
   }
 
   const cardProps = {
@@ -626,7 +217,6 @@ export function MembersManagementSection() {
     disableError,
     enableSaving,
     enableError,
-    tM,
   };
 
   return (
@@ -652,12 +242,11 @@ export function MembersManagementSection() {
       )}
 
       {selectedMember && (
-        <DetailPanel
+        <MemberDetailPanel
           member={selectedMember}
           detail={memberDetail}
           loadingDetail={loadingDetail}
           isCurrentUserManager={isCurrentUserManager}
-          familyId={family.familyId}
           onClose={() => { setSelectedMember(null); setMemberDetail(null); }}
           onEditCore={(id) => { setEditingId(id); setEditError(null); }}
           onGrantAccess={(id) => { setGrantingAccessId(id); setProvisionError(null); setProvisioned(null); }}
@@ -667,23 +256,40 @@ export function MembersManagementSection() {
           onProfileSave={handleProfileSave}
           profileSaving={profileSaving}
           profileError={profileError}
-          tM={tM}
         />
       )}
 
       {showAddMember && (
-        <AddMemberModal saving={addSaving} error={addError} onSave={handleAddMember} onClose={() => { setShowAddMember(false); setAddError(null); }} />
+        <AddMemberModal
+          saving={addSaving}
+          error={addError}
+          onSave={handleAddMember}
+          onClose={() => { setShowAddMember(false); setAddError(null); }}
+        />
       )}
       {editingId !== null && (() => {
         const em = members.find((m) => m.memberId === editingId);
         return em ? (
-          <EditMemberModal member={em} saving={editSaving} error={editError} onSave={handleEditCoreSave} onClose={() => { setEditingId(null); setEditError(null); }} />
+          <EditMemberModal
+            member={em}
+            saving={editSaving}
+            error={editError}
+            onSave={handleEditCoreSave}
+            onClose={() => { setEditingId(null); setEditError(null); }}
+          />
         ) : null;
       })()}
       {grantingAccessId !== null && (() => {
         const gm = members.find((m) => m.memberId === grantingAccessId);
         return gm ? (
-          <GrantAccessModal memberName={gm.preferredName || gm.name} provisioned={provisioned} saving={provisionSaving} error={provisionError} onSave={handleProvisionAccess} onClose={() => { setGrantingAccessId(null); setProvisionError(null); setProvisioned(null); }} />
+          <GrantAccessModal
+            memberName={gm.preferredName || gm.name}
+            provisioned={provisioned}
+            saving={provisionSaving}
+            error={provisionError}
+            onSave={handleProvisionAccess}
+            onClose={() => { setGrantingAccessId(null); setProvisionError(null); setProvisioned(null); }}
+          />
         ) : null;
       })()}
     </section>

@@ -54,7 +54,7 @@ public sealed class GetFamilyMembersQueryHandler
         var authStatus = await _authUserRepository.GetStatusByIdsAsync(linkedUserIds, cancellationToken);
 
         return family.Members
-            .OrderBy(m => m.Role.Value switch { "Adult" => 0, "Caregiver" => 0, "Child" => 1, "Pet" => 2, _ => 3 })
+            .OrderBy(m => m.Role.Value switch { "Adult" => 0, "Child" => 1, "Pet" => 2, _ => 3 })
             .ThenByDescending(m => m.IsManager)
             .ThenBy(m => AccessSortOrder(m, authStatus))
             .ThenBy(m => m.DisplayName, StringComparer.OrdinalIgnoreCase)

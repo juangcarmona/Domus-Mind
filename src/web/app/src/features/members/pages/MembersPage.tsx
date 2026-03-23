@@ -4,41 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { addMember } from "../../../store/householdSlice";
 import { AddMemberModal } from "../components/MemberModals";
+import { AccessStatusBadge } from "../components/AccessStatusBadge";
 import type { FamilyMemberResponse, MemberAccessStatus } from "../../../api/domusmindApi";
-
-// ── Access status badge ───────────────────────────────────────────────────────
-
-function AccessStatusBadge({ status }: { status: MemberAccessStatus }) {
-  const { t } = useTranslation("members");
-
-  const map: Record<MemberAccessStatus, { labelKey: string; color: string } | null> = {
-    NoAccess: null,
-    InvitedOrProvisioned: { labelKey: "access.invited", color: "#3b82f6" },
-    PasswordResetRequired: { labelKey: "access.passwordResetRequired", color: "#f5a623" },
-    Active: { labelKey: "access.active", color: "#22c55e" },
-    Disabled: { labelKey: "access.disabled", color: "#ef4444" },
-  };
-
-  const badge = map[status];
-  if (!badge) return null;
-
-  return (
-    <span
-      style={{
-        fontSize: "0.68rem",
-        fontWeight: 600,
-        padding: "0.1rem 0.45rem",
-        borderRadius: 999,
-        background: `color-mix(in srgb, ${badge.color} 14%, transparent)`,
-        color: badge.color,
-        border: `1px solid color-mix(in srgb, ${badge.color} 26%, transparent)`,
-        whiteSpace: "nowrap",
-      }}
-    >
-      {t(badge.labelKey as never)}
-    </span>
-  );
-}
 
 // ── Sort helpers ───────────────────────────────────────────────────────────────
 
@@ -105,7 +72,7 @@ function MemberRow({ m }: { m: FamilyMemberResponse }) {
         </div>
       </div>
       <div className="member-row-status">
-        <AccessStatusBadge status={m.accessStatus} />
+        <AccessStatusBadge status={m.accessStatus} hideNoAccess />
       </div>
       <span className="member-row-chevron" aria-hidden="true">›</span>
     </button>

@@ -2,8 +2,8 @@ import { useTranslation } from "react-i18next";
 import type { WeeklyGridResponse, WeeklyGridCell } from "../../types";
 import { weeklyGridItemMappers } from "../grid/weeklyGridItemMappers";
 
-const ACTOR_ROLES = new Set(["Adult", "Caregiver", "Child"]);
-const ROLE_SORT_ORDER: Record<string, number> = { Adult: 0, Caregiver: 0, Child: 1 };
+const ACTOR_ROLES = new Set(["Adult", "Child"]);
+const ROLE_SORT_ORDER: Record<string, number> = { Adult: 0, Child: 1 };
 
 interface TodayBoardProps {
   grid: WeeklyGridResponse | null;

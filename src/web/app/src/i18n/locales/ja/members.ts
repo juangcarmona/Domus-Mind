@@ -62,7 +62,7 @@ export default {
     Adult: "大人",
     Child: "子供",
     Pet: "ペット",
-    Caregiver: "介護者",
+
   },
 
   form: {

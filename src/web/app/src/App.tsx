@@ -24,6 +24,7 @@ import { TodayPage } from "./features/today/pages/TodayPage";
 import { MembersPage } from "./features/members/pages/MembersPage";
 import { MemberDetailPage } from "./features/members/pages/MemberDetailPage";
 import { setupApi } from "./api/setupApi";
+import { SplashScreen } from "./components/SplashScreen";
 
 /** Keeps document.documentElement[data-theme] in sync with Redux ui.theme. */
 function ThemeApplier() {
@@ -64,7 +65,7 @@ function AuthedApp() {
   void i18n;
 
   if (bootstrapStatus === "idle" || bootstrapStatus === "loading") {
-    return <div className="loading-wrap">Loading your household…</div>;
+    return <SplashScreen />;
   }
 
   if (bootstrapStatus === "needsOnboarding") {
@@ -76,7 +77,7 @@ function AuthedApp() {
   }
 
   if (bootstrapStatus !== "ready") {
-    return <div className="loading-wrap">Loading your household…</div>;
+    return <SplashScreen />;
   }
 
   return (
@@ -134,7 +135,7 @@ function AppRoutes() {
   }, []);
 
   if (setupStatus === "loading" || isLoading) {
-    return <div className="loading-wrap">Loading\u2026</div>;
+    return <SplashScreen />;
   }
 
   if (setupStatus === "needed") {

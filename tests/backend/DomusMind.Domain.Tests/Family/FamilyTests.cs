@@ -159,7 +159,7 @@ public sealed class FamilyTests
     [Theory]
     [InlineData("Adult")]
     [InlineData("Child")]
-    [InlineData("Caregiver")]
+    [InlineData("Pet")]
     public void MemberRole_Create_ValidRole_Succeeds(string role)
     {
         var result = MemberRole.Create(role);

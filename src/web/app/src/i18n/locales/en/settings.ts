@@ -104,7 +104,6 @@ export default {
         Adult: "Adult",
         Child: "Child",
         Pet: "Pet",
-        Caregiver: "Caregiver",
       },
       groups: {
         adults: "Adults",

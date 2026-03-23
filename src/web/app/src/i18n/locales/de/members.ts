@@ -4,7 +4,7 @@ export default {
   noMembers: "Noch keine Mitglieder.",
 
   groups: {
-    adults: "Erwachsene & Pflegepersonen",
+    adults: "Erwachsene",
     children: "Kinder",
     pets: "Haustiere",
     others: "Weitere",
@@ -62,7 +62,7 @@ export default {
     Adult: "Erwachsener",
     Child: "Kind",
     Pet: "Haustier",
-    Caregiver: "Pflegeperson",
+
   },
 
   form: {

@@ -62,7 +62,7 @@ export default {
     Adult: "Adulte",
     Child: "Enfant",
     Pet: "Animal",
-    Caregiver: "Aidant",
+
   },
 
   form: {

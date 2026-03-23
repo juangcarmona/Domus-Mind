@@ -101,7 +101,7 @@ export default {
         Adult: "成人",
         Child: "儿童",
         Pet: "宠物",
-        Caregiver: "照护者",
+
       },
       groups: {
         adults: "成人",

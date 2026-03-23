@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { setSelectedDate } from "../../../store/todaySlice";
 import { fetchTimeline } from "../../../store/timelineSlice";
 import { weekApi } from "../api/weekApi";
-import type { WeeklyGridResponse, DayTypeSummary } from "../types";
+import type { WeeklyGridResponse } from "../types";
 import type { ApiError } from "../../../api/domusmindApi";
 import { EditEntityModal, type EditableEntityType } from "../../editors/components/EditEntityModal";
 import { PlanningAddModal } from "../../planning/components/modals/PlanningAddModal";
@@ -12,50 +12,8 @@ import { TodayBoard } from "../components/board/TodayBoard";
 import { MonthView } from "../components/MonthView";
 import { WeeklyHouseholdGrid } from "../components/grid/WeeklyHouseholdGrid";
 import { TimelineRuler } from "../components/timeline/TimelineRuler";
-
-// ---- Date helpers ----
-
-function startOfWeek(d: Date, firstDayOfWeek?: string | null): Date {
-  const targetDay = DAY_ORDER.indexOf(
-    (firstDayOfWeek ?? "monday").toLowerCase(),
-  );
-  const safeTarget = targetDay < 0 ? 1 : targetDay;
-  const day = d.getDay();
-  let diff = day - safeTarget;
-  if (diff < 0) diff += 7;
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate() - diff);
-}
-
-function toIsoDate(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function addDays(iso: string, n: number): string {
-  const d = new Date(iso + "T00:00:00");
-  d.setDate(d.getDate() + n);
-  return toIsoDate(d);
-}
-
-function addMonths(iso: string, n: number): string {
-  const d = new Date(iso + "T00:00:00");
-  d.setMonth(d.getMonth() + n);
-  return toIsoDate(d);
-}
-
-// ---- Shared constants ----
-
-const DAY_ORDER = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-];
+import { startOfWeek, toIsoDate, addDays, addMonths } from "../utils/dateUtils";
+import { useMonthGridCache } from "../hooks/useMonthGridCache";
 
 
 export function TodayPage() {
@@ -97,18 +55,6 @@ export function TodayPage() {
   );
   const [addModal, setAddModal] = useState(false);
 
-  // Month grid cache: weekStart → WeeklyGridResponse (for month calendar dots)
-  const [monthGridCache, setMonthGridCache] = useState<Record<string, WeeklyGridResponse>>({});
-  // Track which week starts have already been requested so we never double-fetch.
-  // A ref is used intentionally — it doesn't need to be part of any effect's dep array.
-  const requestedMonthWeeks = useRef<Set<string>>(new Set());
-
-  // Reset the month grid cache and request tracker when the active household changes
-  useEffect(() => {
-    setMonthGridCache({});
-    requestedMonthWeeks.current.clear();
-  }, [familyId]);
-
   // Compute week start for the selected date
   const weekStartForSelected = toIsoDate(
     startOfWeek(new Date(selectedDate + "T00:00:00"), firstDayOfWeek),
@@ -139,61 +85,12 @@ export function TodayPage() {
     }
   }, [weekStartForSelected, fetchGrid, familyId]);
 
-  // Fetch weekly grids for all weeks visible in the month calendar.
-  // Uses requestedMonthWeeks ref to track already-requested weeks, so
-  // monthGridCache itself does not need to be in the dependency array.
-  useEffect(() => {
-    if (midTermView !== "month" || !familyId) return;
-
-    // Reset the request tracker when familyId changes so fresh data is loaded
-    // (handled implicitly: when familyId changes the cache is already empty via state reset)
-
-    // Compute first visible date for the month grid
-    const anchor = new Date(monthAnchor + "T00:00:00");
-    const year = anchor.getFullYear();
-    const month = anchor.getMonth();
-    const firstDayIdx = Math.max(
-      0,
-      DAY_ORDER.indexOf((firstDayOfWeek ?? "monday").toLowerCase()),
-    );
-    const firstOfMonth = new Date(year, month, 1);
-    let startPad = firstOfMonth.getDay() - firstDayIdx;
-    if (startPad < 0) startPad += 7;
-    const firstVisible = new Date(year, month, 1 - startPad);
-    const lastOfMonth = new Date(year, month + 1, 0);
-
-    // Collect week starts for all visible weeks
-    const weekStarts: string[] = [];
-    let cursor = new Date(firstVisible);
-    while (cursor <= lastOfMonth) {
-      weekStarts.push(toIsoDate(cursor));
-      cursor = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + 7);
-    }
-
-    // Only request weeks that haven't been fetched/requested yet
-    const missing = weekStarts.filter(
-      (ws) => !requestedMonthWeeks.current.has(ws),
-    );
-    if (missing.length === 0) return;
-
-    // Mark them as requested immediately so concurrent effect runs don't double-fetch
-    missing.forEach((ws) => requestedMonthWeeks.current.add(ws));
-
-    Promise.all(missing.map((ws) => weekApi.getWeeklyGrid(familyId, ws)))
-      .then((grids) => {
-        setMonthGridCache((prev) => {
-          const next = { ...prev };
-          grids.forEach((g, i) => {
-            next[missing[i]] = g;
-          });
-          return next;
-        });
-      })
-      .catch(() => {
-        // silently ignore — dots are best-effort; remove from requested so retry is possible
-        missing.forEach((ws) => requestedMonthWeeks.current.delete(ws));
-      });
-  }, [midTermView, monthAnchor, familyId, firstDayOfWeek]);
+  const { monthDaySummary } = useMonthGridCache(
+    familyId,
+    monthAnchor,
+    firstDayOfWeek,
+    midTermView === "month",
+  );
 
   // Load timeline data (for the ruler only — month dots now use weekly grids).
   // Re-fetches whenever familyId changes or if a previous attempt failed.
@@ -248,27 +145,6 @@ export function TodayPage() {
     month: "short",
     year: "numeric",
   })}`;
-
-  // ---- Month calendar summary: per-day type counts from weekly grid cache ----
-  const monthDaySummary = useMemo(() => {
-    const summary: Record<string, DayTypeSummary> = {};
-    if (Object.keys(monthGridCache).length === 0) return summary;
-
-    for (const weekGrid of Object.values(monthGridCache)) {
-      const allCells = [
-        ...(weekGrid.sharedCells ?? []),
-        ...((weekGrid.members ?? []).flatMap((m) => m.cells)),
-      ];
-      for (const cell of allCells) {
-        const dayKey = cell.date.slice(0, 10);
-        if (!summary[dayKey]) summary[dayKey] = { events: 0, tasks: 0, routines: 0 };
-        summary[dayKey].events += cell.events?.length ?? 0;
-        summary[dayKey].tasks += cell.tasks?.length ?? 0;
-        summary[dayKey].routines += cell.routines?.length ?? 0;
-      }
-    }
-    return summary;
-  }, [monthGridCache]);
 
   return (
     <div className="page-content coord-page">

@@ -79,7 +79,7 @@ public sealed class GetFamilyMembersQueryHandlerTests
         var loaded = await db.Set<Domain.Family.Family>()
             .Include(f => f.Members)
             .SingleAsync(f => f.Id == family.Id);
-        loaded.AddMember(MemberId.New(), MemberName.Create("Carol"), MemberRole.Caregiver, DateTime.UtcNow);
+        loaded.AddMember(MemberId.New(), MemberName.Create("Carol"), MemberRole.Adult, DateTime.UtcNow);
         await db.SaveChangesAsync();
 
         var handler = BuildHandler(db);

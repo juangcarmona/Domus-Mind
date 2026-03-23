@@ -6,11 +6,10 @@ public sealed class MemberRole : ValueObject
 {
     public static readonly MemberRole Adult = new("Adult");
     public static readonly MemberRole Child = new("Child");
-    public static readonly MemberRole Caregiver = new("Caregiver");
     public static readonly MemberRole Pet = new("Pet");
 
     private static readonly HashSet<string> ValidRoles =
-        new(StringComparer.OrdinalIgnoreCase) { "Adult", "Child", "Caregiver", "Pet" };
+        new(StringComparer.OrdinalIgnoreCase) { "Adult", "Child", "Pet" };
 
     public string Value { get; }
 

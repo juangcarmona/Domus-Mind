@@ -4,7 +4,7 @@ export default {
   noMembers: "No members yet.",
 
   groups: {
-    adults: "Adults & Caregivers",
+    adults: "Adults",
     children: "Children",
     pets: "Pets",
     others: "Others",
@@ -62,7 +62,6 @@ export default {
     Adult: "Adult",
     Child: "Child",
     Pet: "Pet",
-    Caregiver: "Caregiver",
   },
 
   form: {
