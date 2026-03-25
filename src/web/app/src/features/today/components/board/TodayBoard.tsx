@@ -30,7 +30,8 @@ function DayMemberSection({
   const events = cell.events ?? [];
   const tasks = cell.tasks ?? [];
   const routines = cell.routines ?? [];
-  const isEmpty = events.length === 0 && tasks.length === 0 && routines.length === 0;
+  const isEmpty =
+    events.length === 0 && tasks.length === 0 && routines.length === 0;
 
   return (
     <div className="today-summary-member">
@@ -40,10 +41,14 @@ function DayMemberSection({
       ) : (
         <div className="today-summary-items">
           {events.map((e) =>
-            weeklyGridItemMappers.eventToItem(e, () => onItemClick("event", e.eventId)),
+            weeklyGridItemMappers.eventToItem(e, () =>
+              onItemClick("event", e.eventId),
+            ),
           )}
           {tasks.map((t) =>
-            weeklyGridItemMappers.taskToItem(t, () => onItemClick("task", t.taskId)),
+            weeklyGridItemMappers.taskToItem(t, () =>
+              onItemClick("task", t.taskId),
+            ),
           )}
           {routines.map((r) =>
             weeklyGridItemMappers.routineToItem(r, () =>
@@ -88,7 +93,9 @@ export function TodayBoard({
   const members = grid.members ?? [];
   const sharedCells = grid.sharedCells ?? [];
 
-  const sharedCell = sharedCells.find((c) => c.date.slice(0, 10) === selectedDate);
+  const sharedCell = sharedCells.find(
+    (c) => c.date.slice(0, 10) === selectedDate,
+  );
   const hasSharedItems =
     (sharedCell?.events?.length ?? 0) > 0 ||
     (sharedCell?.tasks?.length ?? 0) > 0 ||
@@ -173,17 +180,17 @@ export function TodayBoard({
                 {sharedCell.events?.map((e) =>
                   weeklyGridItemMappers.eventToItem(e, () =>
                     onItemClick("event", e.eventId),
-                  true),
+                  ),
                 )}
                 {sharedCell.tasks?.map((task) =>
                   weeklyGridItemMappers.taskToItem(task, () =>
                     onItemClick("task", task.taskId),
-                  true),
+                  ),
                 )}
                 {sharedCell.routines?.map((r) =>
                   weeklyGridItemMappers.routineToItem(r, () =>
                     onItemClick("routine", r.routineId),
-                  true),
+                  ),
                 )}
               </div>
             ) : (

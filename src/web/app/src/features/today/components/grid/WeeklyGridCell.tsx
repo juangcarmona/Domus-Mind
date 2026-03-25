@@ -8,7 +8,7 @@ interface WeeklyGridCellProps {
   onItemClick?: (type: "event" | "task" | "routine", id: string) => void;
 }
 
-export function WeeklyGridCell({ cell, isToday, compact, onItemClick }: WeeklyGridCellProps) {
+export function WeeklyGridCell({ cell, isToday, onItemClick }: WeeklyGridCellProps) {
   const hasItems =
     (cell.events?.length ?? 0) > 0 ||
     (cell.tasks?.length ?? 0) > 0 ||
@@ -25,14 +25,14 @@ export function WeeklyGridCell({ cell, isToday, compact, onItemClick }: WeeklyGr
   return (
     <div className={classes}>
       {(cell.events ?? []).map((e) =>
-        weeklyGridItemMappers.eventToItem(e, () => onItemClick?.("event", e.eventId), compact),
+        weeklyGridItemMappers.eventToItem(e, () => onItemClick?.("event", e.eventId)),
       )}
       {(cell.tasks ?? []).map((t) =>
-        weeklyGridItemMappers.taskToItem(t, () => onItemClick?.("task", t.taskId), compact),
+        weeklyGridItemMappers.taskToItem(t, () => onItemClick?.("task", t.taskId)),
       )}
       {(cell.routines ?? []).map((r) =>
         weeklyGridItemMappers.routineToItem(r, () =>
-          onItemClick?.("routine", r.routineId), compact,
+          onItemClick?.("routine", r.routineId)
         ),
       )}
     </div>

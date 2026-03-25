@@ -10,10 +10,10 @@ import { completeTask, cancelTask } from "../../../store/tasksSlice";
 import { EditEntityModal } from "../../editors/components/EditEntityModal";
 import { PlanningAddModal } from "../../planning/components/modals/PlanningAddModal";
 import type { PlanningAddModalDefaults } from "../../planning/components/modals/PlanningAddModal";
-import { EntityCard } from "../../../components/EntityCard";
-import { formatRoutineDays, formatRoutineAssigned } from "../../planning/utils/routineFormatters";
 import { AREA_PALETTE, getAreaColor, setAreaColor } from "../utils/areaColors";
-import { useDateFormatter } from "../../../hooks/useDateFormatter";
+import { AreaDetailHeader } from "../components/AreaDetailHeader";
+import { AreaOwnerSection } from "../components/AreaOwnerSection";
+import { AreaRelatedWorkSection } from "../components/AreaRelatedWorkSection";
 
 function todayIso(): string {
   const d = new Date();
@@ -29,12 +29,8 @@ export function AreaDetailPage() {
   const { areaId } = useParams<{ areaId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation("areas");
-  const { t: tTasks } = useTranslation("tasks");
-  const { t: tPlans } = useTranslation("plans");
-  const { t: tRoutines } = useTranslation("routines");
   const { t: tCommon } = useTranslation("common");
   const dispatch = useAppDispatch();
-  const { formatDate, formatDateTime } = useDateFormatter();
   const { family, members } = useAppSelector((s) => s.household);
   const { items: areas, status } = useAppSelector((s) => s.areas);
   const { items: planItems, status: plansStatus } = useAppSelector((s) => s.plans);
@@ -52,6 +48,8 @@ export function AreaDetailPage() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [renaming, setRenaming] = useState(false);
+  const [ownerError, setOwnerError] = useState<string | null>(null);
+  const [renameError, setRenameError] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<{ type: "task" | "routine" | "event"; id: string } | null>(null);
   const [addModal, setAddModal] = useState(false);
 
@@ -73,7 +71,6 @@ export function AreaDetailPage() {
 
   const linkedPlans = planItems.filter((p) => p.areaId === areaId);
   const linkedRoutines = routineItems.filter((r) => r.areaId === areaId);
-  const isCustomColor = !AREA_PALETTE.includes(color);
 
   useEffect(() => {
     if (familyId && status === "idle") dispatch(fetchAreas(familyId));
@@ -91,6 +88,16 @@ export function AreaDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [familyId]);
 
+  useEffect(() => {
+    setColor(areaId ? getAreaColor(areaId) : AREA_PALETTE[0]);
+    setSaving(false);
+    setIsEditingName(false);
+    setNameInput("");
+    setRenaming(false);
+    setOwnerError(null);
+    setRenameError(null);
+  }, [areaId]);
+
   // Member display map (id → display name), used by task + routine cards.
   const memberMap = useMemo<Record<string, string>>(
     () => Object.fromEntries(members.map((m) => [m.memberId, m.preferredName || m.name])),
@@ -100,7 +107,7 @@ export function AreaDetailPage() {
   function refreshLinkedWork() {
     if (!familyId) return;
     dispatch(fetchTimeline({ familyId, types: "Task" }));
-    dispatch(fetchPlans({ familyId }));
+    dispatch(fetchPlans({ familyId, from: todayIso() }));
     dispatch(fetchRoutines(familyId));
   }
 
@@ -136,36 +143,60 @@ export function AreaDetailPage() {
   }
 
   function handleNameClick() {
+    setRenameError(null);
     setNameInput(area?.name ?? "");
     setIsEditingName(true);
   }
 
   async function handleNameSave() {
-    if (!area || !nameInput.trim() || nameInput.trim() === area.name) {
+    const trimmedName = nameInput.trim();
+    if (!area || !trimmedName || trimmedName === area.name) {
+      setRenameError(null);
       setIsEditingName(false);
       return;
     }
+
     setRenaming(true);
-    await dispatch(renameArea({ areaId: area.areaId, name: nameInput.trim() }));
+    setRenameError(null);
+    const result = await dispatch(renameArea({ areaId: area.areaId, name: trimmedName }));
     setRenaming(false);
-    setIsEditingName(false);
+
+    if (renameArea.fulfilled.match(result)) {
+      setIsEditingName(false);
+      return;
+    }
+
+    setRenameError((result.payload as string) ?? tCommon("failed"));
   }
 
   function handleNameKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") { void handleNameSave(); }
-    if (e.key === "Escape") setIsEditingName(false);
+    if (e.key === "Escape") {
+      setRenameError(null);
+      setIsEditingName(false);
+    }
   }
 
   async function handleOwnerChange(e: React.ChangeEvent<HTMLSelectElement>) {
     if (!area || !familyId) return;
     const newId = e.target.value;
     if (!newId) return;
+
+    setOwnerError(null);
     setSaving(true);
+
     if (area.primaryOwnerId) {
-      await dispatch(transferArea({ areaId: area.areaId, newPrimaryOwnerId: newId, familyId }));
+      const result = await dispatch(transferArea({ areaId: area.areaId, newPrimaryOwnerId: newId, familyId }));
+      if (!transferArea.fulfilled.match(result)) {
+        setOwnerError((result.payload as string) ?? tCommon("failed"));
+      }
     } else {
-      await dispatch(assignPrimaryOwner({ areaId: area.areaId, memberId: newId, familyId }));
+      const result = await dispatch(assignPrimaryOwner({ areaId: area.areaId, memberId: newId, familyId }));
+      if (!assignPrimaryOwner.fulfilled.match(result)) {
+        setOwnerError((result.payload as string) ?? tCommon("failed"));
+      }
     }
+
     setSaving(false);
   }
 
@@ -194,8 +225,6 @@ export function AreaDetailPage() {
   // Areas list not loaded yet and we haven't resolved the area — wait.
   if (!area) return null;
 
-  const hasOwner = !!area.primaryOwnerId;
-
   return (
     <div className="area-detail-page">
       <button
@@ -207,247 +236,42 @@ export function AreaDetailPage() {
         ← {t("backToAreas")}
       </button>
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="area-detail-header" style={{ borderLeftColor: color }}>
-        <div className="area-detail-color-wrap">
-          <div className="area-color-picker">
-            {AREA_PALETTE.map((c) => (
-              <button
-                key={c}
-                type="button"
-                className={`area-color-swatch${color === c ? " area-color-swatch--active" : ""}`}
-                style={{ background: c }}
-                onClick={() => handleSwatchClick(c)}
-                aria-label={c}
-              />
-            ))}
-            <div
-              className={`area-color-custom-trigger${isCustomColor ? " area-color-custom-trigger--active" : ""}`}
-              style={isCustomColor ? { background: color } : undefined}
-              title={t("customColor")}
-            >
-              {!isCustomColor && <span className="area-color-custom-label" aria-hidden="true">+</span>}
-              <input
-                type="color"
-                value={color}
-                onChange={handleColorChange}
-                aria-label={t("customColor")}
-              />
-            </div>
-          </div>
-          <span className="area-color-hex">{color.toUpperCase()}</span>
-        </div>
-        <div className="area-detail-identity">
-          {isEditingName ? (
-            <input
-              className="area-detail-name-input"
-              value={nameInput}
-              autoFocus
-              disabled={renaming}
-              onChange={(e) => setNameInput(e.target.value)}
-              onBlur={() => { void handleNameSave(); }}
-              onKeyDown={handleNameKeyDown}
-              aria-label={t("renameHint")}
-            />
-          ) : (
-            <h1
-              className="area-detail-name"
-              style={{ color, cursor: "pointer" }}
-              title={t("renameHint")}
-              onClick={handleNameClick}
-            >
-              {area.name}
-            </h1>
-          )}
-          <p className="area-detail-subtitle">{t("renameHint")}</p>
-        </div>
-      </div>
+      <AreaDetailHeader
+        areaName={area.name}
+        color={color}
+        isEditingName={isEditingName}
+        nameInput={nameInput}
+        renaming={renaming}
+        renameError={renameError}
+        onSwatchClick={handleSwatchClick}
+        onColorChange={handleColorChange}
+        onNameClick={handleNameClick}
+        onNameInputChange={setNameInput}
+        onNameSave={() => { void handleNameSave(); }}
+        onNameKeyDown={handleNameKeyDown}
+      />
 
-      {/* ── Owner ──────────────────────────────────────────────────────────── */}
-      <div className="area-detail-section">
-        <div className="area-detail-section-header">
-          <span className="area-detail-section-title">{t("ownerLabel")}</span>
-        </div>
-        <select
-          className="form-control area-row-select"
-          value={area.primaryOwnerId ?? ""}
-          disabled={saving}
-          onChange={handleOwnerChange}
-          aria-label={t("ownerLabel")}
-        >
-          {!hasOwner && <option value="">{t("noOwner")}</option>}
-          {/* Guard: current owner may no longer be in the members list */}
-          {hasOwner && !members.some((m) => m.memberId === area.primaryOwnerId) && (
-            <option value={area.primaryOwnerId!}>
-              {area.primaryOwnerName ?? area.primaryOwnerId}
-            </option>
-          )}
-          {members.map((m) => (
-            <option key={m.memberId} value={m.memberId}>
-              {m.preferredName || m.name}
-            </option>
-          ))}
-        </select>
-        {!hasOwner && (
-          <p className="area-detail-hint">{t("noOwnerInstruction")}</p>
-        )}
-      </div>
+      <AreaOwnerSection
+        area={area}
+        members={members}
+        saving={saving}
+        ownerError={ownerError}
+        onOwnerChange={handleOwnerChange}
+      />
 
-      {/* ── Related work ────────────────────────────────────────────────────── */}
-      <div className="area-detail-section">
-        <div className="area-detail-section-header">
-          <span className="area-detail-section-title">{t("relatedWork")}</span>
-          <button
-            type="button"
-            className="btn btn-sm"
-            style={{ marginLeft: "auto" }}
-            onClick={() => setAddModal(true)}
-          >
-            + {tCommon("add")}
-          </button>
-        </div>
-
-        {/* Tasks */}
-        {tasksLoading ? (
-          <p className="area-related-loading">{tCommon("loading")}</p>
-        ) : linkedTasks.length > 0 ? (
-          <div style={{ marginBottom: "1.25rem" }}>
-            <p className="area-related-group-label">{tTasks("title")}</p>
-            <div className="item-list">
-              {linkedTasks.map((task) => (
-                <EntityCard
-                  key={task.entryId}
-                  title={task.title}
-                  subtitle={
-                    <>
-                      {task.effectiveDate ? formatDate(task.effectiveDate) : tTasks("noDueDate")}
-                      {task.assigneeId && memberMap[task.assigneeId]
-                        ? ` · ${memberMap[task.assigneeId]}`
-                        : task.isUnassigned
-                          ? ` · ${tTasks("unassigned")}`
-                          : ""}
-                      {task.isOverdue && (
-                        <span style={{ color: "var(--danger)" }}> · {tTasks("overdue")}</span>
-                      )}
-                    </>
-                  }
-                  accentColor={task.color}
-                  isOverdue={task.isOverdue}
-                  onClick={() => setEditTarget({ type: "task", id: task.entryId })}
-                  actions={
-                    <>
-                      <button
-                        className="btn btn-sm"
-                        title={tTasks("markDoneTitle")}
-                        onClick={(e) => { e.stopPropagation(); void handleCompleteTask(task.entryId); }}
-                      >
-                        ✓ {tTasks("done")}
-                      </button>
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        title={tCommon("cancel")}
-                        onClick={(e) => { e.stopPropagation(); void handleCancelTask(task.entryId); }}
-                      >
-                        ✕
-                      </button>
-                    </>
-                  }
-                />
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        {/* Plans */}
-        {linkedPlans.length > 0 && (
-          <div style={{ marginBottom: "1.25rem" }}>
-            <p className="area-related-group-label">{tPlans("title")}</p>
-            <div className="item-list">
-              {linkedPlans.map((plan) => (
-                <EntityCard
-                  key={plan.calendarEventId}
-                  title={plan.title}
-                  titleStrike={plan.status === "Cancelled"}
-                  subtitle={
-                    <>
-                      {formatDateTime(plan.startTime)}
-                      {plan.endTime && ` → ${formatDateTime(plan.endTime)}`}
-                      {plan.participants?.length > 0 && (
-                        <span> · {plan.participants.map((p) => p.displayName).join(", ")}</span>
-                      )}
-                    </>
-                  }
-                  accentColor={plan.color}
-                  onClick={() => setEditTarget({ type: "event", id: plan.calendarEventId })}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Routines */}
-        {linkedRoutines.length > 0 && (
-          <div style={{ marginBottom: "1.25rem" }}>
-            <p className="area-related-group-label">{tRoutines("title")}</p>
-            <div className="item-list">
-              {linkedRoutines.map((routine) => {
-                const days = formatRoutineDays(routine, tRoutines);
-                const assigned = formatRoutineAssigned(routine, memberMap, tRoutines);
-                const statusLine = routine.status === "Paused"
-                  ? <span style={{ color: "var(--muted)", fontWeight: 600 }}>{tRoutines("paused")}</span>
-                  : <span style={{ color: "var(--success)", fontWeight: 600 }}>{tRoutines("active")}</span>;
-                return (
-                  <EntityCard
-                    key={routine.routineId}
-                    title={routine.name}
-                    subtitle={
-                      <>
-                        {tRoutines(`frequency${routine.frequency}` as Parameters<typeof tRoutines>[0])}
-                        {days ? ` · ${days}` : ""}
-                        {routine.time ? ` · ${routine.time.slice(0, 5)}` : ""}
-                        {` · ${assigned}`}
-                        <span style={{ display: "block", marginTop: "0.2rem" }}>{statusLine}</span>
-                      </>
-                    }
-                    accentColor={routine.color}
-                    onClick={() => setEditTarget({ type: "routine", id: routine.routineId })}
-                    actions={
-                      routine.status === "Active" ? (
-                        <button
-                          className="btn btn-ghost btn-sm"
-                          onClick={(e) => { e.stopPropagation(); void handlePauseRoutine(routine.routineId); }}
-                        >
-                          {tRoutines("pause")}
-                        </button>
-                      ) : (
-                        <button
-                          className="btn btn-sm"
-                          onClick={(e) => { e.stopPropagation(); void handleResumeRoutine(routine.routineId); }}
-                        >
-                          {tRoutines("resume")}
-                        </button>
-                      )
-                    }
-                  />
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Empty state — only once all three sections have no items and loading is done */}
-        {!tasksLoading &&
-          linkedTasks.length === 0 &&
-          linkedPlans.length === 0 &&
-          linkedRoutines.length === 0 && (
-            <div className="area-related-empty">
-              <p style={{ fontWeight: 500, marginBottom: "0.4rem", color: "var(--text)" }}>
-                {t("relatedWorkEmpty")}
-              </p>
-              <p className="area-related-hint-text">{t("relatedWorkHint")}</p>
-            </div>
-          )}
-      </div>
+      <AreaRelatedWorkSection
+        tasksLoading={tasksLoading}
+        linkedTasks={linkedTasks}
+        linkedPlans={linkedPlans}
+        linkedRoutines={linkedRoutines}
+        memberMap={memberMap}
+        onAddClick={() => setAddModal(true)}
+        onEdit={setEditTarget}
+        onCompleteTask={(taskId) => { void handleCompleteTask(taskId); }}
+        onCancelTask={(taskId) => { void handleCancelTask(taskId); }}
+        onPauseRoutine={(routineId) => { void handlePauseRoutine(routineId); }}
+        onResumeRoutine={(routineId) => { void handleResumeRoutine(routineId); }}
+      />
 
       {editTarget && (
         <EditEntityModal

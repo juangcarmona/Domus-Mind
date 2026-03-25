@@ -25,7 +25,6 @@ export function WeeklyGridItem({
   status,
   subtitle,
   color,
-  compact,
   onClick,
 }: WeeklyGridItemProps) {
   const isCompleted = status?.toLowerCase() === "completed";
@@ -42,7 +41,6 @@ export function WeeklyGridItem({
     "wg-item",
     `wg-item--${type}`,
     isCompleted ? "wg-item--completed" : "",
-    compact ? "wg-item--compact" : "",
   ]
     .filter(Boolean)
     .join(" ");

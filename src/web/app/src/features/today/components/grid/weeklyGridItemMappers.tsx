@@ -5,7 +5,7 @@ import type {
 } from "../../types";
 import { WeeklyGridItem } from "./WeeklyGridItem";
 
-function eventToItem(e: WeeklyGridEventItem, onClick?: () => void, compact?: boolean) {
+function eventToItem(e: WeeklyGridEventItem, onClick?: () => void) {
   const time = e.time ?? undefined; // already HH:mm or null
   const participantNames = e.participants?.map((p) => p.displayName).join(", ");
   return (
@@ -17,13 +17,12 @@ function eventToItem(e: WeeklyGridEventItem, onClick?: () => void, compact?: boo
       status={e.status}
       color={e.color}
       subtitle={participantNames || undefined}
-      compact={compact}
       onClick={onClick}
     />
   );
 }
 
-function taskToItem(t: WeeklyGridTaskItem, onClick?: () => void, compact?: boolean) {
+function taskToItem(t: WeeklyGridTaskItem, onClick?: () => void) {
   return (
     <WeeklyGridItem
       key={t.taskId}
@@ -31,13 +30,12 @@ function taskToItem(t: WeeklyGridTaskItem, onClick?: () => void, compact?: boole
       title={t.title}
       status={t.status}
       color={t.color}
-      compact={compact}
       onClick={onClick}
     />
   );
 }
 
-function routineToItem(r: WeeklyGridRoutineItem, onClick?: () => void, compact?: boolean) {
+function routineToItem(r: WeeklyGridRoutineItem, onClick?: () => void) {
   return (
     <WeeklyGridItem
       key={`routine-${r.routineId}`}
@@ -46,7 +44,6 @@ function routineToItem(r: WeeklyGridRoutineItem, onClick?: () => void, compact?:
       time={r.time ?? undefined}
       status={r.kind}
       color={r.color}
-      compact={compact}
       onClick={onClick}
     />
   );

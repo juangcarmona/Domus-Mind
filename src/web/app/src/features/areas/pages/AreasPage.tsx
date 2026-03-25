@@ -20,19 +20,31 @@ function AreaRow({
 }) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation("areas");
+  const { t: tCommon } = useTranslation("common");
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const hasOwner = !!area.primaryOwnerId;
 
   async function handleOwnerChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const newId = e.target.value;
     if (!newId) return;
+
+    setError(null);
     setSaving(true);
+
     if (hasOwner) {
-      await dispatch(transferArea({ areaId: area.areaId, newPrimaryOwnerId: newId, familyId }));
+      const result = await dispatch(transferArea({ areaId: area.areaId, newPrimaryOwnerId: newId, familyId }));
+      if (!transferArea.fulfilled.match(result)) {
+        setError((result.payload as string) ?? tCommon("failed"));
+      }
     } else {
-      await dispatch(assignPrimaryOwner({ areaId: area.areaId, memberId: newId, familyId }));
+      const result = await dispatch(assignPrimaryOwner({ areaId: area.areaId, memberId: newId, familyId }));
+      if (!assignPrimaryOwner.fulfilled.match(result)) {
+        setError((result.payload as string) ?? tCommon("failed"));
+      }
     }
+
     setSaving(false);
   }
 
@@ -75,6 +87,7 @@ function AreaRow({
             </option>
           ))}
         </select>
+        {error && <p className="error-msg" style={{ marginTop: "0.35rem" }}>{error}</p>}
       </div>
     </div>
   );
