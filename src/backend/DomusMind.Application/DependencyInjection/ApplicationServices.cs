@@ -63,6 +63,11 @@ using DomusMind.Application.Features.Tasks.ReassignTask;
 using DomusMind.Application.Features.Tasks.RescheduleTask;
 using DomusMind.Application.Features.Tasks.ResumeRoutine;
 using DomusMind.Application.Features.Tasks.UpdateRoutine;
+using DomusMind.Application.Features.SharedLists.CreateSharedList;
+using DomusMind.Application.Features.SharedLists.AddItemToSharedList;
+using DomusMind.Application.Features.SharedLists.ToggleSharedListItem;
+using DomusMind.Application.Features.SharedLists.GetFamilySharedLists;
+using DomusMind.Application.Features.SharedLists.GetSharedListDetail;
 using DomusMind.Contracts.Auth;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
@@ -70,6 +75,7 @@ using DomusMind.Contracts.Languages;
 using DomusMind.Contracts.Responsibilities;
 using DomusMind.Contracts.Setup;
 using DomusMind.Contracts.Tasks;
+using DomusMind.Contracts.SharedLists;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DomusMind.Application.DependencyInjection;
@@ -164,6 +170,13 @@ public static class ApplicationServices
         // Setup slices
         services.AddScoped<IQueryHandler<GetSetupStatusQuery, SetupStatusResponse>, GetSetupStatusQueryHandler>();
         services.AddScoped<ICommandHandler<InitializeSystemCommand, InitializeSystemResponse>, InitializeSystemCommandHandler>();
+
+        // Shared Lists slices (V1.1)
+        services.AddScoped<ICommandHandler<CreateSharedListCommand, CreateSharedListResponse>, CreateSharedListCommandHandler>();
+        services.AddScoped<ICommandHandler<AddItemToSharedListCommand, AddItemToSharedListResponse>, AddItemToSharedListCommandHandler>();
+        services.AddScoped<ICommandHandler<ToggleSharedListItemCommand, ToggleSharedListItemResponse>, ToggleSharedListItemCommandHandler>();
+        services.AddScoped<IQueryHandler<GetFamilySharedListsQuery, GetFamilySharedListsResponse>, GetFamilySharedListsQueryHandler>();
+        services.AddScoped<IQueryHandler<GetSharedListDetailQuery, GetSharedListDetailResponse>, GetSharedListDetailQueryHandler>();
 
         return services;
     }

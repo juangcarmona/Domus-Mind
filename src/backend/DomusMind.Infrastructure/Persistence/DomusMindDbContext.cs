@@ -41,6 +41,9 @@ public sealed class DomusMindDbContext : DbContext, IDomusMindDbContext
     public DbSet<SystemInitializationRecord> SystemInitialization
         => Set<SystemInitializationRecord>();
 
+    public DbSet<Domain.SharedLists.SharedList> SharedLists
+        => Set<Domain.SharedLists.SharedList>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DomusMindDbContext).Assembly);
