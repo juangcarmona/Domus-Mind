@@ -25,6 +25,22 @@ DomusMind V1 includes four core bounded contexts:
 
 These contexts provide the minimum viable household operating model.
 
+## V1.1 Scope (Extension)
+
+DomusMind V1.1 introduces an additional bounded context:
+
+- Shared Lists
+
+Shared Lists provides the **persistent shared checklist layer** of the household.
+
+It complements existing contexts by modeling reusable, non-temporal coordination state such as:
+
+- shopping lists
+- preparation checklists
+- recurring household item tracking
+
+Shared Lists is independent from Tasks and Calendar, and must not introduce time-based or execution semantics.
+
 ---
 
 ## Core Capabilities
@@ -37,6 +53,12 @@ V1 supports the following capability groups:
 - task execution
 - routine management
 - unified family timeline
+
+V1.1 extends capabilities with:
+
+- persistent shared checklist management
+- reusable household lists
+- shared state coordination across members
 
 ---
 
@@ -54,6 +76,15 @@ Owns events, schedules, participants, and reminders.
 ### Tasks
 Owns tasks, routines, assignment, and completion.
 
+### Shared Lists
+Owns persistent shared checklists and reusable household lists.
+
+Shared Lists represents non-temporal coordination state and must not overlap with:
+
+- task execution (Tasks)
+- time-based planning (Calendar)
+- ownership semantics (Responsibilities)
+
 ---
 
 ## Context Dependencies
@@ -61,8 +92,15 @@ Owns tasks, routines, assignment, and completion.
 - Responsibilities depends on Family
 - Calendar depends on Family
 - Tasks depends on Family
+- Shared Lists depends on Family
+
 - Tasks may react to Calendar events
 - Tasks may reference Responsibility domains
+
+- Shared Lists may reference Responsibility domains
+- Shared Lists may optionally link to Calendar entities
+
+Shared Lists remains behaviorally independent from Tasks and Calendar.
 
 ---
 
@@ -100,6 +138,18 @@ Owns tasks, routines, assignment, and completion.
 - pause-routine
 - resume-routine
 
+### Shared Lists (V1.1)
+- create-shared-list
+- rename-shared-list
+- delete-shared-list
+- add-item-to-shared-list
+- update-shared-list-item
+- remove-shared-list-item
+- toggle-shared-list-item
+- reorder-shared-list-items
+- get-family-shared-lists
+- get-shared-list-detail
+
 ---
 
 ## Deferred to V1.1
@@ -120,7 +170,7 @@ The following are explicitly outside V1:
 - properties
 - documents
 - food and meal planning
-- inventory
+- inventory automation (stock tracking, consumption models)
 - pets as separate operational context
 - finance
 - AI automation
@@ -151,3 +201,11 @@ DomusMind V1 is complete when:
 - tasks can be executed
 - routines can be maintained
 - timeline can be queried
+
+DomusMind V1.1 is complete when:
+
+- families can create and reuse shared lists
+- list items can be added in under 1 second
+- lists are reused across multiple real-world scenarios (e.g., shopping, preparation)
+- multiple members can interact with the same list concurrently
+- shared lists do not introduce confusion with tasks, routines, or events

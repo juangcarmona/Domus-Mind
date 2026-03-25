@@ -2,12 +2,13 @@
 
 This document describes how bounded contexts collaborate inside DomusMind.
 
-Core contexts in V1:
+Core contexts in V1.1:
 
 * Family
 * Responsibility
 * Calendar
-* Tasks 
+* Tasks
+* Shared Lists
 
 ---
 
@@ -30,13 +31,13 @@ The dependency structure is **not a linear chain**.
 Responsibility and Calendar both depend on Family, while Tasks depends on Family and may react to both Calendar and Responsibility.
 
 ```
-        Family
-        /   \
-       ↓     ↓
-Responsibility   Calendar
-        \       /
-         ↓     ↓
-           Tasks
+              Family
+         /      |       \
+        ↓       ↓        ↓
+Responsibility Calendar  Shared Lists
+        \       /          /
+         ↓     ↓          /
+              Tasks      /
 ```
 
 Dependency interpretation:
@@ -46,6 +47,22 @@ Dependency interpretation:
 * **Calendar** depends on Family for participant identity
 * **Tasks** depends on Family for assignees and may react to Calendar and Responsibility events
 
+
+Additional dependency rules for Shared Lists:
+
+* **Shared Lists** depends on Family for ownership and identity
+* Shared Lists may reference Responsibility domains for grouping and soft ownership
+* Shared Lists may optionally link to Calendar entities for contextual use
+* Shared Lists does not depend on Tasks
+* Tasks does not depend on Shared Lists
+
+Interpretation:
+
+* Family → identity
+* Responsibility → accountability
+* Calendar → time
+* Tasks → execution
+* Shared Lists → persistent shared state
 ---
 
 ## Collaboration Model
@@ -63,6 +80,57 @@ Communication rules:
 
 Contexts react to events rather than forming direct structural dependencies.
 
+
+## Shared Lists Interaction
+
+Shared Lists introduces a new coordination pattern:
+
+* persistent shared state
+* reusable checklists
+* toggle-based semantics
+
+Examples:
+
+### List Used During Event
+
+Calendar emits:
+
+EventScheduled
+
+Shared Lists does not react automatically, but a list may be linked manually:
+
+Example:
+
+Event: Trip
+
+Linked list:
+
+* documents
+* clothes
+* equipment
+
+---
+
+### Household List Usage
+
+User interaction (not event-driven):
+
+* member updates list at home
+* another member uses list in store
+* real-time shared coordination
+
+No domain events required across contexts.
+
+---
+
+### Responsibility Context Interaction
+
+Responsibility may provide:
+
+* area categorization
+* soft ownership
+
+Shared Lists must not modify responsibility assignments.
 ---
 
 # Context Interaction Examples
@@ -170,11 +238,16 @@ Dependencies represent **identity and information flow**, not permission to modi
 
 # Summary
 
-The DomusMind core model is built around four cooperating contexts:
+The DomusMind core model is built around five cooperating contexts:
 
 * **Family** → identity
 * **Responsibility** → accountability
 * **Calendar** → time
 * **Tasks** → execution
+* **Shared Lists** → persistent shared state
 
-Responsibility and Calendar both depend on Family, while Tasks integrates signals from Family, Calendar, and Responsibility to coordinate household work.
+Responsibility and Calendar both depend on Family.
+
+Tasks integrates signals from Family, Calendar, and Responsibility to coordinate execution.
+
+Shared Lists provides a parallel coordination layer focused on reusable, persistent checklist state, independent from execution and time semantics.
