@@ -8,6 +8,10 @@ using DomusMind.Application.Features.SharedLists.GetSharedListDetail;
 using DomusMind.Application.Features.SharedLists.ToggleSharedListItem;
 using DomusMind.Application.Features.SharedLists.UpdateSharedListItem;
 using DomusMind.Application.Features.SharedLists.RemoveSharedListItem;
+using DomusMind.Application.Features.SharedLists.LinkSharedList;
+using DomusMind.Application.Features.SharedLists.UnlinkSharedList;
+using DomusMind.Application.Features.SharedLists.CreateLinkedSharedListForEvent;
+using DomusMind.Application.Features.SharedLists.GetSharedListByLinkedEntity;
 using DomusMind.Contracts.SharedLists;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -182,4 +186,88 @@ public sealed class SharedListsController : ControllerBase
         SharedListErrorCode.InvalidInput => BadRequest(new { error = ex.Message }),
         _ => StatusCode(500, new { error = ex.Message }),
     };
+
+    /// <summary>Links an existing shared list to a calendar event.</summary>
+    [HttpPatch("{listId:guid}/link")]
+    [ProducesResponseType(typeof(LinkSharedListResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> LinkSharedList(
+        Guid listId,
+        [FromBody] LinkSharedListRequest request,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new LinkSharedListCommand(listId, request.LinkedEntityType, request.LinkedEntityId, _currentUser.UserId!.Value),
+                cancellationToken);
+            return Ok(response);
+        }
+        catch (SharedListException ex) { return MapException(ex); }
+    }
+
+    /// <summary>Removes the entity linkage from a shared list.</summary>
+    [HttpDelete("{listId:guid}/link")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> UnlinkSharedList(
+        Guid listId,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await dispatcher.Dispatch(
+                new UnlinkSharedListCommand(listId, _currentUser.UserId!.Value),
+                cancellationToken);
+            return NoContent();
+        }
+        catch (SharedListException ex) { return MapException(ex); }
+    }
+
+    /// <summary>Creates a new shared list linked to a calendar event.</summary>
+    [HttpPost("linked/calendar-event/{eventId:guid}")]
+    [ProducesResponseType(typeof(CreateSharedListResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> CreateLinkedSharedListForEvent(
+        Guid eventId,
+        [FromBody] CreateLinkedSharedListForEventRequest request,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new CreateLinkedSharedListForEventCommand(eventId, request.FamilyId, request.Name, _currentUser.UserId!.Value),
+                cancellationToken);
+            return Created($"/api/shared-lists/{response.ListId}", response);
+        }
+        catch (SharedListException ex) { return MapException(ex); }
+    }
+
+    /// <summary>Returns the shared list linked to a specific entity, if one exists.</summary>
+    [HttpGet("by-entity/{entityType}/{entityId:guid}")]
+    [ProducesResponseType(typeof(GetSharedListByLinkedEntityResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetSharedListByLinkedEntity(
+        string entityType,
+        Guid entityId,
+        [FromServices] IQueryDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new GetSharedListByLinkedEntityQuery(entityType, entityId, _currentUser.UserId!.Value),
+                cancellationToken);
+            return Ok(response);
+        }
+        catch (SharedListException ex) { return MapException(ex); }
+    }
 }

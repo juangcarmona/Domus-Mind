@@ -458,4 +458,74 @@ public sealed class SharedListTests
         list.Items.Should().HaveCount(1);
         list.Items.Single().Name.Value.Should().Be("B");
     }
+
+    // ── LinkToEntity ────────────────────────────────────────────────────────
+
+    [Fact]
+    public void LinkToEntity_SetsLinkedEntityTypeAndId()
+    {
+        var list = BuildList();
+        var entityId = Guid.NewGuid();
+
+        list.LinkToEntity("CalendarEvent", entityId, DateTime.UtcNow);
+
+        list.LinkedEntityType.Should().Be("CalendarEvent");
+        list.LinkedEntityId.Should().Be(entityId);
+    }
+
+    [Fact]
+    public void LinkToEntity_EmitsSharedListLinkedEvent()
+    {
+        var list = BuildList();
+        var entityId = Guid.NewGuid();
+        list.ClearDomainEvents(); // discard Create event
+
+        list.LinkToEntity("CalendarEvent", entityId, DateTime.UtcNow);
+
+        list.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<SharedListLinked>()
+            .Which.LinkedEntityType.Should().Be("CalendarEvent");
+    }
+
+    [Fact]
+    public void LinkToEntity_SharedListLinkedEvent_HasCorrectEntityId()
+    {
+        var list = BuildList();
+        var entityId = Guid.NewGuid();
+        list.ClearDomainEvents();
+
+        list.LinkToEntity("CalendarEvent", entityId, DateTime.UtcNow);
+
+        var evt = list.DomainEvents.OfType<SharedListLinked>().Single();
+        evt.LinkedEntityId.Should().Be(entityId);
+        evt.SharedListId.Should().Be(list.Id.Value);
+    }
+
+    // ── Unlink ──────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void Unlink_ClearsLinkedEntityTypeAndId()
+    {
+        var list = BuildList();
+        list.LinkToEntity("CalendarEvent", Guid.NewGuid(), DateTime.UtcNow);
+
+        list.Unlink(DateTime.UtcNow);
+
+        list.LinkedEntityType.Should().BeNull();
+        list.LinkedEntityId.Should().BeNull();
+    }
+
+    [Fact]
+    public void Unlink_EmitsSharedListUnlinkedEvent()
+    {
+        var list = BuildList();
+        list.LinkToEntity("CalendarEvent", Guid.NewGuid(), DateTime.UtcNow);
+        list.ClearDomainEvents();
+
+        list.Unlink(DateTime.UtcNow);
+
+        list.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<SharedListUnlinked>()
+            .Which.SharedListId.Should().Be(list.Id.Value);
+    }
 }

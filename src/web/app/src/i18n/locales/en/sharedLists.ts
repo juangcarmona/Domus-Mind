@@ -24,4 +24,9 @@ export default {
   removeItem: "Remove",
   renameItem: "Rename item",
   checkedSection: "Done",
+  checklistSection: "Checklist",
+  createChecklist: "Create checklist",
+  openChecklist: "Open checklist",
+  checklistCreating: "Creating checklist…",
+  checklistError: "Failed to create checklist",
 } as const;

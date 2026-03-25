@@ -24,4 +24,9 @@ export default {
   removeItem: "Eliminar",
   renameItem: "Renombrar elemento",
   checkedSection: "Hecho",
+  checklistSection: "Lista de verificación",
+  createChecklist: "Crear lista de verificación",
+  openChecklist: "Abrir lista de verificación",
+  checklistCreating: "Creando lista…",
+  checklistError: "No se pudo crear la lista",
 } as const;

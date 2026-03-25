@@ -95,3 +95,27 @@ export interface UpdateSharedListItemResponse {
   note: string | null;
   updatedAtUtc: string;
 }
+
+export interface LinkSharedListRequest {
+  linkedEntityType: string;
+  linkedEntityId: string;
+}
+
+export interface LinkSharedListResponse {
+  listId: string;
+  linkedEntityType: string;
+  linkedEntityId: string;
+}
+
+export interface CreateLinkedSharedListForEventRequest {
+  familyId: string;
+  name?: string | null;
+}
+
+export interface GetSharedListByLinkedEntityResponse {
+  listId: string;
+  name: string;
+  kind: string;
+  itemCount: number;
+  uncheckedCount: number;
+}

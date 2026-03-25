@@ -24,4 +24,9 @@ export default {
   removeItem: "削除",
   renameItem: "項目の名前変更",
   checkedSection: "完了",
+  checklistSection: "チェックリスト",
+  createChecklist: "チェックリストを作成",
+  openChecklist: "チェックリストを開く",
+  checklistCreating: "作成中…",
+  checklistError: "リストの作成に失敗しました",
 } as const;

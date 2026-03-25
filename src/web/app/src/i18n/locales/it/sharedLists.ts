@@ -24,4 +24,9 @@ export default {
   removeItem: "Rimuovi",
   renameItem: "Rinomina elemento",
   checkedSection: "Fatto",
+  checklistSection: "Lista di controllo",
+  createChecklist: "Crea lista di controllo",
+  openChecklist: "Apri lista di controllo",
+  checklistCreating: "Creazione lista…",
+  checklistError: "Impossibile creare la lista",
 } as const;

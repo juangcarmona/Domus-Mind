@@ -70,6 +70,10 @@ using DomusMind.Application.Features.SharedLists.GetFamilySharedLists;
 using DomusMind.Application.Features.SharedLists.GetSharedListDetail;
 using DomusMind.Application.Features.SharedLists.UpdateSharedListItem;
 using DomusMind.Application.Features.SharedLists.RemoveSharedListItem;
+using DomusMind.Application.Features.SharedLists.LinkSharedList;
+using DomusMind.Application.Features.SharedLists.UnlinkSharedList;
+using DomusMind.Application.Features.SharedLists.CreateLinkedSharedListForEvent;
+using DomusMind.Application.Features.SharedLists.GetSharedListByLinkedEntity;
 using DomusMind.Contracts.Auth;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
@@ -181,6 +185,10 @@ public static class ApplicationServices
         services.AddScoped<IQueryHandler<GetSharedListDetailQuery, GetSharedListDetailResponse>, GetSharedListDetailQueryHandler>();
         services.AddScoped<ICommandHandler<UpdateSharedListItemCommand, UpdateSharedListItemResponse>, UpdateSharedListItemCommandHandler>();
         services.AddScoped<ICommandHandler<RemoveSharedListItemCommand, bool>, RemoveSharedListItemCommandHandler>();
+        services.AddScoped<ICommandHandler<LinkSharedListCommand, LinkSharedListResponse>, LinkSharedListCommandHandler>();
+        services.AddScoped<ICommandHandler<UnlinkSharedListCommand, bool>, UnlinkSharedListCommandHandler>();
+        services.AddScoped<ICommandHandler<CreateLinkedSharedListForEventCommand, CreateSharedListResponse>, CreateLinkedSharedListForEventCommandHandler>();
+        services.AddScoped<IQueryHandler<GetSharedListByLinkedEntityQuery, GetSharedListByLinkedEntityResponse>, GetSharedListByLinkedEntityQueryHandler>();
 
         return services;
     }

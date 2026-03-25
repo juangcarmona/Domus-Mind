@@ -6,6 +6,7 @@ import { fetchAreas } from "../../../store/areasSlice";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { toLocalDateInput, toLocalTimeInput } from "../utils";
 import { DateInput } from "../../../components/DateInput";
+import { EventChecklistSection } from "../../shared-lists/components/EventChecklistSection";
 
 interface PlanCrudFormProps {
   mode: "create" | "edit";
@@ -317,6 +318,9 @@ export function PlanCrudForm({
           </>
         )}
         {error && <p className="error-msg">{error}</p>}
+        {mode === "edit" && eventId && (
+          <EventChecklistSection eventId={eventId} familyId={familyId} />
+        )}
         <div className="modal-footer">
           <button type="button" className="btn btn-ghost" onClick={onCancel}>
             {tCommon("cancel")}

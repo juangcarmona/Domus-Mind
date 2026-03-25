@@ -10,6 +10,10 @@ import type {
   ToggleSharedListItemResponse,
   UpdateSharedListItemRequest,
   UpdateSharedListItemResponse,
+  LinkSharedListRequest,
+  LinkSharedListResponse,
+  CreateLinkedSharedListForEventRequest,
+  GetSharedListByLinkedEntityResponse,
 } from "./types/sharedListTypes";
 
 export const sharedListsApi = {
@@ -49,4 +53,24 @@ export const sharedListsApi = {
 
   removeSharedListItem: (listId: string, itemId: string) =>
     request<void>(`/api/shared-lists/${listId}/items/${itemId}`, { method: "DELETE" }),
+
+  linkSharedList: (listId: string, body: LinkSharedListRequest) =>
+    request<LinkSharedListResponse>(`/api/shared-lists/${listId}/link`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+
+  unlinkSharedList: (listId: string) =>
+    request<void>(`/api/shared-lists/${listId}/link`, { method: "DELETE" }),
+
+  createLinkedSharedListForEvent: (eventId: string, body: CreateLinkedSharedListForEventRequest) =>
+    request<CreateSharedListResponse>(`/api/shared-lists/linked/calendar-event/${eventId}`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  getSharedListByLinkedEntity: (entityType: string, entityId: string) =>
+    request<GetSharedListByLinkedEntityResponse>(
+      `/api/shared-lists/by-entity/${entityType}/${entityId}`,
+    ),
 };

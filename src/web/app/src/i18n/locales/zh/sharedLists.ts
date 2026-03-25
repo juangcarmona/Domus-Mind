@@ -24,4 +24,9 @@ export default {
   removeItem: "删除",
   renameItem: "重命名项目",
   checkedSection: "已完成",
+  checklistSection: "清单",
+  createChecklist: "创建清单",
+  openChecklist: "打开清单",
+  checklistCreating: "正在创建清单…",
+  checklistError: "创建清单失败",
 } as const;

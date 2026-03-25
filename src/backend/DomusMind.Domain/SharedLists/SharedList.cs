@@ -129,6 +129,20 @@ public sealed class SharedList : AggregateRoot<SharedListId>
             Guid.NewGuid(), Id.Value, itemId.Value, now));
     }
 
+    public void LinkToEntity(string entityType, Guid entityId, DateTime now)
+    {
+        LinkedEntityType = entityType;
+        LinkedEntityId = entityId;
+        RaiseDomainEvent(new SharedListLinked(Guid.NewGuid(), Id.Value, entityType, entityId, now));
+    }
+
+    public void Unlink(DateTime now)
+    {
+        LinkedEntityType = null;
+        LinkedEntityId = null;
+        RaiseDomainEvent(new SharedListUnlinked(Guid.NewGuid(), Id.Value, now));
+    }
+
     /// <summary>Count of items that are not yet checked.</summary>
     public int UncheckedCount => _items.Count(i => !i.Checked);
 }
