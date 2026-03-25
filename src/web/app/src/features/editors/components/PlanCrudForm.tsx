@@ -41,6 +41,7 @@ export function PlanCrudForm({
   initialEndTime,
   initialDescription,
   initialColor,
+  initialAreaId,
   initialParticipantMemberIds,
   members,
   onCancel,
