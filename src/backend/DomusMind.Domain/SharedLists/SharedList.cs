@@ -113,7 +113,7 @@ public sealed class SharedList : AggregateRoot<SharedListId>
         item.Update(name, quantity, note, now);
 
         RaiseDomainEvent(new SharedListItemUpdated(
-            Guid.NewGuid(), Id.Value, itemId.Value, name.Value, now));
+            Guid.NewGuid(), Id.Value, itemId.Value, name.Value, quantity, note, now));
 
         return item;
     }
@@ -152,6 +152,41 @@ public sealed class SharedList : AggregateRoot<SharedListId>
     public void Delete(DateTime now)
     {
         RaiseDomainEvent(new SharedListDeleted(Guid.NewGuid(), Id.Value, now));
+    }
+
+    /// <summary>
+    /// Reorders unchecked items within the list. The provided list must contain
+    /// exactly all currently unchecked item IDs. Checked items are not affected.
+    /// </summary>
+    public void ReorderItems(IReadOnlyList<SharedListItemId> orderedUncheckedIds, DateTime now)
+    {
+        var uncheckedItems = _items.Where(i => !i.Checked).ToList();
+
+        if (orderedUncheckedIds.Count != uncheckedItems.Count)
+            throw new ArgumentException(
+                $"Reorder payload must include exactly all {uncheckedItems.Count} unchecked items.");
+
+        var distinctIds = orderedUncheckedIds.ToHashSet();
+        if (distinctIds.Count != orderedUncheckedIds.Count)
+            throw new ArgumentException("Duplicate item IDs in reorder payload.");
+
+        foreach (var item in uncheckedItems)
+        {
+            if (!distinctIds.Contains(item.Id))
+                throw new InvalidOperationException(
+                    $"Unchecked item '{item.Id.Value}' is missing from the reorder payload.");
+        }
+
+        for (var i = 0; i < orderedUncheckedIds.Count; i++)
+        {
+            var item = _items.Single(it => it.Id == orderedUncheckedIds[i]);
+            item.SetOrder(i + 1);
+        }
+
+        var entries = orderedUncheckedIds
+            .Select((id, i) => new ItemOrderEntry(id.Value, i + 1))
+            .ToList();
+        RaiseDomainEvent(new SharedListItemsReordered(Guid.NewGuid(), Id.Value, entries, now));
     }
 
     /// <summary>Count of items that are not yet checked.</summary>

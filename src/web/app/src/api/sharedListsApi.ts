@@ -16,6 +16,7 @@ import type {
   GetSharedListByLinkedEntityResponse,
   RenameSharedListRequest,
   RenameSharedListResponse,
+  ReorderSharedListItemsRequest,
 } from "./types/sharedListTypes";
 
 export const sharedListsApi = {
@@ -84,4 +85,10 @@ export const sharedListsApi = {
 
   deleteSharedList: (listId: string) =>
     request<void>(`/api/shared-lists/${listId}`, { method: "DELETE" }),
+
+  reorderSharedListItems: (listId: string, body: ReorderSharedListItemsRequest) =>
+    request<void>(`/api/shared-lists/${listId}/items/order`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
 };

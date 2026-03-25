@@ -117,11 +117,11 @@ export const toggleSharedListItem = createAsyncThunk(
 export const updateSharedListItem = createAsyncThunk(
   "sharedLists/updateItem",
   async (
-    { listId, itemId, name }: { listId: string; itemId: string; name: string },
+    { listId, itemId, name, quantity, note }: { listId: string; itemId: string; name: string; quantity?: string | null; note?: string | null },
     { rejectWithValue },
   ) => {
     try {
-      return await sharedListsApi.updateSharedListItem(listId, itemId, { name });
+      return await sharedListsApi.updateSharedListItem(listId, itemId, { name, quantity, note });
     } catch (err: unknown) {
       return rejectWithValue(
         (err as { message?: string }).message ?? "Failed to update item",
@@ -210,6 +210,23 @@ export const unlinkSharedList = createAsyncThunk(
   },
 );
 
+export const reorderSharedListItems = createAsyncThunk(
+  "sharedLists/reorderItems",
+  async (
+    { listId, itemIds }: { listId: string; itemIds: string[] },
+    { rejectWithValue },
+  ) => {
+    try {
+      await sharedListsApi.reorderSharedListItems(listId, { itemIds });
+      return { itemIds };
+    } catch (err: unknown) {
+      return rejectWithValue(
+        (err as { message?: string }).message ?? "Failed to reorder items",
+      );
+    }
+  },
+);
+
 // ── Slice ────────────────────────────────────────────────────────────────────
 
 const sharedListsSlice = createSlice({
@@ -234,6 +251,14 @@ const sharedListsSlice = createSlice({
       state.detail.items = state.detail.items.filter(
         (i) => i.itemId !== action.payload.itemId,
       );
+    },
+    // Optimistic reorder: update item orders immediately in detail
+    optimisticReorderItems(state, action: PayloadAction<{ itemIds: string[] }>) {
+      if (!state.detail) return;
+      action.payload.itemIds.forEach((id, index) => {
+        const item = state.detail!.items.find((i) => i.itemId === id);
+        if (item) item.order = index + 1;
+      });
     },
     clearDetail(state) {
       state.detail = null;
@@ -402,5 +427,5 @@ const sharedListsSlice = createSlice({
   },
 });
 
-export const { optimisticToggleItem, optimisticRenameItem, optimisticRemoveItem, clearDetail } = sharedListsSlice.actions;
+export const { optimisticToggleItem, optimisticRenameItem, optimisticRemoveItem, optimisticReorderItems, clearDetail } = sharedListsSlice.actions;
 export default sharedListsSlice.reducer;

@@ -129,3 +129,7 @@ export interface RenameSharedListResponse {
   listId: string;
   name: string;
 }
+
+export interface ReorderSharedListItemsRequest {
+  itemIds: string[];
+}

@@ -14,6 +14,7 @@ using DomusMind.Application.Features.SharedLists.CreateLinkedSharedListForEvent;
 using DomusMind.Application.Features.SharedLists.GetSharedListByLinkedEntity;
 using DomusMind.Application.Features.SharedLists.RenameSharedList;
 using DomusMind.Application.Features.SharedLists.DeleteSharedList;
+using DomusMind.Application.Features.SharedLists.ReorderSharedListItems;
 using DomusMind.Contracts.SharedLists;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -309,6 +310,28 @@ public sealed class SharedListsController : ControllerBase
         {
             await dispatcher.Dispatch(
                 new DeleteSharedListCommand(listId, _currentUser.UserId!.Value),
+                cancellationToken);
+            return NoContent();
+        }
+        catch (SharedListException ex) { return MapException(ex); }
+    }
+
+    /// <summary>Reorders the unchecked items in a shared list.</summary>
+    [HttpPatch("{listId:guid}/items/order")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ReorderItems(
+        Guid listId,
+        [FromBody] ReorderSharedListItemsRequest request,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await dispatcher.Dispatch(
+                new ReorderSharedListItemsCommand(listId, request.ItemIds, _currentUser.UserId!.Value),
                 cancellationToken);
             return NoContent();
         }

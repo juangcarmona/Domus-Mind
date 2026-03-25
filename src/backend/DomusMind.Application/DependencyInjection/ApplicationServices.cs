@@ -76,6 +76,7 @@ using DomusMind.Application.Features.SharedLists.CreateLinkedSharedListForEvent;
 using DomusMind.Application.Features.SharedLists.GetSharedListByLinkedEntity;
 using DomusMind.Application.Features.SharedLists.RenameSharedList;
 using DomusMind.Application.Features.SharedLists.DeleteSharedList;
+using DomusMind.Application.Features.SharedLists.ReorderSharedListItems;
 using DomusMind.Contracts.Auth;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
@@ -193,6 +194,7 @@ public static class ApplicationServices
         services.AddScoped<IQueryHandler<GetSharedListByLinkedEntityQuery, GetSharedListByLinkedEntityResponse>, GetSharedListByLinkedEntityQueryHandler>();
         services.AddScoped<ICommandHandler<RenameSharedListCommand, RenameSharedListResponse>, RenameSharedListCommandHandler>();
         services.AddScoped<ICommandHandler<DeleteSharedListCommand, bool>, DeleteSharedListCommandHandler>();
+        services.AddScoped<ICommandHandler<ReorderSharedListItemsCommand, bool>, ReorderSharedListItemsCommandHandler>();
 
         return services;
     }

@@ -64,4 +64,9 @@ public sealed class SharedListItem : Entity<SharedListItemId>
         Note = note;
         UpdatedAtUtc = updatedAtUtc;
     }
+
+    internal void SetOrder(int order)
+    {
+        Order = order;
+    }
 }

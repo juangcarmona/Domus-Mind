@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../../store/hooks";
@@ -22,6 +22,8 @@ export function EventChecklistSection({ eventId, familyId }: EventChecklistSecti
   const [creating, setCreating] = useState(false);
   const [unlinking, setUnlinking] = useState(false);
   const [showAttach, setShowAttach] = useState(false);
+  const [showNameInput, setShowNameInput] = useState(false);
+  const [newListName, setNewListName] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const loadLinked = useCallback(async () => {
@@ -40,16 +42,24 @@ export function EventChecklistSection({ eventId, familyId }: EventChecklistSecti
     loadLinked();
   }, [loadLinked]);
 
-  async function handleCreate() {
+  async function handleCreate(name?: string) {
     setCreating(true);
     setError(null);
     try {
-      const result = await sharedListsApi.createLinkedSharedListForEvent(eventId, { familyId });
+      const result = await sharedListsApi.createLinkedSharedListForEvent(eventId, {
+        familyId,
+        name: name?.trim() || undefined,
+      });
       navigate(`/lists/${result.listId}`);
     } catch (err) {
       setError((err as { message?: string }).message ?? t("checklistError"));
       setCreating(false);
     }
+  }
+
+  function handleNameKey(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") { e.preventDefault(); handleCreate(newListName); }
+    else if (e.key === "Escape") { e.preventDefault(); setShowNameInput(false); setNewListName(""); }
   }
 
   async function handleUnlink() {
@@ -101,16 +111,45 @@ export function EventChecklistSection({ eventId, familyId }: EventChecklistSecti
           onAttached={handleAttached}
           onCancel={() => setShowAttach(false)}
         />
+      ) : showNameInput ? (
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+          <input
+            type="text"
+            className="shared-list-add-input"
+            placeholder={t("createChecklistName")}
+            value={newListName}
+            onChange={(e) => setNewListName(e.target.value)}
+            onKeyDown={handleNameKey}
+            autoFocus
+            aria-label={t("createChecklistName")}
+            style={{ flex: "1", minWidth: "12rem" }}
+          />
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => handleCreate(newListName)}
+            disabled={creating}
+          >
+            {creating ? t("checklistCreating") : t("createChecklist")}
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => { setShowNameInput(false); setNewListName(""); }}
+          >
+            {t("cancel")}
+          </button>
+        </div>
       ) : (
         <>
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
             <button
               type="button"
               className="btn btn-ghost"
-              onClick={handleCreate}
+              onClick={() => setShowNameInput(true)}
               disabled={creating}
             >
-              {creating ? t("checklistCreating") : t("createChecklist")}
+              {t("createChecklist")}
             </button>
             <button
               type="button"

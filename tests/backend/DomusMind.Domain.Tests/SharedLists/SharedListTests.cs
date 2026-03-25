@@ -582,4 +582,116 @@ public sealed class SharedListTests
             .Which.Should().BeOfType<SharedListDeleted>()
             .Which.SharedListId.Should().Be(list.Id.Value);
     }
+
+    // ── ReorderItems ─────────────────────────────────────────────────────────
+
+    [Fact]
+    public void ReorderItems_AssignsNewOrdersToUncheckedItems()
+    {
+        var list = BuildList();
+        var (id1, n1) = NewItem("A");
+        var (id2, n2) = NewItem("B");
+        var (id3, n3) = NewItem("C");
+        list.AddItem(id1, n1, null, null, DateTime.UtcNow);
+        list.AddItem(id2, n2, null, null, DateTime.UtcNow);
+        list.AddItem(id3, n3, null, null, DateTime.UtcNow);
+
+        list.ReorderItems([id3, id1, id2], DateTime.UtcNow);
+
+        list.Items.Single(i => i.Id == id3).Order.Should().Be(1);
+        list.Items.Single(i => i.Id == id1).Order.Should().Be(2);
+        list.Items.Single(i => i.Id == id2).Order.Should().Be(3);
+    }
+
+    [Fact]
+    public void ReorderItems_EmitsSharedListItemsReorderedEvent()
+    {
+        var list = BuildList();
+        var (id1, n1) = NewItem("X");
+        var (id2, n2) = NewItem("Y");
+        list.AddItem(id1, n1, null, null, DateTime.UtcNow);
+        list.AddItem(id2, n2, null, null, DateTime.UtcNow);
+        list.ClearDomainEvents();
+
+        list.ReorderItems([id2, id1], DateTime.UtcNow);
+
+        list.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<SharedListItemsReordered>()
+            .Which.SharedListId.Should().Be(list.Id.Value);
+    }
+
+    [Fact]
+    public void ReorderItems_DoesNotAffectCheckedItems()
+    {
+        var list = BuildList();
+        var (uncheckedId, un) = NewItem("Unchecked");
+        var (checkedId, cn) = NewItem("Checked");
+        list.AddItem(uncheckedId, un, null, null, DateTime.UtcNow);
+        list.AddItem(checkedId, cn, null, null, DateTime.UtcNow);
+        list.ToggleItem(checkedId, null, DateTime.UtcNow);
+        var checkedOrderBefore = list.Items.Single(i => i.Id == checkedId).Order;
+
+        list.ReorderItems([uncheckedId], DateTime.UtcNow);
+
+        list.Items.Single(i => i.Id == checkedId).Order.Should().Be(checkedOrderBefore);
+    }
+
+    [Fact]
+    public void ReorderItems_WithWrongItemCount_ThrowsArgumentException()
+    {
+        var list = BuildList();
+        var (id1, n1) = NewItem("One");
+        var (id2, n2) = NewItem("Two");
+        list.AddItem(id1, n1, null, null, DateTime.UtcNow);
+        list.AddItem(id2, n2, null, null, DateTime.UtcNow);
+
+        var act = () => list.ReorderItems([id1], DateTime.UtcNow);
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void ReorderItems_WithDuplicateIds_ThrowsArgumentException()
+    {
+        var list = BuildList();
+        var (id1, n1) = NewItem("One");
+        list.AddItem(id1, n1, null, null, DateTime.UtcNow);
+
+        var act = () => list.ReorderItems([id1, id1], DateTime.UtcNow);
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void ReorderItems_WithUnknownItemId_ThrowsInvalidOperationException()
+    {
+        var list = BuildList();
+        var (id1, n1) = NewItem("One");
+        list.AddItem(id1, n1, null, null, DateTime.UtcNow);
+        var unknownId = SharedListItemId.New();
+
+        var act = () => list.ReorderItems([unknownId], DateTime.UtcNow);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void ReorderItems_OrderRemainsStableAfterMixedOperations()
+    {
+        var list = BuildList();
+        var (id1, n1) = NewItem("A");
+        var (id2, n2) = NewItem("B");
+        var (id3, n3) = NewItem("C");
+        list.AddItem(id1, n1, null, null, DateTime.UtcNow);
+        list.AddItem(id2, n2, null, null, DateTime.UtcNow);
+        list.AddItem(id3, n3, null, null, DateTime.UtcNow);
+
+        // Toggle one checked, then reorder the remaining two unchecked
+        list.ToggleItem(id2, null, DateTime.UtcNow);
+        list.ReorderItems([id3, id1], DateTime.UtcNow);
+
+        list.Items.Single(i => i.Id == id3).Order.Should().Be(1);
+        list.Items.Single(i => i.Id == id1).Order.Should().Be(2);
+    }
 }
+

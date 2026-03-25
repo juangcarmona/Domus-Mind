@@ -5,120 +5,14 @@ import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import {
   fetchSharedListDetail,
   addItemToSharedList,
-  toggleSharedListItem,
-  updateSharedListItem,
-  removeSharedListItem,
-  optimisticToggleItem,
-  optimisticRenameItem,
-  optimisticRemoveItem,
+  optimisticReorderItems,
+  reorderSharedListItems,
   clearDetail,
   renameSharedList,
   deleteSharedList,
 } from "../../../store/sharedListsSlice";
-import type { SharedListItemDetail } from "../../../api/types/sharedListTypes";
 import { EditEntityModal } from "../../editors/components/EditEntityModal";
-
-// ── Item row ──────────────────────────────────────────────────────────────────
-
-interface ItemRowProps {
-  item: SharedListItemDetail;
-  listId: string;
-}
-
-function ItemRow({ item, listId }: ItemRowProps) {
-  const { t } = useTranslation("sharedLists");
-  const dispatch = useAppDispatch();
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(item.name);
-
-  function startEditing(e: React.MouseEvent) {
-    e.stopPropagation();
-    setDraft(item.name);
-    setEditing(true);
-  }
-
-  function commitRename() {
-    const trimmed = draft.trim();
-    if (trimmed && trimmed !== item.name) {
-      dispatch(optimisticRenameItem({ itemId: item.itemId, name: trimmed }));
-      dispatch(updateSharedListItem({ listId, itemId: item.itemId, name: trimmed }));
-    }
-    setEditing(false);
-  }
-
-  function cancelRename() {
-    setDraft(item.name);
-    setEditing(false);
-  }
-
-  function handleRenameKey(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") { e.preventDefault(); commitRename(); }
-    else if (e.key === "Escape") { e.preventDefault(); cancelRename(); }
-  }
-
-  function handleRowClick() {
-    if (editing) return;
-    dispatch(optimisticToggleItem({ itemId: item.itemId }));
-    dispatch(toggleSharedListItem({ listId, itemId: item.itemId }));
-  }
-
-  function handleRemove(e: React.MouseEvent) {
-    e.stopPropagation();
-    dispatch(optimisticRemoveItem({ itemId: item.itemId }));
-    dispatch(removeSharedListItem({ listId, itemId: item.itemId }));
-  }
-
-  return (
-    <div
-      className={`shared-list-item${item.checked ? " shared-list-item--checked" : ""}${editing ? " shared-list-item--editing" : ""}`}
-      onClick={handleRowClick}
-    >
-      <input
-        type="checkbox"
-        className="shared-list-item__checkbox"
-        checked={item.checked}
-        readOnly
-        aria-label={item.name}
-        tabIndex={-1}
-      />
-
-      {editing ? (
-        <input
-          className="shared-list-item__rename-input"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={handleRenameKey}
-          onBlur={commitRename}
-          autoFocus
-          aria-label={t("renameItem")}
-          onClick={(e) => e.stopPropagation()}
-        />
-      ) : (
-        <span
-          className="shared-list-item__name"
-          onClick={startEditing}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") { e.preventDefault(); startEditing(e as unknown as React.MouseEvent); }
-          }}
-        >
-          {item.name}
-        </span>
-      )}
-
-      <button
-        type="button"
-        className="shared-list-item__remove"
-        onClick={handleRemove}
-        aria-label={t("removeItem")}
-        tabIndex={-1}
-      >
-        ×
-      </button>
-    </div>
-  );
-}
+import { ItemRow } from "../components/ItemRow";
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
@@ -138,6 +32,7 @@ export function SharedListDetailPage() {
   const [renameError, setRenameError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [showLinkedEvent, setShowLinkedEvent] = useState(false);
+  const [checkedCollapsed, setCheckedCollapsed] = useState(false);
 
   useEffect(() => {
     if (listId) {
@@ -194,6 +89,24 @@ export function SharedListDetailPage() {
       setAddError((result.payload as string) ?? t("addError"));
     }
     addInputRef.current?.focus();
+  }
+
+  function handleMoveUp(unchecked: { itemId: string }[], index: number) {
+    if (index === 0 || !listId) return;
+    const newOrder = [...unchecked];
+    [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+    const itemIds = newOrder.map((i) => i.itemId);
+    dispatch(optimisticReorderItems({ itemIds }));
+    dispatch(reorderSharedListItems({ listId, itemIds }));
+  }
+
+  function handleMoveDown(unchecked: { itemId: string }[], index: number) {
+    if (index === unchecked.length - 1 || !listId) return;
+    const newOrder = [...unchecked];
+    [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+    const itemIds = newOrder.map((i) => i.itemId);
+    dispatch(optimisticReorderItems({ itemIds }));
+    dispatch(reorderSharedListItems({ listId, itemIds }));
   }
 
   if (detailStatus === "loading" && !detail) {
@@ -268,6 +181,10 @@ export function SharedListDetailPage() {
               </button>
             </div>
           )}
+
+          <div className="shared-list-meta-row">
+            <span className="shared-list-kind-tag">{detail.kind}</span>
+          </div>
         </div>
 
         <button
@@ -281,8 +198,16 @@ export function SharedListDetailPage() {
       </div>
 
       <div className="shared-list-items-wrap">
-        {unchecked.map((item) => (
-          <ItemRow key={item.itemId} item={item} listId={detail.listId} />
+        {unchecked.map((item, index) => (
+          <ItemRow
+            key={item.itemId}
+            item={item}
+            listId={detail.listId}
+            isFirst={index === 0}
+            isLast={index === unchecked.length - 1}
+            onMoveUp={() => handleMoveUp(unchecked, index)}
+            onMoveDown={() => handleMoveDown(unchecked, index)}
+          />
         ))}
 
         {sorted.length === 0 && (
@@ -291,8 +216,16 @@ export function SharedListDetailPage() {
 
         {checked.length > 0 && (
           <>
-            <div className="shared-list-section-label">{t("checkedSection")}</div>
-            {checked.map((item) => (
+            <button
+              type="button"
+              className="shared-list-section-label shared-list-section-toggle"
+              onClick={() => setCheckedCollapsed((c) => !c)}
+            >
+              {checkedCollapsed
+                ? t("expandChecked", { count: checked.length })
+                : t("collapseChecked")}
+            </button>
+            {!checkedCollapsed && checked.map((item) => (
               <ItemRow key={item.itemId} item={item} listId={detail.listId} />
             ))}
           </>
