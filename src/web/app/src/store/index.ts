@@ -8,6 +8,7 @@ import routinesReducer from "./routinesSlice";
 import languagesReducer from "./languagesSlice";
 import todayReducer from "./todaySlice";
 import uiReducer from "./uiSlice";
+import sharedListsReducer from "./sharedListsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
     languages: languagesReducer,
     today: todayReducer,
     ui: uiReducer,
+    sharedLists: sharedListsReducer,
   },
 });
 

@@ -8,6 +8,7 @@ export default {
   week: "Week",
   today: "Today",
   members: "Members",
+  lists: "Lists",
   signOut: "Sign out",
   settings: "Settings",
 } as const;

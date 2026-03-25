@@ -1,0 +1,78 @@
+/* ---- Shared Lists page ---- */
+.shared-list-card-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.shared-list-card-count--has-remaining {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ---- Shared List detail page ---- */
+.shared-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  transition: opacity 0.15s;
+}
+
+.shared-list-item:last-child {
+  border-bottom: none;
+}
+
+.shared-list-item--checked {
+  opacity: 0.45;
+}
+
+.shared-list-item__checkbox {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.shared-list-item__name {
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.shared-list-item--checked .shared-list-item__name {
+  text-decoration: line-through;
+}
+
+.shared-list-items-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* ---- Add item inline form ---- */
+.shared-list-add-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.shared-list-add-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  color: var(--text);
+  padding: 0.2rem 0;
+}
+
+.shared-list-add-input::placeholder {
+  color: var(--muted);
+}

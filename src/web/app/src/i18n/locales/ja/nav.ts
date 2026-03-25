@@ -8,6 +8,7 @@ export default {
   week: "週間",
   today: "今日",
   members: "メンバー",
+  lists: "リスト",
   signOut: "サインアウト",
   settings: "設定",
 } as const;

@@ -8,6 +8,7 @@ export default {
   week: "周",
   today: "今天",
   members: "成员",
+  lists: "清单",
   signOut: "退出",
   settings: "设置",
 } as const;
