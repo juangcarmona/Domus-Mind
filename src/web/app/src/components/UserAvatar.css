@@ -1,0 +1,27 @@
+/* ---- User avatar ---- */
+.user-avatar {
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+  overflow: hidden;
+  padding: 0;
+  margin-right: 8px;
+}
+.user-avatar:hover {
+  opacity: 0.85;
+}
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+

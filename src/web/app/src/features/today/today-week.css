@@ -1,0 +1,326 @@
+/* ---- Weekly grid ---- */
+.weekly-grid {
+  overflow-x: auto;
+  min-width: 0;
+}
+.wg-header-row,
+.wg-row {
+  display: grid;
+  grid-template-columns: 120px repeat(7, minmax(80px, 1fr));
+  border-bottom: 1px solid var(--border);
+}
+.wg-day-header {
+  padding: 0.4rem 0.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--primary) 4%, var(--surface));
+  border-left: 1px solid var(--border);
+}
+.wg-day-name {
+  display: block;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.73rem;
+  letter-spacing: 0.04em;
+}
+.wg-day-date {
+  display: block;
+  font-size: 0.78rem;
+}
+.wg-member-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.5rem 0.6rem;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  min-height: 3rem;
+}
+.wg-member-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wg-member-role {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+.wg-cell {
+  padding: 0.3rem 0.4rem;
+  border-left: 1px solid var(--border);
+  min-height: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  background: var(--surface);
+}
+.wg-cell--empty {
+  background: color-mix(in srgb, var(--bg) 60%, var(--surface));
+}
+.wg-cell--routines {
+  grid-column: 2 / -1;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.wg-row--routines .wg-member-label {
+  background: color-mix(in srgb, var(--primary) 4%, var(--surface));
+}
+.wg-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.3rem;
+  border-radius: var(--radius-sm);
+  line-height: 1.3;
+  overflow: hidden;
+}
+.wg-item--event {
+  background: color-mix(in srgb, var(--wg-item-accent, var(--primary)) 12%, transparent);
+  color: color-mix(in srgb, var(--wg-item-accent, var(--primary)) 70%, var(--text));
+}
+.wg-item--task {
+  background: color-mix(in srgb, var(--wg-item-accent, var(--accent)) 15%, transparent);
+  color: color-mix(in srgb, var(--wg-item-accent, var(--accent)) 70%, var(--text));
+}
+.wg-item--routine {
+  background: color-mix(in srgb, var(--wg-item-accent, var(--muted)) 12%, transparent);
+  color: color-mix(in srgb, var(--wg-item-accent, var(--muted)) 70%, var(--text));
+}
+.wg-item {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border-left: 3px solid var(--wg-item-accent, transparent);
+  border-radius: 0.4rem;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    filter 0.15s;
+}
+.wg-item[role="button"] {
+  cursor: pointer;
+}
+.wg-item[role="button"]:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--primary) 60%,
+    var(--wg-item-accent, var(--border))
+  );
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 26%, transparent);
+  filter: brightness(1.03);
+}
+.wg-item-type,
+.wg-item-title {
+  min-width: 0;
+}
+
+.wg-item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+/* Type glyph — tiny, inherits item color, aria-hidden in markup */
+.wg-item-glyph {
+  font-size: 1rem;
+  flex-shrink: 0;
+  opacity: 0.8;
+  line-height: 1;
+}
+
+/* Participant / assignee sub-label */
+.wg-item-sub {
+  font-size: 0.68rem;
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 72px;
+}
+
+/* Completed items */
+.wg-item--completed .wg-item-title {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+/* Compact chips — used in shared/household rows for density */
+.wg-item--compact {
+  padding: 0.08rem 0.25rem;
+  font-size: 0.7rem;
+  gap: 0.18rem;
+  border-left-width: 2px;
+}
+
+/* ---- Week grid: today column highlight ---- */
+.wg-day-header--today {
+  background: color-mix(in srgb, var(--primary) 14%, var(--surface));
+  color: var(--primary);
+  position: relative;
+}
+.wg-day-header--today .wg-day-name {
+  color: var(--primary);
+}
+.wg-day-header--today .wg-day-date {
+  color: var(--primary);
+  font-weight: 600;
+}
+.wg-today-dot {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--primary);
+  margin: 0.15rem auto 0;
+}
+.wg-load-bar {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  margin: 0.2rem 0.25rem 0;
+}
+.wg-load-bar--low {
+  background: var(--primary);
+  opacity: 0.2;
+}
+.wg-load-bar--medium {
+  background: var(--primary);
+  opacity: 0.55;
+}
+.wg-load-bar--high {
+  background: var(--warning, #f59e0b);
+  opacity: 0.85;
+}
+.wg-cell--today {
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  border-left-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+.wg-cell--today.wg-cell--empty {
+  background: color-mix(in srgb, var(--primary) 4%, var(--bg));
+}
+
+/* ---- Today summary ---- */
+.today-summary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.today-summary-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.today-summary-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.today-summary-date {
+  font-size: 0.875rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+.today-summary-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.today-summary-member {
+  min-width: 140px;
+  flex: 1 1 140px;
+  background: var(--bg) 90%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.65rem;
+}
+.today-summary-member-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+.today-summary-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.today-summary-empty {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+}
+.today-household {
+  margin-top: 0.65rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+.today-household-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
+}
+
+/* Dense chip wrap layout for household/shared items in day view */
+.today-household-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.5rem;
+  align-items: flex-start;
+}
+
+/* ---- Week nav ---- */
+.week-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.week-label {
+  font-size: 0.9rem;
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+
+
+/* ---- Week header selected state ---- */
+.wg-day-header--selected {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  color: var(--text);
+  position: relative;
+}
+
+.wg-day-header--selected .wg-day-name,
+.wg-day-header--selected .wg-day-date {
+  color: color-mix(in srgb, var(--accent) 80%, var(--text));
+}
+
+.wg-day-header--clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+}
+
+.wg-day-header--clickable:hover {
+  background: color-mix(in srgb, var(--primary) 14%, var(--surface));
+}
+
+

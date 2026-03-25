@@ -14,13 +14,15 @@ export function AccessStatusBadge({ status }: { status: MemberAccessStatus }) {
   const { labelKey, color } = STATUS_MAP[status] ?? STATUS_MAP["NoAccess"];
   return (
     <span
+      className="c-access-badge"
       style={{
+        ["--badge-color" as string]: color,
+        ["--badge-bg-strength" as string]: "18%",
+        ["--badge-border-strength" as string]: "0%",
         fontSize: "0.68rem",
         padding: "0.1rem 0.4rem",
         borderRadius: 4,
-        background: `color-mix(in srgb, ${color} 18%, transparent)`,
-        color,
-        whiteSpace: "nowrap",
+        border: "none",
       }}
     >
       {t(`household.members.${labelKey}` as never)}

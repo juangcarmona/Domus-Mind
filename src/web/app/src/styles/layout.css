@@ -1,0 +1,46 @@
+/* ---- Layout ---- */
+.app-layout,
+.l-app-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.app-main,
+.l-page {
+  flex: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem;
+  width: 100%;
+}
+
+
+/* ---- Page header ---- */
+.page-header,
+.l-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.page-header h1 {
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+
+/* ---- Page wrap ---- */
+.page-wrap {
+  max-width: 680px;
+  margin: 0 auto;
+}
+.page-title {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+}
+
+

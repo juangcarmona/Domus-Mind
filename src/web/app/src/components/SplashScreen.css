@@ -1,0 +1,108 @@
+/* ---- Loading / Splash screen ---- */
+.loading-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.splash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  gap: 2.25rem;
+  animation: splash-appear 0.35s ease both;
+  z-index: 9999;
+}
+
+@keyframes splash-appear {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.splash-center {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Faint background track ring */
+.splash-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+/* Spinning arc */
+.splash-arc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  border-top-color: var(--primary);
+  border-right-color: color-mix(in srgb, var(--primary) 40%, transparent);
+  animation: splash-spin 1.35s linear infinite;
+}
+
+@keyframes splash-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Soft radial glow behind the icon */
+.splash-glow {
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--primary) 22%, transparent) 0%,
+    transparent 70%
+  );
+  animation: splash-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes splash-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%       { opacity: 0.25; transform: scale(1.35); }
+}
+
+/* Icon — floats gently */
+.splash-icon {
+  position: relative;
+  z-index: 1;
+  animation: splash-float 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 6px 18px color-mix(in srgb, var(--primary) 45%, transparent));
+}
+
+@keyframes splash-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* Brand name */
+.splash-name {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+  opacity: 0;
+  animation: splash-text 0.5s ease 0.3s both;
+}
+
+@keyframes splash-text {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+

@@ -23,15 +23,11 @@ export function AccessStatusBadge({ status, hideNoAccess }: AccessStatusBadgePro
 
   return (
     <span
+      className="c-access-badge"
       style={{
-        fontSize: "0.78rem",
-        fontWeight: 600,
-        padding: "0.15rem 0.55rem",
-        borderRadius: 999,
-        background: `color-mix(in srgb, ${badge.color} 14%, transparent)`,
-        color: badge.color,
-        border: `1px solid color-mix(in srgb, ${badge.color} 26%, transparent)`,
-        whiteSpace: "nowrap",
+        ["--badge-color" as string]: badge.color,
+        ["--badge-bg-strength" as string]: "14%",
+        ["--badge-border-strength" as string]: "26%",
       }}
     >
       {t(badge.labelKey as never)}

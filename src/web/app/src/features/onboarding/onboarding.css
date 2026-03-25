@@ -1,0 +1,179 @@
+/* ---- Onboarding ---- */
+.onboarding-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100svh;
+  padding: 1.5rem;
+  background: var(--bg);
+}
+
+.onboarding-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 520px;
+}
+
+.onboarding-card .logo-wrap {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+}
+.onboarding-card .logo-wrap svg {
+  width: 3rem;
+  height: 3rem;
+}
+.onboarding-step-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+.onboarding-card h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+.onboarding-card > p {
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+.onboarding-back {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none; 
+  color: var(--muted);
+  font: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+  /* padding: 0.2rem 0.4rem; */
+  border-radius: var(--radius-lg);
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.onboarding-back:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.onboarding-back:focus-visible {
+  outline: 1px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Language selection grid */
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.5rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.lang-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.65rem 0.5rem;
+  border: 1.5px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+
+.lang-option:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+}
+
+.lang-option.selected {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--primary);
+}
+
+.lang-option {
+  color: var(--muted);
+}
+
+.lang-native {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.lang-option.selected .lang-native {
+  color: var(--primary);
+}
+
+.people-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.people-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+  color: var(--primary);
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.people-chip button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+.people-chip button:hover {
+  opacity: 1;
+}
+
+.progress-dots {
+  display: flex;
+  gap: 0.35rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.2s;
+}
+.progress-dot.active {
+  background: var(--primary);
+}
+.progress-dot.done {
+  background: var(--secondary);
+}
+
+

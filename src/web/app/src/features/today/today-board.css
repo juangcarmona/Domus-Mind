@@ -1,0 +1,173 @@
+/* ---- Page wrapper ---- */
+.coord-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ---- Floating action button ---- */
+.fab-add {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 1.75rem;
+  line-height: 1;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+}
+.fab-add:hover {
+  background: var(--primary-hover, var(--primary));
+  transform: scale(1.07);
+}
+.fab-add:active {
+  transform: scale(0.96);
+}
+
+/* ---- Controls bar (tabs + date nav) ---- */
+.coord-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---- View mode tabs ---- */
+.coord-view-tabs {
+  display: flex;
+  gap: 0.2rem;
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.2rem;
+}
+
+.coord-tab {
+  background: transparent;
+  border: none;
+  padding: 0.3rem 0.75rem;
+  border-radius: calc(var(--radius-md) - 0.1rem);
+  font-size: 0.875rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.coord-tab:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.coord-tab--active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ---- Date navigation ---- */
+.coord-date-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.coord-date-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 12rem;
+  text-align: center;
+}
+
+.coord-today-btn {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+/* ---- Content area ---- */
+.coord-content {
+  flex: 1;
+}
+
+/* ================================================================
+   Day View
+   ================================================================ */
+
+.coord-day-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.coord-day-header {
+  margin-bottom: 0.5rem;
+}
+
+.coord-day-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.coord-day-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.coord-day-member {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.85rem;
+}
+
+.coord-day-member-label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.coord-day-member-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.coord-day-member-role {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+.coord-day-member-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.coord-day-empty-member {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+
