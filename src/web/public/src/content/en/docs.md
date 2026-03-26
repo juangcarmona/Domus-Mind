@@ -5,11 +5,11 @@ description: "Entry point to the DomusMind documentation — vision, architectur
 
 DomusMind is documented in the open. Everything about how it is designed, why decisions were made, and where it is going is available in the repository.
 
-## Vision and principles
+## Product definition
 
-What DomusMind exists to solve. The invariants, product principles, and the homepage content contract that keep the messaging grounded.
+The canonical product docs: strategy, experience, and public-site guidance.
 
-[View on GitHub](https://github.com/juangcarmona/domusmind/tree/main/docs/00_vision)
+[View on GitHub](https://github.com/juangcarmona/domusmind/tree/main/docs/00_product)
 
 ## Architecture
 
