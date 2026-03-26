@@ -1,24 +1,36 @@
 ---
 title: "FAQ"
-description: "H\u00e4ufige Fragen."
+description: "Häufige Fragen zu DomusMind."
 ---
 
 ## Ist das ein Task-Manager?
 
-Nein, es modelliert das Haushaltssystem.
+Nein. DomusMind zeigt, was im Haushalt passiert und wer wofür verantwortlich ist. Aufgaben sind ein Teil davon, aber Verantwortung und Koordination kommen zuerst.
 
-## Nur ein Kalender?
+## Ist das eine Kalender-App?
 
-Nein.
+Nein. Ereignisse sind im Familien-Timeline, aber der Kalender ist nur ein Teil eines größeren Bildes — Routinen, Verantwortlichkeiten und Menschen sind alle damit verbunden.
 
-## Selbst hostbar?
+## Ist das nur für Familien?
 
-Ja.
+Es ist für Haushalte gebaut. Der erste Fokus sind Familien mit mehreren Mitgliedern und geteilten Verantwortlichkeiten.
 
-## Ist KI Pflicht?
+## Kann man es selbst hosten?
 
-Nein.
+Ja. Es auf dem eigenen Server zu betreiben ist ein zentrales Ziel. Ihre Daten bleiben bei Ihnen.
+
+## Ist KI erforderlich?
+
+Nein. DomusMind funktioniert ohne KI. Assistenzfunktionen sind optionale Ergänzungen, nicht die Grundlage.
+
+## Warum nicht bestehende Tools nutzen?
+
+Bestehende Tools verwalten Aufgaben, Zeit oder Listen getrennt. Keiner verfolgt, wer verantwortlich ist, wer was weiß, oder wie der Haushalt insgesamt läuft. Die Koordination fällt noch immer auf eine Person. Das ist das Problem, das DomusMind löst.
 
 ## Wem gehören die Daten?
 
-Der Familie.
+Der Familie. Immer.
+
+## Ist V1 schon verfügbar?
+
+DomusMind ist in aktiver Entwicklung. Das Domänenmodell und die API werden gerade gebaut. Folgen Sie dem Projekt, um auf dem Laufenden zu bleiben.
