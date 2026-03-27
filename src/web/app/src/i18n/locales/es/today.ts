@@ -19,9 +19,11 @@ export default {
     title: "Día",
     empty: "Nada programado para este día.",
     todayEmpty: "Nada programado",
-    todayNothingScheduled: "Nada programado para hoy.",
+    todayNothingScheduled: "Nada hoy.",
+    nothingToday: "Nada hoy",
     household: "Hogar",
     noMembers: "Aún no hay miembros del hogar.",
+    completedSection: "Completado",
   },
   week: {
     empty: "Nada programado para esta semana.",

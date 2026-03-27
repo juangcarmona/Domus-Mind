@@ -19,9 +19,11 @@ export default {
     title: "Tag",
     empty: "Für diesen Tag nichts geplant.",
     todayEmpty: "Nichts geplant",
-    todayNothingScheduled: "Für heute nichts geplant.",
+    todayNothingScheduled: "Heute nichts.",
+    nothingToday: "Heute nichts",
     household: "Haushalt",
     noMembers: "Noch keine Haushaltsmitglieder.",
+    completedSection: "Erledigt",
   },
   week: {
     empty: "Für diese Woche nichts geplant.",

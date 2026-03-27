@@ -1,9 +1,17 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { WeeklyGridResponse, WeeklyGridCell } from "../../types";
-import { weeklyGridItemMappers } from "../grid/weeklyGridItemMappers";
+import type { WeeklyGridResponse } from "../../types";
+import {
+  buildMemberEntries,
+  buildSharedEntries,
+  splitForDisplay,
+} from "../../utils/todayPanelHelpers";
+import { TodayMemberCard } from "./TodayMemberCard";
+import { TodayPanelItem } from "./TodayPanelItem";
 
-const ACTOR_ROLES = new Set(["Adult", "Child"]);
-const ROLE_SORT_ORDER: Record<string, number> = { Adult: 0, Child: 1 };
+// Only show People roles in the Today Panel. Pets are excluded (V1 scope).
+const ACTOR_ROLES = new Set(["Adult", "Child", "Caregiver"]);
+const ROLE_SORT_ORDER: Record<string, number> = { Adult: 0, Caregiver: 1, Child: 2 };
 
 interface TodayBoardProps {
   grid: WeeklyGridResponse | null;
@@ -15,50 +23,6 @@ interface TodayBoardProps {
   onNextDay: () => void;
   onToday: () => void;
   onItemClick: (type: "event" | "task" | "routine", id: string) => void;
-}
-
-function DayMemberSection({
-  name,
-  cell,
-  onItemClick,
-}: {
-  name: string;
-  cell: WeeklyGridCell;
-  onItemClick: (type: "event" | "task" | "routine", id: string) => void;
-}) {
-  const { t } = useTranslation("today");
-  const events = cell.events ?? [];
-  const tasks = cell.tasks ?? [];
-  const routines = cell.routines ?? [];
-  const isEmpty =
-    events.length === 0 && tasks.length === 0 && routines.length === 0;
-
-  return (
-    <div className="today-summary-member">
-      <div className="today-summary-member-name">{name}</div>
-      {isEmpty ? (
-        <span className="today-summary-empty">{t("day.todayEmpty")}</span>
-      ) : (
-        <div className="today-summary-items">
-          {events.map((e) =>
-            weeklyGridItemMappers.eventToItem(e, () =>
-              onItemClick("event", e.eventId),
-            ),
-          )}
-          {tasks.map((t) =>
-            weeklyGridItemMappers.taskToItem(t, () =>
-              onItemClick("task", t.taskId),
-            ),
-          )}
-          {routines.map((r) =>
-            weeklyGridItemMappers.routineToItem(r, () =>
-              onItemClick("routine", r.routineId),
-            ),
-          )}
-        </div>
-      )}
-    </div>
-  );
 }
 
 export function TodayBoard({
@@ -74,6 +38,9 @@ export function TodayBoard({
 }: TodayBoardProps) {
   const { t, i18n } = useTranslation("today");
   const { t: tCommon } = useTranslation("common");
+
+  // Only one card may be expanded at a time. null = all collapsed.
+  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
 
   const dateLabel = new Date(selectedDate + "T00:00:00").toLocaleDateString(
     i18n.language,
@@ -93,34 +60,30 @@ export function TodayBoard({
   const members = grid.members ?? [];
   const sharedCells = grid.sharedCells ?? [];
 
-  const sharedCell = sharedCells.find(
-    (c) => c.date.slice(0, 10) === selectedDate,
-  );
-  const hasSharedItems =
-    (sharedCell?.events?.length ?? 0) > 0 ||
-    (sharedCell?.tasks?.length ?? 0) > 0 ||
-    (sharedCell?.routines?.length ?? 0) > 0;
-
-  const memberDays = members.map((member) => ({
-    member,
-    cell: member.cells.find((c) => c.date.slice(0, 10) === selectedDate) ?? {
-      date: selectedDate,
-      events: [],
-      tasks: [],
-      routines: [],
-    },
-  }));
-
-  const actorDays = memberDays
-    .filter(({ member }) => ACTOR_ROLES.has(member.role))
+  // Actor members ordered by role priority, then by the order the backend returns them.
+  const actorMembers = members
+    .filter((m) => ACTOR_ROLES.has(m.role))
     .sort(
       (a, b) =>
-        (ROLE_SORT_ORDER[a.member.role] ?? 9) -
-        (ROLE_SORT_ORDER[b.member.role] ?? 9),
+        (ROLE_SORT_ORDER[a.role] ?? 9) - (ROLE_SORT_ORDER[b.role] ?? 9),
     );
+
+  // Build normalised entry lists.
+  const memberEntries = actorMembers.map((member) => ({
+    member,
+    entries: buildMemberEntries(member, selectedDate),
+  }));
+
+  const sharedEntries = buildSharedEntries(sharedCells, selectedDate);
+  const sharedDisplayState = splitForDisplay(sharedEntries);
+
+  function handleCardToggle(memberId: string) {
+    setExpandedMemberId((prev) => (prev === memberId ? null : memberId));
+  }
 
   return (
     <div className="today-summary coord-day-panel">
+      {/* ---- Header with day navigation ---- */}
       <div className="today-summary-header coord-day-header">
         <button
           className="btn btn-ghost btn-sm coord-nav-btn"
@@ -157,48 +120,53 @@ export function TodayBoard({
         </div>
       </div>
 
+      {/* ---- No members yet ---- */}
       {members.length === 0 && (
         <p className="today-summary-empty">{t("day.noMembers")}</p>
       )}
 
-      {members.length > 0 && (
-        <>
-          <div className="today-summary-body">
-            {actorDays.map(({ member, cell }) => (
-              <DayMemberSection
-                key={member.memberId}
-                name={member.name}
-                cell={cell}
-                onItemClick={onItemClick}
+      {/* ---- Member cards (one per person) ---- */}
+      {actorMembers.length > 0 && (
+        <div className="tp-member-list">
+          {memberEntries.map(({ member, entries }) => (
+            <TodayMemberCard
+              key={member.memberId}
+              name={member.name}
+              entries={entries}
+              isExpanded={expandedMemberId === member.memberId}
+              onToggle={() => handleCardToggle(member.memberId)}
+              onItemClick={onItemClick}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ---- Household row (shared / unassigned items only) ---- */}
+      <div className="today-household tp-household-row">
+        <div className="today-household-label">{t("day.household")}</div>
+        {sharedDisplayState.isEmpty ? (
+          <span className="today-summary-empty tp-card-empty">
+            {t("day.nothingToday")}
+          </span>
+        ) : (
+          <div className="today-household-chips">
+            {sharedDisplayState.activeItems.map((entry) => (
+              <TodayPanelItem
+                key={entry.id}
+                entry={entry}
+                onClick={() => onItemClick(entry.sourceType, entry.id)}
+              />
+            ))}
+            {sharedDisplayState.completedItems.map((entry) => (
+              <TodayPanelItem
+                key={entry.id}
+                entry={entry}
+                onClick={() => onItemClick(entry.sourceType, entry.id)}
               />
             ))}
           </div>
-          <div className="today-household">
-            <div className="today-household-label">{t("day.household")}</div>
-            {hasSharedItems && sharedCell ? (
-              <div className="today-household-chips">
-                {sharedCell.events?.map((e) =>
-                  weeklyGridItemMappers.eventToItem(e, () =>
-                    onItemClick("event", e.eventId),
-                  ),
-                )}
-                {sharedCell.tasks?.map((task) =>
-                  weeklyGridItemMappers.taskToItem(task, () =>
-                    onItemClick("task", task.taskId),
-                  ),
-                )}
-                {sharedCell.routines?.map((r) =>
-                  weeklyGridItemMappers.routineToItem(r, () =>
-                    onItemClick("routine", r.routineId),
-                  ),
-                )}
-              </div>
-            ) : (
-              <span className="today-summary-empty">{t("day.todayEmpty")}</span>
-            )}
-          </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

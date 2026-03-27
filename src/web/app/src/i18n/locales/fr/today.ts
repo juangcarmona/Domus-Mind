@@ -19,9 +19,11 @@ export default {
     title: "Jour",
     empty: "Rien de prévu pour ce jour.",
     todayEmpty: "Rien de prévu",
-    todayNothingScheduled: "Rien de prévu pour aujourd'hui.",
+    todayNothingScheduled: "Rien aujourd'hui.",
+    nothingToday: "Rien aujourd'hui",
     household: "Foyer",
     noMembers: "Aucun membre du foyer pour l'instant.",
+    completedSection: "Terminé",
   },
   week: {
     empty: "Rien de prévu pour cette semaine.",
