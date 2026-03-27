@@ -20,13 +20,15 @@ function isExternal(href: string): boolean {
       <p>{section.body}</p>
     </div>
     <div class="early-access-actions">
-      {isExternal(section.primaryCta.href) ? (
-        <a class="button" href={section.primaryCta.href} target="_blank" rel="noopener noreferrer">
-          {isGitHub(section.primaryCta.href) && <GitHubIcon size={14} />}
-          {section.primaryCta.label}
-        </a>
-      ) : (
-        <a class="button" href={withLocale(locale, section.primaryCta.href)}>{section.primaryCta.label}</a>
+      {section.primaryCta && (
+        isExternal(section.primaryCta.href) ? (
+          <a class="button" href={section.primaryCta.href} target="_blank" rel="noopener noreferrer">
+            {isGitHub(section.primaryCta.href) && <GitHubIcon size={14} />}
+            {section.primaryCta.label}
+          </a>
+        ) : (
+          <a class="button" href={withLocale(locale, section.primaryCta.href)}>{section.primaryCta.label}</a>
+        )
       )}
       {section.secondaryCta && (
         isExternal(section.secondaryCta.href) ? (
