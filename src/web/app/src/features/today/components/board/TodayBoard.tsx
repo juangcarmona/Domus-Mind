@@ -6,8 +6,8 @@ import {
   buildSharedEntries,
   splitForDisplay,
 } from "../../utils/todayPanelHelpers";
+import { CalendarEntryItem } from "../shared/CalendarEntryItem";
 import { TodayMemberCard } from "./TodayMemberCard";
-import { TodayPanelItem } from "./TodayPanelItem";
 
 // Only show People roles in the Today Panel. Pets are excluded (V1 scope).
 const ACTOR_ROLES = new Set(["Adult", "Child", "Caregiver"]);
@@ -151,14 +151,14 @@ export function TodayBoard({
         ) : (
           <div className="today-household-chips">
             {sharedDisplayState.activeItems.map((entry) => (
-              <TodayPanelItem
+              <CalendarEntryItem
                 key={entry.id}
                 entry={entry}
                 onClick={() => onItemClick(entry.sourceType, entry.id)}
               />
             ))}
             {sharedDisplayState.completedItems.map((entry) => (
-              <TodayPanelItem
+              <CalendarEntryItem
                 key={entry.id}
                 entry={entry}
                 onClick={() => onItemClick(entry.sourceType, entry.id)}

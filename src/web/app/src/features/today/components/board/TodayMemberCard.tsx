@@ -1,11 +1,11 @@
 import { useTranslation } from "react-i18next";
-import type { TodayEntry } from "../../utils/todayPanelHelpers";
+import type { CalendarEntry } from "../../utils/calendarEntry";
 import { splitForDisplay } from "../../utils/todayPanelHelpers";
-import { TodayPanelItem } from "./TodayPanelItem";
+import { CalendarEntryItem } from "../shared/CalendarEntryItem";
 
 interface TodayMemberCardProps {
   name: string;
-  entries: TodayEntry[];
+  entries: CalendarEntry[];
   isExpanded: boolean;
   onToggle: () => void;
   onItemClick: (sourceType: "event" | "task" | "routine", id: string) => void;
@@ -46,7 +46,7 @@ export function TodayMemberCard({
           ) : (
             <div className="tp-card-inline">
               {visibleCollapsed.map((entry) => (
-                <TodayPanelItem
+                <CalendarEntryItem
                   key={entry.id}
                   entry={entry}
                   onClick={() => onItemClick(entry.sourceType, entry.id)}
@@ -69,7 +69,7 @@ export function TodayMemberCard({
             <>
               <div className="tp-card-active-list">
                 {activeItems.map((entry) => (
-                  <TodayPanelItem
+                  <CalendarEntryItem
                     key={entry.id}
                     entry={entry}
                     onClick={() => onItemClick(entry.sourceType, entry.id)}
@@ -79,7 +79,7 @@ export function TodayMemberCard({
               {completedItems.length > 0 && (
                 <div className="tp-card-completed-list" aria-label={t("day.completedSection")}>
                   {completedItems.map((entry) => (
-                    <TodayPanelItem
+                    <CalendarEntryItem
                       key={entry.id}
                       entry={entry}
                       onClick={() => onItemClick(entry.sourceType, entry.id)}

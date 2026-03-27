@@ -152,6 +152,20 @@
   opacity: 0.55;
 }
 
+/* Overdue tasks — danger emphasis */
+.wg-item--overdue {
+  background: color-mix(in srgb, var(--danger, #c0392b) 10%, transparent);
+  color: color-mix(in srgb, var(--danger, #c0392b) 80%, var(--text));
+}
+.wg-item--overdue .wg-item-glyph {
+  opacity: 1;
+  color: var(--danger, #c0392b);
+}
+.wg-item--overdue .wg-item-title {
+  color: color-mix(in srgb, var(--danger, #c0392b) 85%, var(--text));
+  font-weight: 600;
+}
+
 /* Compact chips - used in shared/household rows for density */
 .wg-item--compact {
   padding: 0.08rem 0.25rem;

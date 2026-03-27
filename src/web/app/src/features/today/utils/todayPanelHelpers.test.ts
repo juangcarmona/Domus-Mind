@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import type { WeeklyGridMember, WeeklyGridCell } from "../types";
+import type { CalendarEntry } from "./calendarEntry";
 import {
   sortEntries,
   splitForDisplay,
   buildMemberEntries,
   buildSharedEntries,
-  type TodayEntry,
 } from "./todayPanelHelpers";
 
 // ----------------------------------------------------------------
@@ -105,18 +105,43 @@ function makeMember(
 
 const TODAY = "2026-03-27";
 
+/**
+ * Convenience factory for CalendarEntry fixtures.
+ * Provide only the fields that matter for the test; defaults fill the rest.
+ */
+function makeEntry(
+  overrides: Partial<CalendarEntry> &
+    Pick<CalendarEntry, "id" | "displayType">,
+): CalendarEntry {
+  const terminal =
+    overrides.displayType === "completed" ||
+    overrides.status?.toLowerCase() === "completed" ||
+    overrides.status?.toLowerCase() === "cancelled";
+  return {
+    sourceType: "task",
+    title: "Item",
+    time: null,
+    subtitle: null,
+    status: "Pending",
+    color: null,
+    isCompleted: terminal,
+    isOverdue: overrides.displayType === "overdue",
+    ...overrides,
+  };
+}
+
 // ----------------------------------------------------------------
 // sortEntries
 // ----------------------------------------------------------------
 
 describe("sortEntries", () => {
   it("orders overdue before task before event before routine before completed", () => {
-    const entries: TodayEntry[] = [
-      { id: "5", sourceType: "task", displayType: "completed", title: "Done", time: null, status: "Completed", color: null, isCompleted: true, isOverdue: false },
-      { id: "4", sourceType: "routine", displayType: "routine", title: "Routine", time: null, status: "Active", color: null, isCompleted: false, isOverdue: false },
-      { id: "3", sourceType: "event", displayType: "event", title: "Event", time: null, status: "Scheduled", color: null, isCompleted: false, isOverdue: false },
-      { id: "2", sourceType: "task", displayType: "task", title: "Task", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
-      { id: "1", sourceType: "task", displayType: "overdue", title: "Overdue", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: true },
+    const entries: CalendarEntry[] = [
+      makeEntry({ id: "5", displayType: "completed", status: "Completed" }),
+      makeEntry({ id: "4", sourceType: "routine", displayType: "routine", status: "Active" }),
+      makeEntry({ id: "3", sourceType: "event", displayType: "event", status: "Scheduled" }),
+      makeEntry({ id: "2", displayType: "task" }),
+      makeEntry({ id: "1", displayType: "overdue" }),
     ];
 
     const sorted = sortEntries(entries);
@@ -130,10 +155,10 @@ describe("sortEntries", () => {
   });
 
   it("sorts events by time within the same priority", () => {
-    const entries: TodayEntry[] = [
-      { id: "3", sourceType: "event", displayType: "event", title: "Late", time: "20:00", status: "Scheduled", color: null, isCompleted: false, isOverdue: false },
-      { id: "1", sourceType: "event", displayType: "event", title: "NoTime", time: null, status: "Scheduled", color: null, isCompleted: false, isOverdue: false },
-      { id: "2", sourceType: "event", displayType: "event", title: "Early", time: "09:00", status: "Scheduled", color: null, isCompleted: false, isOverdue: false },
+    const entries: CalendarEntry[] = [
+      makeEntry({ id: "3", sourceType: "event", displayType: "event", time: "20:00", status: "Scheduled" }),
+      makeEntry({ id: "1", sourceType: "event", displayType: "event", time: null, status: "Scheduled" }),
+      makeEntry({ id: "2", sourceType: "event", displayType: "event", time: "09:00", status: "Scheduled" }),
     ];
 
     const sorted = sortEntries(entries);
@@ -141,9 +166,9 @@ describe("sortEntries", () => {
   });
 
   it("preserves relative order for same-priority non-event items", () => {
-    const entries: TodayEntry[] = [
-      { id: "b", sourceType: "task", displayType: "task", title: "Second", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
-      { id: "a", sourceType: "task", displayType: "task", title: "First", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
+    const entries: CalendarEntry[] = [
+      makeEntry({ id: "b", displayType: "task", title: "Second" }),
+      makeEntry({ id: "a", displayType: "task", title: "First" }),
     ];
     const sorted = sortEntries(entries);
     expect(sorted.map((e) => e.id)).toEqual(["b", "a"]);
@@ -163,10 +188,10 @@ describe("splitForDisplay", () => {
   });
 
   it("shows max 2 items in collapsed state", () => {
-    const entries: TodayEntry[] = [
-      { id: "1", sourceType: "task", displayType: "task", title: "T1", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
-      { id: "2", sourceType: "task", displayType: "task", title: "T2", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
-      { id: "3", sourceType: "task", displayType: "task", title: "T3", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
+    const entries: CalendarEntry[] = [
+      makeEntry({ id: "1", displayType: "task" }),
+      makeEntry({ id: "2", displayType: "task" }),
+      makeEntry({ id: "3", displayType: "task" }),
     ];
     const state = splitForDisplay(entries);
     expect(state.visibleCollapsed).toHaveLength(2);
@@ -174,10 +199,10 @@ describe("splitForDisplay", () => {
   });
 
   it("+N counts hidden active items only (completed items are not counted in overflow)", () => {
-    const entries: TodayEntry[] = [
-      { id: "1", sourceType: "task", displayType: "task", title: "T1", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
-      { id: "2", sourceType: "task", displayType: "task", title: "T2", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
-      { id: "3", sourceType: "task", displayType: "completed", title: "Done", time: null, status: "Completed", color: null, isCompleted: true, isOverdue: false },
+    const entries: CalendarEntry[] = [
+      makeEntry({ id: "1", displayType: "task" }),
+      makeEntry({ id: "2", displayType: "task" }),
+      makeEntry({ id: "3", displayType: "completed", status: "Completed" }),
     ];
     const state = splitForDisplay(entries);
     // 2 active items visible, 0 overflow (2 fit exactly), 1 completed hidden in collapsed
@@ -187,9 +212,9 @@ describe("splitForDisplay", () => {
   });
 
   it("completed items are separated into completedItems array", () => {
-    const entries: TodayEntry[] = [
-      { id: "1", sourceType: "task", displayType: "task", title: "Active", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
-      { id: "2", sourceType: "task", displayType: "completed", title: "Done", time: null, status: "Completed", color: null, isCompleted: true, isOverdue: false },
+    const entries: CalendarEntry[] = [
+      makeEntry({ id: "1", displayType: "task" }),
+      makeEntry({ id: "2", displayType: "completed", status: "Completed" }),
     ];
     const state = splitForDisplay(entries);
     expect(state.activeItems).toHaveLength(1);
@@ -198,9 +223,9 @@ describe("splitForDisplay", () => {
   });
 
   it("completed items appear in visibleCollapsed when they are the only items", () => {
-    const entries: TodayEntry[] = [
-      { id: "c1", sourceType: "task", displayType: "completed", title: "Done A", time: null, status: "Completed", color: null, isCompleted: true, isOverdue: false },
-      { id: "c2", sourceType: "task", displayType: "completed", title: "Done B", time: null, status: "Completed", color: null, isCompleted: true, isOverdue: false },
+    const entries: CalendarEntry[] = [
+      makeEntry({ id: "c1", displayType: "completed", status: "Completed" }),
+      makeEntry({ id: "c2", displayType: "completed", status: "Completed" }),
     ];
     const state = splitForDisplay(entries);
     expect(state.activeItems).toHaveLength(0);
@@ -211,14 +236,14 @@ describe("splitForDisplay", () => {
   });
 
   it("overflow is 0 when there are exactly 2 or fewer active items", () => {
-    const two: TodayEntry[] = [
-      { id: "1", sourceType: "task", displayType: "task", title: "T1", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
-      { id: "2", sourceType: "task", displayType: "task", title: "T2", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
+    const two: CalendarEntry[] = [
+      makeEntry({ id: "1", displayType: "task" }),
+      makeEntry({ id: "2", displayType: "task" }),
     ];
     expect(splitForDisplay(two).overflowCount).toBe(0);
 
-    const one: TodayEntry[] = [
-      { id: "1", sourceType: "task", displayType: "task", title: "T1", time: null, status: "Pending", color: null, isCompleted: false, isOverdue: false },
+    const one: CalendarEntry[] = [
+      makeEntry({ id: "1", displayType: "task" }),
     ];
     expect(splitForDisplay(one).overflowCount).toBe(0);
   });

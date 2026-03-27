@@ -286,88 +286,26 @@
 }
 
 /* ================================================================
-   Today Panel - item (tp-item)
-   Each TodayPanelItem is a small inline/block element.
+   Today Panel — wg-item overrides
+   The wg-item compact style is the baseline (see today-week.css).
+   These rules adjust behavior when wg-items appear inside Today
+   Panel cards, where width is not constrained to a grid column.
    ================================================================ */
 
-.tp-item {
+/* Inline items in collapsed card row */
+.tp-card-inline .wg-item {
   display: inline-flex;
-  align-items: center;
-  gap: 0.25em;
-  font-size: 0.8rem;
-  color: var(--text);
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  padding: 0.1em 0.2em;
-  transition: background 0.1s;
-  /* Accent color thread from the data color, if present */
-  border-left: 2px solid transparent;
+  width: auto;
 }
 
-.tp-item[style] {
-  border-left-color: var(--panel-item-accent);
-}
-
-.tp-item:hover {
-  background: color-mix(in srgb, var(--primary) 6%, transparent);
-}
-
-.tp-item-glyph {
-  font-size: 0.75em;
-  font-family: monospace;
-  opacity: 0.8;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.tp-item-title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 18ch;
-}
-
-/* Overdue - stronger visual signal */
-.tp-item--overdue .tp-item-glyph {
-  color: var(--danger, #c0392b);
-  opacity: 1;
-}
-.tp-item--overdue .tp-item-title {
-  color: var(--danger, #c0392b);
-  font-weight: 600;
-}
-
-/* Event (● time) */
-.tp-item--event .tp-item-glyph {
-  color: var(--primary);
-  opacity: 1;
-}
-
-/* Routine (⟳) */
-.tp-item--routine .tp-item-glyph {
-  color: var(--accent, var(--primary));
-  opacity: 0.9;
-}
-
-/* Completed (✓) - strikethrough, low contrast, handled by container opacity too */
-.tp-item--completed {
-  opacity: 0.6;
-}
-.tp-item--completed .tp-item-title {
-  text-decoration: line-through;
-}
-
-/* In expanded state, items are block-level (one per line) */
-.tp-card-active-list .tp-item,
-.tp-card-completed-list .tp-item {
-  display: flex;
+/* Expanded list: items stack vertically and can wrap text */
+.tp-card-active-list .wg-item,
+.tp-card-completed-list .wg-item {
   width: 100%;
-  max-width: none;
 }
 
-.tp-card-active-list .tp-item-title,
-.tp-card-completed-list .tp-item-title {
-  max-width: none;
+.tp-card-active-list .wg-item-title,
+.tp-card-completed-list .wg-item-title {
   white-space: normal;
   overflow: visible;
   text-overflow: unset;

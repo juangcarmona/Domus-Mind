@@ -1,3 +1,10 @@
+/**
+ * @deprecated
+ * This file is no longer used. Rendering is now handled by CalendarEntryItem
+ * via the shared CalendarEntry model (utils/calendarEntry.ts).
+ * WeeklyGridCell uses normalizeCellItems() + CalendarEntryItem directly.
+ * This file is kept temporarily to avoid breaking any untracked imports.
+ */
 import type {
   WeeklyGridEventItem,
   WeeklyGridTaskItem,

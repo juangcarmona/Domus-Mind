@@ -1,5 +1,6 @@
 import type { WeeklyGridCell as WeeklyGridCellType } from "../../types";
-import { weeklyGridItemMappers } from "./weeklyGridItemMappers";
+import { normalizeCellItems } from "../../utils/calendarEntry";
+import { CalendarEntryItem } from "../shared/CalendarEntryItem";
 
 interface WeeklyGridCellProps {
   cell: WeeklyGridCellType;
@@ -9,10 +10,8 @@ interface WeeklyGridCellProps {
 }
 
 export function WeeklyGridCell({ cell, isToday, onItemClick }: WeeklyGridCellProps) {
-  const hasItems =
-    (cell.events?.length ?? 0) > 0 ||
-    (cell.tasks?.length ?? 0) > 0 ||
-    (cell.routines?.length ?? 0) > 0;
+  const entries = normalizeCellItems(cell);
+  const hasItems = entries.length > 0;
 
   const classes = [
     "wg-cell",
@@ -24,17 +23,14 @@ export function WeeklyGridCell({ cell, isToday, onItemClick }: WeeklyGridCellPro
 
   return (
     <div className={classes}>
-      {(cell.events ?? []).map((e) =>
-        weeklyGridItemMappers.eventToItem(e, () => onItemClick?.("event", e.eventId)),
-      )}
-      {(cell.tasks ?? []).map((t) =>
-        weeklyGridItemMappers.taskToItem(t, () => onItemClick?.("task", t.taskId)),
-      )}
-      {(cell.routines ?? []).map((r) =>
-        weeklyGridItemMappers.routineToItem(r, () =>
-          onItemClick?.("routine", r.routineId)
-        ),
-      )}
+      {entries.map((entry) => (
+        <CalendarEntryItem
+          key={entry.id}
+          entry={entry}
+          onClick={() => onItemClick?.(entry.sourceType, entry.id)}
+        />
+      ))}
     </div>
   );
 }
+
