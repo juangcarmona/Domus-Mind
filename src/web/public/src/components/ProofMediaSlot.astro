@@ -1,0 +1,29 @@
+---
+import type { ProofSlotContent } from '@/lib/content-types';
+
+const { slot } = Astro.props as { slot: ProofSlotContent };
+---
+<article class="proof-slot">
+  {slot.imageSrc ? (
+    <img class="proof-slot__image" src={slot.imageSrc} alt={slot.alt} loading="lazy" data-lightbox />
+  ) : slot.preview ? (
+    <div class="proof-panel-preview" aria-label={slot.alt}>
+      <p class="proof-panel-preview__eyebrow">{slot.preview.eyebrow}</p>
+      <div class="proof-panel-preview__groups">
+        {slot.preview.groups.map((group) => (
+          <div class="proof-panel-preview__group">
+            {group.map((line) => <span>{line}</span>)}
+          </div>
+        ))}
+      </div>
+    </div>
+  ) : (
+    <div class="proof-slot__media" role="img" aria-label={slot.alt}>
+      <span>{slot.placeholder}</span>
+    </div>
+  )}
+  <div class="proof-slot__body">
+    <p class="proof-slot__title">{slot.title}</p>
+    <p class="proof-slot__caption">{slot.caption}</p>
+  </div>
+</article>

@@ -1,4 +1,4 @@
-# Spec — Add Item To Shared List
+# Spec - Add Item To Shared List
 
 ## Purpose
 

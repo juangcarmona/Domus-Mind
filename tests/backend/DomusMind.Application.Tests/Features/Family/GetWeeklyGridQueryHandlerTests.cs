@@ -359,7 +359,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         await db.SaveChangesAsync();
         var handler = BuildHandler(db);
 
-        // Week of Monday 16 March 2026 — Wednesday is 18 March
+        // Week of Monday 16 March 2026 - Wednesday is 18 March
         var weekStart = new DateOnly(2026, 3, 16);
         var result = await handler.Handle(
             new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
@@ -491,7 +491,7 @@ public sealed class GetWeeklyGridQueryHandlerTests
         family.AddMember(youngerMemberId, MemberName.Create("Alice"), MemberRole.Create("Adult"),
             false, new DateOnly(2000, 3, 1), DateTime.UtcNow);
 
-        // No birthdate — falls after dated members, sorted alphabetically
+        // No birthdate - falls after dated members, sorted alphabetically
         var noDobB = MemberId.New();
         family.AddMember(noDobB, MemberName.Create("Bob"), MemberRole.Create("Adult"),
             false, null, DateTime.UtcNow);

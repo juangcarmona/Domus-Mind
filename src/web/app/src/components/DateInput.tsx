@@ -71,7 +71,7 @@ interface DateInputProps {
  * When no format is configured, falls back to the native <input type="date">.
  *
  * Value contract: always reads and writes ISO YYYY-MM-DD (or "") from/to
- * the parent — identical to a native date input.
+ * the parent - identical to a native date input.
  */
 export function DateInput({ id, className, value, onChange, required }: DateInputProps) {
   const dateFormat = useAppSelector((s) => s.ui.dateFormat);
@@ -116,7 +116,7 @@ export function DateInput({ id, className, value, onChange, required }: DateInpu
     if (rawInput !== null && !rawInput.trim()) {
       onChange("");
     }
-    // Stop editing — displayValue reverts to the formatted version of the prop value.
+    // Stop editing - displayValue reverts to the formatted version of the prop value.
     setRawInput(null);
   }
 

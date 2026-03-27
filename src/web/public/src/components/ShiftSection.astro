@@ -1,0 +1,16 @@
+---
+import type { ShiftContent } from '@/lib/content-types';
+
+const { section } = Astro.props as { section: ShiftContent };
+---
+<section class="homepage-section" id="shift">
+  <div class="section-intro">
+    <h2>{section.title}</h2>
+  </div>
+  <div class="shift-panel">
+    <p>{section.statement}</p>
+    <ul class="shift-outcomes">
+      {section.outcomes.map((outcome) => <li>{outcome}</li>)}
+    </ul>
+  </div>
+</section>

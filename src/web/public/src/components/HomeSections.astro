@@ -1,0 +1,268 @@
+---
+import { withLocale, type Locale } from '@/lib/i18n';
+
+interface Props {
+  locale: Locale;
+  primaryCta: { label: string; href: string };
+  secondaryCta: { label: string; href: string };
+}
+
+const { locale, primaryCta, secondaryCta } = Astro.props;
+
+type Data = {
+  recognition: { lines: string[]; anchor: string };
+  reframe:     string[];
+  solution:    string;
+  today:       { heading: string; groups: string[][]; caption: string };
+  changes:     { heading: string; items: string[] };
+};
+
+const content: Record<string, Data> = {
+  en: {
+    recognition: {
+      lines: [
+        "She remembers the appointment.",
+        "She reminds them before they leave.",
+        "She buys what's missing before anyone notices.",
+        "She prepares for what's coming before anyone asks.",
+      ],
+      anchor: "That person is the system.",
+    },
+    reframe: [
+      "Tasks are not the problem.",
+      "The problem is everything that happens before the task.",
+    ],
+    solution: "This is the way to take the house out of one person's head.",
+    today: {
+      heading: "Today",
+      groups: [
+        ["Garden → Juan", "BBQ supplies"],
+        ["Mateo football at 18:00"],
+      ],
+      caption: "Everyone sees what matters. No one has to remember everything.",
+    },
+    changes: {
+      heading: "What changes",
+      items: ["Less reminding", "Less chasing", "Less things forgotten", "More autonomy"],
+    },
+  },
+  es: {
+    recognition: {
+      lines: [
+        "Se acuerda de la cita.",
+        "Avisa antes de que salgan.",
+        "Compra lo que falta antes de que nadie lo note.",
+        "Prepara lo que viene antes de que nadie lo pida.",
+      ],
+      anchor: "Esa persona es el sistema.",
+    },
+    reframe: [
+      "Las tareas no son el problema.",
+      "El problema es todo lo que pasa antes de la tarea.",
+    ],
+    solution: "La forma de sacar la casa de la cabeza.",
+    today: {
+      heading: "Hoy",
+      groups: [
+        ["Jardín → Juan", "Carbón para la barbacoa"],
+        ["Mateo fútbol a las 18:00"],
+      ],
+      caption: "Todos ven lo que importa. Nadie tiene que recordar todo.",
+    },
+    changes: {
+      heading: "Qué cambia",
+      items: ["Recordar menos", "Perseguir menos", "Olvidar menos", "Más autonomía"],
+    },
+  },
+  de: {
+    recognition: {
+      lines: [
+        "Sie erinnert sich an den Termin.",
+        "Sie erinnert die anderen, bevor sie gehen.",
+        "Sie kauft, was fehlt, bevor es jemand merkt.",
+        "Sie bereitet vor, was kommt, bevor jemand fragt.",
+      ],
+      anchor: "Diese Person ist das System.",
+    },
+    reframe: [
+      "Aufgaben sind nicht das Problem.",
+      "Das Problem ist alles, was vor der Aufgabe passiert.",
+    ],
+    solution: "Das ist der Weg, das Haus aus dem Kopf einer Person zu nehmen.",
+    today: {
+      heading: "Heute",
+      groups: [
+        ["Garten → Juan", "Grillzubehör"],
+        ["Mateo Fußball um 18:00"],
+      ],
+      caption: "Alle sehen, was wichtig ist. Niemand muss sich alles merken.",
+    },
+    changes: {
+      heading: "Was sich ändert",
+      items: ["Weniger Erinnern", "Weniger Nachhaken", "Weniger Vergessen", "Mehr Eigenständigkeit"],
+    },
+  },
+  fr: {
+    recognition: {
+      lines: [
+        "Elle se souvient du rendez-vous.",
+        "Elle prévient avant qu'ils partent.",
+        "Elle achète ce qui manque avant que quelqu'un s'en rende compte.",
+        "Elle prépare ce qui vient avant que quelqu'un le demande.",
+      ],
+      anchor: "Cette personne est le système.",
+    },
+    reframe: [
+      "Les tâches ne sont pas le problème.",
+      "Le problème, c'est tout ce qui se passe avant la tâche.",
+    ],
+    solution: "C'est la façon de sortir la maison de la tête d'une seule personne.",
+    today: {
+      heading: "Aujourd'hui",
+      groups: [
+        ["Jardin → Juan", "Charbon pour le barbecue"],
+        ["Mateo football à 18h00"],
+      ],
+      caption: "Tout le monde voit ce qui compte. Plus personne n'a besoin de tout retenir.",
+    },
+    changes: {
+      heading: "Ce qui change",
+      items: ["Moins de rappels", "Moins de relances", "Moins d'oublis", "Plus d'autonomie"],
+    },
+  },
+  it: {
+    recognition: {
+      lines: [
+        "Si ricorda dell'appuntamento.",
+        "Avvisa prima che escano.",
+        "Compra quello che manca prima che qualcuno se ne accorga.",
+        "Prepara quello che viene prima che qualcuno lo chieda.",
+      ],
+      anchor: "Quella persona è il sistema.",
+    },
+    reframe: [
+      "I compiti non sono il problema.",
+      "Il problema è tutto quello che succede prima del compito.",
+    ],
+    solution: "È il modo per togliere la casa dalla testa di una sola persona.",
+    today: {
+      heading: "Oggi",
+      groups: [
+        ["Giardino → Juan", "Carbone per il barbecue"],
+        ["Mateo calcio alle 18:00"],
+      ],
+      caption: "Tutti vedono quello che conta. Nessuno deve ricordare tutto.",
+    },
+    changes: {
+      heading: "Cosa cambia",
+      items: ["Meno promemoria", "Meno solleciti", "Meno cose dimenticate", "Più autonomia"],
+    },
+  },
+  ja: {
+    recognition: {
+      lines: [
+        "彺女は予約を覚えている。",
+        "出かける前に他の人に伝える。",
+        "誰かが気づく前に足りないものを買う。",
+        "誰かが頼む前に来ることに備える。",
+      ],
+      anchor: "その人がシステムだ。",
+    },
+    reframe: [
+      "タスクは問題ではない。",
+      "問題は、タスクの前に起こるすべてのことだ。",
+    ],
+    solution: "これが家を一人の頭から取り出す方法だ。",
+    today: {
+      heading: "今日",
+      groups: [
+        ["庭 → Juan", "バーベキュー用品"],
+        ["マテオのサッカー 18:00"],
+      ],
+      caption: "みんなが大切なことを見えている。誰も全部覚えなくていい。",
+    },
+    changes: {
+      heading: "何が変わるか",
+      items: ["思い出させることが減る", "追いかけることが減る", "忘れることが減る", "自立性が増す"],
+    },
+  },
+  zh: {
+    recognition: {
+      lines: [
+        "她记得那个预约。",
+        "她在他们出门前提醒他们。",
+        "她在任何人注意到之前买来缺少的东西。",
+        "她在任何人要求之前为即将发生的事情做好准备。",
+      ],
+      anchor: "那个人就是系统。",
+    },
+    reframe: [
+      "任务不是问题。",
+      "问题是任务之前发生的一切。",
+    ],
+    solution: "这是把家从一个人的脑袋里取出来的方法。",
+    today: {
+      heading: "今天",
+      groups: [
+        ["花园 → Juan", "烧烤用品"],
+        ["马特奥足球 18:00"],
+      ],
+      caption: "每个人都看到重要的事情。没有人需要记住所有事情。",
+    },
+    changes: {
+      heading: "什么改变了",
+      items: ["少了提醒", "少了追着催", "少了被遗忘的事", "更多自主"],
+    },
+  },
+};
+
+
+const data = content[locale] ?? content['en'];
+---
+
+<div class="home-sections">
+
+  <section class="home-section recognition-section">
+    {data.recognition.lines.map(l => <p>{l}</p>)}
+    <p class="recognition-anchor">{data.recognition.anchor}</p>
+  </section>
+
+  <section class="home-section reframe-section">
+    {data.reframe.map(l => <p>{l}</p>)}
+  </section>
+
+  <section class="home-section solution-section">
+    <p class="solution-line">{data.solution}</p>
+  </section>
+
+  <section class="home-section">
+    <div class="today-preview">
+      <p class="today-preview__heading">{data.today.heading}</p>
+      <div class="today-preview__body">
+        {data.today.groups.map(group => (
+          <div class="today-preview__group">
+            {group.map(line => <span class="today-preview__line">{line}</span>)}
+          </div>
+        ))}
+      </div>
+    </div>
+    <p class="today-caption">{data.today.caption}</p>
+  </section>
+
+  <section class="home-section">
+    <h2 class="section-heading">{data.changes.heading}</h2>
+    <ul class="changes-list">
+      {data.changes.items.map(item => <li>{item}</li>)}
+    </ul>
+  </section>
+
+  <section class="home-section action-section-home">
+    <a class="button cta-dominant" href={withLocale(locale, primaryCta.href)}>
+      {primaryCta.label}
+    </a>
+    <a class="cta-secondary-weak" href={withLocale(locale, secondaryCta.href)}>
+      {secondaryCta.label}
+    </a>
+  </section>
+
+</div>

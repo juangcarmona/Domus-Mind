@@ -1,4 +1,4 @@
-# Spec — Add Reminder
+# Spec - Add Reminder
 
 ## Purpose
 

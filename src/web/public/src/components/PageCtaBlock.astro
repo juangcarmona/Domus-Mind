@@ -1,0 +1,46 @@
+---
+import { withLocale, type Locale } from '@/lib/i18n';
+import type { EarlyAccessContent } from '@/lib/content-types';
+import GitHubIcon from './GitHubIcon.astro';
+
+interface Props {
+  section: EarlyAccessContent;
+  locale: Locale;
+}
+
+const { section, locale } = Astro.props as Props;
+
+function isGitHub(href: string): boolean {
+  return href.includes('github.com');
+}
+
+function isExternal(href: string): boolean {
+  return href.startsWith('http://') || href.startsWith('https://');
+}
+---
+<section class="page-cta">
+  <div class="page-cta__copy">
+    <h2>{section.title}</h2>
+    {section.body && <p>{section.body}</p>}
+  </div>
+  <div class="page-cta__actions">
+    {isExternal(section.primaryCta.href) ? (
+      <a class="button" href={section.primaryCta.href} target="_blank" rel="noopener noreferrer">
+        {isGitHub(section.primaryCta.href) && <GitHubIcon size={14} />}
+        {section.primaryCta.label}
+      </a>
+    ) : (
+      <a class="button" href={withLocale(locale, section.primaryCta.href)}>{section.primaryCta.label}</a>
+    )}
+    {section.secondaryCta && (
+      isExternal(section.secondaryCta.href) ? (
+        <a class="button ghost" href={section.secondaryCta.href} target="_blank" rel="noopener noreferrer">
+          {isGitHub(section.secondaryCta.href) && <GitHubIcon size={14} />}
+          {section.secondaryCta.label}
+        </a>
+      ) : (
+        <a class="button ghost" href={withLocale(locale, section.secondaryCta.href)}>{section.secondaryCta.label}</a>
+      )
+    )}
+  </div>
+</section>

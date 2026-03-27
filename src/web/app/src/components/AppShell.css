@@ -100,7 +100,6 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
   min-width: 168px;
   z-index: var(--z-menu);
   overflow: hidden;

@@ -70,7 +70,7 @@ public sealed class LoginCommandHandlerTests
     {
         var handler = BuildHandler();
 
-        // User is stored as lowercase; request uses mixed case — should still authenticate.
+        // User is stored as lowercase; request uses mixed case - should still authenticate.
         var act = () => handler.Handle(
             new LoginCommand("USER@EXAMPLE.COM", "CorrectPassword1!"),
             CancellationToken.None);

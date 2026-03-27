@@ -1,4 +1,4 @@
-# Spec — Add Member
+# Spec - Add Member
 
 ## Purpose
 

@@ -1,0 +1,72 @@
+---
+import '@/styles/pages.css';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import PageCtaBlock from '@/components/PageCtaBlock.astro';
+import FallbackNotice from '@/components/FallbackNotice.astro';
+import { locales, defaultLocale, normalizeLocale } from '@/lib/i18n';
+import { getPageContent } from '@/lib/content';
+import type { EarlyAccessPageFrontmatter } from '@/lib/content-types';
+
+export function getStaticPaths() {
+  return locales.filter((l) => l !== defaultLocale).map((lang) => ({ params: { lang } }));
+}
+
+const locale = normalizeLocale(Astro.params.lang);
+const { content, sourceLocale } = getPageContent<EarlyAccessPageFrontmatter>(locale, 'early-access-page');
+const isFallback = sourceLocale !== locale;
+const { frontmatter } = content;
+---
+<BaseLayout
+  locale={locale}
+  title={frontmatter.title}
+  description={frontmatter.description}
+  currentPath="/early-access"
+  mainClass="page-main"
+>
+  <PageHero headline={frontmatter.hero.headline} supportLine={frontmatter.hero.supportLine} />
+
+  <div class="page-body">
+    {isFallback && <FallbackNotice locale={locale} />}
+
+    <section class="page-section">
+      <div class="page-groups-grid">
+        <div class="page-group-card">
+          <p class="page-group-card__eyebrow">{frontmatter.meaning.title}</p>
+          <ul>
+            {frontmatter.meaning.items.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+        <div class="page-group-card">
+          <p class="page-group-card__eyebrow">{frontmatter.audience.title}</p>
+          <ul>
+            {frontmatter.audience.items.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section">
+      <h2 class="page-section-title">{frontmatter.currentState.title}</h2>
+      <div class="page-state-grid">
+        {frontmatter.currentState.groups.map((group) => (
+          <div class="page-state-group">
+            <p class="page-state-group__title">{group.title}</p>
+            <ul>
+              {group.items.map((item) => <li>{item}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="page-section">
+      <h2 class="page-section-title">{frontmatter.refining.title}</h2>
+      <ul class="page-item-list">
+        {frontmatter.refining.items.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <PageCtaBlock section={frontmatter.cta} locale={locale} />
+  </div>
+</BaseLayout>

@@ -1,4 +1,4 @@
-# Spec — Assign Primary Owner
+# Spec - Assign Primary Owner
 
 ## Purpose
 

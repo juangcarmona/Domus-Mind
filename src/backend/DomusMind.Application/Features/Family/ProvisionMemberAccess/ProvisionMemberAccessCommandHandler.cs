@@ -81,7 +81,7 @@ public sealed class ProvisionMemberAccessCommandHandler
         if (existingAuthUser is not null)
             throw new FamilyException(FamilyErrorCode.InvalidInput, "An account with this email already exists.");
 
-        // Generate temporary password server-side — never persisted in plain text
+        // Generate temporary password server-side - never persisted in plain text
         var temporaryPassword = _passwordGenerator.Generate();
         var passwordHash = _passwordHasher.Hash(temporaryPassword);
 

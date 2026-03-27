@@ -2,10 +2,10 @@ import { useTranslation } from "react-i18next";
 import type { DayTypeSummary } from "../types";
 
 interface MonthViewProps {
-  selectedDate: string; // ISO YYYY-MM-DD — day to highlight as selected
+  selectedDate: string; // ISO YYYY-MM-DD - day to highlight as selected
   today: string; // ISO YYYY-MM-DD
   firstDayOfWeek?: string | null;
-  displayAnchor?: string; // ISO YYYY-MM-DD — which month to show (defaults to selectedDate)
+  displayAnchor?: string; // ISO YYYY-MM-DD - which month to show (defaults to selectedDate)
   /** Per-day item-type summary for density pips (event/task/routine). */
   daySummary?: Record<string, DayTypeSummary>;
   onSelectDay: (date: string) => void;

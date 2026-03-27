@@ -56,7 +56,7 @@ export function GrantAccessModal({ memberName, provisioned, saving, error, onSav
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2 style={{ marginBottom: "0.25rem" }}>{t("household.members.provisionAccess" as never)}</h2>
         <p style={{ fontSize: "0.85rem", color: "var(--muted)", marginBottom: "0.85rem" }}>
-          {memberName} — {tM("provisionAccessSubtitle")}
+          {memberName} - {tM("provisionAccessSubtitle")}
         </p>
         <form onSubmit={handleSubmit}>
           <div className="form-group">

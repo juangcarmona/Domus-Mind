@@ -1,4 +1,4 @@
-# Spec — Toggle Shared List Item
+# Spec - Toggle Shared List Item
 
 ## Purpose
 

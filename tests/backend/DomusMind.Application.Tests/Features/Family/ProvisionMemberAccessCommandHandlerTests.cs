@@ -119,7 +119,7 @@ public sealed class ProvisionMemberAccessCommandHandlerTests
             CancellationToken.None);
 
         var user = userRepo.Users.Single(u => u.Email == "alice@home.local");
-        // The StubPasswordHasher wraps with "HASHED:" — plaintext must never be stored
+        // The StubPasswordHasher wraps with "HASHED:" - plaintext must never be stored
         user.PasswordHash.Should().Be("HASHED:PlainPass");
         user.PasswordHash.Should().NotBe("PlainPass");
     }

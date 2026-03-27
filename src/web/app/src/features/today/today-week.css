@@ -97,7 +97,7 @@
   align-items: center;
   min-width: 0;
   border-left: 3px solid var(--wg-item-accent, transparent);
-  border-radius: 0.4rem;
+  border-radius: var(--radius-sm);
   transition:
     border-color 0.15s,
     box-shadow 0.15s,
@@ -127,7 +127,7 @@
   flex: 1;
 }
 
-/* Type glyph — tiny, inherits item color, aria-hidden in markup */
+/* Type glyph - tiny, inherits item color, aria-hidden in markup */
 .wg-item-glyph {
   font-size: 1rem;
   flex-shrink: 0;
@@ -152,7 +152,7 @@
   opacity: 0.55;
 }
 
-/* Compact chips — used in shared/household rows for density */
+/* Compact chips - used in shared/household rows for density */
 .wg-item--compact {
   padding: 0.08rem 0.25rem;
   font-size: 0.7rem;

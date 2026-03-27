@@ -89,7 +89,7 @@
   gap: 0.2rem;
   padding: 0.65rem 0.5rem;
   border: 1.5px solid var(--border);
-  border-radius: 0.5rem;
+  border-radius: 2px;
   background: var(--surface);
   cursor: pointer;
   transition:
@@ -136,7 +136,7 @@
   background: color-mix(in srgb, var(--primary) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
   color: var(--primary);
-  border-radius: 999px;
+  border-radius: 3px;
   padding: 0.2rem 0.65rem;
   font-size: 0.875rem;
   font-weight: 500;

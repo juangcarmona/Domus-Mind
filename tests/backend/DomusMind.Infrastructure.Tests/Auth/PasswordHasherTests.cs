@@ -72,7 +72,7 @@ public sealed class PasswordHasherTests
     {
         var hash = _sut.Hash("TimingTest1!");
 
-        // Both calls should complete without early exit — just verify no exception
+        // Both calls should complete without early exit - just verify no exception
         _sut.Verify("TimingTest1!", hash).Should().BeTrue();
         _sut.Verify("TimingXest1!", hash).Should().BeFalse();
     }

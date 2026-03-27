@@ -10,7 +10,7 @@ namespace DomusMind.Api.Controllers;
 [Route("api/languages")]
 public sealed class LanguagesController : ControllerBase
 {
-    /// <summary>Returns all active supported languages. Public endpoint — no authentication required.</summary>
+    /// <summary>Returns all active supported languages. Public endpoint - no authentication required.</summary>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(SupportedLanguagesResponse), StatusCodes.Status200OK)]

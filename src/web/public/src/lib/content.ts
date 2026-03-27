@@ -1,7 +1,7 @@
 import { defaultLocale, type Locale } from './i18n';
 import type { UiContent } from './content-types';
 
-interface MarkdownModule<T extends Record<string, unknown> = Record<string, unknown>> {
+interface MarkdownModule<T extends object = Record<string, unknown>> {
   frontmatter: T;
   Content: unknown;
 }
@@ -23,7 +23,7 @@ export function getUiContent(locale: Locale): UiContent {
   return uiModules[localizedPath] ?? uiModules[canonicalPath];
 }
 
-export function getPageContent<T extends Record<string, unknown>>(locale: Locale, key: string): {
+export function getPageContent<T extends object>(locale: Locale, key: string): {
   content: MarkdownModule<T>;
   sourceLocale: Locale;
 } {

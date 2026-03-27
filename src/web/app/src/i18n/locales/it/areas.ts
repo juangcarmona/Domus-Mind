@@ -7,7 +7,7 @@ export default {
   namePlaceholder: "es. Finanze, Scuola, Casa",
   loading: "Caricamento aree…",
   emptyHeadline: "Nessuna area configurata ancora",
-  emptyHint: "Le aree aiutano la tua famiglia a sapere chi si occupa di cosa — finanze, scuola, casa e altro.",
+  emptyHint: "Le aree aiutano la tua famiglia a sapere chi si occupa di cosa - finanze, scuola, casa e altro.",
   owner: "Responsabile",
   ownerLabel: "Responsabile",
   noOwner: "Nessun responsabile ancora",

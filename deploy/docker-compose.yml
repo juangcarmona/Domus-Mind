@@ -29,7 +29,7 @@ services:
       Jwt__SigningKey: ${JWT_SECRET}
       Jwt__Issuer:    ${JWT_ISSUER:-domusmind}
       Jwt__Audience:  ${JWT_AUDIENCE:-${JWT_ISSUER:-domusmind}}
-      # First-run bootstrap admin — disable after initial setup.
+      # First-run bootstrap admin - disable after initial setup.
       # BootstrapAdmin__Enabled:     true
       # BootstrapAdmin__Email:        ${BOOTSTRAP_ADMIN_EMAIL}
       # BootstrapAdmin__Password:     ${BOOTSTRAP_ADMIN_PASSWORD}

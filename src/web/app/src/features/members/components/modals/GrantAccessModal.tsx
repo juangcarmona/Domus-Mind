@@ -49,7 +49,7 @@ export function GrantAccessModal({ memberName, provisioned, saving, error, onSav
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2 style={{ marginBottom: "0.25rem" }}>{t("form.grantAccessTitle")}</h2>
-        <p style={{ fontSize: "0.85rem", color: "var(--muted)", marginBottom: "0.85rem" }}>{memberName} — {t("form.grantAccessSubtitle")}</p>
+        <p style={{ fontSize: "0.85rem", color: "var(--muted)", marginBottom: "0.85rem" }}>{memberName} - {t("form.grantAccessSubtitle")}</p>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>{t("form.email")}</label>

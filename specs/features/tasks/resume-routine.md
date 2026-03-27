@@ -1,4 +1,4 @@
-# Spec — Resume Routine
+# Spec - Resume Routine
 
 ## Purpose
 

@@ -8,7 +8,7 @@ export default {
   timeLabel: "Uhrzeit (optional)",
   loading: "Aufgaben werden geladen…",
   empty: "Keine aktiven Aufgaben.",
-  emptyHint: "Fügen Sie eine Aufgabe hinzu — sie erscheint hier und im Zeitstrahl.",
+  emptyHint: "Fügen Sie eine Aufgabe hinzu - sie erscheint hier und im Zeitstrahl.",
   active: "Aktiv",
   noDueDate: "Kein Fälligkeitsdatum",
   overdue: "fällig",

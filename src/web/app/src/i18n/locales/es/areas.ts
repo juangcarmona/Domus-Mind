@@ -7,7 +7,7 @@ export default {
   namePlaceholder: "p.ej. Finanzas, Escuela, Mantenimiento del hogar",
   loading: "Cargando áreas…",
   emptyHeadline: "Aún no hay áreas configuradas",
-  emptyHint: "Las áreas ayudan a tu hogar a saber quién se encarga de qué — finanzas, escuela, hogar y más.",
+  emptyHint: "Las áreas ayudan a tu hogar a saber quién se encarga de qué - finanzas, escuela, hogar y más.",
   owner: "Responsable",
   ownerLabel: "Responsable",
   noOwner: "Sin responsable aún",

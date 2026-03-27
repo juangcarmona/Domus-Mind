@@ -11,7 +11,7 @@ RUN npm run build
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS backend-build
 WORKDIR /src
 
-# Copy project files first — restore layer is cached until any .csproj changes
+# Copy project files first - restore layer is cached until any .csproj changes
 COPY src/backend/DomusMind.Api/DomusMind.Api.csproj                         src/backend/DomusMind.Api/
 COPY src/backend/DomusMind.Application/DomusMind.Application.csproj         src/backend/DomusMind.Application/
 COPY src/backend/DomusMind.Contracts/DomusMind.Contracts.csproj             src/backend/DomusMind.Contracts/

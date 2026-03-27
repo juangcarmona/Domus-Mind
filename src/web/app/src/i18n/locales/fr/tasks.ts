@@ -8,7 +8,7 @@ export default {
   timeLabel: "Heure (facultatif)",
   loading: "Chargement des tâches…",
   empty: "Aucune tâche active.",
-  emptyHint: "Ajoutez une tâche — elle apparaîtra ici et dans le calendrier.",
+  emptyHint: "Ajoutez une tâche - elle apparaîtra ici et dans le calendrier.",
   active: "Actif",
   noDueDate: "Pas de date d'échéance",
   overdue: "en retard",

@@ -1,0 +1,18 @@
+---
+import type { BreakdownContent } from '@/lib/content-types';
+
+const { section } = Astro.props as { section: BreakdownContent };
+---
+<section class="homepage-section" id="breakdown">
+  <div class="section-intro">
+    <h2>{section.title}</h2>
+  </div>
+  <div class="breakdown-grid">
+    {section.items.map((item) => (
+      <article class="breakdown-card">
+        <p><strong>{item.title}</strong></p>
+        <p>{item.detail}</p>
+      </article>
+    ))}
+  </div>
+</section>

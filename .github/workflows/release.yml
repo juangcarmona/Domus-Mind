@@ -7,7 +7,7 @@ name: release
 on:
   push:
     # Single glob covers stable (v1.0.0) and prerelease (v1.0.0-alpha.1).
-    # Uses * wildcards — GitHub glob does not treat bare + as a quantifier.
+    # Uses * wildcards - GitHub glob does not treat bare + as a quantifier.
     tags:
       - 'v[0-9]*.[0-9]*.[0-9]*'
 
@@ -70,7 +70,7 @@ jobs:
           echo "is_prerelease=${IS_PRERELEASE}" >> "$GITHUB_OUTPUT"
 
           if [ "$IS_PRERELEASE" = "true" ]; then
-            # Prerelease: exact tag only — must not move 'latest'
+            # Prerelease: exact tag only - must not move 'latest'
             echo "image_tags_domusmind<<EOF"                   >> "$GITHUB_OUTPUT"
             echo "${REGISTRY}/domusmind:${VERSION}"            >> "$GITHUB_OUTPUT"
             echo "EOF"                                         >> "$GITHUB_OUTPUT"
@@ -87,7 +87,7 @@ jobs:
   # Backend: restore → build → test
   # ---------------------------------------------------------------------------
   backend:
-    name: Backend — build & test
+    name: Backend - build & test
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -165,7 +165,7 @@ jobs:
 
       - name: Validate compose configuration
         env:
-          # Dummy values — only used to confirm variable resolution; nothing is deployed.
+          # Dummy values - only used to confirm variable resolution; nothing is deployed.
           DB_USER:         ci-test
           DB_PASSWORD:     ci-test-password
           JWT_SECRET:      ci-test-jwt-secret-placeholder-32ch

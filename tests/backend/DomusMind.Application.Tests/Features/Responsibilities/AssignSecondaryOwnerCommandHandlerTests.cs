@@ -89,12 +89,12 @@ public sealed class AssignSecondaryOwnerCommandHandlerTests
         var memberId = Guid.NewGuid();
         var handler = BuildHandler(db);
 
-        // Assign the first time — should succeed
+        // Assign the first time - should succeed
         await handler.Handle(
             new AssignSecondaryOwnerCommand(domain.Id.Value, memberId, Guid.NewGuid()),
             CancellationToken.None);
 
-        // Assign the same member again on a fresh load — should throw
+        // Assign the same member again on a fresh load - should throw
         var act = () => handler.Handle(
             new AssignSecondaryOwnerCommand(domain.Id.Value, memberId, Guid.NewGuid()),
             CancellationToken.None);

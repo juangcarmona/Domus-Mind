@@ -297,7 +297,7 @@ const sharedListsSlice = createSlice({
         state.detailError = action.payload as string;
       });
 
-    // createSharedList — add to index on success
+    // createSharedList - add to index on success
     builder
       .addCase(createSharedList.pending, (state) => {
         state.createStatus = "loading";
@@ -319,7 +319,7 @@ const sharedListsSlice = createSlice({
         state.createStatus = "error";
       });
 
-    // addItemToSharedList — append to detail on success
+    // addItemToSharedList - append to detail on success
     builder
       .addCase(addItemToSharedList.pending, (state) => {
         state.addItemStatus = "loading";
@@ -350,7 +350,7 @@ const sharedListsSlice = createSlice({
         state.addItemStatus = "error";
       });
 
-    // toggleSharedListItem — sync detail item state from server response
+    // toggleSharedListItem - sync detail item state from server response
     builder.addCase(toggleSharedListItem.fulfilled, (state, action) => {
       if (!state.detail) return;
       const item = state.detail.items.find(
@@ -369,7 +369,7 @@ const sharedListsSlice = createSlice({
       }
     });
 
-    // updateSharedListItem — sync confirmed name from server
+    // updateSharedListItem - sync confirmed name from server
     builder.addCase(updateSharedListItem.fulfilled, (state, action) => {
       if (!state.detail) return;
       const item = state.detail.items.find((i) => i.itemId === action.payload.itemId);
@@ -381,15 +381,15 @@ const sharedListsSlice = createSlice({
       }
     });
 
-    // removeSharedListItem — confirm removal (optimistic already applied)
-    // On rejection, we'd need to restore the item — for now we refetch detail on error
+    // removeSharedListItem - confirm removal (optimistic already applied)
+    // On rejection, we'd need to restore the item - for now we refetch detail on error
     builder.addCase(removeSharedListItem.fulfilled, (state, action) => {
       // Optimistic remove already applied, update index summary
       const summary = state.lists.find((l) => l.id === action.payload.listId);
       if (summary && summary.itemCount > 0) summary.itemCount -= 1;
     });
 
-    // renameSharedList — update name in detail and index
+    // renameSharedList - update name in detail and index
     builder.addCase(renameSharedList.fulfilled, (state, action) => {
       if (state.detail?.listId === action.payload.listId) {
         state.detail.name = action.payload.name;
@@ -398,7 +398,7 @@ const sharedListsSlice = createSlice({
       if (summary) summary.name = action.payload.name;
     });
 
-    // deleteSharedList — remove from index, clear detail if open
+    // deleteSharedList - remove from index, clear detail if open
     builder.addCase(deleteSharedList.fulfilled, (state, action) => {
       state.lists = state.lists.filter((l) => l.id !== action.payload);
       if (state.detail?.listId === action.payload) {
@@ -407,7 +407,7 @@ const sharedListsSlice = createSlice({
       }
     });
 
-    // linkSharedListToEvent — refresh detail linkage fields in index
+    // linkSharedListToEvent - refresh detail linkage fields in index
     builder.addCase(linkSharedListToEvent.fulfilled, (state, action) => {
       const summary = state.lists.find((l) => l.id === action.payload.listId);
       if (summary) {
@@ -416,7 +416,7 @@ const sharedListsSlice = createSlice({
       }
     });
 
-    // unlinkSharedList — clear linkage in index
+    // unlinkSharedList - clear linkage in index
     builder.addCase(unlinkSharedList.fulfilled, (state, action) => {
       const summary = state.lists.find((l) => l.id === action.payload);
       if (summary) {

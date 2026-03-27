@@ -1,4 +1,4 @@
-# Spec — Cancel Task
+# Spec - Cancel Task
 
 ## Purpose
 

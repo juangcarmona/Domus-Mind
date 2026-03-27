@@ -10,7 +10,7 @@ public interface ISystemInitializationState
     Task<bool> IsInitializedAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Marks the system as initialized. Idempotent — calling more than once is safe.
+    /// Marks the system as initialized. Idempotent - calling more than once is safe.
     /// </summary>
     Task MarkInitializedAsync(CancellationToken cancellationToken);
 }

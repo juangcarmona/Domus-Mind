@@ -1,4 +1,4 @@
-# Spec — Add Event Participant
+# Spec - Add Event Participant
 
 ## Purpose
 

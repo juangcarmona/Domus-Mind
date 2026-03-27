@@ -1,26 +1,102 @@
 ---
 title: "DomusMind"
-description: "\u5bb6\u5ead\u904b\u55b6\u306e\u305f\u3081\u306e\u30aa\u30fc\u30d7\u30f3\u57fa\u76e4\u3002"
-heroTitle: "\u5bb6\u65cf\u751f\u6d3b\u306e\u30aa\u30da\u30ec\u30fc\u30c6\u30a3\u30f3\u30b0\u30b7\u30b9\u30c6\u30e0"
-heroBody: "DomusMind \u306f\u898b\u3048\u306a\u3044\u8a8d\u77e5\u8ca0\u8377\u3092\u5171\u6709\u30a4\u30f3\u30d5\u30e9\u306b\u5909\u3048\u307e\u3059\u3002"
-primaryCtaLabel: "\u30de\u30cb\u30d5\u30a7\u30b9\u30c8\u3092\u8aad\u3080"
-primaryCtaHref: "/manifesto"
-secondaryCtaLabel: "\u30d7\u30ed\u30b8\u30a7\u30af\u30c8\u306b\u53c2\u52a0"
-secondaryCtaHref: "/community"
-developerCtaTitle: "\u958b\u767a\u8005\u5411\u3051"
-developerCtaBody: "\u30a2\u30fc\u30ad\u30c6\u30af\u30c1\u30e3\u3092\u78ba\u8a8d\u3057\u8ca2\u732e\u3059\u308b\u3002"
-developerCtaLabel: "\u30a2\u30fc\u30ad\u30c6\u30af\u30c1\u30e3\u3092\u898b\u308b"
-developerCtaHref: "/architecture"
-familyCtaTitle: "\u5bb6\u5ead\u5411\u3051"
-familyCtaBody: "\u30d7\u30ed\u30b8\u30a7\u30af\u30c8\u3092\u30d5\u30a9\u30ed\u30fc\u3057\u3066\u65e9\u671f\u53c2\u52a0\u3059\u308b\u3002"
-familyCtaLabel: "\u30d7\u30ed\u30b8\u30a7\u30af\u30c8\u3092\u30d5\u30a9\u30ed\u30fc"
-familyCtaHref: "/community"
+description: "家族のための共有システム — 一人が全部を抱えるのをやめるために。"
+hero:
+  headline: "家のことを考えるのをやめると、物事がうまくいかなくなる。"
+  supportLine: "誰かが常にすべてに気を配っている。家は一人の記憶に依存するのをやめる。"
+  proofBullets:
+    - "一人が全てを抱えるのをやめる。"
+    - "他の人が何が起きているかを見る。"
+    - "家が一つの脳に依存しなくなる。"
+  primaryCta:
+    label: "試してみる"
+    href: "/early-access"
+  secondaryCta:
+    label: "家がどう見えるか"
+    href: "#how-it-works"
+  proofPanel:
+    eyebrow: "今日"
+    title: "今日"
+    groups:
+      - ["庭 → Juan", "バーベキュー用品"]
+      - ["マテオのサッカー 18:00"]
+    caption: "みんなが大切なことを見えている。誰も全部覚えなくていい。"
+reality:
+  title: "現実"
+  items:
+    - "一人が、学校が何時に終わるか知っている。"
+    - "一人が、予約や約束を覚えている。"
+    - "一人が、家に何が足りないか気づいている。"
+  summary: "その人が考えるのをやめると、家全体が止まる。"
+breakdown:
+  title: "なぜツールでは解決できないのか"
+  items:
+    - title: "カレンダーは時間を記録する。"
+      detail: "その時間の周りで家庭が何を必要としているかは分からない。"
+    - title: "タスクアプリは項目を記録する。"
+      detail: "誰がすでに大切なことを知っているかは見えない。"
+    - title: "システムはまだ一人の頭の中に存在している。"
+      detail: "記憶、チャット、リマインダーだけでは、家庭全体の共有された理解は生まれない。"
+shift:
+  title: "変化"
+  statement: "DomusMindはその見えない労力を、家庭全体で共有できるシステムに変える。"
+  outcomes:
+    - "家庭の全体像が見えるようになる。"
+    - "何が誰の貣任かが明確になる。"
+    - "言われなくても、それぞれが動けるようになる。"
+proof:
+  title: "What You See"
+  primary:
+    title: "今日"
+    caption: "みんなが大切なことを見えている。誰も全部覚えなくていい。"
+    placeholder: "today-view"
+    alt: "今日の予定、タスク、責任を表示する今日ビュー"
+    preview:
+      eyebrow: "今日"
+      groups:
+        - ["庭 → Juan", "バーベキュー用品"]
+        - ["マテオのサッカー 18:00"]
+  secondary:
+    title: "週間"
+    caption: "濃い日がストレスになる前に、一週間全体を見渡す。"
+    placeholder: "WEEK_VIEW_SCREENSHOT"
+    alt: "家庭の予定を数日分表示する週間ビュー"
+howItWorks:
+  title: "How It Works"
+  steps:
+    - title: "TODO_STEP_1_TITLE"
+      body: "TODO_STEP_1_BODY"
+    - title: "TODO_STEP_2_TITLE"
+      body: "TODO_STEP_2_BODY"
+    - title: "TODO_STEP_3_TITLE"
+      body: "TODO_STEP_3_BODY"
+currentState:
+  title: "今あるもの"
+  groups:
+    - title: "Available now"
+      items:
+        - "家族 — 世帯のアイデンティティとメンバー"
+        - "責任 — 誰がどのエリアを担当するか"
+        - "カレンダー — 予定、約束、共有スケジュール"
+        - "タスク — 何をすべきか、誰がするか"
+        - "共有リスト — 買い物リスト、チェックリスト、定期的な家庭用品"
+    - title: "In progress"
+      items:
+        - "週間ビュー — 週単位の共有をより分かりやすく"
+        - "家庭内の関係 — 誰と誰がつながっているか"
+        - "安全なメンバー変更 — 家庭の状態を壊さずにメンバーを削除できる"
+    - title: "Early access / next"
+      items:
+        - "実際の家庭での早期テスト"
+        - "フィードバックをかたちにした改善"
+        - "初回起動の整備をもっとすほやかに"
+earlyAccess:
+  title: "Early Access / Support the Project"
+  body: "プロジェクトをフォローし、早期ビルドを試し、実際の全家庭でDomusMindがどう機能するかを決めるのを手伝ってください。"
+  primaryCta:
+    label: "プロジェクトをフォロー"
+    href: "https://github.com/juangcarmona/domusmind"
+  secondaryCta:
+    label: "使い方を見る"
+    href: "/how-it-works"
 ---
-
-## 課題
-
-家庭は複雑なシステムですが、調整情報は一人の頭の中に集中しがちです。
-
-## DomusMind とは
-
-タスクアプリではなく、家庭システム全体をモデル化します。

@@ -1,4 +1,4 @@
-# DomusMind — Self-hosted Installation
+# DomusMind - Self-hosted Installation
 
 DomusMind runs as a Docker Compose stack: **postgres** and **domusmind**.
 
@@ -11,16 +11,16 @@ DomusMind runs as a Docker Compose stack: **postgres** and **domusmind**.
 
 ```bash
 # 1. Download the release assets
-#    (or unzip the release archive — docker-compose.yml and .env.example are included)
+#    (or unzip the release archive - docker-compose.yml and .env.example are included)
 
 # 2. Create your .env file
 cp .env.example .env
 
 # 3. Edit .env and fill in at minimum:
-#    IMAGE_OWNER  — GitHub username or org that published the release
-#    DB_PASSWORD  — a strong random password for the database
-#    JWT_SECRET   — at least 32 random characters (openssl rand -hex 32)
-#    VERSION      — the release tag without the leading v, e.g. 1.0.0
+#    IMAGE_OWNER  - GitHub username or org that published the release
+#    DB_PASSWORD  - a strong random password for the database
+#    JWT_SECRET   - at least 32 random characters (openssl rand -hex 32)
+#    VERSION      - the release tag without the leading v, e.g. 1.0.0
 
 # 4. Start the stack
 docker compose up -d
@@ -69,7 +69,7 @@ docker compose up -d
 | `1.0.0` (exact) | Stable release                           |
 | `1.0` (minor)   | Latest patch in the 1.0 line             |
 | `latest`        | Latest stable release                    |
-| `1.1.0-alpha.1` | Prerelease — not suitable for production |
+| `1.1.0-alpha.1` | Prerelease - not suitable for production |
 
 ## Updates
 

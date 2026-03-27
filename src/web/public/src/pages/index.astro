@@ -1,7 +1,14 @@
 ---
+import '@/styles/homepage.css';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import HeroSection from '@/components/HeroSection.astro';
-import CtaBlock from '@/components/CtaBlock.astro';
+import RealitySection from '@/components/RealitySection.astro';
+import BreakdownSection from '@/components/BreakdownSection.astro';
+import ShiftSection from '@/components/ShiftSection.astro';
+import ProofSection from '@/components/ProofSection.astro';
+import HowItWorksSection from '@/components/HowItWorksSection.astro';
+import CurrentStateSection from '@/components/CurrentStateSection.astro';
+import EarlyAccessSection from '@/components/EarlyAccessSection.astro';
 import { defaultLocale } from '@/lib/i18n';
 import { getPageContent } from '@/lib/content';
 import type { HomeFrontmatter } from '@/lib/content-types';
@@ -9,33 +16,23 @@ import type { HomeFrontmatter } from '@/lib/content-types';
 const locale = defaultLocale;
 const { content } = getPageContent<HomeFrontmatter>(locale, 'home');
 const { frontmatter } = content;
-const Content = content.Content as unknown as () => unknown;
 ---
-<BaseLayout locale={locale} title={frontmatter.title} description={frontmatter.description} currentPath="/">
-  <HeroSection
-    title={frontmatter.heroTitle}
-    body={frontmatter.heroBody}
-    primaryCta={{ label: frontmatter.primaryCtaLabel, href: frontmatter.primaryCtaHref }}
-    secondaryCta={{ label: frontmatter.secondaryCtaLabel, href: frontmatter.secondaryCtaHref }}
-    locale={locale}
-  />
-  <div class="home-content">
-    <Content />
+<BaseLayout
+  locale={locale}
+  title={frontmatter.title}
+  description={frontmatter.description}
+  currentPath="/"
+  headerCta={frontmatter.hero.primaryCta}
+  mainClass="homepage-main"
+>
+  <div class="homepage">
+    <HeroSection content={frontmatter.hero} locale={locale} />
+    <RealitySection section={frontmatter.reality} />
+    <BreakdownSection section={frontmatter.breakdown} />
+    <ShiftSection section={frontmatter.shift} />
+    <ProofSection section={frontmatter.proof} />
+    <HowItWorksSection section={frontmatter.howItWorks} />
+    <CurrentStateSection section={frontmatter.currentState} />
+    <EarlyAccessSection section={frontmatter.earlyAccess} locale={locale} />
   </div>
-  <section class="cta-grid" aria-label="Call to action">
-    <CtaBlock
-      title={frontmatter.developerCtaTitle}
-      body={frontmatter.developerCtaBody}
-      label={frontmatter.developerCtaLabel}
-      href={frontmatter.developerCtaHref}
-      locale={locale}
-    />
-    <CtaBlock
-      title={frontmatter.familyCtaTitle}
-      body={frontmatter.familyCtaBody}
-      label={frontmatter.familyCtaLabel}
-      href={frontmatter.familyCtaHref}
-      locale={locale}
-    />
-  </section>
 </BaseLayout>

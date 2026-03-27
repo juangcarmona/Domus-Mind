@@ -77,7 +77,7 @@ export function AreaDetailPage() {
   }, [familyId, plansStatus, routinesStatus, dispatch]);
 
   // Force a fresh task timeline fetch on every mount so newly created tasks appear.
-  // EditEntityModal uses timelineSlice to look up tasks — we must keep this in sync.
+  // EditEntityModal uses timelineSlice to look up tasks - we must keep this in sync.
   useEffect(() => {
     if (familyId) dispatch(fetchTimeline({ familyId, types: "Task" }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -248,7 +248,7 @@ export function AreaDetailPage() {
     );
   }
 
-  // Areas list not loaded yet and we haven't resolved the area — wait.
+  // Areas list not loaded yet and we haven't resolved the area - wait.
   if (!area) return null;
 
   return (

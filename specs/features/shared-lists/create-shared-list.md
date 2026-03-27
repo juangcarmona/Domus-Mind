@@ -1,4 +1,4 @@
-# Spec — Create Shared List
+# Spec - Create Shared List
 
 ## Purpose
 

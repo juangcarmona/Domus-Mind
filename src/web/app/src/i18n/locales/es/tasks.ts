@@ -8,7 +8,7 @@ export default {
   timeLabel: "Hora (opcional)",
   loading: "Cargando tareas…",
   empty: "No hay tareas activas.",
-  emptyHint: "Agrega una tarea — aparecerá aquí y en la línea de tiempo.",
+  emptyHint: "Agrega una tarea - aparecerá aquí y en la línea de tiempo.",
   active: "Activo",
   noDueDate: "Sin fecha límite",
   overdue: "atrasado",

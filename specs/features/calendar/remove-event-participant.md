@@ -1,4 +1,4 @@
-# Spec — Remove Event Participant
+# Spec - Remove Event Participant
 
 ## Purpose
 

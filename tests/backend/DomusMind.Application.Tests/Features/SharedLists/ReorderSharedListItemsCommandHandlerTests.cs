@@ -125,7 +125,7 @@ public sealed class ReorderSharedListItemsCommandHandlerTests
     public async Task Handle_OrderRemainsStableAfterCheckedItemExcluded()
     {
         var (db, list, id1, id2, id3) = await SeedListWithThreeItemsAsync();
-        // Check id2 — only id1 and id3 remain unchecked
+        // Check id2 - only id1 and id3 remain unchecked
         list.ToggleItem(id2, null, DateTime.UtcNow);
         list.ClearDomainEvents();
         await db.SaveChangesAsync();

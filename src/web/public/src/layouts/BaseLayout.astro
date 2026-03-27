@@ -1,6 +1,7 @@
 ---
 import '@/styles/global.css';
 import type { Locale } from '@/lib/i18n';
+import type { LinkContent } from '@/lib/content-types';
 import { canonicalUrl, localeUrl, pageTitle } from '@/lib/seo';
 import SiteHeader from '@/components/SiteHeader.astro';
 import SiteFooter from '@/components/SiteFooter.astro';
@@ -12,11 +13,15 @@ const {
   title,
   description,
   currentPath = '/',
+  headerCta,
+  mainClass,
 } = Astro.props as {
   locale: Locale;
   title: string;
   description: string;
   currentPath?: string;
+  headerCta?: LinkContent;
+  mainClass?: string;
 };
 
 const ui = getUiContent(locale);
@@ -54,10 +59,46 @@ const canonical = canonicalUrl(locale, currentPath);
     </script>
   </head>
   <body>
-    <SiteHeader locale={locale} ui={ui} currentPath={currentPath} />
-    <main>
+    <SiteHeader locale={locale} ui={ui} currentPath={currentPath} primaryCta={headerCta} />
+    <main class={mainClass}>
       <slot />
     </main>
     <SiteFooter locale={locale} ui={ui} />
+    <div id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+      <img id="lightbox-img" src="" alt="" />
+    </div>
+    <script>
+      (() => {
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
+        if (!lightbox || !lightboxImg) return;
+
+        const open = (src: string, alt: string) => {
+          lightboxImg.src = src;
+          lightboxImg.alt = alt;
+          lightbox.classList.add('is-open');
+          document.body.style.overflow = 'hidden';
+        };
+
+        const close = () => {
+          lightbox.classList.remove('is-open');
+          document.body.style.overflow = '';
+          lightboxImg.src = '';
+        };
+
+        document.querySelectorAll<HTMLImageElement>('[data-lightbox]').forEach((img) => {
+          img.style.cursor = 'zoom-in';
+          img.addEventListener('click', () => open(img.src, img.alt));
+        });
+
+        lightbox.addEventListener('click', (e) => {
+          if (e.target === lightbox) close();
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && lightbox.classList.contains('is-open')) close();
+        });
+      })();
+    </script>
   </body>
 </html>

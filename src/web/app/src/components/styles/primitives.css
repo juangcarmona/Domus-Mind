@@ -202,7 +202,7 @@
   color: var(--primary);
   border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
   padding: 0.15rem 0.6rem;
-  border-radius: 999px;
+  border-radius: 3px;
   font-size: 0.78rem;
   font-weight: 500;
   white-space: nowrap;
@@ -223,7 +223,7 @@
   font-size: 0.78rem;
   font-weight: 600;
   padding: 0.15rem 0.55rem;
-  border-radius: 999px;
+  border-radius: 3px;
   white-space: nowrap;
   background: color-mix(in srgb, var(--badge-color) var(--badge-bg-strength), transparent);
   color: var(--badge-color);

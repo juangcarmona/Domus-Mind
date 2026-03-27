@@ -33,7 +33,7 @@ public sealed class SystemInitializationRepository : ISystemInitializationState
         }
         catch (DbUpdateException)
         {
-            // PK violation from a concurrent first-run — already initialized, no-op.
+            // PK violation from a concurrent first-run - already initialized, no-op.
             _db.ChangeTracker.Clear();
         }
     }

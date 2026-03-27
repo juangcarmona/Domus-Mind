@@ -1,4 +1,4 @@
-# Spec — Remove Reminder
+# Spec - Remove Reminder
 
 ## Purpose
 

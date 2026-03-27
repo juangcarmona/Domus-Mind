@@ -1,0 +1,42 @@
+---
+import '@/styles/pages.css';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import PageCtaBlock from '@/components/PageCtaBlock.astro';
+import { defaultLocale } from '@/lib/i18n';
+import { getPageContent } from '@/lib/content';
+import type { MentalLoadFrontmatter } from '@/lib/content-types';
+
+const locale = defaultLocale;
+const { content } = getPageContent<MentalLoadFrontmatter>(locale, 'mental-load');
+const { frontmatter } = content;
+---
+<BaseLayout
+  locale={locale}
+  title={frontmatter.title}
+  description={frontmatter.description}
+  currentPath="/mental-load"
+  mainClass="page-main"
+>
+  <PageHero headline={frontmatter.hero.headline} supportLine={frontmatter.hero.supportLine} />
+
+  <div class="page-body">
+    <section class="page-section">
+      <div class="mental-load-sections">
+        {frontmatter.sections.map((sec) => (
+          <div class="mental-load-section">
+            <h2>{sec.title}</h2>
+            <p>{sec.body}</p>
+            {sec.items && sec.items.length > 0 && (
+              <ul class="page-item-list">
+                {sec.items.map((item) => <li>{item}</li>)}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <PageCtaBlock section={frontmatter.cta} locale={locale} />
+  </div>
+</BaseLayout>

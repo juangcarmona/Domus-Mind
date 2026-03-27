@@ -1,15 +1,39 @@
 ---
+import '@/styles/pages.css';
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import PageCtaBlock from '@/components/PageCtaBlock.astro';
 import { defaultLocale } from '@/lib/i18n';
 import { getPageContent } from '@/lib/content';
-import type { PageFrontmatter } from '@/lib/content-types';
+import type { ManifestoFrontmatter } from '@/lib/content-types';
 
 const locale = defaultLocale;
-const { content } = getPageContent<PageFrontmatter>(locale, 'manifesto');
+const { content } = getPageContent<ManifestoFrontmatter>(locale, 'manifesto-page');
 const { frontmatter } = content;
-const Content = content.Content as unknown as () => unknown;
 ---
-<BaseLayout locale={locale} title={frontmatter.title} description={frontmatter.description} currentPath="/manifesto">
-  <h1>{frontmatter.title}</h1>
-  <Content />
+<BaseLayout
+  locale={locale}
+  title={frontmatter.title}
+  description={frontmatter.description}
+  currentPath="/manifesto"
+  mainClass="page-main"
+>
+  <PageHero headline={frontmatter.hero.headline} supportLine={frontmatter.hero.supportLine} />
+
+  <div class="page-body">
+    <section class="page-section">
+      <div class="manifesto-blocks">
+        {frontmatter.blocks.map((block) => (
+          <div class="manifesto-block">
+            <h2 class="manifesto-block__title">{block.title}</h2>
+            <p class="manifesto-block__body">{block.body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <p class="manifesto-closing">{frontmatter.closing}</p>
+
+    <PageCtaBlock section={frontmatter.cta} locale={locale} />
+  </div>
 </BaseLayout>

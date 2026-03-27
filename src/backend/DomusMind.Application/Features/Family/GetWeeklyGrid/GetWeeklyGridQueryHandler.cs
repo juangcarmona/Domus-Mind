@@ -57,7 +57,7 @@ public sealed class GetWeeklyGridQueryHandler
             .AsNoTracking()
             .Where(e => e.FamilyId == familyId
                      // Load any event whose date range overlaps the requested week.
-                     // EndDate: null means single-day / moment — treat as Date == EndDate.
+                     // EndDate: null means single-day / moment - treat as Date == EndDate.
                      && e.Time.Date < weekEnd
                      && (e.Time.EndDate == null ? e.Time.Date >= weekStart : e.Time.EndDate >= weekStart)
                      && e.Status != EventStatus.Cancelled)

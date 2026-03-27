@@ -6,7 +6,7 @@ export default {
     startDate: "Datum",
     startTime: "Uhrzeit (optional)",
     endDate: "Enddatum",
-    endDateRequired: "Ein Enddatum ist erforderlich — verwende das gleiche Datum wie den Start für einтägige Ereignisse.",
+    endDateRequired: "Ein Enddatum ist erforderlich - verwende das gleiche Datum wie den Start für einтägige Ereignisse.",
     endTime: "Endzeit (optional)",
     endTimeRequired: "Endzeit ist erforderlich, wenn Startzeit und Enddatum angegeben sind.",
     description: "Beschreibung (optional)",

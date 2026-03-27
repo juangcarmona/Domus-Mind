@@ -1,4 +1,4 @@
-# Spec — Schedule Event
+# Spec - Schedule Event
 
 ## Purpose
 

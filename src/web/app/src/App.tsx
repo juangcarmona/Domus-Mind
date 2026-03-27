@@ -56,7 +56,7 @@ function AuthedApp() {
   }, [dispatch]);
 
   // Keep i18n in sync with the language in Redux.
-  // Use the stable singleton import — NOT `i18n` from useTranslation —
+  // Use the stable singleton import - NOT `i18n` from useTranslation —
   // because the hook reference changes on every language switch, which
   // would re-fire this effect and override an in-progress selection.
   useEffect(() => {

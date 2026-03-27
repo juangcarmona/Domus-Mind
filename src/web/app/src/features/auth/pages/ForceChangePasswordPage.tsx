@@ -25,7 +25,7 @@ export function ForceChangePasswordPage() {
     setSaving(true);
     try {
       await changePassword(currentPw, newPw);
-      // changePassword calls logout() — the app will redirect to login automatically.
+      // changePassword calls logout() - the app will redirect to login automatically.
     } catch (err) {
       setError((err as ApiError).message ?? t("changePasswordFailed"));
     } finally {

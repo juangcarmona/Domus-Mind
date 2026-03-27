@@ -30,31 +30,18 @@
 
   --header-height: 3.5rem;
 
-  --radius-sm: 0.35rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
 
-  --shadow-sm: 0 1px 6px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.14);
+  --shadow-sm: none;
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.10);
 
   --z-header: 10;
   --z-menu: 20;
   --z-drawer-backdrop: 30;
   --z-drawer: 40;
   --z-modal: 100;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #17131e;
-    --surface: #221b2c;
-    --text: #f5f3f7;
-    --muted: #c3b7d6;
-    --primary: #b79ad9;
-    --secondary: #9d7fc5;
-    --accent: #f0c872;
-    --border: #3d3250;
-  }
 }
 
 :root[data-theme="dark"] {

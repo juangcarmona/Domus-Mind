@@ -6,7 +6,7 @@ export default {
     startDate: "Data",
     startTime: "Ora (opzionale)",
     endDate: "Data fine",
-    endDateRequired: "La data di fine è obbligatoria — usa la stessa data di inizio per eventi di un giorno.",
+    endDateRequired: "La data di fine è obbligatoria - usa la stessa data di inizio per eventi di un giorno.",
     endTime: "Ora fine (opzionale)",
     endTimeRequired: "L'ora di fine è obbligatoria quando sono impostati sia l'ora di inizio che la data di fine.",
     description: "Descrizione (opzionale)",

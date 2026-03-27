@@ -7,7 +7,7 @@ export default {
   namePlaceholder: "例: 財務、学校、家事",
   loading: "エリアを読み込んでいます…",
   emptyHeadline: "まだエリアが設定されていません",
-  emptyHint: "エリアで家庭の担当者を明確にしましょう — 財務、学校、家事など。",
+  emptyHint: "エリアで家庭の担当者を明確にしましょう - 財務、学校、家事など。",
   owner: "担当者",
   ownerLabel: "担当者",
   noOwner: "担当者未設定",

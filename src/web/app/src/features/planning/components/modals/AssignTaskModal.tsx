@@ -32,7 +32,7 @@ export function AssignTaskModal({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h2>{t("assign")} — {entry.title}</h2>
+        <h2>{t("assign")} - {entry.title}</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="planning-assign-select">{t("assignTo")}</label>

@@ -30,7 +30,7 @@ function resolveInitialLanguage(): string {
 const initialState: UiState = {
   language: resolveInitialLanguage(),
   dateFormat: null,
-  theme: (localStorage.getItem(THEME_KEY) as Theme) || "system",
+  theme: (localStorage.getItem(THEME_KEY) as Theme) || "light",
 };
 
 const uiSlice = createSlice({

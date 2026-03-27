@@ -4,7 +4,7 @@ import { domainApi } from "./domainApi";
 
 export { getStoredToken } from "./request";
 
-// Composite client — all existing consumers import from this file unchanged
+// Composite client - all existing consumers import from this file unchanged
 export const domusmindApi = {
   ...familyApi,
   ...calendarApi,

@@ -91,7 +91,7 @@
   line-height: 1;
 }
 
-/* Week nav — same style as month nav, shares .coord-month-nav CSS */
+/* Week nav - same style as month nav, shares .coord-month-nav CSS */
 .coord-midterm-week-nav {
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--border);

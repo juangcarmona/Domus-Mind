@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .me(token)
       .then((user) => setState({ user, accessToken: token, isLoading: false }))
       .catch(() => {
-        // Access token stale — try refresh
+        // Access token stale - try refresh
         const rt = getRefreshToken();
         if (!rt) {
           clearTokens();

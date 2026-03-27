@@ -1,4 +1,4 @@
-# Spec — Assign Task
+# Spec - Assign Task
 
 ## Purpose
 

@@ -1,4 +1,4 @@
-# Spec — Transfer Responsibility
+# Spec - Transfer Responsibility
 
 ## Purpose
 

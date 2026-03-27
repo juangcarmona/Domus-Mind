@@ -40,7 +40,7 @@ export function TodayPage() {
   // Mid-term section: local tab state
   const [midTermView, setMidTermView] = useState<"week" | "month">("week");
 
-  // Month view anchor — navigated independently of selectedDate
+  // Month view anchor - navigated independently of selectedDate
   const [monthAnchor, setMonthAnchor] = useState<string>(selectedDate);
   useEffect(() => {
     setMonthAnchor(selectedDate);
@@ -92,7 +92,7 @@ export function TodayPage() {
     midTermView === "month",
   );
 
-  // Load timeline data (for the ruler only — month dots now use weekly grids).
+  // Load timeline data (for the ruler only - month dots now use weekly grids).
   // Re-fetches whenever familyId changes or if a previous attempt failed.
   useEffect(() => {
     if (!familyId) return;
@@ -183,7 +183,7 @@ export function TodayPage() {
           </button>
         </div>
 
-        {/* Week nav — same style as month nav */}
+        {/* Week nav - same style as month nav */}
         {midTermView === "week" && (
           <div className="coord-month-nav coord-midterm-week-nav">
             <button

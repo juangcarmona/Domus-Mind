@@ -1,4 +1,4 @@
-# Spec — Reschedule Event
+# Spec - Reschedule Event
 
 ## Purpose
 

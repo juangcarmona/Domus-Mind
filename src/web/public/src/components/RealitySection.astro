@@ -1,0 +1,18 @@
+---
+import type { RealityContent } from '@/lib/content-types';
+
+const { section } = Astro.props as { section: RealityContent };
+---
+<section class="homepage-section" id="reality">
+  <div class="section-intro">
+    <h2>{section.title}</h2>
+  </div>
+  <div class="reality-grid">
+    {section.items.map((item) => (
+      <article class="reality-card">
+        <p>{item}</p>
+      </article>
+    ))}
+  </div>
+  <p class="section-summary">{section.summary}</p>
+</section>

@@ -1,4 +1,4 @@
-# Spec — Pause Routine
+# Spec - Pause Routine
 
 ## Purpose
 

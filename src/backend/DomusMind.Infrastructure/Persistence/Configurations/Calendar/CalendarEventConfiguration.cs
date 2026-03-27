@@ -85,7 +85,7 @@ public sealed class CalendarEventConfiguration : IEntityTypeConfiguration<Domain
                 .IsRequired();
         });
 
-        // Participant IDs stored as JSON text — list of member GUIDs.
+        // Participant IDs stored as JSON text - list of member GUIDs.
         var participantConverter = new ValueConverter<List<MemberId>, string>(
             ids => JsonSerializer.Serialize(ids.Select(id => id.Value).ToList(), (JsonSerializerOptions?)null),
             json => JsonSerializer.Deserialize<List<Guid>>(json, (JsonSerializerOptions?)null)!
@@ -106,7 +106,7 @@ public sealed class CalendarEventConfiguration : IEntityTypeConfiguration<Domain
 
         builder.Ignore(e => e.ParticipantIds);
 
-        // Reminder offsets stored as JSON text — list of int (minutes before).
+        // Reminder offsets stored as JSON text - list of int (minutes before).
         var reminderConverter = new ValueConverter<List<int>, string>(
             offsets => JsonSerializer.Serialize(offsets, (JsonSerializerOptions?)null),
             json => JsonSerializer.Deserialize<List<int>>(json, (JsonSerializerOptions?)null)!);

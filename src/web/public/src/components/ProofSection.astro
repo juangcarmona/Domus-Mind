@@ -1,0 +1,15 @@
+---
+import type { ProofContent } from '@/lib/content-types';
+import ProofMediaSlot from './ProofMediaSlot.astro';
+
+const { section } = Astro.props as { section: ProofContent };
+---
+<section class="homepage-section" id="what-you-see">
+  <div class="section-intro">
+    <h2>{section.title}</h2>
+  </div>
+  <div class="proof-grid">
+    <ProofMediaSlot slot={section.primary} />
+    {section.secondary && <ProofMediaSlot slot={section.secondary} />}
+  </div>
+</section>

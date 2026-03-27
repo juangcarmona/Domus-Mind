@@ -12,10 +12,10 @@
     "node": ">=22.12.0"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.7.1",
-    "astro": "^6.0.3"
+    "@astrojs/sitemap": "^3.7.1"
   },
   "devDependencies": {
+    "astro": "^6.0.8",
     "typescript": "^5.9.3"
   }
 }

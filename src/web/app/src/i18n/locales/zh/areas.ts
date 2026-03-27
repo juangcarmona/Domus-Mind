@@ -7,7 +7,7 @@ export default {
   namePlaceholder: "例：财务、学校、家居维护",
   loading: "加载区域…",
   emptyHeadline: "尚未设置任何区域",
-  emptyHint: "区域有助于了解谁负责什么 — 财务、学校、家居等。",
+  emptyHint: "区域有助于了解谁负责什么 - 财务、学校、家居等。",
   owner: "负责人",
   ownerLabel: "负责人",
   noOwner: "暂无负责人",

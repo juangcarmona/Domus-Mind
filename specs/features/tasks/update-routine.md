@@ -1,4 +1,4 @@
-# Spec — Update Routine
+# Spec - Update Routine
 
 ## Purpose
 

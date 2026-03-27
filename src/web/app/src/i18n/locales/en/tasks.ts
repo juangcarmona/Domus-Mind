@@ -8,7 +8,7 @@ export default {
   timeLabel: "Time (optional)",
   loading: "Loading tasks…",
   empty: "No active tasks.",
-  emptyHint: "Add a task — it will appear here and on the timeline.",
+  emptyHint: "Add a task - it will appear here and on the timeline.",
   active: "Active",
   noDueDate: "No due date",
   overdue: "overdue",

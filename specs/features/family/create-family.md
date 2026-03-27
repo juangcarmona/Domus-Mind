@@ -1,4 +1,4 @@
-# Spec — Create Family
+# Spec - Create Family
 
 ## Purpose
 

@@ -7,7 +7,7 @@ export default {
   namePlaceholder: "e.g. Finances, School, Home maintenance",
   loading: "Loading areas…",
   emptyHeadline: "No areas set up yet",
-  emptyHint: "Areas help your household keep track of who's looking after what — finances, school, home, and more.",
+  emptyHint: "Areas help your household keep track of who's looking after what - finances, school, home, and more.",
   owner: "Owner",
   ownerLabel: "Owner",
   noOwner: "No owner yet",

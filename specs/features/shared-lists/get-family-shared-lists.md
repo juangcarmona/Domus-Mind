@@ -1,4 +1,4 @@
-# Spec — Get Family Shared Lists
+# Spec - Get Family Shared Lists
 
 ## Purpose
 

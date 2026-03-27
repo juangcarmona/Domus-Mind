@@ -14,10 +14,10 @@ A home is a **system of responsibilities, time, and coordination**.
 
 DomusMind models that system with four core domains:
 
-- **Family** — household structure and members  
-- **Responsibilities** — ownership of household domains  
-- **Calendar** — events and shared time  
-- **Tasks** — execution of work and routines  
+- **Family** - household structure and members  
+- **Responsibilities** - ownership of household domains  
+- **Calendar** - events and shared time  
+- **Tasks** - execution of work and routines  
 
 The goal is simple:
 

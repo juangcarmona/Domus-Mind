@@ -7,9 +7,24 @@ description: "Domain-centric and API-first technical architecture."
 
 DomusMind is domain-centric: technology and interfaces are secondary to household invariants and business concepts.
 
-## Bounded contexts
+## Current core - V1
 
-Core contexts include Family, Responsibilities, Calendar, Tasks, Properties, Food, Pets, and Administration.
+The following bounded contexts are implemented in V1:
+
+- **Family** - household identity and member structure
+- **Responsibilities** - ownership of household domains and areas
+- **Calendar** - events, schedules, participants, and reminders
+- **Tasks** - tasks, routines, assignment, and completion
+
+## Extended model - future
+
+The following contexts are planned for future releases:
+
+- **Shared Lists** - persistent shared checklists (V1.1)
+- **Properties** - household assets and property records
+- **Food** - meal planning and ingredient tracking
+- **Pets** - care schedules and records for household animals
+- **Administration** - documents, contracts, and household records
 
 ## Vertical slices
 

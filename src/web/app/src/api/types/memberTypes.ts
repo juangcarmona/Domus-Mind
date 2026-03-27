@@ -154,7 +154,7 @@ export interface UpdateMemberResponse {
   joinedAtUtc: string;
 }
 
-/** Phase 2 member detail — includes profile seam fields. */
+/** Phase 2 member detail - includes profile seam fields. */
 export interface MemberDetailResponse extends FamilyMemberResponse {
   lastLoginAtUtc: string | null;
   primaryPhone: string | null;

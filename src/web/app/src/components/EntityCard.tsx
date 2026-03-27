@@ -11,7 +11,7 @@ interface EntityCardProps {
   /** Renders the card at reduced opacity (used for historical/cancelled items). */
   dimmed?: boolean;
   onClick?: () => void;
-  /** Rendered inside .item-card-actions — use for action buttons. */
+  /** Rendered inside .item-card-actions - use for action buttons. */
   actions?: ReactNode;
   className?: string;
 }

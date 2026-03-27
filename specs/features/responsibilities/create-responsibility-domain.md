@@ -1,4 +1,4 @@
-# Spec — Create Responsibility Domain
+# Spec - Create Responsibility Domain
 
 ## Purpose
 

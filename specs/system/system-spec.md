@@ -1,4 +1,4 @@
-# DomusMind — System Spec
+# DomusMind - System Spec
 
 ## Purpose
 
@@ -16,24 +16,19 @@ It is the entry point for executable product scope.
 
 ## V1 Scope
 
-DomusMind V1 includes four core bounded contexts:
+DomusMind V1 includes five core bounded contexts:
 
 - Family
 - Responsibilities
 - Calendar
 - Tasks
+- Shared Lists
 
 These contexts provide the minimum viable household operating model.
 
-## V1.1 Scope (Extension)
-
-DomusMind V1.1 introduces an additional bounded context:
-
-- Shared Lists
-
 Shared Lists provides the **persistent shared checklist layer** of the household.
 
-It complements existing contexts by modeling reusable, non-temporal coordination state such as:
+It complements the other core contexts by modeling reusable, non-temporal coordination state such as:
 
 - shopping lists
 - preparation checklists
@@ -52,13 +47,10 @@ V1 supports the following capability groups:
 - event scheduling
 - task execution
 - routine management
-- unified family timeline
-
-V1.1 extends capabilities with:
-
 - persistent shared checklist management
 - reusable household lists
 - shared state coordination across members
+- unified family timeline
 
 ---
 
@@ -139,6 +131,7 @@ Shared Lists remains behaviorally independent from Tasks and Calendar.
 - resume-routine
 
 ### Shared Lists (V1.1)
+### Shared Lists
 - create-shared-list
 - rename-shared-list
 - delete-shared-list
@@ -158,8 +151,8 @@ The following were considered for V1 but are deferred to V1.1.
 They have no blocking dependency on V1 completion.
 
 ### Family
-- assign-relationship — relationship semantics between members are modeled in the domain but the capability is not exposed via API or UI in V1
-- remove-member — member removal requires validating open task assignments and participant references; deferred to avoid cascading complexity in V1
+- assign-relationship - relationship semantics between members are modeled in the domain but the capability is not exposed via API or UI in V1
+- remove-member - member removal requires validating open task assignments and participant references; deferred to avoid cascading complexity in V1
 
 ---
 
@@ -200,12 +193,7 @@ DomusMind V1 is complete when:
 - events can be scheduled
 - tasks can be executed
 - routines can be maintained
+- shared lists can be created and reused
+- list items can be added, updated, reordered, and toggled
 - timeline can be queried
-
-DomusMind V1.1 is complete when:
-
-- families can create and reuse shared lists
-- list items can be added in under 1 second
-- lists are reused across multiple real-world scenarios (e.g., shopping, preparation)
-- multiple members can interact with the same list concurrently
 - shared lists do not introduce confusion with tasks, routines, or events

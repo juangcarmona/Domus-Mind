@@ -1,4 +1,4 @@
-# Spec — Assign Relationship
+# Spec - Assign Relationship
 
 ## Purpose
 

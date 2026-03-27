@@ -17,7 +17,7 @@
   font-size: 0.72rem;
   color: var(--muted);
   background: var(--surface-alt, #f3f4f6);
-  border-radius: 999px;
+  border-radius: 3px;
   padding: 0.1em 0.55em;
   margin-top: 0.25rem;
 }
@@ -106,7 +106,7 @@
   cursor: text;
 }
 
-/* Remove button — only visible on hover */
+/* Remove button - only visible on hover */
 .shared-list-item__remove {
   flex-shrink: 0;
   display: none;
@@ -250,7 +250,7 @@
   font-size: 0.75rem;
   color: var(--muted);
   background: var(--surface-alt, #f3f4f6);
-  border-radius: 999px;
+  border-radius: 3px;
   padding: 0.1em 0.55em;
 }
 
@@ -316,7 +316,7 @@
   font-size: 0.75rem;
   color: var(--muted);
   background: var(--surface-alt, #f3f4f6);
-  border-radius: 999px;
+  border-radius: 3px;
   padding: 0.1em 0.6em;
 }
 

@@ -1,0 +1,12 @@
+---
+interface Props {
+  headline: string;
+  supportLine: string;
+}
+
+const { headline, supportLine } = Astro.props as Props;
+---
+<header class="page-hero">
+  <h1 class="page-hero__headline">{headline}</h1>
+  <p class="page-hero__support">{supportLine}</p>
+</header>

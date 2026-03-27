@@ -1,4 +1,4 @@
-# Spec — Get Shared List Detail
+# Spec - Get Shared List Detail
 
 ## Purpose
 

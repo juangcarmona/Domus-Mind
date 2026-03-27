@@ -2,7 +2,7 @@ namespace DomusMind.Infrastructure.Languages;
 
 /// <summary>
 /// Reference data row for a language supported by the DomusMind product.
-/// Not a domain entity — infrastructure-level lookup table.
+/// Not a domain entity - infrastructure-level lookup table.
 /// </summary>
 public sealed class SupportedLanguage
 {

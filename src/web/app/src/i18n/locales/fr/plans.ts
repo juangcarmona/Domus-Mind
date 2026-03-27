@@ -6,7 +6,7 @@ export default {
     startDate: "Date",
     startTime: "Heure (facultatif)",
     endDate: "Date de fin",
-    endDateRequired: "Une date de fin est requise — utilisez la même date que le début pour un événement d'un jour.",
+    endDateRequired: "Une date de fin est requise - utilisez la même date que le début pour un événement d'un jour.",
     endTime: "Heure de fin (facultatif)",
     endTimeRequired: "L'heure de fin est requise quand une heure de début et une date de fin sont saisies.",
     description: "Description (facultatif)",

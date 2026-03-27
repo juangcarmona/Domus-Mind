@@ -57,7 +57,7 @@
   background: color-mix(in srgb, var(--primary) 8%, transparent);
 }
 
-/* Month label — shown at month boundary, empty otherwise */
+/* Month label - shown at month boundary, empty otherwise */
 .coord-ruler-month-label {
   font-size: 0.6rem;
   color: var(--primary);
@@ -76,7 +76,7 @@
   letter-spacing: 0.03em;
 }
 
-/* Day number — circled for today / selected */
+/* Day number - circled for today / selected */
 .coord-ruler-day-num {
   font-size: 0.82rem;
   font-weight: 600;

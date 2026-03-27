@@ -84,7 +84,7 @@ export function TimelineRuler({
   const endIso = addDaysToIso(today, 365);
   const days = generateDayRange(startIso, endIso);
 
-  // Build event map from timeline data (routines excluded — they are ongoing)
+  // Build event map from timeline data (routines excluded - they are ongoing)
   const eventMap = new Map<string, EventDot[]>();
   if (timelineData) {
     for (const group of timelineData.groups) {

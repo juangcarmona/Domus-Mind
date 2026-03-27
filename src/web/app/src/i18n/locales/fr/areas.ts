@@ -7,7 +7,7 @@ export default {
   namePlaceholder: "ex. Finances, École, Entretien",
   loading: "Chargement des espaces…",
   emptyHeadline: "Aucun espace configuré pour l'instant",
-  emptyHint: "Les espaces aident votre foyer à savoir qui s'occupe de quoi — finances, école, maison et plus.",
+  emptyHint: "Les espaces aident votre foyer à savoir qui s'occupe de quoi - finances, école, maison et plus.",
   owner: "Responsable",
   ownerLabel: "Responsable",
   noOwner: "Aucun responsable pour l'instant",

@@ -61,8 +61,8 @@ export function AssignOwnerModal({
   }
 
   const title = area.primaryOwnerId
-    ? `${t("changeOwner")} — ${area.name}`
-    : `${t("setOwner")} — ${area.name}`;
+    ? `${t("changeOwner")} - ${area.name}`
+    : `${t("setOwner")} - ${area.name}`;
 
   return (
     <div className="modal-backdrop" onClick={onClose}>

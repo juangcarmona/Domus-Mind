@@ -16,7 +16,7 @@ server {
         proxy_read_timeout 60s;
     }
 
-    # SPA fallback — serve index.html for all non-file routes
+    # SPA fallback - serve index.html for all non-file routes
     location / {
         try_files $uri $uri/ /index.html;
     }

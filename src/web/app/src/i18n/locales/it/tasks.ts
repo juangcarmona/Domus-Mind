@@ -8,7 +8,7 @@ export default {
   timeLabel: "Orario (opzionale)",
   loading: "Caricamento faccende…",
   empty: "Nessuna faccenda attiva.",
-  emptyHint: "Aggiungi una faccenda — apparirà qui e nell'agenda.",
+  emptyHint: "Aggiungi una faccenda - apparirà qui e nell'agenda.",
   active: "Attivo",
   noDueDate: "Nessuna scadenza",
   overdue: "in ritardo",

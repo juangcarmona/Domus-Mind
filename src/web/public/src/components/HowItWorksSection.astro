@@ -1,0 +1,19 @@
+---
+import type { HowItWorksContent } from '@/lib/content-types';
+
+const { section } = Astro.props as { section: HowItWorksContent };
+---
+<section class="homepage-section" id="how-it-works">
+  <div class="section-intro">
+    <h2>{section.title}</h2>
+  </div>
+  <div class="how-it-works-grid">
+    {section.steps.map((step) => (
+      <article class="step-card">
+        <p class="step-number"></p>
+        <h3>{step.title}</h3>
+        <p>{step.body}</p>
+      </article>
+    ))}
+  </div>
+</section>

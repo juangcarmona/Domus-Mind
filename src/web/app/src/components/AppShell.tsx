@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="brand-name">{family?.name ?? "DomusMind"}</span>
         </NavLink>
 
-        {/* Desktop nav — hidden on mobile via CSS */}
+        {/* Desktop nav - hidden on mobile via CSS */}
         <nav aria-label="Primary" className="primary-nav">
           <ul>
             {NAV_ITEMS.map(({ to, labelKey }) => (

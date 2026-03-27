@@ -6,7 +6,7 @@ namespace DomusMind.Infrastructure.Initialization;
 /// </summary>
 public sealed class SystemInitializationRecord
 {
-    /// <summary>Always 1 — enforced by ValueGeneratedNever at the EF layer.</summary>
+    /// <summary>Always 1 - enforced by ValueGeneratedNever at the EF layer.</summary>
     public int Id { get; init; } = 1;
 
     public DateTimeOffset InitializedAtUtc { get; init; }

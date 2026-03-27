@@ -1,0 +1,67 @@
+---
+import '@/styles/pages.css';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import PageCtaBlock from '@/components/PageCtaBlock.astro';
+import FallbackNotice from '@/components/FallbackNotice.astro';
+import { locales, defaultLocale, normalizeLocale } from '@/lib/i18n';
+import { getPageContent } from '@/lib/content';
+import type { HowItWorksPageFrontmatter } from '@/lib/content-types';
+
+export function getStaticPaths() {
+  return locales.filter((l) => l !== defaultLocale).map((lang) => ({ params: { lang } }));
+}
+
+const locale = normalizeLocale(Astro.params.lang);
+const { content, sourceLocale } = getPageContent<HowItWorksPageFrontmatter>(locale, 'how-it-works-page');
+const isFallback = sourceLocale !== locale;
+const { frontmatter } = content;
+---
+<BaseLayout
+  locale={locale}
+  title={frontmatter.title}
+  description={frontmatter.description}
+  currentPath="/how-it-works"
+  mainClass="page-main"
+>
+  <PageHero headline={frontmatter.hero.headline} supportLine={frontmatter.hero.supportLine} />
+
+  <div class="page-body">
+    {isFallback && <FallbackNotice locale={locale} />}
+
+    <section class="page-section">
+      <div class="page-steps-grid">
+        {frontmatter.steps.map((step) => (
+          <article class="page-step-card">
+            <p class="page-step-number"></p>
+            <h3>{step.title}</h3>
+            <p>{step.body}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="page-section">
+      <h2 class="page-section-title">{frontmatter.visible.title}</h2>
+      <ul class="page-bullet-list">
+        {frontmatter.visible.items.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <section class="page-section">
+      <div class="page-screenshots">
+        {frontmatter.screenshots.map((shot) => (
+          <div class="page-screenshot-slot">
+            {shot.imageSrc
+              ? <img class="page-screenshot-slot__image" src={shot.imageSrc} alt={shot.alt} loading="lazy" data-lightbox />
+              : <div class="page-screenshot-slot__media" role="img" aria-label={shot.alt}><span>{shot.placeholder}</span></div>
+            }
+            <p class="page-screenshot-slot__caption">{shot.caption}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <PageCtaBlock section={frontmatter.cta} locale={locale} />
+  </div>
+</BaseLayout>

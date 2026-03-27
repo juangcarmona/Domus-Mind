@@ -1,4 +1,4 @@
-# Spec — Reschedule Task
+# Spec - Reschedule Task
 
 ## Purpose
 

@@ -1,4 +1,4 @@
-# Spec — Cancel Event
+# Spec - Cancel Event
 
 ## Purpose
 

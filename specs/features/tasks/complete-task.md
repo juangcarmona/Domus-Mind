@@ -1,4 +1,4 @@
-# Spec — Complete Task
+# Spec - Complete Task
 
 ## Purpose
 
