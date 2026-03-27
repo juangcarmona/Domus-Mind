@@ -49,7 +49,7 @@ cta:
   body: "DomusMind gives your household one shared place for plans, routines, tasks, and areas."
   primaryCta:
     label: "Start your household"
-    href: "https://github.com/juangcarmona/domusmind"
+    href: "/early-access"
   secondaryCta:
     label: "See how it works"
     href: "/how-it-works"

@@ -1,6 +1,6 @@
 ---
 title: "DomusMind"
-description: "面向家庭的共享系统 - 让一个人不再独自承担所有。"
+description: "面向家庭的共享系统 — 让一个人不再独自承担所有。"
 hero:
   headline: "如果你不再思考家里的事，一切就会出问题。"
   supportLine: "总有一个人在想着所有的事。家不再依赖一个人的记忆。"
@@ -10,7 +10,7 @@ hero:
     - "家庭不再依赖一个大脑。"
   primaryCta:
     label: "试用"
-    href: "/community"
+    href: "/early-access"
   secondaryCta:
     label: "看看你家的样子"
     href: "#how-it-works"
@@ -75,16 +75,16 @@ currentState:
   groups:
     - title: "Available now"
       items:
-        - "家庭 - 家庭身份和成员"
-        - "责任 - 谁负责哪个区域"
-        - "日历 - 计划、约定和共享日程"
-        - "任务 - 需要做什么、由谁来做"
-        - "共享列表 - 购物清单、清单和定期家庭物品"
+        - "家庭 — 家庭身份和成员"
+        - "责任 — 谁负责哪个区域"
+        - "日历 — 计划、约定和共享日程"
+        - "任务 — 需要做什么、由谁来做"
+        - "共享列表 — 购物清单、清单和定期家庭物品"
     - title: "In progress"
       items:
-        - "本周视图 - 更清晰的周计划协调"
-        - "家庭关系 - 成员之间的关联方式"
-        - "安全移除成员 - 在不破坏家庭状态的情况下移除人员"
+        - "本周视图 — 更清晰的周计划协调"
+        - "家庭关系 — 成员之间的关联方式"
+        - "安全移除成员 — 在不破坏家庭状态的情况下移除人员"
     - title: "Early access / next"
       items:
         - "家庭环境中的早期测试"
@@ -95,8 +95,8 @@ earlyAccess:
   body: "关注项目、体验早期版本，帮助我们与真实家庭共同塑造 DomusMind。"
   primaryCta:
     label: "关注项目"
-    href: "/community"
+    href: "https://github.com/juangcarmona/domusmind"
   secondaryCta:
-    label: "TODO_SECONDARY_CTA_LABEL"
-    href: "/concept"
+    label: "了解使用方式"
+    href: "/how-it-works"
 ---

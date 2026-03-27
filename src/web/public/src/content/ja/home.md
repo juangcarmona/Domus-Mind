@@ -1,6 +1,6 @@
 ---
 title: "DomusMind"
-description: "家族のための共有システム - 一人が全部を抱えるのをやめるために。"
+description: "家族のための共有システム — 一人が全部を抱えるのをやめるために。"
 hero:
   headline: "家のことを考えるのをやめると、物事がうまくいかなくなる。"
   supportLine: "誰かが常にすべてに気を配っている。家は一人の記憶に依存するのをやめる。"
@@ -10,7 +10,7 @@ hero:
     - "家が一つの脳に依存しなくなる。"
   primaryCta:
     label: "試してみる"
-    href: "/community"
+    href: "/early-access"
   secondaryCta:
     label: "家がどう見えるか"
     href: "#how-it-works"
@@ -75,16 +75,16 @@ currentState:
   groups:
     - title: "Available now"
       items:
-        - "家族 - 世帯のアイデンティティとメンバー"
-        - "責任 - 誰がどのエリアを担当するか"
-        - "カレンダー - 予定、約束、共有スケジュール"
-        - "タスク - 何をすべきか、誰がするか"
-        - "共有リスト - 買い物リスト、チェックリスト、定期的な家庭用品"
+        - "家族 — 世帯のアイデンティティとメンバー"
+        - "責任 — 誰がどのエリアを担当するか"
+        - "カレンダー — 予定、約束、共有スケジュール"
+        - "タスク — 何をすべきか、誰がするか"
+        - "共有リスト — 買い物リスト、チェックリスト、定期的な家庭用品"
     - title: "In progress"
       items:
-        - "週間ビュー - 週単位の共有をより分かりやすく"
-        - "家庭内の関係 - 誰と誰がつながっているか"
-        - "安全なメンバー変更 - 家庭の状態を壊さずにメンバーを削除できる"
+        - "週間ビュー — 週単位の共有をより分かりやすく"
+        - "家庭内の関係 — 誰と誰がつながっているか"
+        - "安全なメンバー変更 — 家庭の状態を壊さずにメンバーを削除できる"
     - title: "Early access / next"
       items:
         - "実際の家庭での早期テスト"
@@ -95,8 +95,8 @@ earlyAccess:
   body: "プロジェクトをフォローし、早期ビルドを試し、実際の全家庭でDomusMindがどう機能するかを決めるのを手伝ってください。"
   primaryCta:
     label: "プロジェクトをフォロー"
-    href: "/community"
+    href: "https://github.com/juangcarmona/domusmind"
   secondaryCta:
-    label: "TODO_SECONDARY_CTA_LABEL"
-    href: "/concept"
+    label: "使い方を見る"
+    href: "/how-it-works"
 ---

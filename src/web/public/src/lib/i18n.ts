@@ -17,8 +17,12 @@ export function normalizeLocale(value?: string): Locale {
 /**
  * Build a locale-prefixed path. English uses root paths (e.g. `/`, `/concept`).
  * Other locales get a prefix (e.g. `/es/`, `/es/concept`).
+ * Absolute URLs (http/https) are returned unchanged.
  */
 export function withLocale(locale: Locale, path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('//')) {
+    return path;
+  }
   const normalized = path.startsWith('/') ? path : `/${path}`;
   if (locale === defaultLocale) {
     return normalized === '/' ? '/' : normalized;

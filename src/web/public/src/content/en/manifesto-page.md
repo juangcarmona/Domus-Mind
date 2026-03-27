@@ -52,7 +52,7 @@ cta:
   body: "Start with your people, your plans, and your areas."
   primaryCta:
     label: "Start your household"
-    href: "https://github.com/juangcarmona/domusmind"
+    href: "/early-access"
   secondaryCta:
     label: "See how it works"
     href: "/how-it-works"

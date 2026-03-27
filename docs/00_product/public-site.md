@@ -285,3 +285,16 @@ Every public sentence should pass this test:
 3. Does it make the pain visible?
 4. Does it make the outcome desirable?
 5. Can the product actually deliver it?
+
+## Localized Family Examples
+
+| Country      | Family Name                 | Parents                           | Children      | Pets                     |
+| ------------ | --------------------------- | --------------------------------- | ------------- | ------------------------ |
+| 🇪🇸 Spain   | **Familia García Martínez** | David García + Laura Martínez     | Hugo, Martina | Luna (dog), Coco (cat)   |
+| 🇬🇧 UK      | **The Smith Family**        | James Smith + Sarah Smith         | Noah, Olivia  | Bella (dog)              |
+| 🇫🇷 France  | **Famille Martin**          | Nicolas Martin + Camille Martin   | Gabriel, Emma | Nala (dog), Tigrou (cat) |
+| 🇩🇪 Germany | **Familie Müller**          | Michael Müller + Anna Müller      | Noah, Emilia  | Luna (cat)               |
+| 🇮🇹 Italy   | **Famiglia Rossi**          | Marco Rossi + Giulia Rossi        | Leonardo      | Leo (dog), Mia (cat)     |
+| 🇯🇵 Japan   | **田中家 (Tanaka-ke)**         | Takashi Tanaka + Yuki Tanaka      | Haruto        | Momo (dog)               |
+| 🇨🇳 China   | **李家 (Li Jiā)**             | Wei Li + Li Li                    | Yuchen        | *(no pet typical)*       |
+| 🇺🇸 USA     | **The Johnson Family**      | Michael Johnson + Jessica Johnson | Liam, Olivia  | Max (dog), Luna (dog)    |

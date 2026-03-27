@@ -1,12 +1,12 @@
 ---
 title: "DomusMind"
-description: "A shared system for the household - so one person stops carrying it alone."
+description: "A shared system for the household — so one person stops carrying it alone."
 hero:
   headline: "Stop carrying your household in your head."
   supportLine: "DomusMind brings plans, routines, tasks, lists, and areas into one shared place, so everyone can see what matters, what needs doing, and who owns what."
   proofBullets:
     - "See what matters today in one shared view."
-    - "Make responsibility visible without repeated reminders."
+    - "Make ownership visible without repeated reminders."
     - "Understand busy days before they become friction."
   primaryCta:
     label: "Start your household"
@@ -18,9 +18,9 @@ hero:
     eyebrow: "Today"
     title: "Today"
     groups:
-      - ["09:00 - School meeting"]
-      - ["18:00 - Football practice - Leo"]
-      - ["Ironing - Gemma", "BBQ supplies"]
+      - ["09:00 — School meeting"]
+      - ["18:00 — Football practice — Noah"]
+      - ["Ironing — Sarah", "BBQ supplies"]
     caption: "Everyone sees what matters today. No one has to remember everything."
 reality:
   title: "How home life works now"
@@ -52,24 +52,26 @@ proof:
     caption: "Everyone sees what matters today. No one has to remember everything."
     placeholder: "today-view"
     alt: "Today view showing plans, routines, and tasks for the household"
+    imageSrc: "/screenshots/today_panel.png"
     preview:
       eyebrow: "Today"
       groups:
-        - ["09:00 - School meeting"]
-        - ["18:00 - Football practice - Leo"]
-        - ["Ironing - Gemma", "BBQ supplies"]
+        - ["09:00 — School meeting"]
+        - ["18:00 — Football practice — Noah"]
+        - ["Ironing — Sarah", "BBQ supplies"]
   secondary:
     title: "Week"
     caption: "See the whole week clearly before it gets messy."
     placeholder: "week-view"
     alt: "Week view showing the household's plans for the coming days"
+    imageSrc: "/screenshots/week_panel.png"
 howItWorks:
   title: "How It Works"
   steps:
     - title: "Start the household."
       body: "Create the shared space."
     - title: "Add people."
-      body: "Add the people the household coordinates."
+      body: "Add the people in your household."
     - title: "Add real life."
       body: "Add the first plans, routines, tasks, or lists and use Today and Week immediately."
 currentState:
@@ -77,18 +79,19 @@ currentState:
   groups:
     - title: "Core household model"
       items:
-        - "Household - people and shared ownership"
-        - "Areas - who owns what"
-        - "Plans - appointments, activities, and shared time"
-        - "Tasks - what needs doing and by whom"
-        - "Lists - groceries, checklists, and recurring household items"
+        - "Household — people and shared ownership"
+        - "Areas — who owns what"
+        - "Plans — appointments, activities, and shared time"
+        - "Tasks — what needs doing and by whom"
+        - "Routines — recurring household work"
+        - "Lists — groceries, checklists, and recurring household items"
     - title: "Operational surface"
       items:
-        - "Today - what matters now"
-        - "Week - the upcoming week in one shared view"
-        - "Month - wider planning at a glance"
-        - "Timeline roller - move through time without losing context"
-        - "Household + people rows - shared load and individual commitments together"
+        - "Today — what matters now"
+        - "Week — the upcoming week in one shared view"
+        - "Month — wider planning at a glance"
+        - "Timeline roller — move through time without losing context"
+        - "Household + people rows — shared load and individual commitments together"
     - title: "Early access"
       items:
         - "Real household testing"
@@ -99,7 +102,7 @@ earlyAccess:
   body: "Follow the project, try early builds, and help shape how DomusMind works in real households."
   primaryCta:
     label: "Follow the project"
-    href: "/early-access"
+    href: "https://github.com/juangcarmona/domusmind"
   secondaryCta:
     label: "See how it works"
     href: "/how-it-works"

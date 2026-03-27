@@ -64,5 +64,41 @@ const canonical = canonicalUrl(locale, currentPath);
       <slot />
     </main>
     <SiteFooter locale={locale} ui={ui} />
+    <div id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+      <img id="lightbox-img" src="" alt="" />
+    </div>
+    <script>
+      (() => {
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
+        if (!lightbox || !lightboxImg) return;
+
+        const open = (src: string, alt: string) => {
+          lightboxImg.src = src;
+          lightboxImg.alt = alt;
+          lightbox.classList.add('is-open');
+          document.body.style.overflow = 'hidden';
+        };
+
+        const close = () => {
+          lightbox.classList.remove('is-open');
+          document.body.style.overflow = '';
+          lightboxImg.src = '';
+        };
+
+        document.querySelectorAll<HTMLImageElement>('[data-lightbox]').forEach((img) => {
+          img.style.cursor = 'zoom-in';
+          img.addEventListener('click', () => open(img.src, img.alt));
+        });
+
+        lightbox.addEventListener('click', (e) => {
+          if (e.target === lightbox) close();
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && lightbox.classList.contains('is-open')) close();
+        });
+      })();
+    </script>
   </body>
 </html>

@@ -6,7 +6,7 @@ import GitHubIcon from './GitHubIcon.astro';
 const { locale: _locale, ui } = Astro.props as { locale: Locale; ui: UiContent };
 ---
 <footer class="site-footer">
-  <p class="site-footer__meta"><strong>{ui.siteName}</strong> <span>{ui.tagline}</span></p>
+  <p><strong>{ui.siteName}</strong> &middot; {ui.tagline}</p>
   <ul>
     <li>
       <a class="footer-github" href="https://github.com/juangcarmona/domusmind" aria-label="GitHub repository" target="_blank" rel="noopener noreferrer">

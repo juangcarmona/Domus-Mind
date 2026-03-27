@@ -1,6 +1,6 @@
 ---
 title: "DomusMind"
-description: "Un système partagé pour le foyer - pour qu'une personne arrête de tout porter seule."
+description: "Un système partagé pour le foyer — pour qu'une personne arrête de tout porter seule."
 hero:
   headline: "Si tu arrêtes de penser à la maison, tout s'arrête."
   supportLine: "Quelqu'un est toujours en train de tout gérer. La maison cesse de dépendre de la mémoire d'une seule personne."
@@ -10,7 +10,7 @@ hero:
     - "La maison cesse de dépendre d'un seul cerveau."
   primaryCta:
     label: "L'essayer"
-    href: "/community"
+    href: "/early-access"
   secondaryCta:
     label: "Voir à quoi ressemble ta maison"
     href: "#how-it-works"
@@ -75,16 +75,16 @@ currentState:
   groups:
     - title: "Available now"
       items:
-        - "Famille - identité du foyer et personnes"
-        - "Responsabilités - qui est responsable de chaque domaine"
-        - "Calendrier - plans, rendez-vous et horaires partagés"
-        - "Tâches - ce qui doit être fait et par qui"
-        - "Listes partagées - listes de courses, listes de contrôle et articles récurrents du foyer"
+        - "Famille — identité du foyer et personnes"
+        - "Responsabilités — qui est responsable de chaque domaine"
+        - "Calendrier — plans, rendez-vous et horaires partagés"
+        - "Tâches — ce qui doit être fait et par qui"
+        - "Listes partagées — listes de courses, listes de contrôle et articles récurrents du foyer"
     - title: "In progress"
       items:
-        - "Vue de la semaine - une coordination hebdomadaire plus lisible"
-        - "Relations dans le foyer - qui est lié à qui"
-        - "Changements de membres sécurisés - retirer des personnes sans perturber l'état du foyer"
+        - "Vue de la semaine — une coordination hebdomadaire plus lisible"
+        - "Relations dans le foyer — qui est lié à qui"
+        - "Changements de membres sécurisés — retirer des personnes sans perturber l'état du foyer"
     - title: "Early access / next"
       items:
         - "Tests en foyer réel"
@@ -95,8 +95,8 @@ earlyAccess:
   body: "Suivez le projet, testez les premières versions et aidez à façonner DomusMind pour de vraies maisons."
   primaryCta:
     label: "Suivre le projet"
-    href: "/community"
+    href: "https://github.com/juangcarmona/domusmind"
   secondaryCta:
-    label: "TODO_SECONDARY_CTA_LABEL"
-    href: "/concept"
+    label: "Comment ça marche"
+    href: "/how-it-works"
 ---

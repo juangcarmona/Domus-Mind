@@ -5,7 +5,7 @@ const { slot } = Astro.props as { slot: ProofSlotContent };
 ---
 <article class="proof-slot">
   {slot.imageSrc ? (
-    <img class="proof-slot__image" src={slot.imageSrc} alt={slot.alt} loading="lazy" />
+    <img class="proof-slot__image" src={slot.imageSrc} alt={slot.alt} loading="lazy" data-lightbox />
   ) : slot.preview ? (
     <div class="proof-panel-preview" aria-label={slot.alt}>
       <p class="proof-panel-preview__eyebrow">{slot.preview.eyebrow}</p>

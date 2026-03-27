@@ -329,28 +329,55 @@ main {
 
 @media (max-width: 768px) {
   .site-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "brand toggle controls"
+      "nav nav nav";
+    align-items: center;
+    gap: 0.75rem;
     height: auto;
     padding: 0.75rem 1rem;
-    flex-wrap: wrap;
-    gap: 0;
   }
 
   .site-header > .brand {
-    flex: 1;
+    grid-area: brand;
+    min-width: 0;
+  }
+
+  .brand {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .nav-menu-toggle {
+    grid-area: toggle;
+    display: inline-flex;
+  }
+
+  .header-controls {
+    grid-area: controls;
     display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    flex-wrap: nowrap;
+    width: auto;
+    margin-left: 0;
   }
 
   .header-nav {
+    grid-area: nav;
     display: none;
     width: 100%;
     flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
     gap: 0;
-    padding: 0.5rem 0 0.25rem;
+    margin-top: 0;
+    padding-top: 0.5rem;
     border-top: 1px solid var(--border);
-    margin-top: 0.5rem;
   }
 
   .header-nav.is-open {
@@ -358,30 +385,46 @@ main {
   }
 
   .header-nav__link {
-    padding: 0.6rem 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.9rem;
+    display: block;
     width: 100%;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
   }
 
   .header-nav__link[aria-current="page"] {
     border-bottom-color: var(--border);
     border-left: 2px solid var(--primary);
-    padding-left: 0.5rem;
+    padding-left: 0.6rem;
   }
 
-  .header-controls {
-    width: auto;
-    justify-content: flex-end;
-    flex-wrap: wrap;
+  .button--compact {
+    display: none;
   }
 }
 
-@media (max-width: 480px) {
-  main { padding: 1.75rem 1rem 3rem; }
+/* ── Lightbox ─────────────────────────────────────────────────────────────── */
 
-  .site-footer__meta {
-    display: grid;
-    gap: 0.15rem;
-  }
+#lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+
+#lightbox.is-open {
+  display: flex;
+}
+
+#lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  display: block;
+  cursor: default;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
 }

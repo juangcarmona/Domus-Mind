@@ -1,6 +1,6 @@
 ---
 title: "DomusMind"
-description: "Un sistema compartido para el hogar - para que una persona deje de cargarlo sola."
+description: "Un sistema compartido para el hogar — para que una persona deje de cargarlo sola."
 hero:
   headline: "Deja de tener que estar pendiente de todo."
   supportLine: "Alguien siempre lleva la casa en la cabeza. La casa deja de depender de la memoria de una persona."
@@ -10,7 +10,7 @@ hero:
     - "La casa deja de depender de un solo cerebro."
   primaryCta:
     label: "Probarlo"
-    href: "/community"
+    href: "/early-access"
   secondaryCta:
     label: "Ver cómo queda tu casa"
     href: "#how-it-works"
@@ -75,16 +75,16 @@ currentState:
   groups:
     - title: "Available now"
       items:
-        - "Familia - identidad del hogar y personas"
-        - "Responsabilidades - quién es responsable de cada área"
-        - "Calendario - planes, citas y horarios compartidos"
-        - "Tareas - qué hay que hacer y de quién es"
-        - "Listas compartidas - listas de la compra, checklists y elementos recurrentes del hogar"
+        - "Familia — identidad del hogar y personas"
+        - "Responsabilidades — quién es responsable de cada área"
+        - "Calendario — planes, citas y horarios compartidos"
+        - "Tareas — qué hay que hacer y de quién es"
+        - "Listas compartidas — listas de la compra, checklists y elementos recurrentes del hogar"
     - title: "In progress"
       items:
-        - "Vista semanal - coordinación semanal más clara"
-        - "Relaciones en el hogar - quién está conectado con quién"
-        - "Cambios de miembros más seguros - eliminar personas sin romper el estado del hogar"
+        - "Vista semanal — coordinación semanal más clara"
+        - "Relaciones en el hogar — quién está conectado con quién"
+        - "Cambios de miembros más seguros — eliminar personas sin romper el estado del hogar"
     - title: "Early access / next"
       items:
         - "Pruebas tempranas del hogar"
@@ -95,8 +95,8 @@ earlyAccess:
   body: "Sigue el proyecto, prueba versiones anticipadas y ayuda a definir cómo funciona DomusMind en hogares reales."
   primaryCta:
     label: "Seguir el proyecto"
-    href: "/community"
+    href: "https://github.com/juangcarmona/domusmind"
   secondaryCta:
-    label: "TODO_SECONDARY_CTA_LABEL"
-    href: "/concept"
+    label: "Cómo funciona"
+    href: "/how-it-works"
 ---

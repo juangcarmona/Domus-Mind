@@ -45,7 +45,7 @@ const { frontmatter } = content;
         {frontmatter.screenshots.map((shot) => (
           <div class="page-screenshot-slot">
             {shot.imageSrc
-              ? <img class="page-screenshot-slot__image" src={shot.imageSrc} alt={shot.alt} loading="lazy" />
+              ? <img class="page-screenshot-slot__image" src={shot.imageSrc} alt={shot.alt} loading="lazy" data-lightbox />
               : <div class="page-screenshot-slot__media" role="img" aria-label={shot.alt}><span>{shot.placeholder}</span></div>
             }
             <p class="page-screenshot-slot__caption">{shot.caption}</p>

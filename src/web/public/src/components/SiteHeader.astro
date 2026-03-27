@@ -1,27 +1,20 @@
 ---
 import type { Locale } from '@/lib/i18n';
 import { withLocale } from '@/lib/i18n';
-import type { LinkContent, UiContent } from '@/lib/content-types';
+import type { UiContent } from '@/lib/content-types';
 import LanguageSwitcher from './LanguageSwitcher.astro';
 import ThemeToggle from './ThemeToggle.astro';
+import GitHubIcon from './GitHubIcon.astro';
 
-const { locale, ui, currentPath = '/', primaryCta } = Astro.props as {
+const { locale, ui, currentPath = '/' } = Astro.props as {
   locale: Locale;
   ui: UiContent;
   currentPath?: string;
-  primaryCta?: LinkContent;
 };
 
-const navLinks = [
-  { label: 'How it works', href: '/how-it-works' },
-  { label: 'Mental load', href: '/mental-load' },
-  { label: 'Manifesto', href: '/manifesto' },
-  { label: 'Early access', href: '/early-access' },
+const links = [
+  { key: 'home', href: '/' },
 ];
-
-function isActive(href: string): boolean {
-  return currentPath === href || currentPath.startsWith(href + '/');
-}
 ---
 <header class="site-header">
   <a class="brand" href={withLocale(locale, '/')}>
@@ -32,39 +25,78 @@ function isActive(href: string): boolean {
     </svg>
     {ui.siteName}
   </a>
-  <button class="nav-menu-toggle" id="nav-menu-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="header-nav">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-      <line x1="3" y1="6" x2="21" y2="6"/>
-      <line x1="3" y1="12" x2="21" y2="12"/>
-      <line x1="3" y1="18" x2="21" y2="18"/>
-    </svg>
+  <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
   </button>
-  <nav class="header-nav" id="header-nav" aria-label="Main navigation">
-    {navLinks.map((link) => (
-      <a
-        class="header-nav__link"
-        href={withLocale(locale, link.href)}
-        aria-current={isActive(link.href) ? 'page' : undefined}
-      >{link.label}</a>
-    ))}
+  <nav aria-label="Primary" class="primary-nav">
+    <ul>
+      {links.map((link) => (
+        <li>
+          <a href={withLocale(locale, link.href)} aria-current={currentPath === link.href ? 'page' : undefined}>
+            {ui.nav[link.key]}
+          </a>
+        </li>
+      ))}
+    </ul>
   </nav>
   <div class="header-controls">
-    {primaryCta && (
-      <a class="button button--compact" href={withLocale(locale, primaryCta.href)}>
-        {primaryCta.label}
-      </a>
-    )}
+    <a
+      class="icon-link"
+      href="https://github.com/juangcarmona/domusmind"
+      aria-label="GitHub repository"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <GitHubIcon size={18} />
+    </a>
     <LanguageSwitcher locale={locale} path={currentPath} label={ui.languageLabel} />
     <ThemeToggle label={ui.themeLabel} />
   </div>
 </header>
-<script>
-  const toggle = document.getElementById('nav-menu-toggle');
-  const nav = document.getElementById('header-nav');
-  if (toggle && nav) {
-    toggle.addEventListener('click', () => {
-      const open = nav.classList.toggle('is-open');
-      toggle.setAttribute('aria-expanded', String(open));
-    });
-  }
+
+<script is:inline>
+  const siteHeader = document.querySelector('.site-header');
+  const navToggle = siteHeader?.querySelector('.nav-toggle');
+  const navMenu = siteHeader?.querySelector('.primary-nav');
+  const mobileMediaQuery = window.matchMedia('(max-width: 768px)');
+
+  const closeNavMenu = () => {
+    navToggle?.setAttribute('aria-expanded', 'false');
+    navMenu?.classList.remove('is-open');
+  };
+
+  const toggleNavMenu = () => {
+    const isExpanded = navToggle?.getAttribute('aria-expanded') === 'true';
+    navToggle?.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+    navMenu?.classList.toggle('is-open', !isExpanded);
+  };
+
+  navToggle?.addEventListener('click', () => {
+    if (!mobileMediaQuery.matches) return;
+    toggleNavMenu();
+  });
+
+  navMenu?.addEventListener('click', (event) => {
+    if (!mobileMediaQuery.matches) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest('a')) {
+      closeNavMenu();
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!mobileMediaQuery.matches) return;
+    const target = event.target;
+    if (target instanceof Node && !siteHeader?.contains(target)) {
+      closeNavMenu();
+    }
+  });
+
+  mobileMediaQuery.addEventListener('change', () => {
+    if (!mobileMediaQuery.matches) {
+      closeNavMenu();
+    }
+  });
 </script>
