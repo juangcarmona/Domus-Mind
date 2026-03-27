@@ -286,7 +286,6 @@ Routine events:
 * `RoutinePaused`
 * `RoutineResumed`
 * `RoutineDeleted`
-* `RoutineTaskGenerated`
 
 These events must be emitted only after successful state change.
 
@@ -313,7 +312,9 @@ From Calendar:
 
 Possible reactions:
 
-* generate preparation tasks
+* update read models
+* support coordination views
+* enable future task suggestions without creating tasks automatically
 
 From Responsibility:
 
@@ -430,7 +431,7 @@ football practice
 doctor appointment
 ```
 
-Tasks owns **operational work generated from those commitments**.
+Tasks owns **operational work associated with those commitments when that work is explicitly created**.
 
 Example:
 
@@ -541,9 +542,6 @@ It owns:
 
 Routines define **recurring operational behavior**.
 
-They may produce:
-
-* executable task instances
-* read-model coordination cues
+They appear in read models through projection and remain distinct from Task aggregates.
 
 Fixed-time attendance commitments belong to **Calendar**.
