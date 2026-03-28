@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { weekApi } from "../../today/api/weekApi";
 import type { WeeklyGridResponse, DayTypeSummary } from "../../today/types";
+import type { CalendarEntry } from "../../today/utils/calendarEntry";
+import { normalizeCellItems } from "../../today/utils/calendarEntry";
+import { sortEntries } from "../../today/utils/todayPanelHelpers";
 import { DAY_ORDER, toIsoDate } from "../../today/utils/dateUtils";
 
 /**
@@ -95,5 +98,36 @@ export function useAgendaMonthCache(
     return summary;
   }, [cache, memberId]);
 
-  return { daySummary };
+  /**
+   * The highest-priority non-completed entry for each day, keyed by YYYY-MM-DD.
+   * Uses normalizeCellItems + sortEntries so ordering matches Day/Week views.
+   */
+  const dayTopEntry = useMemo((): Record<string, CalendarEntry> => {
+    const result: Record<string, CalendarEntry> = {};
+    if (Object.keys(cache).length === 0) return result;
+
+    for (const weekGrid of Object.values(cache)) {
+      let cells;
+      if (memberId) {
+        const row = weekGrid.members?.find((m) => m.memberId === memberId);
+        cells = row?.cells ?? [];
+      } else {
+        cells = [
+          ...(weekGrid.sharedCells ?? []),
+          ...((weekGrid.members ?? []).flatMap((m) => m.cells)),
+        ];
+      }
+
+      for (const cell of cells) {
+        const dayKey = cell.date.slice(0, 10);
+        if (result[dayKey]) continue; // already have a top entry for this day
+        const sorted = sortEntries(normalizeCellItems(cell));
+        const top = sorted.find((e) => e.displayType !== "completed");
+        if (top) result[dayKey] = top;
+      }
+    }
+    return result;
+  }, [cache, memberId]);
+
+  return { daySummary, dayTopEntry };
 }

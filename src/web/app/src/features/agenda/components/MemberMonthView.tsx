@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MonthView } from "../../today/components/MonthView";
+import { AgendaMonthGrid } from "./AgendaMonthGrid";
 import { useAgendaMonthCache } from "../hooks/useAgendaMonthCache";
 import { toIsoDate, addMonths } from "../../today/utils/dateUtils";
 import { useAppSelector } from "../../../store/hooks";
@@ -37,7 +37,7 @@ export function MemberMonthView({
     setMonthAnchor(selectedDate);
   }, [selectedDate]);
 
-  const { daySummary } = useAgendaMonthCache(
+  const { daySummary, dayTopEntry } = useAgendaMonthCache(
     familyId,
     memberId,
     monthAnchor,
@@ -47,12 +47,13 @@ export function MemberMonthView({
 
   return (
     <div className="member-month-view">
-      <MonthView
+      <AgendaMonthGrid
         selectedDate={selectedDate}
         today={todayIso}
         firstDayOfWeek={firstDayOfWeek}
         displayAnchor={monthAnchor}
         daySummary={daySummary}
+        dayTopEntry={dayTopEntry}
         onSelectDay={onSelectDay}
         onPrevMonth={() => setMonthAnchor(addMonths(monthAnchor, -1))}
         onNextMonth={() => setMonthAnchor(addMonths(monthAnchor, 1))}
