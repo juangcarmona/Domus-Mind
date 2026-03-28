@@ -6,11 +6,14 @@ import { weekApi } from "../../today/api/weekApi";
 import type { WeeklyGridResponse } from "../../today/types";
 import type { ApiError } from "../../../api/domusmindApi";
 import { EditEntityModal, type EditableEntityType } from "../../editors/components/EditEntityModal";
-import { PlanCrudForm } from "../../editors/components/PlanCrudForm";
+import { PlanningAddModal } from "../../planning/components/modals/PlanningAddModal";
 import { AgendaHeader, type AgendaView } from "../components/AgendaHeader";
+import { AgendaMiniCalendar } from "../components/AgendaMiniCalendar";
+import { SelectedDateCard } from "../components/SelectedDateCard";
 import { MemberDayView } from "../components/MemberDayView";
 import { MemberWeekView } from "../components/MemberWeekView";
 import { MemberMonthView } from "../components/MemberMonthView";
+import { buildMemberEntries } from "../../today/utils/todayPanelHelpers";
 import {
   toIsoDate,
   addDays,
@@ -45,8 +48,9 @@ export function MemberAgendaPage() {
   // Entity edit modal state.
   const [editTarget, setEditTarget] = useState<{ type: EditableEntityType; id: string } | null>(null);
 
-  // Create-entry modal state: prefilled with selected member/date/time.
-  const [createTarget, setCreateTarget] = useState<{ date: string; time?: string } | null>(null);
+  // Create-entry modal state: open PlanningAddModal with optional time context.
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addModalTime, setAddModalTime] = useState<string | undefined>();
 
   const weekStartForSelected = toIsoDate(
     startOfWeek(new Date(selectedDate + "T00:00:00"), firstDayOfWeek),
@@ -122,13 +126,29 @@ export function MemberAgendaPage() {
 
   /** Open the create-entry modal prefilled for this member, selected date, optional time. */
   function handleAddEntry(time?: string) {
-    setCreateTarget({ date: selectedDate, time });
+    setAddModalTime(time);
+    setShowAddModal(true);
   }
 
   /** Called from Day timeline slot click: open create for that specific time. */
   function handleSlotClick(time: string) {
-    setCreateTarget({ date: selectedDate, time });
+    setAddModalTime(time);
+    setShowAddModal(true);
   }
+
+  // Untimed entries for the selected date — feeds the SelectedDateCard in the sidebar.
+  const sidebarEntries = memberGrid
+    ? buildMemberEntries(memberGrid, selectedDate).filter((e) => e.time === null)
+    : [];
+
+  const sidebarDateLabel =
+    selectedDate === todayIso
+      ? t("dateCard.today")
+      : new Date(selectedDate + "T00:00:00").toLocaleDateString(undefined, {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        });
 
   // ---- Render ----
 
@@ -171,6 +191,24 @@ export function MemberAgendaPage() {
       </div>
 
       <div className="agenda-body">
+        {/* Sidebar: mini calendar + selected-date card — always visible across all views */}
+        <aside className="agenda-sidebar">
+          <AgendaMiniCalendar
+            selectedDate={selectedDate}
+            today={todayIso}
+            view={view}
+            firstDayOfWeek={firstDayOfWeek}
+            onSelectDate={setSelectedDate}
+          />
+          <SelectedDateCard
+            entries={sidebarEntries}
+            dateLabel={sidebarDateLabel}
+            onItemClick={handleItemClick}
+          />
+        </aside>
+
+        {/* Main content: the active view */}
+        <div className="agenda-main">
         {gridLoading && (
           <div className="loading-wrap">{t("loading")}</div>
         )}
@@ -206,7 +244,8 @@ export function MemberAgendaPage() {
             )}
           </>
         )}
-      </div>
+        </div>{/* end agenda-main */}
+      </div>{/* end agenda-body */}
 
       {editTarget && (
         <EditEntityModal
@@ -220,31 +259,21 @@ export function MemberAgendaPage() {
         />
       )}
 
-      {createTarget && (
-        <div className="modal-backdrop" onClick={() => setCreateTarget(null)}>
-          <section
-            className="modal planning-modal"
-            onClick={(e) => e.stopPropagation()}
-            role="region"
-            aria-live="polite"
-          >
-            <PlanCrudForm
-              mode="create"
-              familyId={familyId}
-              initialStartDate={createTarget.date}
-              initialStartClock={createTarget.time ?? null}
-              initialEndDate={createTarget.date}
-              initialEndClock={null}
-              initialParticipantMemberIds={memberId ? [memberId] : []}
-              members={members}
-              onCancel={() => setCreateTarget(null)}
-              onSuccess={async () => {
-                setCreateTarget(null);
-                await fetchGrid(weekStartForSelected);
-              }}
-            />
-          </section>
-        </div>
+      {showAddModal && (
+        <PlanningAddModal
+          familyId={familyId}
+          members={members}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={async () => {
+            setShowAddModal(false);
+            await fetchGrid(weekStartForSelected);
+          }}
+          defaults={{
+            participantMemberIds: memberId ? [memberId] : [],
+            initialStartDate: selectedDate,
+            initialStartClock: addModalTime,
+          }}
+        />
       )}
     </div>
   );

@@ -13,6 +13,10 @@ export interface PlanningAddModalDefaults {
   assigneeId?: string;
   /** Members to pre-select as plan participants. */
   participantMemberIds?: string[];
+  /** Date to pre-fill in create forms (YYYY-MM-DD). */
+  initialStartDate?: string;
+  /** Clock time to pre-fill in the plan form (HH:MM). */
+  initialStartClock?: string;
 }
 
 interface Props {
@@ -78,6 +82,7 @@ export function PlanningAddModal({ familyId, members, onClose, onSuccess, initia
             members={members}
             initialAreaId={defaults?.areaId}
             initialAssigneeId={defaults?.assigneeId}
+            initialDueDate={defaults?.initialStartDate ?? null}
             onCancel={onClose}
             onSuccess={onSuccess}
           />
@@ -90,6 +95,9 @@ export function PlanningAddModal({ familyId, members, onClose, onSuccess, initia
             members={members}
             initialAreaId={defaults?.areaId}
             initialParticipantMemberIds={defaults?.participantMemberIds}
+            initialStartDate={defaults?.initialStartDate ?? null}
+            initialStartClock={defaults?.initialStartClock ?? null}
+            initialEndDate={defaults?.initialStartDate ?? null}
             onCancel={onClose}
             onSuccess={onSuccess}
           />

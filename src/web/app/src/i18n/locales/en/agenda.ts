@@ -36,4 +36,7 @@ export default {
   error: "Failed to load agenda.",
   memberNotFound: "Member not found.",
   addEntry: "Add entry",
+  dateCard: {
+    today: "Today",
+  },
 } as const;

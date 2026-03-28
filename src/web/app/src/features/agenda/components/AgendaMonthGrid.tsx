@@ -1,43 +1,9 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { DAY_ORDER, toIsoDate } from "../../today/utils/dateUtils";
+import { DAY_ORDER } from "../../today/utils/dateUtils";
+import { buildCalendarGrid } from "../utils/agendaDateGrid";
 import type { CalendarEntry } from "../../today/utils/calendarEntry";
 import type { DayTypeSummary } from "../../today/types";
-
-// ----------------------------------------------------------------
-// Calendar grid builder — uses local-date-safe toIsoDate
-// (MonthView.tsx uses toISOString().slice(0,10) which drifts by ±1
-// day in UTC+ timezones; this version avoids that.)
-// ----------------------------------------------------------------
-
-function buildCalendarGrid(
-  year: number,
-  month: number,
-  firstDayOfWeek: string,
-): string[][] {
-  const firstDayIdx = Math.max(0, DAY_ORDER.indexOf(firstDayOfWeek.toLowerCase()));
-  const firstOfMonth = new Date(year, month, 1);
-  const lastOfMonth = new Date(year, month + 1, 0);
-
-  let startPad = firstOfMonth.getDay() - firstDayIdx;
-  if (startPad < 0) startPad += 7;
-
-  const dates: string[] = [];
-  for (let i = -startPad; i <= lastOfMonth.getDate() - 1; i++) {
-    dates.push(toIsoDate(new Date(year, month, 1 + i)));
-  }
-
-  const remaining = dates.length % 7 === 0 ? 0 : 7 - (dates.length % 7);
-  for (let i = 1; i <= remaining; i++) {
-    dates.push(toIsoDate(new Date(year, month + 1, i)));
-  }
-
-  const weeks: string[][] = [];
-  for (let i = 0; i < dates.length; i += 7) {
-    weeks.push(dates.slice(i, i + 7));
-  }
-  return weeks;
-}
 
 // ----------------------------------------------------------------
 // Compact entry preview

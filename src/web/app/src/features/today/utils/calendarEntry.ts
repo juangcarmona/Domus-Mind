@@ -35,6 +35,12 @@ export interface CalendarEntry {
   title: string;
   /** HH:mm or null. Events may carry a time; tasks and routines may not. */
   time: string | null;
+  /**
+   * HH:mm end time for events with a known duration.
+   * Used by the agenda Day timeline to render duration blocks.
+   * Null for tasks, routines, and untimed events.
+   */
+  endTime?: string | null;
   /** Secondary label, e.g. event participant names. Null when not applicable. */
   subtitle: string | null;
   /** Raw status string from the API: "Pending", "Completed", "Cancelled", etc. */
@@ -106,6 +112,7 @@ export function normalizeEventItem(
     displayType: isCancelled ? "completed" : "event",
     title: e.title,
     time: e.time ?? null,
+    endTime: e.endTime ?? null,
     subtitle: participants ?? null,
     status: e.status,
     color: e.color ?? null,
