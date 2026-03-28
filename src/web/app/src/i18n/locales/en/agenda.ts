@@ -21,6 +21,8 @@ export default {
     noBacklogItems: "No unscheduled items",
     completedSection: "Completed",
     allDay: "All day",
+    overdue: "Overdue",
+    unscheduled: "Unscheduled",
   },
   week: {
     title: "Week",

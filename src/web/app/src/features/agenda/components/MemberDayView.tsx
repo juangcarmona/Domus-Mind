@@ -1,9 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { WeeklyGridMember } from "../../today/types";
-import {
-  buildMemberEntries,
-  sortEntries,
-} from "../../today/utils/todayPanelHelpers";
+import { buildMemberEntries } from "../../today/utils/todayPanelHelpers";
 import type { CalendarEntry } from "../../today/utils/calendarEntry";
 import { CalendarEntryItem } from "../../today/components/shared/CalendarEntryItem";
 import { HourTimeline } from "./HourTimeline";
@@ -12,26 +9,62 @@ interface MemberDayViewProps {
   member: WeeklyGridMember;
   selectedDate: string; // ISO YYYY-MM-DD
   onItemClick: (type: "event" | "task" | "routine", id: string) => void;
+  /**
+   * Called when an empty hour slot is clicked.
+   * Plumbed for future "create at time" flow. Hour is 0–23.
+   * If not provided the slot is still visually clickable (cursor change) but no-ops.
+   */
+  onHourClick?: (hour: number) => void;
 }
+
+// ----------------------------------------------------------------
+// Backlog grouping — structured so per-type groups can be added later
+// without rewriting the split logic.
+// ----------------------------------------------------------------
+
+interface BacklogGroups {
+  overdue: CalendarEntry[];
+  unscheduled: CalendarEntry[];
+  completed: CalendarEntry[];
+}
+
+function groupBacklog(entries: CalendarEntry[]): BacklogGroups {
+  const overdue: CalendarEntry[] = [];
+  const unscheduled: CalendarEntry[] = [];
+  const completed: CalendarEntry[] = [];
+
+  for (const e of entries) {
+    if (e.displayType === "completed") {
+      completed.push(e);
+    } else if (e.displayType === "overdue" || e.isOverdue) {
+      overdue.push(e);
+    } else {
+      unscheduled.push(e);
+    }
+  }
+
+  return { overdue, unscheduled, completed };
+}
+
+// ----------------------------------------------------------------
 
 /**
  * Day-focused member agenda view.
  *
- * Structure:
- *   1. Backlog — entries without an assigned time (overdue tasks, untimed tasks,
- *      routines without time). These must always be shown; they cannot fall through.
- *   2. Timeline — hourly vertical timeline for timed entries (events, timed routines).
+ * Layout:
+ *   Desktop (≥680px): backlog panel on the left, timeline on the right.
+ *   Mobile: backlog above, timeline below.
  *
- * Completed items remain visible with lower emphasis in both sections.
- * The split is based solely on whether entry.time is set.
+ * Backlog is always rendered; timeline always shows the hourly grid even
+ * when empty. This ensures the surface reads as a credible calendar.
  */
-export function MemberDayView({ member, selectedDate, onItemClick }: MemberDayViewProps) {
+export function MemberDayView({ member, selectedDate, onItemClick, onHourClick }: MemberDayViewProps) {
   const { t } = useTranslation("agenda");
 
   // Full sorted entry list for the selected date (includes within-week overdue).
   const allEntries: CalendarEntry[] = buildMemberEntries(member, selectedDate);
 
-  // Split into timed vs backlog.
+  // Split into timed (have time) vs backlog (no time).
   const timedEntries: CalendarEntry[] = [];
   const backlogEntries: CalendarEntry[] = [];
 
@@ -43,52 +76,89 @@ export function MemberDayView({ member, selectedDate, onItemClick }: MemberDayVi
     }
   }
 
-  // Active vs completed in backlog for visual separation.
-  const activeBacklog = backlogEntries.filter((e) => e.displayType !== "completed");
-  const completedBacklog = backlogEntries.filter((e) => e.displayType === "completed");
+  const { overdue, unscheduled, completed } = groupBacklog(backlogEntries);
+  const hasBacklogContent = overdue.length > 0 || unscheduled.length > 0 || completed.length > 0;
 
   return (
     <div className="member-day-view">
-      {/* ---- Backlog: untimed items ---- */}
-      <section className="mday-backlog" aria-label={t("day.backlog")}>
-        <div className="mday-section-label">{t("day.backlog")}</div>
+      {/* Two-panel layout: backlog + timeline */}
+      <div className="mday-layout">
 
-        {activeBacklog.length === 0 && completedBacklog.length === 0 ? (
-          <span className="mday-empty">{t("day.noBacklogItems")}</span>
-        ) : (
-          <div className="mday-entry-list">
-            {sortEntries(activeBacklog).map((entry) => (
-              <CalendarEntryItem
-                key={entry.id}
-                entry={entry}
-                onClick={() => onItemClick(entry.sourceType, entry.id)}
-              />
-            ))}
-            {completedBacklog.length > 0 && (
-              <div className="mday-completed-group" aria-label={t("day.completedSection")}>
-                {sortEntries(completedBacklog).map((entry) => (
-                  <CalendarEntryItem
-                    key={entry.id}
-                    entry={entry}
-                    onClick={() => onItemClick(entry.sourceType, entry.id)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </section>
+        {/* ---- Left / top: Backlog ---- */}
+        <section className="mday-backlog-panel" aria-label={t("day.backlog")}>
+          <div className="mday-panel-heading">{t("day.backlog")}</div>
 
-      {/* ---- Timeline: timed items ---- */}
-      <section className="mday-timeline" aria-label={t("day.timeline")}>
-        <div className="mday-section-label">{t("day.timeline")}</div>
+          {!hasBacklogContent ? (
+            <p className="mday-empty">{t("day.noBacklogItems")}</p>
+          ) : (
+            <>
+              {overdue.length > 0 && (
+                <div className="mday-backlog-group">
+                  <div className="mday-group-label mday-group-label--overdue">
+                    {t("day.overdue")}
+                  </div>
+                  <div className="mday-entry-list">
+                    {overdue.map((entry) => (
+                      <CalendarEntryItem
+                        key={entry.id}
+                        entry={entry}
+                        onClick={() => onItemClick(entry.sourceType, entry.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-        {timedEntries.length === 0 ? (
-          <span className="mday-empty">{t("day.nothingScheduled")}</span>
-        ) : (
-          <HourTimeline timedEntries={timedEntries} onItemClick={onItemClick} />
-        )}
-      </section>
+              {unscheduled.length > 0 && (
+                <div className="mday-backlog-group">
+                  {overdue.length > 0 && (
+                    <div className="mday-group-label">{t("day.unscheduled")}</div>
+                  )}
+                  <div className="mday-entry-list">
+                    {unscheduled.map((entry) => (
+                      <CalendarEntryItem
+                        key={entry.id}
+                        entry={entry}
+                        onClick={() => onItemClick(entry.sourceType, entry.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {completed.length > 0 && (
+                <div
+                  className="mday-backlog-group mday-backlog-group--completed"
+                  aria-label={t("day.completedSection")}
+                >
+                  <div className="mday-group-label">{t("day.completedSection")}</div>
+                  <div className="mday-entry-list">
+                    {completed.map((entry) => (
+                      <CalendarEntryItem
+                        key={entry.id}
+                        entry={entry}
+                        onClick={() => onItemClick(entry.sourceType, entry.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
+        {/* ---- Right / bottom: Hourly timeline ---- */}
+        {/* Always rendered so the surface reads as a calendar, even on empty days. */}
+        <section className="mday-timeline-panel" aria-label={t("day.timeline")}>
+          <div className="mday-panel-heading">{t("day.timeline")}</div>
+          <HourTimeline
+            timedEntries={timedEntries}
+            onItemClick={onItemClick}
+            onHourClick={onHourClick}
+          />
+        </section>
+
+      </div>
     </div>
   );
 }

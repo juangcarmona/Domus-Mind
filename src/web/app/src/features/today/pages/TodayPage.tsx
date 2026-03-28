@@ -195,7 +195,7 @@ export function TodayPage() {
         {midTermView === "week" && (
           <div className="coord-month-nav coord-midterm-week-nav">
             <button
-              className="btn btn-ghost btn-sm coord-nav-btn"
+              className="btn btn-ghost btn-sm"
               onClick={handlePrevWeek}
               type="button"
               aria-label={t("nav.prevWeek")}
@@ -204,7 +204,7 @@ export function TodayPage() {
             </button>
             <span className="coord-month-label">{weekNavLabel}</span>
             <button
-              className="btn btn-ghost btn-sm coord-nav-btn"
+              className="btn btn-ghost btn-sm"
               onClick={handleNextWeek}
               type="button"
               aria-label={t("nav.nextWeek")}

@@ -80,7 +80,7 @@ export function TodayBoard({
       {/* ---- Header with day navigation ---- */}
       <div className="today-summary-header coord-day-header">
         <button
-          className="btn btn-ghost btn-sm coord-nav-btn"
+          className="btn btn-ghost btn-sm"
           onClick={onPrevDay}
           type="button"
           aria-label={t("nav.prevDay")}
@@ -96,7 +96,7 @@ export function TodayBoard({
         <div className="coord-day-header-right">
           {!isToday && (
             <button
-              className="btn btn-ghost btn-sm coord-today-btn"
+              className="btn btn-ghost btn-sm"
               onClick={onToday}
               type="button"
             >
@@ -104,7 +104,7 @@ export function TodayBoard({
             </button>
           )}
           <button
-            className="btn btn-ghost btn-sm coord-nav-btn"
+            className="btn btn-ghost btn-sm"
             onClick={onNextDay}
             type="button"
             aria-label={t("nav.nextDay")}

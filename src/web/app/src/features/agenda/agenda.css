@@ -7,6 +7,7 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  min-height: 0;
 }
 
 /* ================================================================
@@ -16,75 +17,79 @@
 .agenda-header {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 0.5rem 0.75rem 0;
+  padding: 0.4rem 0.75rem 0;
+  flex-shrink: 0;
 }
 
-/* Top row: back button + member name */
-.agenda-header-top {
+/* Main row: identity block + date-nav block */
+.agenda-header-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Identity: back button + member name */
+.agenda-identity {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.35rem;
+  gap: 0.4rem;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .agenda-back-btn {
   font-size: 0.8rem;
   color: var(--muted);
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .agenda-member-name {
-  font-size: 1rem;
+  font-size: 0.975rem;
   font-weight: 700;
   color: var(--text);
-  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
-/* Nav row: prev arrow + date label + today btn + next arrow */
-.agenda-header-nav {
+/* Date nav: prev · date · today · next */
+.agenda-date-nav {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  margin-bottom: 0.35rem;
-}
-
-.agenda-nav-btn {
-  font-size: 1.3rem;
-  line-height: 1;
-  padding: 0.1rem 0.55rem;
-  min-width: 2rem;
-  font-weight: 400;
+  gap: 0.2rem;
   flex-shrink: 0;
 }
 
-.agenda-date-label {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  flex: 1;
-  justify-content: center;
+.agenda-nav-btn {
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.1rem 0.5rem;
+  min-width: 2rem;
+  font-weight: 400;
 }
 
 .agenda-date-text {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text);
-  text-align: center;
+  white-space: nowrap;
+  padding: 0 0.2rem;
 }
 
 .agenda-today-btn {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   opacity: 0.75;
+  white-space: nowrap;
 }
 
 /* View tab bar */
 .agenda-view-tabs {
   display: flex;
   gap: 0;
-  border-bottom: none;
 }
 
 .agenda-view-tab {
@@ -92,8 +97,8 @@
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  padding: 0.4rem 0.5rem;
-  font-size: 0.825rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.82rem;
   color: var(--muted);
   cursor: pointer;
   transition: color 0.12s, border-color 0.12s;
@@ -116,137 +121,227 @@
 
 .agenda-body {
   flex: 1;
-  padding: 0.75rem;
+  padding: 0.5rem 0.75rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  min-height: 0;
 }
 
 /* ================================================================
-   MemberDayView
+   MemberDayView — two-panel layout
    ================================================================ */
 
 .member-day-view {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0;
+  min-height: 0;
 }
 
-/* Section label (Backlog / Timeline) */
-.mday-section-label {
-  font-size: 0.7rem;
+/* Two-panel wrapper: side-by-side on wide, stacked on narrow */
+.mday-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto;
+  gap: 0.5rem;
+}
+
+@media (min-width: 680px) {
+  .mday-layout {
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+}
+
+/* Panel shared base */
+.mday-backlog-panel,
+.mday-timeline-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* Panel heading */
+.mday-panel-heading {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  padding: 0.4rem 0.65rem 0.3rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--primary) 3%, var(--surface));
+}
+
+/* ---- Backlog panel ---- */
+.mday-backlog-panel {
+  padding-bottom: 0.3rem;
+}
+
+.mday-backlog-group {
+  padding: 0.35rem 0.65rem 0.2rem;
+}
+
+/* Group divider between multiple groups */
+.mday-backlog-group + .mday-backlog-group {
+  border-top: 1px solid var(--border);
+}
+
+/* Group label (Overdue / Unscheduled / Completed) */
+.mday-group-label {
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.2rem;
 }
 
-/* Backlog section */
-.mday-backlog {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 0.5rem 0.65rem;
-}
-
-/* Timeline section wrapper */
-.mday-timeline {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 0.5rem 0.65rem;
-}
-
-/* Entry list in backlog */
-.mday-entry-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+.mday-group-label--overdue {
+  color: var(--error, #d73a49);
 }
 
 /* Completed group — low emphasis */
-.mday-completed-group {
-  margin-top: 0.4rem;
-  padding-top: 0.35rem;
-  border-top: 1px dashed var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+.mday-backlog-group--completed {
   opacity: 0.6;
 }
 
+/* Empty state shared style */
 .mday-empty {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--muted);
   font-style: italic;
+  display: block;
+  padding: 0.35rem 0.65rem 0.4rem;
 }
 
-/* Full-width entries in backlog and timeline */
-.mday-entry-list .wg-item,
-.mday-completed-group .wg-item {
+/* Entry list — full width, text wraps */
+.mday-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.mday-entry-list .wg-item {
   width: 100%;
 }
 
-.mday-entry-list .wg-item-title,
-.mday-completed-group .wg-item-title {
+.mday-entry-list .wg-item-title {
   white-space: normal;
   overflow: visible;
   text-overflow: unset;
 }
 
 /* ================================================================
-   HourTimeline
+   HourTimeline — proper vertical time grid
    ================================================================ */
+
+/* Timeline panel body has no extra padding; the grid fills it */
+.mday-timeline-panel {
+  /* allow the timeline to scroll independently on very tall days */
+}
 
 .hour-timeline {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  position: relative;
 }
 
+/* Subtle "nothing scheduled" watermark when grid is empty */
+.ht-empty-banner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Each hour row */
 .ht-slot {
   display: grid;
-  grid-template-columns: 3rem 1fr;
-  min-height: 2rem;
+  grid-template-columns: 2.8rem 1fr;
   border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
 }
 
 .ht-slot:first-child {
   border-top: none;
 }
 
-/* Empty slots are shorter */
-.ht-slot:not(.ht-slot--has-items) {
-  min-height: 1.75rem;
+/* Fixed height for empty slots — keeps the grid uniform */
+.ht-slot--empty {
+  min-height: 2.25rem;
 }
 
-.ht-slot-label {
-  font-size: 0.7rem;
+/* Occupied slots grow to fit content */
+.ht-slot--has-items {
+  min-height: 2.75rem;
+}
+
+/* Time label */
+.ht-label {
+  font-size: 0.67rem;
   color: var(--muted);
-  padding: 0.2rem 0.4rem 0 0;
   text-align: right;
-  line-height: 1.2;
+  padding: 0.25rem 0.45rem 0 0;
+  line-height: 1;
   flex-shrink: 0;
+  user-select: none;
+  /* align top so label stays anchored at the hour boundary */
   align-self: start;
-  padding-top: 0.22rem;
+  padding-top: 0.28rem;
 }
 
-.ht-slot-body {
+/* Slot content area */
+.ht-body {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
-  padding: 0.15rem 0 0.15rem 0.3rem;
+  padding: 0.18rem 0.4rem 0.18rem 0.3rem;
+  position: relative;
 }
 
-.ht-slot-body .wg-item {
+/* Clickable empty slot affordance */
+.ht-body--clickable {
+  cursor: pointer;
+}
+
+.ht-body--clickable:hover {
+  background: color-mix(in srgb, var(--primary) 4%, transparent);
+}
+
+.ht-body--clickable:focus-visible {
+  outline: 1px dashed var(--primary);
+  outline-offset: -2px;
+}
+
+/* ---- Timeline item (ht-item extends wg-item) ---- */
+
+.ht-item {
   width: 100%;
+  border-left: 2px solid var(--wg-item-accent, var(--border));
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding-left: 0.35rem;
 }
 
-.ht-slot-body .wg-item-title {
+.ht-item .wg-item-title {
   white-space: normal;
   overflow: visible;
   text-overflow: unset;
+}
+
+/* Time label inside item */
+.ht-item-time {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-weight: 400;
 }
 
 /* ================================================================
@@ -293,3 +388,4 @@
   display: flex;
   justify-content: center;
 }
+
