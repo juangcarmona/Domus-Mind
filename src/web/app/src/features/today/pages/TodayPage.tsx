@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { setSelectedDate } from "../../../store/todaySlice";
@@ -126,11 +127,10 @@ export function TodayPage() {
     setEditTarget({ type, id });
   }
 
-  // TODO: Navigate to the dedicated member agenda page when it is implemented.
-  // Replace this stub with e.g. navigate(`/household/members/${memberId}`)
-  // once the MemberAgendaPage route is wired up.
-  function handleMemberClick(_memberId: string) {
-    // Intentionally a no-op for now - wired through so TodayBoard compiles correctly.
+  const navigate = useNavigate();
+
+  function handleMemberClick(memberId: string) {
+    navigate(`/agenda/members/${memberId}?date=${selectedDate}`);
   }
 
   function handlePrevWeek() {

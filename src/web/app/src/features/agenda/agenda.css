@@ -1,0 +1,295 @@
+/* ================================================================
+   Member Agenda Surface
+   ================================================================ */
+
+/* ---- Page wrapper ---- */
+.agenda-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ================================================================
+   AgendaHeader
+   ================================================================ */
+
+.agenda-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 0.75rem 0;
+}
+
+/* Top row: back button + member name */
+.agenda-header-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.agenda-back-btn {
+  font-size: 0.8rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.agenda-member-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Nav row: prev arrow + date label + today btn + next arrow */
+.agenda-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.agenda-nav-btn {
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0.1rem 0.55rem;
+  min-width: 2rem;
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+.agenda-date-label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.agenda-date-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+}
+
+.agenda-today-btn {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+/* View tab bar */
+.agenda-view-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: none;
+}
+
+.agenda-view-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.825rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+  text-align: center;
+}
+
+.agenda-view-tab:hover {
+  color: var(--text);
+}
+
+.agenda-view-tab--active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+/* ================================================================
+   Agenda body
+   ================================================================ */
+
+.agenda-body {
+  flex: 1;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ================================================================
+   MemberDayView
+   ================================================================ */
+
+.member-day-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Section label (Backlog / Timeline) */
+.mday-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+/* Backlog section */
+.mday-backlog {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.65rem;
+}
+
+/* Timeline section wrapper */
+.mday-timeline {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.65rem;
+}
+
+/* Entry list in backlog */
+.mday-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+/* Completed group — low emphasis */
+.mday-completed-group {
+  margin-top: 0.4rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  opacity: 0.6;
+}
+
+.mday-empty {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Full-width entries in backlog and timeline */
+.mday-entry-list .wg-item,
+.mday-completed-group .wg-item {
+  width: 100%;
+}
+
+.mday-entry-list .wg-item-title,
+.mday-completed-group .wg-item-title {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+/* ================================================================
+   HourTimeline
+   ================================================================ */
+
+.hour-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ht-slot {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  min-height: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.ht-slot:first-child {
+  border-top: none;
+}
+
+/* Empty slots are shorter */
+.ht-slot:not(.ht-slot--has-items) {
+  min-height: 1.75rem;
+}
+
+.ht-slot-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  padding: 0.2rem 0.4rem 0 0;
+  text-align: right;
+  line-height: 1.2;
+  flex-shrink: 0;
+  align-self: start;
+  padding-top: 0.22rem;
+}
+
+.ht-slot-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.15rem 0 0.15rem 0.3rem;
+}
+
+.ht-slot-body .wg-item {
+  width: 100%;
+}
+
+.ht-slot-body .wg-item-title {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+/* ================================================================
+   MemberWeekView
+   ================================================================ */
+
+.member-week-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mweek-day {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.65rem;
+}
+
+.mweek-day--selected {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 4%, var(--surface));
+}
+
+.mweek-day-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.25rem;
+}
+
+.mweek-day--selected .mweek-day-label {
+  color: var(--primary);
+}
+
+/* ================================================================
+   MemberMonthView
+   ================================================================ */
+
+.member-month-view {
+  padding: 1rem 0;
+  display: flex;
+  justify-content: center;
+}

@@ -17,6 +17,7 @@ import enSettings from "./locales/en/settings";
 import enMembers from "./locales/en/members";
 import enToday from "./locales/en/today";
 import enSharedLists from "./locales/en/sharedLists";
+import enAgenda from "./locales/en/agenda";
 
 // German
 import deAuth from "./locales/de/auth";
@@ -118,13 +119,13 @@ export const SUPPORTED_LANG_CODES = ["en", "de", "es", "fr", "it", "ja", "zh"] a
 export type SupportedLangCode = (typeof SUPPORTED_LANG_CODES)[number];
 
 const resources = {
-  en: { auth: enAuth, common: enCommon, lang: enLang, nav: enNav, onboarding: enOnboarding, setup: enSetup, areas: enAreas, plans: enPlans, tasks: enTasks, routines: enRoutines, settings: enSettings, members: enMembers, today: enToday, sharedLists: enSharedLists },
-  de: { auth: deAuth, common: deCommon, lang: deLang, nav: deNav, onboarding: deOnboarding, setup: deSetup, areas: deAreas, plans: dePlans, tasks: deTasks, routines: deRoutines, settings: deSettings, members: deMembers, today: deToday, sharedLists: deSharedLists },
-  es: { auth: esAuth, common: esCommon, lang: esLang, nav: esNav, onboarding: esOnboarding, setup: esSetup, areas: esAreas, plans: esPlans, tasks: esTasks, routines: esRoutines, settings: esSettings, members: esMembers, today: esToday, sharedLists: esSharedLists },
-  fr: { auth: frAuth, common: frCommon, lang: frLang, nav: frNav, onboarding: frOnboarding, setup: frSetup, areas: frAreas, plans: frPlans, tasks: frTasks, routines: frRoutines, settings: frSettings, members: frMembers, today: frToday, sharedLists: frSharedLists },
-  it: { auth: itAuth, common: itCommon, lang: itLang, nav: itNav, onboarding: itOnboarding, setup: itSetup, areas: itAreas, plans: itPlans, tasks: itTasks, routines: itRoutines, settings: itSettings, members: itMembers, today: itToday, sharedLists: itSharedLists },
-  ja: { auth: jaAuth, common: jaCommon, lang: jaLang, nav: jaNav, onboarding: jaOnboarding, setup: jaSetup, areas: jaAreas, plans: jaPlans, tasks: jaTasks, routines: jaRoutines, settings: jaSettings, members: jaMembers, today: jaToday, sharedLists: jaSharedLists },
-  zh: { auth: zhAuth, common: zhCommon, lang: zhLang, nav: zhNav, onboarding: zhOnboarding, setup: zhSetup, areas: zhAreas, plans: zhPlans, tasks: zhTasks, routines: zhRoutines, settings: zhSettings, members: zhMembers, today: zhToday, sharedLists: zhSharedLists },
+  en: { auth: enAuth, common: enCommon, lang: enLang, nav: enNav, onboarding: enOnboarding, setup: enSetup, areas: enAreas, plans: enPlans, tasks: enTasks, routines: enRoutines, settings: enSettings, members: enMembers, today: enToday, sharedLists: enSharedLists, agenda: enAgenda },
+  de: { auth: deAuth, common: deCommon, lang: deLang, nav: deNav, onboarding: deOnboarding, setup: deSetup, areas: deAreas, plans: dePlans, tasks: deTasks, routines: deRoutines, settings: deSettings, members: deMembers, today: deToday, sharedLists: deSharedLists, agenda: enAgenda },
+  es: { auth: esAuth, common: esCommon, lang: esLang, nav: esNav, onboarding: esOnboarding, setup: esSetup, areas: esAreas, plans: esPlans, tasks: esTasks, routines: esRoutines, settings: esSettings, members: esMembers, today: esToday, sharedLists: esSharedLists, agenda: enAgenda },
+  fr: { auth: frAuth, common: frCommon, lang: frLang, nav: frNav, onboarding: frOnboarding, setup: frSetup, areas: frAreas, plans: frPlans, tasks: frTasks, routines: frRoutines, settings: frSettings, members: frMembers, today: frToday, sharedLists: frSharedLists, agenda: enAgenda },
+  it: { auth: itAuth, common: itCommon, lang: itLang, nav: itNav, onboarding: itOnboarding, setup: itSetup, areas: itAreas, plans: itPlans, tasks: itTasks, routines: itRoutines, settings: itSettings, members: itMembers, today: itToday, sharedLists: itSharedLists, agenda: enAgenda },
+  ja: { auth: jaAuth, common: jaCommon, lang: jaLang, nav: jaNav, onboarding: jaOnboarding, setup: jaSetup, areas: jaAreas, plans: jaPlans, tasks: jaTasks, routines: jaRoutines, settings: jaSettings, members: jaMembers, today: jaToday, sharedLists: jaSharedLists, agenda: enAgenda },
+  zh: { auth: zhAuth, common: zhCommon, lang: zhLang, nav: zhNav, onboarding: zhOnboarding, setup: zhSetup, areas: zhAreas, plans: zhPlans, tasks: zhTasks, routines: zhRoutines, settings: zhSettings, members: zhMembers, today: zhToday, sharedLists: zhSharedLists, agenda: enAgenda },
 };
 
 i18n
