@@ -24,13 +24,11 @@ This setting is required.
 ### Household Provisioning
 
 - `AllowHouseholdCreation`
-- `MaxHouseholdsPerDeployment`
-- `RequireBootstrapToken`
 
 Expected behavior:
 
-- `SingleInstance` -> max 1 household
-- `CloudHosted` -> more than 1 household allowed
+- `SingleInstance` — exactly one household; enforced by DB unique constraint
+- `CloudHosted` — operator-controlled; `AllowHouseholdCreation` governs self-service creation
 
 ### Invitations
 
@@ -77,11 +75,9 @@ Expected behavior:
 - configuration may enable or restrict operational flows
 - all values must be resolved at startup
 - invalid combinations must fail fast
-
-Examples:
-
-- `SingleInstance` + `MaxHouseholdsPerDeployment > 1` -> invalid
-- `RequireInvitationForSignup = true` with `InvitationsEnabled = false` -> invalid
+- `SingleInstance` + `InvitationsEnabled = true` is invalid
+- `SingleInstance` + `RequireInvitationForSignup = true` is invalid
+- `RequireInvitationForSignup = true` requires `InvitationsEnabled = true`
 
 ---
 

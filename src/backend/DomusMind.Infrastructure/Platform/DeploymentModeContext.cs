@@ -14,6 +14,7 @@ public sealed class DeploymentModeContext : IDeploymentModeContext
     public DeploymentMode Mode => _settings.ResolvedMode;
     public bool CanCreateHousehold => _settings.AllowHouseholdCreation;
     public bool InvitationsEnabled => _settings.InvitationsEnabled;
+    public bool RequireInvitationForSignup => _settings.RequireInvitationForSignup;
     public bool EmailEnabled => _settings.EmailEnabled;
     public bool SupportsAdminTools => _settings.AdminToolsEnabled;
 }

@@ -43,8 +43,6 @@ services:
       # Deployment mode - SingleInstance or CloudHosted
       Deployment__Mode: ${DEPLOYMENT_MODE:-SingleInstance}
       Deployment__AllowHouseholdCreation: ${ALLOW_HOUSEHOLD_CREATION:-true}
-      Deployment__MaxHouseholdsPerDeployment: ${MAX_HOUSEHOLDS_PER_DEPLOYMENT:-1}
-      Deployment__RequireBootstrapToken: ${REQUIRE_BOOTSTRAP_TOKEN:-false}
       Deployment__InvitationsEnabled: ${INVITATIONS_ENABLED:-false}
       Deployment__RequireInvitationForSignup: ${REQUIRE_INVITATION_FOR_SIGNUP:-false}
       Deployment__EmailEnabled: ${EMAIL_ENABLED:-false}

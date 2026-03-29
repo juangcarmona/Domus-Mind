@@ -53,5 +53,17 @@ public sealed class FamilyConfiguration : IEntityTypeConfiguration<Domain.Family
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.Ignore(f => f.DomainEvents);
+
+        // singleton_key enforces the SingleInstance one-household constraint at the DB level.
+        // The application layer sets this to "singleton" when creating in SingleInstance mode.
+        // The unique filtered index closes the race window between the policy pre-check and the INSERT.
+        builder.Property<string?>("singleton_key")
+            .HasColumnName("singleton_key")
+            .HasMaxLength(10)
+            .IsRequired(false);
+
+        builder.HasIndex("singleton_key")
+            .IsUnique()
+            .HasFilter("singleton_key IS NOT NULL");
     }
 }

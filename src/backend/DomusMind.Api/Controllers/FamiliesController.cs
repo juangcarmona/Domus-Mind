@@ -89,7 +89,7 @@ public sealed class FamiliesController : ControllerBase
         }
         catch (FamilyException ex) when (ex.Code == FamilyErrorCode.HouseholdCreationNotAllowed)
         {
-            return Conflict(new { code = "household.creation_not_allowed", error = ex.Message });
+            return Conflict(new { code = "household.creation_not_allowed", reasonCode = ex.PolicyReasonCode, error = ex.Message });
         }
     }
 

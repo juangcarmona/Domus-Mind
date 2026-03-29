@@ -27,7 +27,7 @@ public sealed class GetCurrentDeploymentModeQueryHandler
         return new DeploymentModeResponse(
             DeploymentMode: _context.Mode.ToString(),
             CanCreateHousehold: policyResult.Allowed,
-            RequiresInvitation: _context.InvitationsEnabled,
+            RequiresInvitation: _context.RequireInvitationForSignup,
             SupportsEmail: _context.EmailEnabled,
             SupportsAdminTools: _context.SupportsAdminTools);
     }

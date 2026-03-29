@@ -26,16 +26,16 @@ None.
 
 Return:
 
-- `deploymentMode`
-- `canCreateHousehold`
-- `requiresInvitation`
-- `supportsEmail`
-- `supportsAdminTools`
+- `deploymentMode` — the active mode (`SingleInstance` or `CloudHosted`)
+- `canCreateHousehold` — whether a new household can be created right now (policy + state)
+- `requiresInvitation` — whether a valid invitation is required to proceed with signup
+- `supportsEmail` — whether email sending is available
+- `supportsAdminTools` — whether admin tooling is available
+
+Future fields (not yet implemented):
+
 - `supportsCloudBackups`
 - `abuseProtectionLevel`
-
-Optional future fields:
-
 - `storageProvider`
 - `supportContactMode`
 
@@ -43,13 +43,11 @@ Optional future fields:
 
 ## Behavior
 
-The system reads configuration and policy state and returns the effective deployment capabilities for the current runtime.
+The system reads configuration and calls the provisioning policy to return the effective deployment capabilities for the current runtime.
 
-It must not:
-
-- inspect domain aggregates
-- depend on household data
-- mutate any state
+- `canCreateHousehold` is derived from the provisioning policy, which may read current installation state (e.g. whether a household already exists in `SingleInstance` mode)
+- `requiresInvitation` reflects `RequireInvitationForSignup` from deployment config — the requirement for an invitation to complete signup, not merely whether the invitation feature is enabled
+- this slice must not modify any aggregate or domain state
 
 ---
 

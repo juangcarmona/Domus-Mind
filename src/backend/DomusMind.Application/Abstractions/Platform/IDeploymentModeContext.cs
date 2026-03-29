@@ -9,6 +9,8 @@ public interface IDeploymentModeContext
     DeploymentMode Mode { get; }
     bool CanCreateHousehold { get; }
     bool InvitationsEnabled { get; }
+    /// <summary>True when a valid invitation is required to complete signup.</summary>
+    bool RequireInvitationForSignup { get; }
     bool EmailEnabled { get; }
     bool SupportsAdminTools { get; }
 }

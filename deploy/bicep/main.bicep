@@ -18,8 +18,8 @@ param dbAdminPassword string
 @secure()
 param jwtSigningKey string
 
-@description('Container image to deploy. Format: registry/owner/image:tag')
-param appImage string = 'ghcr.io/juangcarmona/domusmind:latest'
+@description('Container image to deploy. Format: registry/owner/image:tag — use an immutable semver tag.')
+param appImage string = 'ghcr.io/juangcarmona/domusmind:1.0.0'
 
 @description('Temporary bootstrap switch. Only use true for the very first deployment if PostgreSQL connectivity blocks startup. Set back to false after adding specific firewall rules.')
 param allowBroadAzurePostgresAccess bool = false
@@ -179,20 +179,12 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
           value: 'Production'
         }
         {
-          name: 'DEPLOYMENT_MODE'
-          value: 'CloudHosted'
-        }
-        {
           name: 'Deployment__Mode'
           value: 'CloudHosted'
         }
         {
           name: 'Deployment__AllowHouseholdCreation'
           value: 'false'
-        }
-        {
-          name: 'Deployment__MaxHouseholdsPerDeployment'
-          value: '0'
         }
         {
           name: 'Deployment__InvitationsEnabled'

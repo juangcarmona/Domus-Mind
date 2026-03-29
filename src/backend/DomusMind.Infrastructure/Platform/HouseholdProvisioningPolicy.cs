@@ -23,7 +23,7 @@ public sealed class HouseholdProvisioningPolicy : IHouseholdProvisioningPolicy
         if (!_context.CanCreateHousehold)
             return ProvisioningPolicyResult.DenyCreationDisabled();
 
-        if (_context.InvitationsEnabled)
+        if (_context.RequireInvitationForSignup)
             return ProvisioningPolicyResult.DenyInvitationRequired();
 
         if (_context.Mode == DeploymentMode.SingleInstance)

@@ -14,8 +14,6 @@ public sealed class DeploymentSettings
 
     // Household provisioning policy
     public bool AllowHouseholdCreation { get; init; } = true;
-    public int MaxHouseholdsPerDeployment { get; init; } = 1;
-    public bool RequireBootstrapToken { get; init; } = false;
 
     // Invitations
     public bool InvitationsEnabled { get; init; } = false;
@@ -35,10 +33,6 @@ public sealed class DeploymentSettings
         if (!Enum.TryParse<DeploymentMode>(Mode, ignoreCase: true, out _))
             throw new InvalidOperationException(
                 $"Invalid Deployment:Mode value '{Mode}'. Allowed values: SingleInstance, CloudHosted.");
-
-        if (ResolvedMode == DeploymentMode.SingleInstance && MaxHouseholdsPerDeployment > 1)
-            throw new InvalidOperationException(
-                "Invalid deployment configuration: SingleInstance mode cannot have MaxHouseholdsPerDeployment > 1.");
 
         if (ResolvedMode == DeploymentMode.SingleInstance && InvitationsEnabled)
             throw new InvalidOperationException(

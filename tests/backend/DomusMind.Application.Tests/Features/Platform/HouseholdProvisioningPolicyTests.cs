@@ -20,13 +20,14 @@ public sealed class HouseholdProvisioningPolicyTests
 
     private static StubDeploymentModeContext SingleInstance(
         bool allowCreation = true,
-        bool invitationsEnabled = false)
-        => new(DeploymentMode.SingleInstance, allowCreation, invitationsEnabled);
+        bool requireInvitationForSignup = false)
+        => new(DeploymentMode.SingleInstance, allowCreation, requireInvitationForSignup: requireInvitationForSignup);
 
     private static StubDeploymentModeContext CloudHosted(
         bool allowCreation = true,
-        bool invitationsEnabled = false)
-        => new(DeploymentMode.CloudHosted, allowCreation, invitationsEnabled);
+        bool invitationsEnabled = false,
+        bool requireInvitationForSignup = false)
+        => new(DeploymentMode.CloudHosted, allowCreation, invitationsEnabled: invitationsEnabled, requireInvitationForSignup: requireInvitationForSignup);
 
     [Fact]
     public async Task SingleInstance_NoHouseholds_Permits()
@@ -84,15 +85,26 @@ public sealed class HouseholdProvisioningPolicyTests
     }
 
     [Fact]
-    public async Task CloudHosted_InvitationsEnabled_DeniesWithInvitationRequired()
+    public async Task CloudHosted_RequireInvitationForSignup_DeniesWithInvitationRequired()
     {
         var db = CreateDb();
-        var policy = BuildPolicy(db, CloudHosted(invitationsEnabled: true));
+        var policy = BuildPolicy(db, CloudHosted(requireInvitationForSignup: true));
 
         var result = await policy.EvaluateAsync(CancellationToken.None);
 
         result.Allowed.Should().BeFalse();
         result.ReasonCode.Should().Be("invitation_required");
+    }
+
+    [Fact]
+    public async Task CloudHosted_InvitationsEnabled_WithoutRequireInvitation_Permits()
+    {
+        var db = CreateDb();
+        var policy = BuildPolicy(db, CloudHosted(invitationsEnabled: true, requireInvitationForSignup: false));
+
+        var result = await policy.EvaluateAsync(CancellationToken.None);
+
+        result.Allowed.Should().BeTrue();
     }
 
     // ── Stub ─────────────────────────────────────────────────────────────────
@@ -102,16 +114,19 @@ public sealed class HouseholdProvisioningPolicyTests
         public StubDeploymentModeContext(
             DeploymentMode mode,
             bool canCreateHousehold = true,
-            bool invitationsEnabled = false)
+            bool invitationsEnabled = false,
+            bool requireInvitationForSignup = false)
         {
             Mode = mode;
             CanCreateHousehold = canCreateHousehold;
             InvitationsEnabled = invitationsEnabled;
+            RequireInvitationForSignup = requireInvitationForSignup;
         }
 
         public DeploymentMode Mode { get; }
         public bool CanCreateHousehold { get; }
         public bool InvitationsEnabled { get; }
+        public bool RequireInvitationForSignup { get; }
         public bool EmailEnabled => false;
         public bool SupportsAdminTools => false;
     }

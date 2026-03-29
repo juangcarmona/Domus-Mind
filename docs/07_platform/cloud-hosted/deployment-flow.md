@@ -31,9 +31,8 @@ There is no separate web container, CDN, or separate static host. The API serves
 
 **App Service Application Settings** hold:
 
-- `DEPLOYMENT_MODE` = `CloudHosted`
+- `Deployment__Mode` = `CloudHosted`
 - `Deployment__AllowHouseholdCreation` — policy setting
-- `Deployment__MaxHouseholdsPerDeployment` = `0` (unlimited)
 - `Deployment__InvitationsEnabled` = `true`
 - `Deployment__RequireInvitationForSignup` = `true`
 - `Deployment__AdminToolsEnabled` = `true`

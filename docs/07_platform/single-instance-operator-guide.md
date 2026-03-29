@@ -98,9 +98,12 @@ Upgrade rules:
 `SingleInstance` allows exactly one household.
 
 - the first household creation succeeds
-- any further household creation attempts return `409 Conflict` with `reason: single_instance_already_bound`
-- this is enforced by the household provisioning policy in the application layer
-- it is not enforced at the domain level and does not require any special configuration beyond `DEPLOYMENT_MODE=SingleInstance`
+- any further household creation attempts return `409 Conflict` with body:
+  ```json
+  { "code": "household.creation_not_allowed", "reasonCode": "single_instance_already_bound", "error": "..." }
+  ```
+- this is enforced at two levels: a policy pre-check (read) and a DB unique constraint on the `singleton_key` column of the `families` table (write-level guarantee that closes the race between the check and the insert)
+- no special configuration is required beyond `Deployment__Mode=SingleInstance`
 
 This behavior is tested in `HouseholdProvisioningPolicyTests`.
 

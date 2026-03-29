@@ -18,6 +18,7 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
     private readonly ISupportedLanguageReader _languageReader;
     private readonly IUserFamilyAccessReader _familyAccessReader;
     private readonly IHouseholdProvisioningPolicy _provisioningPolicy;
+    private readonly IDeploymentModeContext _deploymentContext;
 
     public CreateFamilyCommandHandler(
         IDomusMindDbContext dbContext,
@@ -25,7 +26,8 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
         IFamilyAccessGranter familyAccessGranter,
         ISupportedLanguageReader languageReader,
         IUserFamilyAccessReader familyAccessReader,
-        IHouseholdProvisioningPolicy provisioningPolicy)
+        IHouseholdProvisioningPolicy provisioningPolicy,
+        IDeploymentModeContext deploymentContext)
     {
         _dbContext = dbContext;
         _eventLogWriter = eventLogWriter;
@@ -33,6 +35,7 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
         _languageReader = languageReader;
         _familyAccessReader = familyAccessReader;
         _provisioningPolicy = provisioningPolicy;
+        _deploymentContext = deploymentContext;
     }
 
     public async Task<CreateFamilyResponse> Handle(
@@ -47,7 +50,7 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
 
         var policyResult = await _provisioningPolicy.EvaluateAsync(cancellationToken);
         if (!policyResult.Allowed)
-            throw new FamilyException(FamilyErrorCode.HouseholdCreationNotAllowed, policyResult.Message);
+            throw new FamilyException(FamilyErrorCode.HouseholdCreationNotAllowed, policyResult.Message, policyResult.ReasonCode);
 
         var existingFamilyId = await _familyAccessReader.GetFamilyIdForUserAsync(
             command.RequestedByUserId, cancellationToken);
@@ -75,6 +78,11 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
         var family = Domain.Family.Family.Create(familyId, name, languageCode, now);
 
         _dbContext.Set<Domain.Family.Family>().Add(family);
+
+        // For SingleInstance, mark this family as the singleton. The DB unique index on
+        // singleton_key closes the TOCTOU race between the policy pre-check and the INSERT.
+        if (_deploymentContext.Mode == DeploymentMode.SingleInstance)
+            _dbContext.SetProperty(family, "singleton_key", "singleton");
 
         await _familyAccessGranter.GrantAccessAsync(command.RequestedByUserId, familyId.Value, cancellationToken);
 

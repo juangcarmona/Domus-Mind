@@ -57,13 +57,42 @@ public sealed class GetCurrentDeploymentModeQueryHandlerTests
             DeploymentMode.SingleInstance,
             emailEnabled: true,
             supportsAdminTools: false,
-            invitationsEnabled: false);
+            invitationsEnabled: false,
+            requireInvitationForSignup: false);
 
         var handler = BuildHandler(context: ctx);
         var result = await handler.Handle(new GetCurrentDeploymentModeQuery(), CancellationToken.None);
 
         result.SupportsEmail.Should().BeTrue();
         result.SupportsAdminTools.Should().BeFalse();
+        result.RequiresInvitation.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Handle_WhenRequireInvitationForSignup_RequiresInvitationIsTrue()
+    {
+        var ctx = new StubDeploymentModeContext(
+            DeploymentMode.CloudHosted,
+            invitationsEnabled: true,
+            requireInvitationForSignup: true);
+
+        var handler = BuildHandler(context: ctx);
+        var result = await handler.Handle(new GetCurrentDeploymentModeQuery(), CancellationToken.None);
+
+        result.RequiresInvitation.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_InvitationsEnabled_Without_RequireInvitationForSignup_RequiresInvitationIsFalse()
+    {
+        var ctx = new StubDeploymentModeContext(
+            DeploymentMode.CloudHosted,
+            invitationsEnabled: true,
+            requireInvitationForSignup: false);
+
+        var handler = BuildHandler(context: ctx);
+        var result = await handler.Handle(new GetCurrentDeploymentModeQuery(), CancellationToken.None);
+
         result.RequiresInvitation.Should().BeFalse();
     }
 
@@ -75,12 +104,14 @@ public sealed class GetCurrentDeploymentModeQueryHandlerTests
             DeploymentMode mode,
             bool canCreateHousehold = true,
             bool invitationsEnabled = false,
+            bool requireInvitationForSignup = false,
             bool emailEnabled = false,
             bool supportsAdminTools = false)
         {
             Mode = mode;
             CanCreateHousehold = canCreateHousehold;
             InvitationsEnabled = invitationsEnabled;
+            RequireInvitationForSignup = requireInvitationForSignup;
             EmailEnabled = emailEnabled;
             SupportsAdminTools = supportsAdminTools;
         }
@@ -88,6 +119,7 @@ public sealed class GetCurrentDeploymentModeQueryHandlerTests
         public DeploymentMode Mode { get; }
         public bool CanCreateHousehold { get; }
         public bool InvitationsEnabled { get; }
+        public bool RequireInvitationForSignup { get; }
         public bool EmailEnabled { get; }
         public bool SupportsAdminTools { get; }
     }

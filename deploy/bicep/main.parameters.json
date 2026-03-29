@@ -9,7 +9,7 @@
       "value": "spaincentral"
     },
     "appImage": {
-      "value": "ghcr.io/juangcarmona/domusmind:edge"
+      "value": "ghcr.io/juangcarmona/domusmind:1.0.0"
     },
     "allowBroadAzurePostgresAccess": {
       "value": false

@@ -16,11 +16,7 @@ public sealed class DeploymentSettingsValidationTests
     [Fact]
     public void Validate_WithValidCloudHostedDefaults_DoesNotThrow()
     {
-        var settings = new DeploymentSettings
-        {
-            Mode = "CloudHosted",
-            MaxHouseholdsPerDeployment = 0
-        };
+        var settings = new DeploymentSettings { Mode = "CloudHosted" };
         var act = () => settings.Validate();
         act.Should().NotThrow();
     }
@@ -35,25 +31,11 @@ public sealed class DeploymentSettingsValidationTests
     }
 
     [Fact]
-    public void Validate_SingleInstanceWithMaxHouseholdsGreaterThanOne_ThrowsInvalidOperationException()
-    {
-        var settings = new DeploymentSettings
-        {
-            Mode = "SingleInstance",
-            MaxHouseholdsPerDeployment = 5
-        };
-        var act = () => settings.Validate();
-        act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*SingleInstance mode cannot have MaxHouseholdsPerDeployment > 1*");
-    }
-
-    [Fact]
     public void Validate_RequireInvitationWithInvitationsDisabled_ThrowsInvalidOperationException()
     {
         var settings = new DeploymentSettings
         {
             Mode = "CloudHosted",
-            MaxHouseholdsPerDeployment = 0,
             InvitationsEnabled = false,
             RequireInvitationForSignup = true
         };

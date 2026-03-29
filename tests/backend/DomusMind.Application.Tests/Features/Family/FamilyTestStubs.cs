@@ -84,6 +84,26 @@ internal sealed class StubHouseholdProvisioningPolicy : IHouseholdProvisioningPo
             : ProvisioningPolicyResult.DenySingleInstanceBound();
     }
 
+    public StubHouseholdProvisioningPolicy(ProvisioningPolicyResult result)
+    {
+        _result = result;
+    }
+
     public Task<ProvisioningPolicyResult> EvaluateAsync(CancellationToken cancellationToken)
         => Task.FromResult(_result);
+}
+
+internal sealed class StubDeploymentModeContext : IDeploymentModeContext
+{
+    public StubDeploymentModeContext(DeploymentMode mode = DeploymentMode.SingleInstance)
+    {
+        Mode = mode;
+    }
+
+    public DeploymentMode Mode { get; }
+    public bool CanCreateHousehold => true;
+    public bool InvitationsEnabled => false;
+    public bool RequireInvitationForSignup => false;
+    public bool EmailEnabled => false;
+    public bool SupportsAdminTools => false;
 }
