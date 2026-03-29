@@ -48,4 +48,9 @@ public sealed class DomusMindDbContext : DbContext, IDomusMindDbContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DomusMindDbContext).Assembly);
     }
+
+    public void SetProperty<TEntity>(TEntity entity, string propertyName, object? value) where TEntity : class
+    {
+        Entry(entity).Property(propertyName).CurrentValue = value;
+    }
 }

@@ -1,3 +1,14 @@
+# DomusMind — SingleInstance self-hosted stack
+#
+# Usage:
+#   cp .env.example .env
+#   # Edit .env — set DB_PASSWORD and JWT_SECRET at minimum
+#   docker compose up -d
+#
+# This compose file defaults to SingleInstance mode (one household).
+# For CloudHosted deployment, use the Azure Bicep templates in deploy/bicep/.
+# See deploy/README.md for full operator instructions.
+
 services:
 
   postgres:
@@ -29,10 +40,17 @@ services:
       Jwt__SigningKey: ${JWT_SECRET}
       Jwt__Issuer:    ${JWT_ISSUER:-domusmind}
       Jwt__Audience:  ${JWT_AUDIENCE:-${JWT_ISSUER:-domusmind}}
+      # Deployment mode - SingleInstance or CloudHosted
+      Deployment__Mode: ${DEPLOYMENT_MODE:-SingleInstance}
+      Deployment__AllowHouseholdCreation: ${ALLOW_HOUSEHOLD_CREATION:-true}
+      Deployment__InvitationsEnabled: ${INVITATIONS_ENABLED:-false}
+      Deployment__RequireInvitationForSignup: ${REQUIRE_INVITATION_FOR_SIGNUP:-false}
+      Deployment__EmailEnabled: ${EMAIL_ENABLED:-false}
+      Deployment__AdminToolsEnabled: ${ADMIN_TOOLS_ENABLED:-false}
       # First-run bootstrap admin - disable after initial setup.
-      # BootstrapAdmin__Enabled:     true
-      # BootstrapAdmin__Email:        ${BOOTSTRAP_ADMIN_EMAIL}
-      # BootstrapAdmin__Password:     ${BOOTSTRAP_ADMIN_PASSWORD}
+      # BootstrapAdmin__Enabled:  true
+      # BootstrapAdmin__Email:    ${BOOTSTRAP_ADMIN_EMAIL}
+      # BootstrapAdmin__Password: ${BOOTSTRAP_ADMIN_PASSWORD}
     ports:
       - "${APP_PORT:-24365}:8080"
 

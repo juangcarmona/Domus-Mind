@@ -1,0 +1,101 @@
+name: release-image
+
+# Builds and publishes an immutable release image to GHCR.
+# Run manually — never triggered automatically.
+# Do not use this workflow to push 'latest' or 'edge'.
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag, e.g. 1.0.0'
+        required: true
+        type: string
+
+concurrency:
+  group: release-image-${{ inputs.release_tag }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    outputs:
+      image_tag:     ${{ steps.meta.outputs.image_tag }}
+      image_sha_tag: ${{ steps.meta.outputs.image_sha_tag }}
+
+    steps:
+      - name: Validate tag input
+        run: |
+          TAG="${{ inputs.release_tag }}"
+          if [[ -z "$TAG" ]]; then
+            echo "::error::release_tag is required."
+            exit 1
+          fi
+          # Reject mutable tags used for CI builds
+          if [[ "$TAG" == "latest" || "$TAG" == "edge" ]]; then
+            echo "::error::Cannot publish release image as '$TAG'. Use an immutable version tag."
+            exit 1
+          fi
+          # Require full semver-like format: MAJOR.MINOR.PATCH with optional prerelease/build metadata
+          # Examples: 1.0.0, 1.2.3-rc.1, 1.2.3+build.5, 1.2.3-rc.1+build.5
+          if ! [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::release_tag must be a semantic version (e.g. 1.0.0, 1.2.3-rc.1, 1.2.3+build.5)."
+            exit 1
+          fi
+          echo "Tag '$TAG' is valid."
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # GHCR requires lowercase image names; repository_owner may be mixed-case.
+      - name: Resolve image name and tags
+        id: meta
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${OWNER}/domusmind"
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${IMAGE}:${{ inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+          echo "image_sha_tag=${IMAGE}:sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push release image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/backend/DomusMind.Api/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image_tag }}
+            ${{ steps.meta.outputs.image_sha_tag }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ inputs.release_tag }}
+          cache-from: type=gha,scope=domusmind
+          cache-to:   type=gha,scope=domusmind,mode=max
+
+      - name: Summary
+        run: |
+          echo "## Release image published" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Tag | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-----|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Version | \`${{ steps.meta.outputs.image_tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| SHA     | \`${{ steps.meta.outputs.image_sha_tag }}\` |" >> "$GITHUB_STEP_SUMMARY"

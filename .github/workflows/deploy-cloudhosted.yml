@@ -1,0 +1,124 @@
+name: deploy-cloudhosted
+
+# Deploys a chosen immutable image tag to the CloudHosted Azure App Service.
+# Run manually — never triggered automatically.
+# Does not provision or modify infrastructure (use deploy/bicep/ for that).
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Immutable image tag to deploy, e.g. 1.0.0'
+        required: true
+        type: string
+      environment:
+        description: 'Target environment name'
+        required: true
+        default: 'prod'
+        type: string
+      web_app_name:
+        description: 'Azure App Service name (leave blank to derive from environment)'
+        required: false
+        type: string
+
+concurrency:
+  group: deploy-cloudhosted-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write  # Required for OIDC Azure login
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Validate inputs
+        run: |
+          TAG="${{ inputs.image_tag }}"
+          if [[ -z "$TAG" ]]; then
+            echo "::error::image_tag is required."
+            exit 1
+          fi
+          if [[ "$TAG" == "latest" || "$TAG" == "edge" ]]; then
+            echo "::error::Deployment rejected: '$TAG' is a mutable tag. Specify an immutable version tag."
+            exit 1
+          fi
+          echo "Deploying tag: $TAG"
+
+      - name: Resolve target web app name
+        id: resolve
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${OWNER}/domusmind:${{ inputs.image_tag }}"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+          # Use explicit override if provided; otherwise derive from convention: domusmind-<env>
+          APP_NAME="${{ inputs.web_app_name }}"
+          if [[ -z "$APP_NAME" ]]; then
+            APP_NAME="domusmind-${{ inputs.environment }}"
+          fi
+          echo "app_name=${APP_NAME}" >> "$GITHUB_OUTPUT"
+          echo "Resolved App Service: $APP_NAME"
+          echo "Resolved image: $IMAGE"
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Update App Service image
+        run: |
+          az webapp config container set \
+            --name "${{ steps.resolve.outputs.app_name }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --container-image-name "${{ steps.resolve.outputs.image }}" \
+            --output none
+          echo "Container image updated to: ${{ steps.resolve.outputs.image }}"
+
+      - name: Restart App Service
+        run: |
+          az webapp restart \
+            --name "${{ steps.resolve.outputs.app_name }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --output none
+          echo "App Service restarted."
+
+      - name: Wait for App Service to become ready
+        run: |
+          APP_NAME="${{ steps.resolve.outputs.app_name }}"
+          RG="${{ secrets.AZURE_RESOURCE_GROUP }}"
+          HOSTNAME=$(az webapp show --name "$APP_NAME" --resource-group "$RG" --query "defaultHostName" -o tsv)
+          HEALTH_URL="https://${HOSTNAME}/api/setup/status"
+
+          echo "Health endpoint: $HEALTH_URL"
+          echo "Waiting for app to become healthy..."
+
+          MAX_ATTEMPTS=18
+          ATTEMPT=0
+          until curl -sf --max-time 10 "$HEALTH_URL" > /dev/null; do
+            ATTEMPT=$((ATTEMPT + 1))
+            if [[ $ATTEMPT -ge $MAX_ATTEMPTS ]]; then
+              echo "::error::Health check failed after $((MAX_ATTEMPTS * 10)) seconds. App may have failed to start."
+              echo "Last response:"
+              curl -v --max-time 10 "$HEALTH_URL" || true
+              exit 1
+            fi
+            echo "  Attempt ${ATTEMPT}/${MAX_ATTEMPTS} — not ready yet, retrying in 10s..."
+            sleep 10
+          done
+          echo "Health check passed: $HEALTH_URL"
+
+      - name: Summary
+        run: |
+          echo "## Deployment complete" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Environment | \`${{ inputs.environment }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| App Service | \`${{ steps.resolve.outputs.app_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Image deployed | \`${{ steps.resolve.outputs.image }}\` |" >> "$GITHUB_STEP_SUMMARY"
