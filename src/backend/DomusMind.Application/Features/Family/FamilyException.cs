@@ -8,6 +8,7 @@ public enum FamilyErrorCode
     MemberNotFound,
     InvalidInput,
     FamilyAlreadyExists,
+    HouseholdCreationNotAllowed,
 }
 
 public sealed class FamilyException : Exception

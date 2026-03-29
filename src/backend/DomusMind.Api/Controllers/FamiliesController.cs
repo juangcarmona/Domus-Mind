@@ -87,6 +87,10 @@ public sealed class FamiliesController : ControllerBase
         {
             return Conflict(new { error = ex.Message });
         }
+        catch (FamilyException ex) when (ex.Code == FamilyErrorCode.HouseholdCreationNotAllowed)
+        {
+            return Conflict(new { code = "household.creation_not_allowed", error = ex.Message });
+        }
     }
 
     /// <summary>Adds a member to an existing family.</summary>

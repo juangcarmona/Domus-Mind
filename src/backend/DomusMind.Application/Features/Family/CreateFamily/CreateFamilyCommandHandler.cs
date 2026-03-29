@@ -1,6 +1,7 @@
 using DomusMind.Application.Abstractions.Languages;
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
+using DomusMind.Application.Abstractions.Platform;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Application.Features.Family;
 using DomusMind.Contracts.Family;
@@ -16,19 +17,22 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
     private readonly IFamilyAccessGranter _familyAccessGranter;
     private readonly ISupportedLanguageReader _languageReader;
     private readonly IUserFamilyAccessReader _familyAccessReader;
+    private readonly IHouseholdProvisioningPolicy _provisioningPolicy;
 
     public CreateFamilyCommandHandler(
         IDomusMindDbContext dbContext,
         IEventLogWriter eventLogWriter,
         IFamilyAccessGranter familyAccessGranter,
         ISupportedLanguageReader languageReader,
-        IUserFamilyAccessReader familyAccessReader)
+        IUserFamilyAccessReader familyAccessReader,
+        IHouseholdProvisioningPolicy provisioningPolicy)
     {
         _dbContext = dbContext;
         _eventLogWriter = eventLogWriter;
         _familyAccessGranter = familyAccessGranter;
         _languageReader = languageReader;
         _familyAccessReader = familyAccessReader;
+        _provisioningPolicy = provisioningPolicy;
     }
 
     public async Task<CreateFamilyResponse> Handle(
@@ -40,6 +44,10 @@ public sealed class CreateFamilyCommandHandler : ICommandHandler<CreateFamilyCom
 
         if (command.Name.Trim().Length > 100)
             throw new FamilyException(FamilyErrorCode.InvalidInput, "Family name cannot exceed 100 characters.");
+
+        var policyResult = await _provisioningPolicy.EvaluateAsync(cancellationToken);
+        if (!policyResult.Allowed)
+            throw new FamilyException(FamilyErrorCode.HouseholdCreationNotAllowed, policyResult.Message);
 
         var existingFamilyId = await _familyAccessReader.GetFamilyIdForUserAsync(
             command.RequestedByUserId, cancellationToken);

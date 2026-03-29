@@ -19,7 +19,8 @@ public sealed class CreateFamilyCommandHandlerTests
         DomusMindDbContext? db = null,
         StubFamilyAccessGranter? granter = null,
         StubSupportedLanguageReader? languageReader = null,
-        StubUserFamilyAccessReader? accessReader = null)
+        StubUserFamilyAccessReader? accessReader = null,
+        StubHouseholdProvisioningPolicy? provisioningPolicy = null)
     {
         var context = db ?? CreateDb();
         return new CreateFamilyCommandHandler(
@@ -27,7 +28,8 @@ public sealed class CreateFamilyCommandHandlerTests
             new EventLogWriter(context),
             granter ?? new StubFamilyAccessGranter(),
             languageReader ?? new StubSupportedLanguageReader(),
-            accessReader ?? new StubUserFamilyAccessReader());
+            accessReader ?? new StubUserFamilyAccessReader(),
+            provisioningPolicy ?? new StubHouseholdProvisioningPolicy(allowed: true));
     }
 
     [Fact]
@@ -160,5 +162,19 @@ public sealed class CreateFamilyCommandHandlerTests
 
         await act.Should().ThrowAsync<FamilyException>()
             .Where(e => e.Code == FamilyErrorCode.InvalidInput);
+    }
+
+    [Fact]
+    public async Task Handle_WhenProvisioningPolicyDenies_ThrowsHouseholdCreationNotAllowed()
+    {
+        var policy = new StubHouseholdProvisioningPolicy(allowed: false);
+        var handler = BuildHandler(provisioningPolicy: policy);
+
+        var act = () => handler.Handle(
+            new CreateFamilyCommand("Smith Family", null, Guid.NewGuid()),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<FamilyException>()
+            .Where(e => e.Code == FamilyErrorCode.HouseholdCreationNotAllowed);
     }
 }

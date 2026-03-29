@@ -6,6 +6,17 @@ This document is the canonical reference for how DomusMind is built, packaged, d
 
 DomusMind is one product with two deployment modes: `SingleInstance` and `CloudHosted`. Both modes use the same artifacts, the same database schema, the same migrations, the same API surface, and the same domain model. Deployment mode changes only operational policy and infrastructure behavior.
 
+CloudHosted operator policy is detailed in `docs/07_platform/cloud-hosted/`:
+
+- [deployment-flow.md](cloud-hosted/deployment-flow.md) — Azure runtime topology and deployment order
+- [invitation-policy.md](cloud-hosted/invitation-policy.md) — invite-only access model
+- [signup-policy.md](cloud-hosted/signup-policy.md) — no open signup; manual provisioning
+- [operator-tooling.md](cloud-hosted/operator-tooling.md) — minimum operator capabilities
+- [abuse-protection.md](cloud-hosted/abuse-protection.md) — closed-cohort baseline and rate limiting
+- [backup-restore-policy.md](cloud-hosted/backup-restore-policy.md) — managed PostgreSQL backup posture
+
+SingleInstance operator guide: [single-instance-operator-guide.md](single-instance-operator-guide.md) — fresh install, upgrade, backup, restore, and troubleshooting.
+
 ---
 
 ## Deployment Principles

@@ -1,5 +1,6 @@
 using DomusMind.Application.Abstractions.Languages;
 using DomusMind.Application.Abstractions.Persistence;
+using DomusMind.Application.Abstractions.Platform;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Domain.Abstractions;
 
@@ -70,4 +71,19 @@ internal sealed class StubSupportedLanguageReader : ISupportedLanguageReader
 
     public Task<bool> IsActiveAsync(string code, CancellationToken cancellationToken = default)
         => Task.FromResult(_supportedCodes.Contains(code));
+}
+
+internal sealed class StubHouseholdProvisioningPolicy : IHouseholdProvisioningPolicy
+{
+    private readonly ProvisioningPolicyResult _result;
+
+    public StubHouseholdProvisioningPolicy(bool allowed = true)
+    {
+        _result = allowed
+            ? ProvisioningPolicyResult.Permit()
+            : ProvisioningPolicyResult.DenySingleInstanceBound();
+    }
+
+    public Task<ProvisioningPolicyResult> EvaluateAsync(CancellationToken cancellationToken)
+        => Task.FromResult(_result);
 }

@@ -69,6 +69,67 @@ The same `docker-compose.yml` applies as a baseline. Cloud deployments may adapt
 # 4. Complete setup via the API (UI wizard or headless bootstrap)
 ```
 
+### CloudHosted on Azure (Bicep)
+
+The `bicep/` folder contains the canonical Azure baseline for CloudHosted.
+
+What it provisions: App Service (Linux B1), PostgreSQL Flexible Server, Key Vault, Application Insights, Log Analytics Workspace.
+
+See [`docs/07_platform/cloud-hosted/deployment-flow.md`](../docs/07_platform/cloud-hosted/deployment-flow.md) for the full deployment policy.
+
+#### Prerequisites
+
+- Azure CLI installed and logged in (`az login`)
+- A resource group already created (`az group create -n <rg> -l westeurope`)
+- `dbAdminPassword` and `jwtSigningKey` values ready
+  - generate: `openssl rand -hex 32`
+  - minimum length for `jwtSigningKey`: 32 characters
+
+#### Deploy
+
+```bash
+cd deploy/bicep
+
+# Deploy with inline secure parameters (do not commit passwords to source control)
+az deployment group create \
+  --resource-group <rg-name> \
+  --template-file main.bicep \
+  --parameters main.parameters.json \
+  --parameters dbAdminPassword='<strong-password>' jwtSigningKey='<32-char-key>'
+```
+
+To use a bootstrap Key Vault for secrets instead of inline values, populate the `reference` blocks in `main.parameters.json` with your bootstrap Key Vault details before deploying.
+
+#### After provisioning
+
+1. Run `az deployment group show` or check Azure portal outputs for the web app hostname and PostgreSQL FQDN.
+2. Verify the web app is reachable: `curl https://<hostname>/api/setup/status`
+3. Complete first-run setup via the UI wizard or: `POST https://<hostname>/api/setup/initialize`
+4. Enable `alwaysOn: true` on the App Service if you want warm start (requires Standard tier for slot support).
+
+#### Secrets management
+
+| Secret | How it reaches the app |
+|---|---|
+| `db-password` | Stored in Key Vault; resolved via Key Vault reference in App Settings |
+| `jwt-signing-key` | Stored in Key Vault; resolved via Key Vault reference in App Settings |
+| Any future provider secrets | Add to Key Vault and reference in App Settings |
+
+The web app's system-assigned managed identity is granted `Key Vault Secrets User` automatically by the Bicep deployment.
+
+#### Update / redeploy
+
+```bash
+# Change appImage parameter to the new version tag and redeploy
+az deployment group create \
+  --resource-group <rg-name> \
+  --template-file main.bicep \
+  --parameters main.parameters.json \
+  --parameters dbAdminPassword='<password>' jwtSigningKey='<key>' appImage='ghcr.io/juangcarmona/domusmind:1.1.0'
+```
+
+Migrations run automatically at startup. Back up the database before upgrading.
+
 ---
 
 ## Required Configuration
@@ -84,6 +145,9 @@ Copy `.env.example` to `.env` and fill in every required value.
 | `VERSION` | Yes | Image tag — use a semver tag for production |
 | `APP_PORT` | No | Defaults to `24365` |
 | `DEPLOYMENT_MODE` | Yes | `SingleInstance` or `CloudHosted` |
+| `ALLOW_HOUSEHOLD_CREATION` | No | Defaults to `true` |
+| `MAX_HOUSEHOLDS_PER_DEPLOYMENT` | No | Defaults to `1` (SingleInstance) |
+| `INVITATIONS_ENABLED` | No | Defaults to `false` |
 
 Invalid combinations (e.g. `SingleInstance` with `MaxHouseholdsPerDeployment > 1`) fail at startup.
 

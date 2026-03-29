@@ -8,6 +8,8 @@ using DomusMind.Application.Features.Auth.RegisterUser;
 using DomusMind.Application.Features.Calendar.AddEventParticipant;
 using DomusMind.Application.Features.Calendar.AddReminder;
 using DomusMind.Application.Features.Calendar.CancelEvent;
+using DomusMind.Application.Features.Platform.GetCurrentDeploymentMode;
+using DomusMind.Contracts.Platform;
 using DomusMind.Application.Features.Calendar.DetectCalendarConflicts;
 using DomusMind.Application.Features.Calendar.GetFamilyPlans;
 using DomusMind.Application.Features.Calendar.GetFamilyTimeline;
@@ -179,6 +181,9 @@ public static class ApplicationServices
         // Setup slices
         services.AddScoped<IQueryHandler<GetSetupStatusQuery, SetupStatusResponse>, GetSetupStatusQueryHandler>();
         services.AddScoped<ICommandHandler<InitializeSystemCommand, InitializeSystemResponse>, InitializeSystemCommandHandler>();
+
+        // Platform slices
+        services.AddScoped<IQueryHandler<GetCurrentDeploymentModeQuery, DeploymentModeResponse>, GetCurrentDeploymentModeQueryHandler>();
 
         // Shared Lists slices (V1.1)
         services.AddScoped<ICommandHandler<CreateSharedListCommand, CreateSharedListResponse>, CreateSharedListCommandHandler>();
