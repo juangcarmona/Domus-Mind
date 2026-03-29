@@ -156,21 +156,19 @@ Other contexts may react:
 
 Calendar emits:
 
-```
 EventScheduled
-```
 
 Tasks may react:
 
-```
-Generate preparation tasks
-```
+* update read models
+* support coordination views
+* enable future task suggestions without creating tasks automatically
 
 Example:
 
 Event: School Trip
 
-Generated tasks:
+Related work (if explicitly created by the household):
 
 * prepare backpack
 * sign permission form

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { setSelectedDate } from "../../../store/todaySlice";
@@ -126,6 +127,12 @@ export function TodayPage() {
     setEditTarget({ type, id });
   }
 
+  const navigate = useNavigate();
+
+  function handleMemberClick(memberId: string) {
+    navigate(`/agenda/members/${memberId}?date=${selectedDate}`);
+  }
+
   function handlePrevWeek() {
     dispatch(setSelectedDate(addDays(selectedDate, -7)));
   }
@@ -159,6 +166,7 @@ export function TodayPage() {
         onNextDay={handleNextDay}
         onToday={handleToday}
         onItemClick={handleItemClick}
+        onMemberClick={handleMemberClick}
       />
 
       {/* ── Section 2: Mid-term navigation (Week / Month) ── */}
@@ -187,7 +195,7 @@ export function TodayPage() {
         {midTermView === "week" && (
           <div className="coord-month-nav coord-midterm-week-nav">
             <button
-              className="btn btn-ghost btn-sm coord-nav-btn"
+              className="btn btn-ghost btn-sm"
               onClick={handlePrevWeek}
               type="button"
               aria-label={t("nav.prevWeek")}
@@ -196,7 +204,7 @@ export function TodayPage() {
             </button>
             <span className="coord-month-label">{weekNavLabel}</span>
             <button
-              className="btn btn-ghost btn-sm coord-nav-btn"
+              className="btn btn-ghost btn-sm"
               onClick={handleNextWeek}
               type="button"
               aria-label={t("nav.nextWeek")}

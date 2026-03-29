@@ -31,7 +31,10 @@ export function EventChecklistSection({ eventId, familyId }: EventChecklistSecti
     try {
       const result = await sharedListsApi.getSharedListByLinkedEntity("CalendarEvent", eventId);
       setLinked(result);
-    } catch {
+    } catch (err) {
+      // 404 = no list linked — this is a normal empty state, not an error.
+      // Treat any failure as "no list linked" so the UI stays calm.
+      void err;
       setLinked(null);
     } finally {
       setLoadingLinked(false);

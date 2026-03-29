@@ -89,7 +89,7 @@ weekly language class
 
 Recurrence describes **time commitments**, not operational work.
 
-Generated operational work belongs to the **Tasks context**.
+Operational work belongs to the **Tasks context** when it is explicitly created.
 
 ---
 
@@ -324,14 +324,15 @@ Responsibility owns ownership semantics.
 
 ## Tasks Context
 
-Tasks may be generated from events.
+Tasks owns **operational work associated with those commitments when that work is explicitly created**.
 
 Examples:
 
 ```
-prepare school bag
-buy ingredients
-bring documents
+Event: School trip
+    Related tasks:
+        prepare backpack
+        sign permission form
 ```
 
 Tasks represent **operational work**.
@@ -339,18 +340,9 @@ Tasks represent **operational work**.
 Key boundary rule:
 
 * **Calendar owns time-bound commitments**
-* **Tasks owns operational work**
+* **Tasks owns operational work explicitly created by the household**
 
 Recurring fixed-time activities remain in **Calendar**.
-
-Generated work belongs to **Tasks**.
-
-Example:
-
-```
-Event: football practice every Tuesday
-Task: pack sports bag
-```
 
 ---
 
@@ -405,7 +397,7 @@ It may display:
 
 * events (Calendar)
 * chores or tasks (Tasks)
-* routine-generated work (Tasks)
+* routines (projected)
 
 The grid may include **lightweight coordination cues** derived from:
 

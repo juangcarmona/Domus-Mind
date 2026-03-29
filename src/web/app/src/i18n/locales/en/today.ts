@@ -17,11 +17,13 @@ export default {
   },
   day: {
     title: "Day",
-    empty: "Nothing scheduled for this day.",
+    empty: "Nothing here today.",
     todayEmpty: "Nothing scheduled",
-    todayNothingScheduled: "Nothing scheduled for today.",
+    todayNothingScheduled: "Nothing here today.",
+    nothingToday: "Nothing today",
     household: "Household",
     noMembers: "No household members yet.",
+    completedSection: "Completed",
   },
   week: {
     empty: "Nothing scheduled for this week.",

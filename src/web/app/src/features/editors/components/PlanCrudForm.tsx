@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { toLocalDateInput, toLocalTimeInput } from "../utils";
 import { DateInput } from "../../../components/DateInput";
 import { EventChecklistSection } from "../../shared-lists/components/EventChecklistSection";
+import { calendarApi } from "../../../api/calendarApi";
 
 interface PlanCrudFormProps {
   mode: "create" | "edit";
@@ -159,6 +160,19 @@ export function PlanCrudForm({
         description: description.trim() || null,
         color,
       });
+
+      // Sync participant changes: diff initial vs current and drive
+      // the add/remove endpoints individually (RescheduleEvent has no
+      // participant field — participants are managed by their own commands).
+      const initial = initialParticipantMemberIds ?? [];
+      const toAdd = participantMemberIds.filter((id) => !initial.includes(id));
+      const toRemove = initial.filter((id) => !participantMemberIds.includes(id));
+
+      await Promise.all([
+        ...toAdd.map((id) => calendarApi.addEventParticipant(eventId, id)),
+        ...toRemove.map((id) => calendarApi.removeEventParticipant(eventId, id)),
+      ]);
+
       setSubmitting(false);
       await Promise.resolve(onSuccess());
     } catch (err) {

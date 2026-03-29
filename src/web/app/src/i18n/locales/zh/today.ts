@@ -19,9 +19,11 @@ export default {
     title: "日",
     empty: "今天没有安排。",
     todayEmpty: "暂无安排",
-    todayNothingScheduled: "今天没有安排。",
+    todayNothingScheduled: "今天没有任何事项。",
+    nothingToday: "今天没有",
     household: "家庭",
     noMembers: "还没有家庭成员。",
+    completedSection: "已完成",
   },
   week: {
     empty: "本周没有安排。",
