@@ -42,7 +42,35 @@ The following capabilities must be available before CloudHosted accepts its firs
 - confirm active deployment mode
 - inspect current platform deployment capabilities (via `/api/platform/deployment-mode`)
 
-### Auth and incident response
+### Bootstrap super admin
+
+The canonical CloudHosted bootstrap path is the **BootstrapAdmin** configuration block:
+
+```
+BootstrapAdmin__Enabled=true
+BootstrapAdmin__Email=<operator email>
+BootstrapAdmin__Password=<operator password>
+BootstrapAdmin__DisplayName=DomusMind Admin
+```
+
+At startup, if `BootstrapAdmin__Enabled=true` and the configured email does not exist, the API creates the account automatically with the `IsOperator` flag and marks the system as initialized. This happens after migrations run.
+
+**Behavior:**
+
+- safe across repeated restarts — if the user already exists, no duplicate is created
+- safe after a DB drop — the user is recreated from config on next startup
+- the bootstrap admin account is the durable operator recovery path
+
+**Operator routing:**
+
+- an operator user who has no household is redirected to `/admin` on login (not to household onboarding)
+- normal users who have no household go through the standard onboarding flow
+- the admin area (`/admin`) is accessible from Settings → Platform section for operators only, regardless of household membership
+
+**Normal user flow is not affected:**
+
+- register/login → onboarding → create household → enter app
+- this flow is unchanged for all non-operator accounts
 
 - inspect failed login frequency per account (via Application Insights)
 - disable a repeatedly-abusing account

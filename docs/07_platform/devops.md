@@ -81,11 +81,29 @@ The DomusMind app is the ingress surface. PostgreSQL is internal to the Docker n
 
 .NET Aspire **orchestrates the local development environment only**. It is not used in production.
 
-### Local CloudHosted mode
+- Aspire starts the API, web app, PostgreSQL, and pgAdmin
+- Aspire injects connection strings and service references automatically
+- Aspire provides the developer dashboard, health checks, and structured telemetry
+- `AppHost.cs` is the source of truth for local service topology
 
-To validate CloudHosted-specific behavior locally (invite-only signup, admin surface, no self-service household creation) without deploying to Azure, use the **`API only: DomusMind.Api (CloudHosted local)`** VS Code launch configuration.
+Aspire is not used in production or staging. Docker Compose replaces it.
 
-This profile sets the following environment variables on top of the standard `Development` baseline:
+### Local CloudHosted mode (full stack)
+
+To validate CloudHosted-specific behavior locally — invite-only access, admin surface, no self-service household creation — without deploying to Azure, use the **`Aspire: DomusMind AppHost (CloudHosted local)`** VS Code launch configuration.
+
+This starts the same Aspire-orchestrated stack (Postgres + pgAdmin + API + web app) with CloudHosted policy flags injected into the API process. A dedicated Postgres data volume (`domusmind-cloudhosted-local`) is used so it stays isolated from the standard local database.
+
+**What it launches:**
+
+| Component | Details |
+|---|---|
+| PostgreSQL | Isolated volume `domusmind-cloudhosted-local` |
+| pgAdmin | `http://localhost:5051` |
+| API | Local with CloudHosted policy flags |
+| Web app | Vite dev server, proxying `/api` to local API |
+
+**CloudHosted policy flags applied to the API:**
 
 | Variable | Value |
 |---|---|
@@ -98,20 +116,26 @@ This profile sets the following environment variables on top of the standard `De
 | `BootstrapAdmin__Email` | `admin@domusmind.local` |
 | `BootstrapAdmin__Password` | `ChangeMeNow123!` |
 
-The JWT signing key and database connection string are inherited from the standard `Development` configuration (`appsettings.Development.json` / user secrets). No separate config file or Azure dependency is required.
+The operator account is seeded automatically on first run. Use `admin@domusmind.local` / `ChangeMeNow123!` to log in and reach `/admin`.
 
-The bootstrap admin credentials above are local development defaults. On first run against a fresh database the seed service creates the operator account automatically. Change the password after first login or override the env vars with your own values.
+**How it works:** the launch config sets `ASPNETCORE_ENVIRONMENT=CloudHostedLocal` on the AppHost process. The AppHost loads `appsettings.CloudHostedLocal.json` which sets `DomusMind:LocalMode=CloudHosted`. `AppHost.cs` reads that flag and injects the deployment policy env vars into the API child resource via `.WithEnvironment()`. No code fork, no second product.
 
-**You still need to supply a local connection string** via user secrets or `appsettings.Development.json` if one is not already configured (same requirement as the standard API-only profile).
+**CLI alternative** (if the `aspire` VS Code launch type does not pass `env` in your extension version):
+```
+cd src/backend/DomusMind.AppHost
+dotnet run --launch-profile cloudhostedlocal
+```
 
+**What is intentionally not emulated:**
+- Azure Key Vault (secrets come from Aspire / local config)
+- Azure App Service hosting
+- Azure Monitor / Application Insights
+- Email delivery
+- OIDC / federated identity
 
+### API-only CloudHosted mode
 
-- Aspire starts the API, web app, PostgreSQL, and pgAdmin
-- Aspire injects connection strings and service references automatically
-- Aspire provides the developer dashboard, health checks, and structured telemetry
-- `AppHost.cs` is the source of truth for local service topology
-
-Aspire is not used in production or staging. Docker Compose replaces it.
+If you need only the API (no Aspire orchestration), use **`API only: DomusMind.Api (CloudHosted local)`**. This requires a manually configured connection string via user secrets or `appsettings.Development.json`.
 
 ### Keeping Compose Aligned with AppHost
 

@@ -40,6 +40,20 @@ public sealed class AuthSeedService
         var hasher = sp.GetRequiredService<IPasswordHasher>();
 
         var email = options.Email.Trim().ToLowerInvariant();
+
+        var existing = await repository.FindByEmailAsync(email, cancellationToken);
+        if (existing is not null)
+        {
+            // User already exists (e.g. created in a previous partial run before MarkInitialized could be called).
+            // Reconcile state: mark the system initialized so subsequent restarts are consistent.
+            if (!existing.IsOperator)
+                logger.LogWarning("Bootstrap: user {Email} already exists but does not have the Operator flag. Manual correction may be required.", email);
+
+            await initState.MarkInitializedAsync(cancellationToken);
+            logger.LogInformation("Bootstrap fallback: user {Email} already exists. System marked as initialized.", email);
+            return;
+        }
+
         var user = new AuthUserRecord(Guid.NewGuid(), email, hasher.Hash(options.Password), IsOperator: true);
 
         await repository.AddAsync(user, cancellationToken);

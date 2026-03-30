@@ -6,18 +6,21 @@ export function AdminHouseholdsPage() {
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  function load(q?: string) {
-    setError(null);
-    adminApi.getHouseholds(q || undefined)
-      .then((r) => setItems(r.items))
-      .catch((e: { message?: string }) => setError(e.message ?? "Failed to load"));
-  }
-
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    adminApi.getHouseholds(undefined)
+      .then((r) => { if (!cancelled) setItems(r.items); })
+      .catch((e: { message?: string }) => { if (!cancelled) setError(e.message ?? "Failed to load"); });
+    return () => { cancelled = true; };
+  }, []);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    load(search.trim());
+    const q = search.trim() || undefined;
+    setError(null);
+    adminApi.getHouseholds(q)
+      .then((r) => setItems(r.items))
+      .catch((e: { message?: string }) => setError(e.message ?? "Failed to load"));
   }
 
   return (

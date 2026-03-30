@@ -7,18 +7,29 @@ export function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  function load(q?: string) {
+  useEffect(() => {
+    let cancelled = false;
+    adminApi.getUsers(undefined)
+      .then((r) => { if (!cancelled) setItems(r.items); })
+      .catch((e: { message?: string }) => { if (!cancelled) setError(e.message ?? "Failed to load"); });
+    return () => { cancelled = true; };
+  }, []);
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = search.trim() || undefined;
     setError(null);
-    adminApi.getUsers(q || undefined)
+    adminApi.getUsers(q)
       .then((r) => setItems(r.items))
       .catch((e: { message?: string }) => setError(e.message ?? "Failed to load"));
   }
 
-  useEffect(() => { load(); }, []);
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    load(search.trim());
+  function refresh() {
+    const q = search.trim() || undefined;
+    setError(null);
+    adminApi.getUsers(q)
+      .then((r) => setItems(r.items))
+      .catch((e: { message?: string }) => setError(e.message ?? "Failed to load"));
   }
 
   async function toggleDisabled(user: AdminUserSummary) {
@@ -29,7 +40,7 @@ export function AdminUsersPage() {
       } else {
         await adminApi.disableUser(user.userId);
       }
-      load(search.trim() || undefined);
+      refresh();
     } catch (e) {
       const err = e as { message?: string };
       setActionError(err.message ?? "Action failed");

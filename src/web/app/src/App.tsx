@@ -59,6 +59,7 @@ function AuthedApp({ deploymentMode }: { deploymentMode: DeploymentModeResponse[
   const { bootstrapStatus } = useAppSelector((s) => s.household);
   const uiLanguage = useAppSelector((s) => s.ui.language);
   const { i18n } = useTranslation("common");
+  const { user } = useAuth();
 
   useEffect(() => {
     dispatch(bootstrapHousehold());
@@ -81,6 +82,9 @@ function AuthedApp({ deploymentMode }: { deploymentMode: DeploymentModeResponse[
   }
 
   if (bootstrapStatus === "needsOnboarding") {
+    if (user?.isOperator) {
+      return <Navigate to="/admin" replace />;
+    }
     if (deploymentMode === "CloudHosted") {
       return (
         <Routes>

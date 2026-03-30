@@ -14,6 +14,19 @@
         "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22222"
       }
     },
+    "cloudhostedlocal": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:17380;http://localhost:15190",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "CloudHostedLocal",
+        "DOTNET_ENVIRONMENT": "CloudHostedLocal",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21348",
+        "ASPIRE_DASHBOARD_MCP_ENDPOINT_URL": "https://localhost:23203",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22321"
+      }
+    },
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
