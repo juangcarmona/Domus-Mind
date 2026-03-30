@@ -5,4 +5,10 @@ public sealed record AdminSummaryResponse(
     int HouseholdCount,
     int UserCount,
     int PendingInvitationCount,
-    bool IsSystemInitialized);
+    bool IsSystemInitialized,
+    // Effective deployment policy — safe for operator diagnostics
+    bool AllowHouseholdCreation,
+    bool InvitationsEnabled,
+    bool RequireInvitationForSignup,
+    bool AdminToolsEnabled,
+    int MaxHouseholdsPerDeployment);

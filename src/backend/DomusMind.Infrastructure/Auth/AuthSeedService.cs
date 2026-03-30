@@ -24,7 +24,9 @@ public sealed class AuthSeedService
 
         if (!options.Enabled)
         {
-            logger.LogDebug("Auth bootstrap fallback is disabled. Skipping.");
+            logger.LogDebug(
+                "Bootstrap admin: Enabled={BootstrapAdminEnabled}. Skipping — bootstrap is disabled.",
+                options.Enabled);
             return;
         }
 
@@ -32,7 +34,10 @@ public sealed class AuthSeedService
 
         if (await initState.IsInitializedAsync(cancellationToken))
         {
-            logger.LogInformation("Auth bootstrap fallback skipped: system is already initialized.");
+            logger.LogInformation(
+                "Bootstrap admin seeding skipped: system already initialized. BootstrapAdminEnabled={BootstrapAdminEnabled} EmailConfigured={EmailConfigured}",
+                options.Enabled,
+                !string.IsNullOrWhiteSpace(options.Email));
             return;
         }
 
@@ -47,10 +52,14 @@ public sealed class AuthSeedService
             // User already exists (e.g. created in a previous partial run before MarkInitialized could be called).
             // Reconcile state: mark the system initialized so subsequent restarts are consistent.
             if (!existing.IsOperator)
-                logger.LogWarning("Bootstrap: user {Email} already exists but does not have the Operator flag. Manual correction may be required.", email);
+                logger.LogWarning(
+                    "Bootstrap admin: user {Email} already exists but does not have the Operator flag. Manual correction may be required.",
+                    email);
 
             await initState.MarkInitializedAsync(cancellationToken);
-            logger.LogInformation("Bootstrap fallback: user {Email} already exists. System marked as initialized.", email);
+            logger.LogInformation(
+                "Bootstrap admin: user {Email} already exists. Marking system as initialized.",
+                email);
             return;
         }
 
@@ -60,6 +69,8 @@ public sealed class AuthSeedService
         await repository.SaveChangesAsync(cancellationToken);
         await initState.MarkInitializedAsync(cancellationToken);
 
-        logger.LogInformation("Bootstrap fallback: admin user created for {Email}. System marked as initialized.", email);
+        logger.LogInformation(
+            "Bootstrap admin: operator account seeded. Email={Email} IsInitialized=true",
+            email);
     }
 }

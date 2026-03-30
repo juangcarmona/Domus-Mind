@@ -54,7 +54,13 @@ function ThemeApplier() {
   return null;
 }
 
-function AuthedApp({ deploymentMode }: { deploymentMode: DeploymentModeResponse["deploymentMode"] }) {
+function AuthedApp({
+  deploymentMode,
+  canCreateHousehold,
+}: {
+  deploymentMode: DeploymentModeResponse["deploymentMode"];
+  canCreateHousehold: boolean;
+}) {
   const dispatch = useAppDispatch();
   const { bootstrapStatus } = useAppSelector((s) => s.household);
   const uiLanguage = useAppSelector((s) => s.ui.language);
@@ -82,10 +88,10 @@ function AuthedApp({ deploymentMode }: { deploymentMode: DeploymentModeResponse[
   }
 
   if (bootstrapStatus === "needsOnboarding") {
-    if (user?.isOperator) {
+    if (user?.isOperator && deploymentMode === "CloudHosted") {
       return <Navigate to="/admin" replace />;
     }
-    if (deploymentMode === "CloudHosted") {
+    if (deploymentMode === "CloudHosted" && !canCreateHousehold) {
       return (
         <Routes>
           <Route path="*" element={<CloudHostedNoAccessPage />} />
@@ -154,11 +160,13 @@ function AppRoutes() {
   const { user, isLoading } = useAuth();
   const [setupStatus, setSetupStatus] = useState<"loading" | "needed" | "done">("loading");
   const [deploymentMode, setDeploymentMode] = useState<DeploymentModeResponse["deploymentMode"]>("SingleInstance");
+  const [canCreateHousehold, setCanCreateHousehold] = useState(true);
 
   useEffect(() => {
     Promise.all([setupApi.getStatus(), platformApi.getDeploymentMode()])
-      .then(([{ isInitialized }, { deploymentMode: mode }]) => {
+      .then(([{ isInitialized }, { deploymentMode: mode, canCreateHousehold: canCreate }]) => {
         setDeploymentMode(mode);
+        setCanCreateHousehold(canCreate);
         setSetupStatus(isInitialized ? "done" : "needed");
       })
       .catch(() => setSetupStatus("done")); // on API error, fall through to normal auth flow
@@ -196,7 +204,7 @@ function AppRoutes() {
     );
   }
 
-  return <AuthedApp deploymentMode={deploymentMode} />;
+  return <AuthedApp deploymentMode={deploymentMode} canCreateHousehold={canCreateHousehold} />;
 }
 
 export default function App() {

@@ -102,7 +102,7 @@ resource kvSecretConnectionString 'Microsoft.KeyVault/vaults/secrets@2023-07-01'
 
 // ---------- PostgreSQL ----------
 
-resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01' = {
+resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2022-12-01' = {
   name: dbServerName
   location: location
   sku: {
@@ -126,14 +126,14 @@ resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01' =
   }
 }
 
-resource postgresDb 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-12-01-preview' = {
+resource postgresDb 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2022-12-01' = {
   parent: postgresServer
   name: dbName
 }
 
 // Temporary bootstrap rule only.
 // Remove after you add specific firewall rules for the web app outbound IPs.
-resource postgresFirewallAllowAzure 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2023-12-01-preview' = if (allowBroadAzurePostgresAccess) {
+resource postgresFirewallAllowAzure 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2022-12-01' = if (allowBroadAzurePostgresAccess) {
   parent: postgresServer
   name: 'AllowAllAzureServices'
   properties: {
@@ -197,6 +197,10 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
         {
           name: 'Deployment__AdminToolsEnabled'
           value: 'true'
+        }
+        {
+          name: 'Deployment__MaxHouseholdsPerDeployment'
+          value: '0'
         }
         {
           name: 'ConnectionStrings__domusmind'

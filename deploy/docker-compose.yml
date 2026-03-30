@@ -47,6 +47,7 @@ services:
       Deployment__RequireInvitationForSignup: ${REQUIRE_INVITATION_FOR_SIGNUP:-false}
       Deployment__EmailEnabled: ${EMAIL_ENABLED:-false}
       Deployment__AdminToolsEnabled: ${ADMIN_TOOLS_ENABLED:-false}
+      Deployment__MaxHouseholdsPerDeployment: ${MAX_HOUSEHOLDS_PER_DEPLOYMENT:-0}
       # First-run bootstrap admin - disable after initial setup.
       # BootstrapAdmin__Enabled:  true
       # BootstrapAdmin__Email:    ${BOOTSTRAP_ADMIN_EMAIL}

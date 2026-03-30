@@ -122,6 +122,7 @@ public sealed class GetCurrentDeploymentModeQueryHandlerTests
         public bool RequireInvitationForSignup { get; }
         public bool EmailEnabled { get; }
         public bool SupportsAdminTools { get; }
+        public int MaxHouseholdsPerDeployment => 0;
     }
 
     private sealed class PermitAllPolicy : IHouseholdProvisioningPolicy

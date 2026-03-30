@@ -17,4 +17,5 @@ public sealed class DeploymentModeContext : IDeploymentModeContext
     public bool RequireInvitationForSignup => _settings.RequireInvitationForSignup;
     public bool EmailEnabled => _settings.EmailEnabled;
     public bool SupportsAdminTools => _settings.AdminToolsEnabled;
+    public int MaxHouseholdsPerDeployment => _settings.MaxHouseholdsPerDeployment;
 }

@@ -109,4 +109,5 @@ internal sealed class StubDeploymentModeContext : IDeploymentModeContext
     public bool RequireInvitationForSignup => false;
     public bool EmailEnabled => false;
     public bool SupportsAdminTools => false;
+    public int MaxHouseholdsPerDeployment => 0;
 }

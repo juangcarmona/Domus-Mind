@@ -46,6 +46,11 @@ public sealed class GetAdminSummaryQueryHandler : IQueryHandler<GetAdminSummaryQ
             HouseholdCount: householdCount,
             UserCount: userCount,
             PendingInvitationCount: pendingCount,
-            IsSystemInitialized: isInitialized);
+            IsSystemInitialized: isInitialized,
+            AllowHouseholdCreation: _deployment.CanCreateHousehold,
+            InvitationsEnabled: _deployment.InvitationsEnabled,
+            RequireInvitationForSignup: _deployment.RequireInvitationForSignup,
+            AdminToolsEnabled: _deployment.SupportsAdminTools,
+            MaxHouseholdsPerDeployment: _deployment.MaxHouseholdsPerDeployment);
     }
 }

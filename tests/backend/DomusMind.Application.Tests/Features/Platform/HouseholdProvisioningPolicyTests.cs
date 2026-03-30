@@ -3,6 +3,7 @@ using DomusMind.Infrastructure.Persistence;
 using DomusMind.Infrastructure.Platform;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace DomusMind.Application.Tests.Features.Platform;
 
@@ -16,7 +17,7 @@ public sealed class HouseholdProvisioningPolicyTests
     private static HouseholdProvisioningPolicy BuildPolicy(
         DomusMindDbContext db,
         IDeploymentModeContext context)
-        => new(context, db);
+        => new(context, db, NullLogger<HouseholdProvisioningPolicy>.Instance);
 
     private static StubDeploymentModeContext SingleInstance(
         bool allowCreation = true,
@@ -26,8 +27,9 @@ public sealed class HouseholdProvisioningPolicyTests
     private static StubDeploymentModeContext CloudHosted(
         bool allowCreation = true,
         bool invitationsEnabled = false,
-        bool requireInvitationForSignup = false)
-        => new(DeploymentMode.CloudHosted, allowCreation, invitationsEnabled: invitationsEnabled, requireInvitationForSignup: requireInvitationForSignup);
+        bool requireInvitationForSignup = false,
+        int maxHouseholds = 0)
+        => new(DeploymentMode.CloudHosted, allowCreation, invitationsEnabled: invitationsEnabled, requireInvitationForSignup: requireInvitationForSignup, maxHouseholdsPerDeployment: maxHouseholds);
 
     [Fact]
     public async Task SingleInstance_NoHouseholds_Permits()
@@ -107,6 +109,66 @@ public sealed class HouseholdProvisioningPolicyTests
         result.Allowed.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task CloudHosted_MaxHouseholdsNotReached_Permits()
+    {
+        var db = CreateDb();
+        var policy = BuildPolicy(db, CloudHosted(maxHouseholds: 5));
+
+        var result = await policy.EvaluateAsync(CancellationToken.None);
+
+        result.Allowed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CloudHosted_MaxHouseholdsReached_DeniesWithMaxHouseholdsReached()
+    {
+        var db = CreateDb();
+        // Seed 3 families
+        for (var i = 0; i < 3; i++)
+        {
+            var family = Domain.Family.Family.Create(
+                Domain.Family.FamilyId.New(),
+                Domain.Family.ValueObjects.FamilyName.Create($"Family {i}"),
+                null,
+                DateTime.UtcNow);
+            db.Families.Add(family);
+        }
+        await db.SaveChangesAsync();
+
+        // Cap = 3 → already at limit
+        var policy = BuildPolicy(db, CloudHosted(maxHouseholds: 3));
+
+        var result = await policy.EvaluateAsync(CancellationToken.None);
+
+        result.Allowed.Should().BeFalse();
+        result.ReasonCode.Should().Be("max_households_reached");
+    }
+
+    [Fact]
+    public async Task CloudHosted_ZeroMaxHouseholds_AlwaysPermits()
+    {
+        var db = CreateDb();
+        // Seed many families
+        for (var i = 0; i < 10; i++)
+        {
+            var family = Domain.Family.Family.Create(
+                Domain.Family.FamilyId.New(),
+                Domain.Family.ValueObjects.FamilyName.Create($"Family {i}"),
+                null,
+                DateTime.UtcNow);
+            db.Families.Add(family);
+        }
+        await db.SaveChangesAsync();
+
+        // 0 = unlimited
+        var policy = BuildPolicy(db, CloudHosted(maxHouseholds: 0));
+
+        var result = await policy.EvaluateAsync(CancellationToken.None);
+
+        result.Allowed.Should().BeTrue();
+    }
+
     // ── Stub ─────────────────────────────────────────────────────────────────
 
     private sealed class StubDeploymentModeContext : IDeploymentModeContext
@@ -115,12 +177,14 @@ public sealed class HouseholdProvisioningPolicyTests
             DeploymentMode mode,
             bool canCreateHousehold = true,
             bool invitationsEnabled = false,
-            bool requireInvitationForSignup = false)
+            bool requireInvitationForSignup = false,
+            int maxHouseholdsPerDeployment = 0)
         {
             Mode = mode;
             CanCreateHousehold = canCreateHousehold;
             InvitationsEnabled = invitationsEnabled;
             RequireInvitationForSignup = requireInvitationForSignup;
+            MaxHouseholdsPerDeployment = maxHouseholdsPerDeployment;
         }
 
         public DeploymentMode Mode { get; }
@@ -129,5 +193,6 @@ public sealed class HouseholdProvisioningPolicyTests
         public bool RequireInvitationForSignup { get; }
         public bool EmailEnabled => false;
         public bool SupportsAdminTools => false;
+        public int MaxHouseholdsPerDeployment { get; }
     }
 }

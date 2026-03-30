@@ -19,4 +19,8 @@ public sealed record ProvisioningPolicyResult(
     public static ProvisioningPolicyResult DenyInvitationRequired() =>
         new(false, "invitation_required",
             "An invitation is required to create a household in this deployment.");
+
+    public static ProvisioningPolicyResult DenyMaxHouseholdsReached() =>
+        new(false, "max_households_reached",
+            "The maximum number of households for this deployment has been reached.");
 }

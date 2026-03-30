@@ -61,5 +61,9 @@ public sealed class SetupController : ControllerBase
         {
             return Conflict(new { code = "setup.email_already_taken", message = ex.Message });
         }
+        catch (SetupException ex) when (ex.Code == SetupErrorCode.NotApplicable)
+        {
+            return BadRequest(new { code = "setup.not_applicable", message = ex.Message });
+        }
     }
 }

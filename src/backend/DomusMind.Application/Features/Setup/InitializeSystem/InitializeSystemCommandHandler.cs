@@ -1,4 +1,5 @@
 using DomusMind.Application.Abstractions.Messaging;
+using DomusMind.Application.Abstractions.Platform;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Application.Abstractions.System;
 using DomusMind.Contracts.Setup;
@@ -8,15 +9,18 @@ namespace DomusMind.Application.Features.Setup.InitializeSystem;
 public sealed class InitializeSystemCommandHandler
     : ICommandHandler<InitializeSystemCommand, InitializeSystemResponse>
 {
+    private readonly IDeploymentModeContext _deployment;
     private readonly ISystemInitializationState _state;
     private readonly IAuthUserRepository _users;
     private readonly IPasswordHasher _hasher;
 
     public InitializeSystemCommandHandler(
+        IDeploymentModeContext deployment,
         ISystemInitializationState state,
         IAuthUserRepository users,
         IPasswordHasher hasher)
     {
+        _deployment = deployment;
         _state = state;
         _users = users;
         _hasher = hasher;
@@ -26,6 +30,10 @@ public sealed class InitializeSystemCommandHandler
         InitializeSystemCommand command,
         CancellationToken cancellationToken)
     {
+        if (_deployment.Mode == DeploymentMode.SingleInstance)
+            throw new SetupException(SetupErrorCode.NotApplicable,
+                "System initialization is not applicable in SingleInstance mode.");
+
         if (await _state.IsInitializedAsync(cancellationToken))
             throw new SetupException(SetupErrorCode.AlreadyInitialized, "The system has already been initialized.");
 

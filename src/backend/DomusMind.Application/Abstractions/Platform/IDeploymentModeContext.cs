@@ -13,4 +13,6 @@ public interface IDeploymentModeContext
     bool RequireInvitationForSignup { get; }
     bool EmailEnabled { get; }
     bool SupportsAdminTools { get; }
+    /// <summary>Maximum households allowed in this deployment. 0 means unlimited.</summary>
+    int MaxHouseholdsPerDeployment { get; }
 }

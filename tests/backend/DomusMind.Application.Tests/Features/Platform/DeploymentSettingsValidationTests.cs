@@ -91,4 +91,39 @@ public sealed class DeploymentSettingsValidationTests
         var settings = new DeploymentSettings { Mode = "bogus" };
         settings.ResolvedMode.Should().Be(DomusMind.Application.Abstractions.Platform.DeploymentMode.SingleInstance);
     }
+
+    [Fact]
+    public void Validate_WithNegativeMaxHouseholds_ThrowsInvalidOperationException()
+    {
+        var settings = new DeploymentSettings { Mode = "CloudHosted", MaxHouseholdsPerDeployment = -1 };
+        var act = () => settings.Validate();
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*MaxHouseholdsPerDeployment cannot be negative*");
+    }
+
+    [Fact]
+    public void Validate_SingleInstanceWithMaxHouseholdsGreaterThanOne_ThrowsInvalidOperationException()
+    {
+        var settings = new DeploymentSettings { Mode = "SingleInstance", MaxHouseholdsPerDeployment = 2 };
+        var act = () => settings.Validate();
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*MaxHouseholdsPerDeployment must be 0 or 1*");
+    }
+
+    [Fact]
+    public void Validate_CloudHostedWithMaxHouseholdsEqualToOne_ThrowsInvalidOperationException()
+    {
+        var settings = new DeploymentSettings { Mode = "CloudHosted", MaxHouseholdsPerDeployment = 1 };
+        var act = () => settings.Validate();
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*MaxHouseholdsPerDeployment = 1 is not valid for CloudHosted mode*");
+    }
+
+    [Fact]
+    public void Validate_CloudHostedWithZeroMaxHouseholds_DoesNotThrow()
+    {
+        var settings = new DeploymentSettings { Mode = "CloudHosted", MaxHouseholdsPerDeployment = 0 };
+        var act = () => settings.Validate();
+        act.Should().NotThrow();
+    }
 }

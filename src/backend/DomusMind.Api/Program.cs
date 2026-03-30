@@ -4,7 +4,9 @@ using DomusMind.Infrastructure.Auth;
 using DomusMind.Infrastructure.DependencyInjection;
 using DomusMind.Infrastructure.Languages;
 using DomusMind.Infrastructure.Persistence;
+using DomusMind.Infrastructure.Platform;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +16,23 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddDomusMindAuthentication(builder.Configuration);
 builder.Services.AddDomusMindAuthorization();
 builder.Services.AddDomusMindOpenApi();
+builder.Services.AddApplicationInsightsTelemetry();
 
 var app = builder.Build();
+
+// Log effective deployment policy at startup — observable in logs and App Insights.
+var deploymentSettings = app.Services.GetRequiredService<DeploymentSettings>();
+var bootstrapOptions = app.Services.GetRequiredService<IOptions<BootstrapAdminOptions>>().Value;
+app.Logger.LogInformation(
+    "DomusMind startup: Mode={DeploymentMode} AllowHouseholdCreation={AllowHouseholdCreation} InvitationsEnabled={InvitationsEnabled} RequireInvitationForSignup={RequireInvitationForSignup} AdminToolsEnabled={AdminToolsEnabled} MaxHouseholdsPerDeployment={MaxHouseholdsPerDeployment} BootstrapAdminEnabled={BootstrapAdminEnabled} BootstrapAdminEmailConfigured={BootstrapAdminEmailConfigured}",
+    deploymentSettings.Mode,
+    deploymentSettings.AllowHouseholdCreation,
+    deploymentSettings.InvitationsEnabled,
+    deploymentSettings.RequireInvitationForSignup,
+    deploymentSettings.AdminToolsEnabled,
+    deploymentSettings.MaxHouseholdsPerDeployment,
+    bootstrapOptions.Enabled,
+    !string.IsNullOrWhiteSpace(bootstrapOptions.Email));
 
 app.UseSwagger();
 app.UseSwaggerUI();
