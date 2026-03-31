@@ -120,4 +120,13 @@ export default {
     changePassword: "Change password",
     householdMembers: "Household members",
   },
+  about: {
+    title: "About",
+    version: "Version",
+    releaseDate: "Released on",
+    commit: "Commit",
+    channel: "Channel",
+    prerelease: "Pre-release",
+    stable: "Stable",
+  },
 } as const;

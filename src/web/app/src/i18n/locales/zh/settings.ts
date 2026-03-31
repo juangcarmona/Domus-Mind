@@ -118,4 +118,13 @@ export default {
     changePassword: "修改密码",
     householdMembers: "家庭成员",
   },
+  about: {
+    title: "关于",
+    version: "版本",
+    releaseDate: "发布日期",
+    commit: "提交",
+    channel: "渠道",
+    prerelease: "预发布",
+    stable: "稳定版",
+  },
 } as const;

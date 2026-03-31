@@ -118,4 +118,13 @@ export default {
     changePassword: "Cambiar contraseña",
     householdMembers: "Miembros del hogar",
   },
+  about: {
+    title: "Acerca de",
+    version: "Versión",
+    releaseDate: "Publicado el",
+    commit: "Commit",
+    channel: "Canal",
+    prerelease: "Prelanzamiento",
+    stable: "Estable",
+  },
 } as const;
