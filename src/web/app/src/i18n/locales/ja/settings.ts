@@ -118,4 +118,13 @@ export default {
     changePassword: "パスワード変更",
     householdMembers: "世帯メンバー",
   },
+  about: {
+    title: "このアプリについて",
+    version: "バージョン",
+    releaseDate: "リリース日",
+    commit: "コミット",
+    channel: "チャンネル",
+    prerelease: "プレリリース",
+    stable: "安定版",
+  },
 } as const;

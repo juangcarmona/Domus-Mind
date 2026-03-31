@@ -146,33 +146,83 @@ DomusMind uses semantic versioning: `MAJOR.MINOR.PATCH`
 
 Docker images are tagged with:
 
-- `1.2.3` - pinned to an exact release
-- `1.2` - latest patch on that minor version
-- `latest` - current stable release
+- `v1.2.3` — exact release (immutable, prefixed with `v`)
+- `1.2.3` — same commit, no prefix (immutable)
+- `sha-<shortsha>` — commit-pinned reference
 
-Users who want to control their own update schedule pin to a specific version in `.env`.
+Mutable aliases such as `latest` and `1.2` are not published for releases. Users pin to an exact version in `.env`.
 
 ---
 
 ## Release Pipeline
 
-**Trigger:** push of a tag matching `v*.*.*` (e.g. `v1.0.0`)
+**Trigger:** manual `workflow_dispatch` from the Actions tab on the `main` branch.
+
+**Inputs:**
+
+| Input | Type | Description |
+|---|---|---|
+| `version` | string, required | Semver string without leading `v` — e.g. `0.1.4` or `0.1.4-beta.1` |
+| `prerelease` | boolean, required | Whether to mark the GitHub Release as a pre-release |
 
 **Steps:**
 
-1. Restore and build the .NET solution
-2. Run backend unit and integration tests
-3. Run frontend build validation as part of the unified container build
-4. Build the `domusmind` Docker image and push to `ghcr.io/<owner>/domusmind` with version tags
-5. Generate release notes from the commit log since the previous tag
-6. Publish a GitHub Release with:
+1. Validate `version` matches a semver pattern (supports optional prerelease and build metadata).
+2. Fail if not on `main`.
+3. Fail if the tag `v<version>` already exists.
+4. Run backend restore, build, and test gate.
+5. Create and push annotated git tag `v<version>`.
+6. Generate `src/web/app/src/generated/version.ts` with version, release date, short SHA, and prerelease flag.
+7. Build the `domusmind` Docker image (with the generated version metadata baked in) and push to GHCR with three immutable tags: `v<version>`, `<version>`, `sha-<shortsha>`.
+8. Validate the `docker-compose.yml` resolves correctly.
+9. Publish a GitHub Release with:
+   - auto-generated release notes from commit history
    - `docker-compose.yml`
    - `.env.example`
-   - `CHANGELOG.md` entry for this version
+   - `deploy/README.md`
 
-**CI tool:** GitHub Actions
+**CI tool:** GitHub Actions (`.github/workflows/release.yml`)
 
-Main branch builds (non-tagged) produce images tagged `edge` for integration testing only.
+### Publishing a pre-release
+
+```
+Actions → release → Run workflow
+  version:    0.1.4-beta.1
+  prerelease: true (checked)
+```
+
+This creates tag `v0.1.4-beta.1`, a GitHub pre-release, and GHCR images tagged
+`v0.1.4-beta.1`, `0.1.4-beta.1`, and `sha-<shortsha>`.
+
+### Publishing a stable release
+
+```
+Actions → release → Run workflow
+  version:    0.1.4
+  prerelease: false (unchecked)
+```
+
+This creates tag `v0.1.4`, a normal GitHub Release, and GHCR images tagged
+`v0.1.4`, `0.1.4`, and `sha-<shortsha>`.
+
+Main branch builds (non-release) produce images tagged `:edge` via the separate
+`docker-edge` workflow for integration testing.
+
+---
+
+## Release Metadata in the Web App
+
+During each release build the workflow generates `src/web/app/src/generated/version.ts`
+with the following exports, which are baked into the compiled web bundle:
+
+```ts
+export const APP_VERSION       = "v0.1.4-beta.1";
+export const APP_RELEASE_DATE  = "2026-03-31";
+export const APP_COMMIT_SHA    = "abc1234";
+export const APP_IS_PRERELEASE = true;
+```
+
+These are consumed by the **About** section in Settings (`Settings → About`).
 
 ---
 
