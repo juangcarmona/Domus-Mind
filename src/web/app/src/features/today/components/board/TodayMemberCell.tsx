@@ -14,11 +14,14 @@ interface TodayMemberCellProps {
 }
 
 /**
- * Compact, non-expandable snapshot cell for a single household member.
+ * Compact member row for the Today panel.
  *
- * Shows up to 2 entries (collapsed view from splitForDisplay).
- * Clicking the cell navigates to the member agenda page (via onMemberClick).
- * Clicking an entry item opens the entity edit modal without triggering navigation.
+ * Layout has two independent zones:
+ *   Left  (tp-cell-left)  — avatar + name; tapping navigates to member agenda.
+ *   Right (tp-cell-right) — up to 2 entry chips; each tapping opens edit modal.
+ *
+ * Desktop: rendered as a card in the auto-fit grid (tp-member-grid).
+ * Mobile:  rendered as a flat row with left/right zones side-by-side.
  */
 export function TodayMemberCell({
   memberId,
@@ -36,20 +39,21 @@ export function TodayMemberCell({
   const displayName = householdMember?.preferredName || name;
 
   return (
-    <div
-      className="tp-cell"
-      role="button"
-      tabIndex={0}
-      aria-label={displayName}
-      onClick={() => onMemberClick(memberId)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onMemberClick(memberId);
-        }
-      }}
-    >
-      <div className="tp-cell-header">
+    <div className="tp-cell">
+      {/* ---- Left zone: avatar + name → navigates to member agenda ---- */}
+      <div
+        className="tp-cell-left"
+        role="button"
+        tabIndex={0}
+        aria-label={displayName}
+        onClick={() => onMemberClick(memberId)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onMemberClick(memberId);
+          }
+        }}
+      >
         <MemberAvatar
           initial={householdMember?.avatarInitial ?? displayName[0]?.toUpperCase() ?? "?"}
           avatarIconId={householdMember?.avatarIconId}
@@ -57,31 +61,28 @@ export function TodayMemberCell({
           size={26}
         />
         <span className="tp-cell-name" title={displayName}>{displayName}</span>
-        {overflowCount > 0 && (
-          <span className="tp-cell-overflow">+{overflowCount}</span>
-        )}
       </div>
 
-      <div className="tp-cell-entries">
+      {/* ---- Right zone: entry chips ---- */}
+      <div className="tp-cell-right">
         {isEmpty ? (
           <span className="tp-cell-empty">{t("day.nothingToday")}</span>
         ) : (
-          visibleCollapsed.map((entry) => (
-            // Stop propagation so entry clicks open the edit modal
-            // rather than also triggering member navigation.
-            <div
-              key={entry.id}
-              className="tp-cell-entry-wrap"
-              onClick={(e) => e.stopPropagation()}
-            >
+          <>
+            {visibleCollapsed.map((entry) => (
               <CalendarEntryItem
+                key={entry.id}
                 entry={entry}
                 onClick={() => onItemClick(entry.sourceType, entry.id)}
               />
-            </div>
-          ))
+            ))}
+            {overflowCount > 0 && (
+              <span className="tp-cell-overflow">+{overflowCount}</span>
+            )}
+          </>
         )}
       </div>
     </div>
   );
 }
+

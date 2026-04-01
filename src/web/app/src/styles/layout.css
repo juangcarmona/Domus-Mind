@@ -43,4 +43,22 @@
   margin-bottom: 1rem;
 }
 
+/* ================================================================
+   Mobile density: global layout overrides (max-width: 767px)
+   ================================================================ */
+
+@media (max-width: 767px) {
+  /* Tighter page padding — frees horizontal space */
+  .app-main,
+  .l-page {
+    padding: 0.75rem 0;
+  }
+
+  /* Page headers: reduce bottom margin */
+  .page-header,
+  .l-page-header {
+    margin-bottom: 0.75rem;
+    padding: 0 0.75rem;
+  }
+}
 

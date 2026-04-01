@@ -2,6 +2,13 @@
    Horizontal Timeline Ruler
    ================================================================ */
 
+/* Hidden on mobile — redundant now that Home uses Today + Month only */
+@media (max-width: 767px) {
+  .coord-ruler-section {
+    display: none;
+  }
+}
+
 .coord-ruler-section {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);

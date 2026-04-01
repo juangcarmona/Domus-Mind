@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { WeeklyGridResponse } from "../../types";
 import {
@@ -8,6 +9,7 @@ import {
 import { CalendarEntryItem } from "../shared/CalendarEntryItem";
 import { TodayMemberCell } from "./TodayMemberCell";
 import { HouseholdLogo } from "../../../../components/HouseholdLogo";
+import { useIsMobile } from "../../../../hooks/useIsMobile";
 
 // Only show People roles in the Today Panel. Pets are excluded (V1 scope).
 const ACTOR_ROLES = new Set(["Adult", "Child", "Caregiver"]);
@@ -43,6 +45,24 @@ export function TodayBoard({
 }: TodayBoardProps) {
   const { t, i18n } = useTranslation("today");
   const { t: tCommon } = useTranslation("common");
+  const isMobile = useIsMobile();
+
+  // Swipe gesture: left = next day, right = prev day.
+  const touchStartX = useRef<number | null>(null);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(dx) > 50) {
+      if (dx < 0) onNextDay();
+      else onPrevDay();
+    }
+    touchStartX.current = null;
+  }
 
   const dateLabel = new Date(selectedDate + "T00:00:00").toLocaleDateString(
     i18n.language,
@@ -80,17 +100,26 @@ export function TodayBoard({
   const sharedDisplayState = splitForDisplay(sharedEntries);
 
   return (
-    <div className="today-summary coord-day-panel">
+    <div
+      className="today-summary coord-day-panel"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* ---- Header with day navigation ---- */}
       <div className="today-summary-header coord-day-header">
-        <button
-          className="btn btn-ghost btn-sm"
-          onClick={onPrevDay}
-          type="button"
-          aria-label={t("nav.prevDay")}
-        >
-          ‹
-        </button>
+        {!isMobile ? (
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={onPrevDay}
+            type="button"
+            aria-label={t("nav.prevDay")}
+          >
+            ‹
+          </button>
+        ) : (
+          /* Swipe affordance: muted chevron hints, not interactive buttons */
+          <span className="tp-swipe-hint" aria-hidden="true">‹</span>
+        )}
         <div className="coord-day-header-label">
           <span className="today-summary-label">
             {isToday ? t("nav.today") : t("day.title")}
@@ -107,14 +136,18 @@ export function TodayBoard({
               {t("nav.today")}
             </button>
           )}
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={onNextDay}
-            type="button"
-            aria-label={t("nav.nextDay")}
-          >
-            ›
-          </button>
+          {!isMobile ? (
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={onNextDay}
+              type="button"
+              aria-label={t("nav.nextDay")}
+            >
+              ›
+            </button>
+          ) : (
+            <span className="tp-swipe-hint" aria-hidden="true">›</span>
+          )}
         </div>
       </div>
 
@@ -139,56 +172,44 @@ export function TodayBoard({
         </div>
       )}
 
-      {/* ---- Household row (shared / unassigned items only) ---- */}
-      <div
-        className="tp-cell"
-        role={onSharedClick ? "button" : undefined}
-        tabIndex={onSharedClick ? 0 : undefined}
-        aria-label={onSharedClick ? t("day.household") : undefined}
-        onClick={onSharedClick}
-        onKeyDown={onSharedClick ? (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onSharedClick();
-          }
-        } : undefined}
-      >
-        <div className="today-household-label">
+      {/* ---- Household row (shared / unassigned items) ---- */}
+      <div className="tp-cell tp-cell--household">
+        {/* Left zone: logo → navigates to shared agenda */}
+        <div
+          className="tp-cell-left"
+          role={onSharedClick ? "button" : undefined}
+          tabIndex={onSharedClick ? 0 : undefined}
+          aria-label={onSharedClick ? t("day.household") : undefined}
+          onClick={onSharedClick}
+          onKeyDown={onSharedClick ? (e) => {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSharedClick(); }
+          } : undefined}
+        >
           <HouseholdLogo size={24} />
-          {/* {t("day.household")} */}
         </div>
-        {sharedDisplayState.isEmpty ? (
-          <span className="today-summary-empty tp-cell-empty">
-            {t("day.nothingToday")}
-          </span>
-        ) : (
-          <div className="today-household-chips">
-            {sharedDisplayState.activeItems.map((entry) => (
-              <div
-                key={entry.id}
-                className="tp-cell-entry-wrap"
-                onClick={(e) => e.stopPropagation()}
-              >
+        {/* Right zone: shared items */}
+        <div className="tp-cell-right">
+          {sharedDisplayState.isEmpty ? (
+            <span className="tp-cell-empty">{t("day.nothingToday")}</span>
+          ) : (
+            <>
+              {sharedDisplayState.activeItems.map((entry) => (
                 <CalendarEntryItem
+                  key={entry.id}
                   entry={entry}
                   onClick={() => onItemClick(entry.sourceType, entry.id)}
                 />
-              </div>
-            ))}
-            {sharedDisplayState.completedItems.map((entry) => (
-              <div
-                key={entry.id}
-                className="tp-cell-entry-wrap"
-                onClick={(e) => e.stopPropagation()}
-              >
+              ))}
+              {sharedDisplayState.completedItems.map((entry) => (
                 <CalendarEntryItem
+                  key={entry.id}
                   entry={entry}
                   onClick={() => onItemClick(entry.sourceType, entry.id)}
                 />
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -268,6 +268,46 @@
   margin-top: 1rem;
 }
 
+/* ---- Mobile: bottom-sheet style modals ---- */
+@media (max-width: 767px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    justify-content: stretch;
+    padding: 0;
+  }
+
+  .modal,
+  .c-modal {
+    max-width: 100%;
+    width: 100%;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: none;
+    padding: 1.25rem 1rem 1.5rem;
+    max-height: 92svh;
+    /* Safe area for home-indicator bar */
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+  }
+
+  .modal h2,
+  .c-modal h2 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .modal-footer,
+  .c-modal-footer {
+    flex-direction: column-reverse;
+    gap: 0.4rem;
+  }
+
+  .modal-footer .btn,
+  .c-modal-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 
 /* ---- Inline form row ---- */
 .inline-form {

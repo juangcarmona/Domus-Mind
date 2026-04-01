@@ -201,7 +201,6 @@
   background: color-mix(in srgb, var(--primary) 15%, var(--surface));
   border-color: color-mix(in srgb, var(--primary) 80%, var(--border));
   outline: none;
-  /* border-width: 2px; */
 }
 
 .tp-cell:focus-visible {
@@ -209,13 +208,21 @@
   outline-offset: 1px;
 }
 
-/* ---- Cell header (name + overflow count) ---- */
-.tp-cell-header {
+/* ---- Cell left zone (avatar + name) — desktop: acts as header row ---- */
+.tp-cell-left {
   display: flex;
   align-items: baseline;
   gap: 0.35rem;
 }
 
+/* ---- Cell right zone (entries) — desktop: acts as entry list ---- */
+.tp-cell-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+/* ---- Cell name ---- */
 .tp-cell-name {
   font-size: 0.75rem;
   font-weight: 700;
@@ -235,15 +242,8 @@
   white-space: nowrap;
 }
 
-/* ---- Entry list inside a cell ---- */
-.tp-cell-entries {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
+/* ---- Entry list inside a cell (desktop) ---- */
 .tp-cell-entry-wrap {
-  /* isolation wrapper so stopPropagation keeps cell-click separate */
   display: contents;
 }
 
@@ -256,20 +256,174 @@
 
 /* ================================================================
    Today Panel — wg-item overrides
-   The wg-item compact style is the baseline (see today-week.css).
-   Inside compact cells items use inline-flex to stay on one line
-   and truncate with ellipsis rather than wrapping.
+   Inside the right zone items stay on one line and truncate.
    ================================================================ */
 
-.tp-cell-entries .wg-item {
+.tp-cell-right .wg-item {
   display: inline-flex;
   width: 100%;
 }
 
-.tp-cell-entries .wg-item-title {
+.tp-cell-right .wg-item-title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* ---- Mobile inline summary (hidden on desktop) ---- */
+.tp-cell-summary {
+  display: none;
+}
 
+/* ---- Left / right zones: invisible wrappers on desktop ---- */
+.tp-cell-left {
+  display: contents;
+}
+.tp-cell-right {
+  display: contents;
+}
+
+/* ---- Swipe hint chevrons: only shown on mobile ---- */
+.tp-swipe-hint {
+  display: none;
+}
+
+/* ================================================================
+   Mobile overrides  (max-width: 767px)
+   ================================================================ */
+
+@media (max-width: 767px) {
+  /* ---- Page: add bottom padding so FAB doesn't overlap last item ---- */
+  .coord-page {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem);
+  }
+
+  /* ---- FAB: smaller + safe-area aware ---- */
+  .fab-add {
+    width: 2.75rem;
+    height: 2.75rem;
+    font-size: 1.5rem;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+    right: 1rem;
+  }
+
+  /* ---- Today board: strip card shell ---- */
+  .today-summary {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 0;
+  }
+
+  /* ---- Swipe hint chevrons ---- */
+  .tp-swipe-hint {
+    display: inline-block;
+    font-size: 1.1rem;
+    color: var(--muted);
+    opacity: 0.35;
+    user-select: none;
+    pointer-events: none;
+    padding: 0 0.25rem;
+    flex-shrink: 0;
+  }
+
+  /* ---- Remove old hidden-button approach ---- */
+  .coord-day-nav-btn--hidden {
+    display: none;
+  }
+
+  /* ---- Member grid: single-column flat list ---- */
+  .tp-member-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  /* ---- Top separator before member list ---- */
+  .tp-member-grid:first-child {
+    border-top: 1px solid var(--border);
+  }
+
+  /* ---- Cells: two-zone row — not the whole row is clickable ---- */
+  .tp-cell {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    min-height: 2.75rem;
+    padding: 0;
+    cursor: default;
+  }
+  .tp-cell:last-child {
+    border-bottom: none;
+  }
+
+  /* Left zone: avatar + name, tapping navigates to member */
+  .tp-cell-left {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 0 0 auto;
+    min-width: 5.5rem;
+    max-width: 42%;
+    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .tp-cell-left:hover,
+  .tp-cell-left:focus-visible {
+    background: color-mix(in srgb, var(--primary) 6%, transparent);
+    outline: none;
+  }
+  .tp-cell-left:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
+
+  /* Right zone: entry chips */
+  .tp-cell-right {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+    flex: 1;
+    min-width: 0;
+    padding: 0.45rem 0.6rem;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  /* Overflow badge in right zone */
+  .tp-cell-right .tp-cell-overflow {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  /* Household row: left zone non-navigable (just logo), right = items */
+  .tp-cell--household .tp-cell-left {
+    cursor: default;
+    min-width: 3.5rem;
+    max-width: 3.5rem;
+    justify-content: center;
+  }
+  .tp-cell--household .tp-cell-left[role="button"] {
+    cursor: pointer;
+  }
+
+  /* Entries inside right zone always shown (no collapsing) */
+  .tp-cell-right .wg-item {
+    width: 100%;
+  }
+  .tp-cell-right .wg-item-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

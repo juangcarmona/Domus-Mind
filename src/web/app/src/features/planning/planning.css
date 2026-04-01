@@ -150,6 +150,32 @@
   color: var(--muted);
 }
 
+/* ---- Mobile: planning modal tweaks ---- */
+@media (max-width: 767px) {
+  .planning-modal {
+    max-width: 100%;
+  }
+
+  /* Choice cards: full tap-target height, bigger text */
+  .planning-choice-card {
+    padding: 1rem 1rem;
+    gap: 0.25rem;
+  }
+
+  .planning-choice-label {
+    font-size: 1rem;
+  }
+
+  .planning-choice-hint {
+    font-size: 0.85rem;
+  }
+
+  .planning-choices {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
 
 /* ---- Planning: history affordance ---- */
 .planning-history-trigger {

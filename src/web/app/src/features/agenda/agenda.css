@@ -718,4 +718,143 @@
   white-space: nowrap;
 }
 
+/* ================================================================
+   Mobile overrides (max-width: 767px)
+   ================================================================ */
 
+@media (max-width: 767px) {
+  /* ---- Hide the sidebar (mini calendar + selected date card) ---- */
+  .agenda-sidebar {
+    display: none;
+  }
+
+  /* ---- Body: single column, no padding ---- */
+  .agenda-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    padding: 0 0 1rem;
+    gap: 0;
+  }
+
+  /* ---- Agenda page: no outer page padding ---- */
+  .agenda-page {
+    gap: 0;
+  }
+
+  /* ---- Header: tighter rows ---- */
+  .agenda-header {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .agenda-identity {
+    padding: 0.2rem 0.75rem 0.1rem;
+    border-bottom-color: transparent;
+  }
+
+  /* Reduce member name size slightly to fit more comfortably */
+  .agenda-member-name {
+    font-size: 0.85rem;
+  }
+
+  .agenda-date-nav {
+    padding: 0.1rem 0.5rem;
+  }
+
+  .agenda-date-text {
+    font-size: 0.78rem;
+  }
+
+  /* Tab bar: full height touch targets */
+  .agenda-view-tab {
+    padding: 0.45rem 0.5rem;
+    font-size: 0.82rem;
+  }
+
+  /* ---- Add-entry button: full width on mobile ---- */
+  .agenda-add-row {
+    padding: 0.25rem 0 0;
+    justify-content: stretch;
+  }
+
+  .agenda-add-btn {
+    width: 100%;
+    justify-content: center;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border-top: none;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .agenda-add-btn:hover {
+    background: color-mix(in srgb, var(--primary) 5%, transparent);
+    opacity: 1;
+    color: var(--primary);
+  }
+
+  /* ---- Week view: strip card containers, flat separator-only rows ---- */
+  .member-week-view {
+    gap: 0;
+  }
+
+  .mweek-day {
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    overflow: visible;
+    opacity: 1; /* override .mweek-day--empty opacity */
+  }
+  .mweek-day--empty {
+    border-style: solid; /* remove dashed border on mobile */
+    opacity: 0.7;
+  }
+
+  .mweek-day:last-child {
+    border-bottom: none;
+  }
+
+  .mweek-day-header {
+    padding: 0.3rem 0.75rem;
+    background: transparent;
+  }
+  .mweek-day--selected .mweek-day-header {
+    background: color-mix(in srgb, var(--primary) 6%, transparent);
+  }
+
+  .mweek-entry-list {
+    padding: 0.15rem 0.75rem 0.2rem;
+  }
+
+  .mweek-empty {
+    padding: 0.12rem 0.75rem 0.18rem;
+    font-size: 0.75rem;
+  }
+
+  /* ---- Day view: keep slot height at 1.5rem to match SLOT_H_REM in JS
+     (mismatching causes the current-time line to render at the wrong position) ---- */
+  .mday-timeline-panel {
+    border: none;
+    border-radius: 0;
+    max-height: calc(100dvh - 9rem);
+  }
+
+  .member-day-view {
+    gap: 0;
+  }
+
+  /* ---- Month view on Agenda: reduce cell min-height ---- */
+  .member-month-view .coord-month-cell {
+    min-height: 2.5rem;
+    padding: 0.25rem 0.2rem 0.3rem;
+  }
+
+  .member-month-view .coord-month-grid {
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+  }
+}

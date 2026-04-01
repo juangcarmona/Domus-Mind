@@ -15,11 +15,13 @@ import { WeeklyHouseholdGrid } from "../components/grid/WeeklyHouseholdGrid";
 import { TimelineRuler } from "../components/timeline/TimelineRuler";
 import { startOfWeek, toIsoDate, addDays, addMonths } from "../utils/dateUtils";
 import { useMonthGridCache } from "../hooks/useMonthGridCache";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 
 
 export function TodayPage() {
   const dispatch = useAppDispatch();
   const { t, i18n } = useTranslation("today");
+  const isMobile = useIsMobile();
 
   const family = useAppSelector((s) => s.household.family);
   const familyId = family?.familyId ?? "";
@@ -39,7 +41,9 @@ export function TodayPage() {
   }, []);
 
   // Mid-term section: local tab state
+  // On mobile, always show month (week grid is not rendered).
   const [midTermView, setMidTermView] = useState<"week" | "month">("week");
+  const effectiveMidTermView = isMobile ? "month" : midTermView;
 
   // Month view anchor - navigated independently of selectedDate
   const [monthAnchor, setMonthAnchor] = useState<string>(selectedDate);
@@ -175,29 +179,31 @@ export function TodayPage() {
       />
 
       {/* ── Section 2: Mid-term navigation (Week / Month) ── */}
-      <div className="coord-midterm-section">
-        {/* Centered tab switcher */}
-        <div className="coord-midterm-tabbar">
-          <button
-            className={`coord-midterm-tab${midTermView === "week" ? " coord-midterm-tab--active" : ""}`}
-            onClick={() => setMidTermView("week")}
-            type="button"
-          >
-            <span className="coord-midterm-tab-icon">▦</span>
-            {t("tabs.week")}
-          </button>
-          <button
-            className={`coord-midterm-tab${midTermView === "month" ? " coord-midterm-tab--active" : ""}`}
-            onClick={() => setMidTermView("month")}
-            type="button"
-          >
-            <span className="coord-midterm-tab-icon">🗓</span>
-            {t("tabs.month")}
-          </button>
-        </div>
+      <div className={`coord-midterm-section${isMobile ? " coord-midterm-section--mobile" : ""}`}>
+        {/* Centered tab switcher — hidden on mobile (always shows month) */}
+        {!isMobile && (
+          <div className="coord-midterm-tabbar">
+            <button
+              className={`coord-midterm-tab${midTermView === "week" ? " coord-midterm-tab--active" : ""}`}
+              onClick={() => setMidTermView("week")}
+              type="button"
+            >
+              <span className="coord-midterm-tab-icon">▦</span>
+              {t("tabs.week")}
+            </button>
+            <button
+              className={`coord-midterm-tab${midTermView === "month" ? " coord-midterm-tab--active" : ""}`}
+              onClick={() => setMidTermView("month")}
+              type="button"
+            >
+              <span className="coord-midterm-tab-icon">🗓</span>
+              {t("tabs.month")}
+            </button>
+          </div>
+        )}
 
         {/* Week nav - same style as month nav */}
-        {midTermView === "week" && (
+        {effectiveMidTermView === "week" && (
           <div className="coord-month-nav coord-midterm-week-nav">
             <button
               className="btn btn-ghost btn-sm"
@@ -219,7 +225,8 @@ export function TodayPage() {
           </div>
         )}
 
-        {midTermView === "week" && (
+        {/* Week grid: only rendered on desktop */}
+        {effectiveMidTermView === "week" && (
           <WeeklyHouseholdGrid
             grid={grid}
             loading={gridLoading}
@@ -230,7 +237,7 @@ export function TodayPage() {
           />
         )}
 
-        {midTermView === "month" && (
+        {effectiveMidTermView === "month" && (
           <div className="coord-month-wrap">
             <MonthView
               selectedDate={selectedDate}
