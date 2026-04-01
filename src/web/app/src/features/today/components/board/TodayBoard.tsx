@@ -7,6 +7,7 @@ import {
 } from "../../utils/todayPanelHelpers";
 import { CalendarEntryItem } from "../shared/CalendarEntryItem";
 import { TodayMemberCell } from "./TodayMemberCell";
+import { HouseholdLogo } from "../../../../components/HouseholdLogo";
 
 // Only show People roles in the Today Panel. Pets are excluded (V1 scope).
 const ACTOR_ROLES = new Set(["Adult", "Child", "Caregiver"]);
@@ -152,7 +153,10 @@ export function TodayBoard({
           }
         } : undefined}
       >
-        <div className="today-household-label">{t("day.household")}</div>
+        <div className="today-household-label">
+          <HouseholdLogo size={24} />
+          {/* {t("day.household")} */}
+        </div>
         {sharedDisplayState.isEmpty ? (
           <span className="today-summary-empty tp-cell-empty">
             {t("day.nothingToday")}

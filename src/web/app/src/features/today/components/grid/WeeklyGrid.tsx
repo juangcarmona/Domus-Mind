@@ -3,6 +3,7 @@ import type { WeeklyGridResponse, WeeklyGridCell as GridCell } from "../../types
 import { WeekHeader } from "./WeekHeader";
 import { WeeklyGridRow } from "./WeeklyGridRow";
 import { WeeklyGridCell as WGCell } from "./WeeklyGridCell";
+import { HouseholdLogo } from "../../../../components/HouseholdLogo";
 
 interface WeeklyGridProps {
   grid: WeeklyGridResponse;
@@ -25,7 +26,8 @@ function SharedRow({
   return (
     <div className="wg-row wg-row--shared">
       <div className="wg-member-label">
-        <span className="wg-member-name">{label}</span>
+        <HouseholdLogo size={24}  />
+        {/* <span className="wg-member-name">{label}</span> */}
       </div>
       {cells.map((cell) => (
         <WGCell
