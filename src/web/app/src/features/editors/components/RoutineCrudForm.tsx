@@ -61,6 +61,7 @@ export function RoutineCrudForm({
   const [routineDaysOfMonth, setRoutineDaysOfMonth] = useState(toRoutineDaysOfMonthValue(initialRoutine?.daysOfMonth ?? []));
   const [routineMonthOfYear, setRoutineMonthOfYear] = useState(initialRoutine?.monthOfYear ? String(initialRoutine.monthOfYear) : "");
   const [routineTime, setRoutineTime] = useState(toLocalTimeInput(initialRoutine?.time));
+  const [routineEndTime, setRoutineEndTime] = useState(toLocalTimeInput(initialRoutine?.endTime));
   const [routineTargetMemberIds, setRoutineTargetMemberIds] = useState<string[]>(initialRoutine?.targetMemberIds ?? []);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +92,7 @@ export function RoutineCrudForm({
           ? parseInt(routineMonthOfYear, 10)
           : null,
       time: routineTime || null,
+      endTime: (routineTime && routineEndTime) ? routineEndTime : null,
       targetMemberIds: routineScope === "Members" ? routineTargetMemberIds : [],
       areaId: selectedAreaId || null,
     };
@@ -293,9 +295,25 @@ export function RoutineCrudForm({
             className="form-control"
             type="time"
             value={routineTime}
-            onChange={(e) => setRoutineTime(e.target.value)}
+            onChange={(e) => {
+              setRoutineTime(e.target.value);
+              if (!e.target.value) setRoutineEndTime("");
+            }}
           />
         </div>
+        {routineTime && (
+          <div className="form-group">
+            <label htmlFor="routine-form-end-time">{tRoutines("endTimeLabel")}</label>
+            <input
+              id="routine-form-end-time"
+              className="form-control"
+              type="time"
+              value={routineEndTime}
+              min={routineTime}
+              onChange={(e) => setRoutineEndTime(e.target.value)}
+            />
+          </div>
+        )}
         <div className="form-group">
           <label htmlFor="routine-form-color">{tRoutines("colorLabel")}</label>
           <input

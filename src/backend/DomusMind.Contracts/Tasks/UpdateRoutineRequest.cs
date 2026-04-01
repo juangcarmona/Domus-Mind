@@ -10,5 +10,6 @@ public sealed record UpdateRoutineRequest(
     IReadOnlyCollection<int> DaysOfMonth,
     int? MonthOfYear,
     TimeOnly? Time,
+    TimeOnly? EndTime,
     IReadOnlyCollection<Guid> TargetMemberIds,
     Guid? AreaId);

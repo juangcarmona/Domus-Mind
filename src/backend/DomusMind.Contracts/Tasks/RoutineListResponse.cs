@@ -12,6 +12,7 @@ public sealed record RoutineListItem(
     IReadOnlyCollection<int> DaysOfMonth,
     int? MonthOfYear,
     TimeOnly? Time,
+    TimeOnly? EndTime,
     IReadOnlyCollection<Guid> TargetMemberIds,
     string Status,
     Guid? AreaId,

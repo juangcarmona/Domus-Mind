@@ -27,6 +27,7 @@ export default {
   monthOfYearLabel: "Mese",
   selectMonth: "Seleziona mese",
   timeLabel: "Orario (opzionale)",
+  endTimeLabel: "Orario di fine (opzionale)",
   sun: "Dom", mon: "Lun", tue: "Mar", wed: "Mer", thu: "Gio", fri: "Ven", sat: "Sab",
   empty: "Ancora nessuna routine.",
   emptyHint: "Le routine definiscono i pattern ricorrenti della famiglia.",

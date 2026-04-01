@@ -27,6 +27,7 @@ export interface WeeklyGridRoutineItem {
   color: string | null;
   frequency: string;
   time: string | null;
+  endTime: string | null;
   scope: string;
 }
 

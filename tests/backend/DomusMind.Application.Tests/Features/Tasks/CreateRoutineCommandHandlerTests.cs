@@ -40,6 +40,7 @@ public sealed class CreateRoutineCommandHandlerTests
             Array.Empty<int>(),
             null,
             new TimeOnly(7, 0),
+            null,
             Array.Empty<Guid>(),
             Guid.NewGuid());
 
@@ -115,6 +116,7 @@ public sealed class CreateRoutineCommandHandlerTests
                 Array.Empty<int>(),
                 null,
                 null,
+                null,
                 Array.Empty<Guid>(),
                 Guid.NewGuid()),
             CancellationToken.None);
@@ -155,6 +157,7 @@ public sealed class CreateRoutineCommandHandlerTests
                 Array.Empty<int>(),
                 null,
                 null,
+                null,
                 Array.Empty<Guid>(),
                 Guid.NewGuid()),
             CancellationToken.None);
@@ -166,5 +169,167 @@ public sealed class CreateRoutineCommandHandlerTests
         var saved = await db.Set<Routine>()
             .SingleOrDefaultAsync(r => r.Id == RoutineId.From(result.RoutineId));
         saved!.Schedule.Frequency.Should().Be(RoutineFrequency.Daily);
+    }
+
+    [Fact]
+    public async Task Handle_WithStartAndEndTime_CreatesRoutineAndReturnsEndTime()
+    {
+        var db = CreateDb();
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new CreateRoutineCommand(
+                "Morning Block",
+                Guid.NewGuid(),
+                "Household",
+                "Scheduled",
+                "#3B82F6",
+                "Daily",
+                Array.Empty<DayOfWeek>(),
+                Array.Empty<int>(),
+                null,
+                new TimeOnly(7, 0),
+                new TimeOnly(8, 0),
+                Array.Empty<Guid>(),
+                Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.Time.Should().Be(new TimeOnly(7, 0));
+        result.EndTime.Should().Be(new TimeOnly(8, 0));
+
+        var saved = await db.Set<Routine>()
+            .SingleOrDefaultAsync(r => r.Id == RoutineId.From(result.RoutineId));
+        saved!.Schedule.Time.Should().Be(new TimeOnly(7, 0));
+        saved.Schedule.EndTime.Should().Be(new TimeOnly(8, 0));
+    }
+
+    [Fact]
+    public async Task Handle_WithStartTimeOnly_EndTimeIsNull()
+    {
+        var handler = BuildHandler();
+
+        var result = await handler.Handle(
+            new CreateRoutineCommand(
+                "Morning Walk",
+                Guid.NewGuid(),
+                "Household",
+                "Scheduled",
+                "#3B82F6",
+                "Daily",
+                Array.Empty<DayOfWeek>(),
+                Array.Empty<int>(),
+                null,
+                new TimeOnly(7, 0),
+                null,
+                Array.Empty<Guid>(),
+                Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.Time.Should().Be(new TimeOnly(7, 0));
+        result.EndTime.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_WithoutTime_TimeAndEndTimeAreNull()
+    {
+        var handler = BuildHandler();
+
+        var result = await handler.Handle(
+            new CreateRoutineCommand(
+                "Untimed Chore",
+                Guid.NewGuid(),
+                "Household",
+                "Scheduled",
+                "#3B82F6",
+                "Daily",
+                Array.Empty<DayOfWeek>(),
+                Array.Empty<int>(),
+                null,
+                null,
+                null,
+                Array.Empty<Guid>(),
+                Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.Time.Should().BeNull();
+        result.EndTime.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_EndTimeBeforeStartTime_ThrowsTasksException()
+    {
+        var handler = BuildHandler();
+
+        var act = () => handler.Handle(
+            new CreateRoutineCommand(
+                "Invalid Block",
+                Guid.NewGuid(),
+                "Household",
+                "Scheduled",
+                "#3B82F6",
+                "Daily",
+                Array.Empty<DayOfWeek>(),
+                Array.Empty<int>(),
+                null,
+                new TimeOnly(10, 0),
+                new TimeOnly(9, 0),
+                Array.Empty<Guid>(),
+                Guid.NewGuid()),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<TasksException>()
+            .Where(e => e.Code == TasksErrorCode.InvalidInput);
+    }
+
+    [Fact]
+    public async Task Handle_EndTimeEqualToStartTime_ThrowsTasksException()
+    {
+        var handler = BuildHandler();
+
+        var act = () => handler.Handle(
+            new CreateRoutineCommand(
+                "Zero Duration",
+                Guid.NewGuid(),
+                "Household",
+                "Scheduled",
+                "#3B82F6",
+                "Daily",
+                Array.Empty<DayOfWeek>(),
+                Array.Empty<int>(),
+                null,
+                new TimeOnly(10, 0),
+                new TimeOnly(10, 0),
+                Array.Empty<Guid>(),
+                Guid.NewGuid()),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<TasksException>()
+            .Where(e => e.Code == TasksErrorCode.InvalidInput);
+    }
+
+    [Fact]
+    public async Task Handle_EndTimeWithoutStartTime_ThrowsTasksException()
+    {
+        var handler = BuildHandler();
+
+        var act = () => handler.Handle(
+            new CreateRoutineCommand(
+                "Dangling EndTime",
+                Guid.NewGuid(),
+                "Household",
+                "Scheduled",
+                "#3B82F6",
+                "Daily",
+                Array.Empty<DayOfWeek>(),
+                Array.Empty<int>(),
+                null,
+                null,
+                new TimeOnly(10, 0),
+                Array.Empty<Guid>(),
+                Guid.NewGuid()),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<TasksException>()
+            .Where(e => e.Code == TasksErrorCode.InvalidInput);
     }
 }

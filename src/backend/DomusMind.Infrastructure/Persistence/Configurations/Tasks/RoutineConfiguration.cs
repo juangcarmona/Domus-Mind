@@ -67,6 +67,9 @@ public sealed class RoutineConfiguration : IEntityTypeConfiguration<Routine>
             schedule.Property(s => s.Time)
                 .HasColumnName("schedule_time");
 
+            schedule.Property(s => s.EndTime)
+                .HasColumnName("schedule_end_time");
+
             schedule.Property(s => s.DaysOfWeek)
                 .HasConversion(
                     v => string.Join(",", v.Select(x => (int)x)),

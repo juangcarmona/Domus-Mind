@@ -66,6 +66,7 @@ public sealed class UpdateRoutineCommandHandlerTests
                 Array.Empty<int>(),
                 null,
                 new TimeOnly(16, 0),
+                null,
                 new[] { memberId.Value },
                 Guid.NewGuid()),
             CancellationToken.None);
@@ -97,6 +98,7 @@ public sealed class UpdateRoutineCommandHandlerTests
                 "Monthly",
                 Array.Empty<DayOfWeek>(),
                 new[] { 1, 15 },
+                null,
                 null,
                 null,
                 new[] { memberId.Value },
@@ -134,6 +136,7 @@ public sealed class UpdateRoutineCommandHandlerTests
                 Array.Empty<int>(),
                 null,
                 null,
+                null,
                 new[] { Guid.NewGuid() },
                 Guid.NewGuid()),
             CancellationToken.None);
@@ -159,6 +162,7 @@ public sealed class UpdateRoutineCommandHandlerTests
                 "Weekly",
                 new[] { DayOfWeek.Monday },
                 Array.Empty<int>(),
+                null,
                 null,
                 null,
                 new[] { memberId.Value },
@@ -189,6 +193,7 @@ public sealed class UpdateRoutineCommandHandlerTests
                 Array.Empty<int>(),
                 null,
                 null,
+                null,
                 new[] { memberId.Value },
                 Guid.NewGuid()),
             CancellationToken.None);
@@ -215,6 +220,7 @@ public sealed class UpdateRoutineCommandHandlerTests
                 Array.Empty<int>(),
                 null,
                 null,
+                null,
                 Array.Empty<Guid>(),
                 Guid.NewGuid()),
             CancellationToken.None);
@@ -239,6 +245,7 @@ public sealed class UpdateRoutineCommandHandlerTests
                 "Daily",
                 Array.Empty<DayOfWeek>(),
                 Array.Empty<int>(),
+                null,
                 null,
                 null,
                 Array.Empty<Guid>(),

@@ -27,6 +27,7 @@ export default {
   monthOfYearLabel: "月",
   selectMonth: "月を選択",
   timeLabel: "時間（任意）",
+  endTimeLabel: "終了時間（任意）",
   sun: "日", mon: "月", tue: "火", wed: "水", thu: "木", fri: "金", sat: "土",
   empty: "まだルーティンがありません。",
   emptyHint: "ルーティンは繰り返しの家庭パターンを定義します。",

@@ -14,6 +14,7 @@ public sealed record UpdateRoutineCommand(
     IReadOnlyCollection<int> DaysOfMonth,
     int? MonthOfYear,
     TimeOnly? Time,
+    TimeOnly? EndTime,
     IReadOnlyCollection<Guid> TargetMemberIds,
     Guid? AreaId,
     Guid RequestedByUserId = default)

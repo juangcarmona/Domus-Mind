@@ -98,6 +98,7 @@ public sealed class GetWeeklyGridQueryHandler
                         r.Color.Value,
                         r.Schedule.Frequency.ToString(),
                         r.Schedule.Time.HasValue ? r.Schedule.Time.Value.ToString("HH:mm") : null,
+                        r.Schedule.EndTime.HasValue ? r.Schedule.EndTime.Value.ToString("HH:mm") : null,
                         r.Scope.ToString()))
                     .ToList();
 
@@ -202,6 +203,7 @@ public sealed class GetWeeklyGridQueryHandler
                                 r.Color.Value,
                                 r.Schedule.Frequency.ToString(),
                                 r.Schedule.Time.HasValue ? r.Schedule.Time.Value.ToString("HH:mm") : null,
+                                r.Schedule.EndTime.HasValue ? r.Schedule.EndTime.Value.ToString("HH:mm") : null,
                                 r.Scope.ToString()))
                             .ToList();
 

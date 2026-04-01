@@ -27,6 +27,7 @@ export default {
   monthOfYearLabel: "Month",
   selectMonth: "Select month",
   timeLabel: "Time (optional)",
+  endTimeLabel: "End time (optional)",
   sun: "Sun", mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat",
   empty: "No routines yet.",
   emptyHint: "Routines define recurring household patterns.",

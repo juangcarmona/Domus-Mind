@@ -40,6 +40,7 @@ public sealed record WeeklyGridRoutineItem(
     string Color,
     string Frequency,
     string? Time,
+    string? EndTime,
     string Scope);
 
 public sealed record WeeklyGridResponse(

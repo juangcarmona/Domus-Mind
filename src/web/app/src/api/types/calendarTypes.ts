@@ -98,6 +98,7 @@ export interface RoutineListItem {
   daysOfMonth: number[];
   monthOfYear: number | null;
   time: string | null;
+  endTime: string | null;
   targetMemberIds: string[];
   status: string;
   areaId: string | null;
@@ -119,6 +120,7 @@ export interface CreateRoutineRequest {
   daysOfMonth: number[];
   monthOfYear?: number | null;
   time?: string | null;
+  endTime?: string | null;
   targetMemberIds: string[];
   areaId?: string | null;
 }
@@ -133,6 +135,7 @@ export interface UpdateRoutineRequest {
   daysOfMonth: number[];
   monthOfYear?: number | null;
   time?: string | null;
+  endTime?: string | null;
   targetMemberIds: string[];
   areaId?: string | null;
 }

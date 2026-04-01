@@ -45,7 +45,7 @@ function isNightSlot(slotIdx: number): boolean {
 
 /** Returns true when an entry should be rendered as an absolute-positioned duration block. */
 function isDurationEvent(entry: CalendarEntry): boolean {
-  return entry.sourceType === "event" && !!entry.time && !!entry.endTime;
+  return !!entry.time && !!entry.endTime;
 }
 
 // ----------------------------------------------------------------

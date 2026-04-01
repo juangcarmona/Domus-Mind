@@ -88,6 +88,7 @@ public sealed class UpdateRoutineCommandHandler
                 routine.Schedule.DaysOfMonth.ToArray(),
                 routine.Schedule.MonthOfYear,
                 routine.Schedule.Time,
+                routine.Schedule.EndTime,
                 routine.TargetMemberIds.Select(x => x.Value).ToArray(),
                 routine.Status.ToString(),
                 routine.AreaId?.Value);
@@ -125,20 +126,23 @@ public sealed class UpdateRoutineCommandHandler
 
         return frequency switch
         {
-            RoutineFrequency.Daily => RoutineSchedule.Daily(command.Time),
+            RoutineFrequency.Daily => RoutineSchedule.Daily(command.Time, command.EndTime),
 
             RoutineFrequency.Weekly => RoutineSchedule.Weekly(
                 command.DaysOfWeek ?? Array.Empty<DayOfWeek>(),
-                command.Time),
+                command.Time,
+                command.EndTime),
 
             RoutineFrequency.Monthly => RoutineSchedule.Monthly(
                 command.DaysOfMonth ?? Array.Empty<int>(),
-                command.Time),
+                command.Time,
+                command.EndTime),
 
             RoutineFrequency.Yearly => RoutineSchedule.Yearly(
                 command.MonthOfYear ?? throw new InvalidOperationException("Yearly routine requires month of year."),
                 command.DaysOfMonth ?? Array.Empty<int>(),
-                command.Time),
+                command.Time,
+                command.EndTime),
 
             _ => throw new InvalidOperationException("Unsupported routine frequency.")
         };

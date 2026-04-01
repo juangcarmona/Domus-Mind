@@ -165,6 +165,7 @@ const baseRoutine = {
   color: "#f59e0b",
   frequency: "Daily",
   time: "07:00",
+  endTime: null,
   scope: "Member",
 };
 
@@ -192,6 +193,17 @@ describe("normalizeRoutineItem", () => {
   it("maps kind to status field", () => {
     const entry = normalizeRoutineItem(baseRoutine);
     expect(entry.status).toBe("Daily");
+  });
+
+  it("propagates endTime when present", () => {
+    const entry = normalizeRoutineItem({ ...baseRoutine, endTime: "08:00" });
+    expect(entry.endTime).toBe("08:00");
+    expect(entry.time).toBe("07:00");
+  });
+
+  it("endTime is null when not provided", () => {
+    const entry = normalizeRoutineItem({ ...baseRoutine, endTime: null });
+    expect(entry.endTime).toBeNull();
   });
 });
 

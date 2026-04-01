@@ -156,6 +156,7 @@ export function normalizeRoutineItem(
     displayType: "routine",
     title: r.name,
     time: r.time ?? null,
+    endTime: r.endTime ?? null,
     subtitle: null,
     status: r.kind,
     color: r.color ?? null,

@@ -64,6 +64,7 @@ function makeRoutine(
     color: string | null;
     frequency: string;
     time: string | null;
+    endTime: string | null;
     scope: string;
   }> = {},
 ) {
@@ -74,6 +75,7 @@ function makeRoutine(
     color: overrides.color ?? null,
     frequency: overrides.frequency ?? "Weekly",
     time: overrides.time ?? null,
+    endTime: overrides.endTime ?? null,
     scope: overrides.scope ?? "Household",
   };
 }

@@ -27,6 +27,7 @@ export default {
   monthOfYearLabel: "月份",
   selectMonth: "选择月份",
   timeLabel: "时间（可选）",
+  endTimeLabel: "结束时间（可选）",
   sun: "日", mon: "一", tue: "二", wed: "三", thu: "四", fri: "五", sat: "六",
   empty: "暂无例行事务。",
   emptyHint: "例行事务定义家庭的周期性模式。",

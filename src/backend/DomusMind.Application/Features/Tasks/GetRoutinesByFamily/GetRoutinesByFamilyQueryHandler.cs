@@ -55,6 +55,7 @@ public sealed class GetRoutinesByFamilyQueryHandler
                 r.Schedule.DaysOfMonth.ToArray(),
                 r.Schedule.MonthOfYear,
                 r.Schedule.Time,
+                r.Schedule.EndTime,
                 r.TargetMemberIds.Select(x => x.Value).ToArray(),
                 r.Status.ToString(),
                 r.AreaId?.Value,
