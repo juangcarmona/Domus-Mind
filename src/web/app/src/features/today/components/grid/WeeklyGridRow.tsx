@@ -12,7 +12,7 @@ export function WeeklyGridRow({ member, today, onItemClick }: WeeklyGridRowProps
     <div className="wg-row">
       <div className="wg-member-label" title={member.role}>
         <span className="wg-member-name">{member.name}</span>
-        <span className="wg-member-role">{member.role}</span>
+        {/* <span className="wg-member-role">{member.role}</span> */}
       </div>
       {member.cells.map((cell) => (
         <WeeklyGridCell
