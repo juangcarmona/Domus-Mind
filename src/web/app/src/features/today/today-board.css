@@ -177,7 +177,7 @@
 /* ---- Member snapshot grid ---- */
 .tp-member-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
   gap: 0.4rem;
   margin-bottom: 0.5rem;
 }
@@ -198,9 +198,10 @@
 
 .tp-cell:hover,
 .tp-cell:focus-visible {
-  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
-  border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
+  background: color-mix(in srgb, var(--primary) 15%, var(--surface));
+  border-color: color-mix(in srgb, var(--primary) 80%, var(--border));
   outline: none;
+  /* border-width: 2px; */
 }
 
 .tp-cell:focus-visible {
@@ -251,11 +252,6 @@
   font-size: 0.75rem;
   color: var(--muted);
   font-style: italic;
-}
-
-/* ---- Household row - no changes to existing .today-household styles ---- */
-.tp-household-row {
-  /* inherits from .today-household */
 }
 
 /* ================================================================

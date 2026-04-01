@@ -34,6 +34,9 @@ export default {
   },
   loading: "Wird geladen…",
   error: "Agenda konnte nicht geladen werden.",
+  shared: {
+    label: "Geteilt",
+  },
   memberNotFound: "Mitglied nicht gefunden.",
   addEntry: "Eintrag hinzufügen",
   dateCard: {

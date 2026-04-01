@@ -24,7 +24,7 @@ import { SettingsPage } from "./features/settings/pages/SettingsPage";
 import { TodayPage } from "./features/today/pages/TodayPage";
 import { SharedListsPage } from "./features/shared-lists/pages/SharedListsPage";
 import { SharedListDetailPage } from "./features/shared-lists/pages/SharedListDetailPage";
-import { MemberAgendaPage } from "./features/agenda/pages/MemberAgendaPage";
+import { AgendaPage, MemberAgendaPage } from "./features/agenda/pages/MemberAgendaPage";
 import { setupApi } from "./api/setupApi";
 import { SplashScreen } from "./components/SplashScreen";
 
@@ -91,6 +91,7 @@ function AuthedApp() {
         <Route path="/members" element={<Navigate to="/settings" replace />} />
         <Route path="/members/:memberId" element={<Navigate to="/settings" replace />} />
         <Route path="/agenda/members/:memberId" element={<MemberAgendaPage />} />
+        <Route path="/agenda/shared" element={<AgendaPage />} />
         <Route path="/lists" element={<SharedListsPage />} />
         <Route path="/lists/:listId" element={<SharedListDetailPage />} />
         <Route path="/settings" element={<SettingsPage />} />

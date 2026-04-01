@@ -5,7 +5,8 @@ import { toIsoDate } from "../../today/utils/dateUtils";
 type AgendaView = "day" | "week" | "month";
 
 interface AgendaHeaderProps {
-  memberName: string;
+  /** Display label for the agenda subject (member name or "Compartido"). */
+  subjectLabel: string;
   selectedDate: string; // ISO YYYY-MM-DD
   view: AgendaView;
   onViewChange: (view: AgendaView) => void;
@@ -15,15 +16,15 @@ interface AgendaHeaderProps {
 }
 
 /**
- * Compact, responsive header for the member agenda surface.
+ * Compact, responsive header for the agenda surface.
  *
  * Three distinct rows (never collapse on narrow widths):
- *   Row 1 — back button + member name
+ *   Row 1 — back button + subject label (member name or shared label)
  *   Row 2 — ‹  date  today?  ›
  *   Row 3 — Day / Week / Month tab strip
  */
 export function AgendaHeader({
-  memberName,
+  subjectLabel,
   selectedDate,
   view,
   onViewChange,
@@ -54,13 +55,13 @@ export function AgendaHeader({
         >
           ‹ {t("nav.back")}
         </button>
-        <span className="agenda-member-name">{memberName}</span>
+        <span className="agenda-member-name">{subjectLabel}</span>
       </div>
 
       {/* Row 2: date navigation */}
       <div className="agenda-date-nav">
         <button
-          className="btn btn-ghost btn-sm agenda-nav-btn"
+          className="btn btn-ghost btn-sm"
           onClick={onPrev}
           type="button"
           aria-label={t(`nav.prev${view.charAt(0).toUpperCase() + view.slice(1)}`)}
@@ -80,7 +81,7 @@ export function AgendaHeader({
           )}
         </div>
         <button
-          className="btn btn-ghost btn-sm agenda-nav-btn"
+          className="btn btn-ghost btn-sm"
           onClick={onNext}
           type="button"
           aria-label={t(`nav.next${view.charAt(0).toUpperCase() + view.slice(1)}`)}

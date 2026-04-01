@@ -34,6 +34,9 @@ export default {
   },
   loading: "Chargement…",
   error: "Échec du chargement de l'agenda.",
+  shared: {
+    label: "Partagé",
+  },
   memberNotFound: "Membre introuvable.",
   addEntry: "Ajouter une entrée",
   dateCard: {

@@ -133,6 +133,10 @@ export function TodayPage() {
     navigate(`/agenda/members/${memberId}?date=${selectedDate}`);
   }
 
+  function handleSharedClick() {
+    navigate(`/agenda/shared?date=${selectedDate}`);
+  }
+
   function handlePrevWeek() {
     dispatch(setSelectedDate(addDays(selectedDate, -7)));
   }
@@ -167,6 +171,7 @@ export function TodayPage() {
         onToday={handleToday}
         onItemClick={handleItemClick}
         onMemberClick={handleMemberClick}
+        onSharedClick={handleSharedClick}
       />
 
       {/* ── Section 2: Mid-term navigation (Week / Month) ── */}

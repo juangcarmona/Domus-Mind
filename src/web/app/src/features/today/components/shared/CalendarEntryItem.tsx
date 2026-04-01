@@ -6,6 +6,32 @@ interface CalendarEntryItemProps {
   onClick?: () => void;
 }
 
+function formatDateTimeRangeForTooltip(entry: CalendarEntry): string | null {
+  const startDate =
+    "date" in entry && typeof entry.date === "string" ? entry.date : null;
+
+  const startTime = entry.time ?? null;
+  const endTime = entry.endTime ?? null;
+
+  if (entry.sourceType === "routine") {
+    if (startTime && endTime) return `${startTime}–${endTime}`;
+    if (startTime) return startTime;
+    return null;
+  }
+
+  if (entry.sourceType === "event") {
+    if (startDate && startTime && endTime) return `${startDate} ${startTime}–${endTime}`;
+    if (startDate && startTime) return `${startDate} ${startTime}`;
+    if (startDate) return startDate;
+    if (startTime && endTime) return `${startTime}–${endTime}`;
+    if (startTime) return startTime;
+    return null;
+  }
+
+  return null;
+}
+
+
 /**
  * Unified renderer for a single CalendarEntry.
  *
@@ -26,22 +52,17 @@ interface CalendarEntryItemProps {
 export function CalendarEntryItem({ entry, onClick }: CalendarEntryItemProps) {
   const glyph = ENTRY_GLYPH[entry.displayType];
 
-  // Events show time inline: ● 19:30 Title
-  const timeLabel =
-    entry.sourceType === "event" && entry.time ? ` ${entry.time}` : null;
+  const detailLabel = formatDateTimeRangeForTooltip(entry);
 
   const tooltipParts = [
-    `${glyph}${timeLabel ?? ""} ${entry.title}`,
-    entry.subtitle,
+    `${glyph} ${entry.title}`,
+    detailLabel,
   ].filter(Boolean);
 
   const style = entry.color
     ? ({ ["--wg-item-accent" as string]: entry.color } as React.CSSProperties)
     : undefined;
 
-  // Base CSS: wg-item (Weekly Grid compact style is the baseline).
-  // displayType "overdue" gets its own emphasis class instead of sourceType.
-  // displayType "completed" stacks sourceType + wg-item--completed for coloring.
   const typeClass =
     entry.displayType === "overdue" ? "wg-item--overdue" : `wg-item--${entry.sourceType}`;
 
@@ -73,12 +94,8 @@ export function CalendarEntryItem({ entry, onClick }: CalendarEntryItemProps) {
     >
       <span className="wg-item-glyph" aria-hidden="true">
         {glyph}
-        {timeLabel}
       </span>
       <span className="wg-item-title">{entry.title}</span>
-      {entry.subtitle && (
-        <span className="wg-item-sub">{entry.subtitle}</span>
-      )}
     </div>
   );
 }

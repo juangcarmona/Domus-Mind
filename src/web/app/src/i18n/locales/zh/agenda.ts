@@ -34,6 +34,9 @@ export default {
   },
   loading: "加载中…",
   error: "无法加载日程。",
+  shared: {
+    label: "共享",
+  },
   memberNotFound: "未找到成员。",
   addEntry: "添加条目",
   dateCard: {

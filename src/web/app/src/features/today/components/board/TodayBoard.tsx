@@ -23,6 +23,8 @@ interface TodayBoardProps {
   onToday: () => void;
   onItemClick: (type: "event" | "task" | "routine", id: string) => void;
   onMemberClick: (memberId: string) => void;
+  /** Called when the user clicks the shared/household row to open the shared agenda. */
+  onSharedClick?: () => void;
 }
 
 export function TodayBoard({
@@ -36,6 +38,7 @@ export function TodayBoard({
   onToday,
   onItemClick,
   onMemberClick,
+  onSharedClick,
 }: TodayBoardProps) {
   const { t, i18n } = useTranslation("today");
   const { t: tCommon } = useTranslation("common");
@@ -136,7 +139,19 @@ export function TodayBoard({
       )}
 
       {/* ---- Household row (shared / unassigned items only) ---- */}
-      <div className="today-household tp-household-row">
+      <div
+        className="tp-cell"
+        role={onSharedClick ? "button" : undefined}
+        tabIndex={onSharedClick ? 0 : undefined}
+        aria-label={onSharedClick ? t("day.household") : undefined}
+        onClick={onSharedClick}
+        onKeyDown={onSharedClick ? (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onSharedClick();
+          }
+        } : undefined}
+      >
         <div className="today-household-label">{t("day.household")}</div>
         {sharedDisplayState.isEmpty ? (
           <span className="today-summary-empty tp-cell-empty">
@@ -145,18 +160,28 @@ export function TodayBoard({
         ) : (
           <div className="today-household-chips">
             {sharedDisplayState.activeItems.map((entry) => (
-              <CalendarEntryItem
+              <div
                 key={entry.id}
-                entry={entry}
-                onClick={() => onItemClick(entry.sourceType, entry.id)}
-              />
+                className="tp-cell-entry-wrap"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <CalendarEntryItem
+                  entry={entry}
+                  onClick={() => onItemClick(entry.sourceType, entry.id)}
+                />
+              </div>
             ))}
             {sharedDisplayState.completedItems.map((entry) => (
-              <CalendarEntryItem
+              <div
                 key={entry.id}
-                entry={entry}
-                onClick={() => onItemClick(entry.sourceType, entry.id)}
-              />
+                className="tp-cell-entry-wrap"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <CalendarEntryItem
+                  entry={entry}
+                  onClick={() => onItemClick(entry.sourceType, entry.id)}
+                />
+              </div>
             ))}
           </div>
         )}

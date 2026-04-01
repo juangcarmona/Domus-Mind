@@ -34,6 +34,9 @@ export default {
   },
   loading: "Loading…",
   error: "Failed to load agenda.",
+  shared: {
+    label: "Shared",
+  },
   memberNotFound: "Member not found.",
   addEntry: "Add entry",
   dateCard: {

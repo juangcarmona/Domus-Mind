@@ -5,7 +5,8 @@ import { toIsoDate, addMonths } from "../../today/utils/dateUtils";
 import { useAppSelector } from "../../../store/hooks";
 
 interface MemberMonthViewProps {
-  memberId: string;
+  /** Member ID to scope the month calendar. Pass null for the shared/collective subject. */
+  memberId: string | null;
   selectedDate: string; // ISO YYYY-MM-DD
   firstDayOfWeek: string | null;
   onSelectDay: (date: string) => void;

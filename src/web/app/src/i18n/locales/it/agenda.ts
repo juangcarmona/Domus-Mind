@@ -34,6 +34,9 @@ export default {
   },
   loading: "Caricamento…",
   error: "Impossibile caricare l'agenda.",
+  shared: {
+    label: "Condiviso",
+  },
   memberNotFound: "Membro non trovato.",
   addEntry: "Aggiungi voce",
   dateCard: {

@@ -13,7 +13,9 @@ import { SelectedDateCard } from "../components/SelectedDateCard";
 import { MemberDayView } from "../components/MemberDayView";
 import { MemberWeekView } from "../components/MemberWeekView";
 import { MemberMonthView } from "../components/MemberMonthView";
-import { buildMemberEntries } from "../../today/utils/todayPanelHelpers";
+import { SharedDayView } from "../components/SharedDayView";
+import { SharedWeekView } from "../components/SharedWeekView";
+import { buildMemberEntries, buildSharedEntries } from "../../today/utils/todayPanelHelpers";
 import {
   toIsoDate,
   addDays,
@@ -21,18 +23,30 @@ import {
   startOfWeek,
 } from "../../today/utils/dateUtils";
 
-export function MemberAgendaPage() {
-  const { memberId } = useParams<{ memberId: string }>();
+/**
+ * Unified agenda surface that supports two subject types:
+ *  - member  — routed as /agenda/members/:memberId
+ *  - shared  — routed as /agenda/shared
+ *
+ * Subject is resolved from the :memberId route param.
+ * When memberId is absent the shared/collective subject is active.
+ */
+export function AgendaPage() {
+  const { memberId } = useParams<{ memberId?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation("agenda");
+
+  const isShared = memberId === undefined;
 
   const family = useAppSelector((s) => s.household.family);
   const familyId = family?.familyId ?? "";
   const firstDayOfWeek = family?.firstDayOfWeek ?? null;
   const members = useAppSelector((s) => s.household.members);
 
-  // Resolve member identity from household state.
-  const householdMember = members.find((m) => m.memberId === memberId);
+  // Resolve member identity (member subject only).
+  const householdMember = isShared
+    ? undefined
+    : members.find((m) => m.memberId === memberId);
 
   // Selected date comes from ?date= query param, defaulting to today.
   const todayIso = toIsoDate(new Date());
@@ -85,11 +99,19 @@ export function MemberAgendaPage() {
     setSearchParams({ date: selectedDate }, { replace: true });
   }, [selectedDate, setSearchParams]);
 
-  // Find this member's row in the loaded grid.
-  const memberGrid = grid?.members.find((m) => m.memberId === memberId) ?? null;
+  // Derived grid data for the active subject.
+  const memberGrid = isShared
+    ? null
+    : (grid?.members.find((m) => m.memberId === memberId) ?? null);
+  const sharedCells = grid?.sharedCells ?? [];
 
-  // Empty member fallback (no data for the loaded week).
-  const emptyMember = { memberId: memberId ?? "", name: householdMember?.name ?? "", role: "", cells: [] };
+  // Empty member fallback (no data for the loaded week — member subject only).
+  const emptyMember = {
+    memberId: memberId ?? "",
+    name: householdMember?.name ?? "",
+    role: "",
+    cells: [],
+  };
 
   // ---- Navigation handlers ----
 
@@ -124,7 +146,7 @@ export function MemberAgendaPage() {
     setSelectedDate(date);
   }
 
-  /** Open the create-entry modal prefilled for this member, selected date, optional time. */
+  /** Open the create-entry modal for the selected date, optional time. */
   function handleAddEntry(time?: string) {
     setAddModalTime(time);
     setShowAddModal(true);
@@ -137,7 +159,9 @@ export function MemberAgendaPage() {
   }
 
   // Untimed entries for the selected date — feeds the SelectedDateCard in the sidebar.
-  const sidebarEntries = memberGrid
+  const sidebarEntries = isShared
+    ? buildSharedEntries(sharedCells, selectedDate).filter((e) => e.time === null)
+    : memberGrid
     ? buildMemberEntries(memberGrid, selectedDate).filter((e) => e.time === null)
     : [];
 
@@ -150,15 +174,19 @@ export function MemberAgendaPage() {
           day: "numeric",
         });
 
-  // ---- Render ----
+  // ---- Subject label ----
 
-  const memberName = householdMember?.name ?? memberId ?? "";
+  const subjectLabel = isShared
+    ? t("shared.label")
+    : (householdMember?.name ?? memberId ?? "");
+
+  // ---- Early-exit guards ----
 
   if (!familyId) {
     return <div className="loading-wrap">{t("loading")}</div>;
   }
 
-  if (memberId && !householdMember) {
+  if (!isShared && memberId && !householdMember) {
     return (
       <div className="page-content agenda-page">
         <p className="error-msg">{t("memberNotFound")}</p>
@@ -169,7 +197,7 @@ export function MemberAgendaPage() {
   return (
     <div className="page-content agenda-page">
       <AgendaHeader
-        memberName={memberName}
+        subjectLabel={subjectLabel}
         selectedDate={selectedDate}
         view={view}
         onViewChange={setView}
@@ -178,7 +206,7 @@ export function MemberAgendaPage() {
         onToday={handleToday}
       />
 
-      {/* Add-entry button — visible in all views, always for the selected member + date */}
+      {/* Add-entry button — visible in all views */}
       <div className="agenda-add-row">
         <button
           type="button"
@@ -209,41 +237,68 @@ export function MemberAgendaPage() {
 
         {/* Main content: the active view */}
         <div className="agenda-main">
-        {gridLoading && (
-          <div className="loading-wrap">{t("loading")}</div>
-        )}
-        {gridError && (
-          <p className="error-msg">{gridError}</p>
-        )}
+          {gridLoading && (
+            <div className="loading-wrap">{t("loading")}</div>
+          )}
+          {gridError && (
+            <p className="error-msg">{gridError}</p>
+          )}
 
-        {!gridLoading && !gridError && (
-          <>
-            {view === "day" && (
-              <MemberDayView
-                member={memberGrid ?? emptyMember}
-                selectedDate={selectedDate}
-                onItemClick={handleItemClick}
-                onSlotClick={handleSlotClick}
-              />
-            )}
-            {view === "week" && (
-              <MemberWeekView
-                member={memberGrid ?? emptyMember}
-                selectedDate={selectedDate}
-                onItemClick={handleItemClick}
-                onDayClick={handleDayDrill}
-              />
-            )}
-            {view === "month" && (
-              <MemberMonthView
-                memberId={memberId ?? ""}
-                selectedDate={selectedDate}
-                firstDayOfWeek={firstDayOfWeek}
-                onSelectDay={handleMonthSelectDate}
-              />
-            )}
-          </>
-        )}
+          {!gridLoading && !gridError && (
+            <>
+              {/* ---- Member subject views ---- */}
+              {!isShared && view === "day" && (
+                <MemberDayView
+                  member={memberGrid ?? emptyMember}
+                  selectedDate={selectedDate}
+                  onItemClick={handleItemClick}
+                  onSlotClick={handleSlotClick}
+                />
+              )}
+              {!isShared && view === "week" && (
+                <MemberWeekView
+                  member={memberGrid ?? emptyMember}
+                  selectedDate={selectedDate}
+                  onItemClick={handleItemClick}
+                  onDayClick={handleDayDrill}
+                />
+              )}
+              {!isShared && view === "month" && (
+                <MemberMonthView
+                  memberId={memberId ?? null}
+                  selectedDate={selectedDate}
+                  firstDayOfWeek={firstDayOfWeek}
+                  onSelectDay={handleMonthSelectDate}
+                />
+              )}
+
+              {/* ---- Shared subject views ---- */}
+              {isShared && view === "day" && (
+                <SharedDayView
+                  sharedCells={sharedCells}
+                  selectedDate={selectedDate}
+                  onItemClick={handleItemClick}
+                  onSlotClick={handleSlotClick}
+                />
+              )}
+              {isShared && view === "week" && (
+                <SharedWeekView
+                  sharedCells={sharedCells}
+                  selectedDate={selectedDate}
+                  onItemClick={handleItemClick}
+                  onDayClick={handleDayDrill}
+                />
+              )}
+              {isShared && view === "month" && (
+                <MemberMonthView
+                  memberId={null}
+                  selectedDate={selectedDate}
+                  firstDayOfWeek={firstDayOfWeek}
+                  onSelectDay={handleMonthSelectDate}
+                />
+              )}
+            </>
+          )}
         </div>{/* end agenda-main */}
       </div>{/* end agenda-body */}
 
@@ -269,7 +324,9 @@ export function MemberAgendaPage() {
             await fetchGrid(weekStartForSelected);
           }}
           defaults={{
-            participantMemberIds: memberId ? [memberId] : [],
+            // For member subject: pre-select the member.
+            // For shared subject: no participant pre-selection.
+            participantMemberIds: isShared || !memberId ? [] : [memberId],
             initialStartDate: selectedDate,
             initialStartClock: addModalTime,
           }}
@@ -278,5 +335,11 @@ export function MemberAgendaPage() {
     </div>
   );
 }
+
+/**
+ * Named alias kept for backward compatibility with existing route imports.
+ * @deprecated Import AgendaPage directly.
+ */
+export { AgendaPage as MemberAgendaPage };
 
 

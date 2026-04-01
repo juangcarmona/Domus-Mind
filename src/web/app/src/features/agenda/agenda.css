@@ -55,15 +55,6 @@
   padding: 0.2rem 0.5rem;
 }
 
-.agenda-nav-btn {
-  font-size: 1.2rem;
-  line-height: 1;
-  padding: 0.1rem 0.45rem;
-  min-width: 1.9rem;
-  font-weight: 400;
-  flex-shrink: 0;
-}
-
 /* Center area: date text + optional today button */
 .agenda-date-center {
   display: flex;

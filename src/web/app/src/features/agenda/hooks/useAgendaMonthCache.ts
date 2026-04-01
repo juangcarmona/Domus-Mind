@@ -80,11 +80,8 @@ export function useAgendaMonthCache(
         const row = weekGrid.members?.find((m) => m.memberId === memberId);
         cells = row?.cells ?? [];
       } else {
-        // Household-wide fallback.
-        cells = [
-          ...(weekGrid.sharedCells ?? []),
-          ...((weekGrid.members ?? []).flatMap((m) => m.cells)),
-        ];
+        // Shared/collective row only — not all members combined.
+        cells = weekGrid.sharedCells ?? [];
       }
 
       for (const cell of cells) {
@@ -112,10 +109,8 @@ export function useAgendaMonthCache(
         const row = weekGrid.members?.find((m) => m.memberId === memberId);
         cells = row?.cells ?? [];
       } else {
-        cells = [
-          ...(weekGrid.sharedCells ?? []),
-          ...((weekGrid.members ?? []).flatMap((m) => m.cells)),
-        ];
+        // Shared/collective row only.
+        cells = weekGrid.sharedCells ?? [];
       }
 
       for (const cell of cells) {

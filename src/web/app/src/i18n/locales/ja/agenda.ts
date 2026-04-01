@@ -34,6 +34,9 @@ export default {
   },
   loading: "読み込み中…",
   error: "アジェンダを読み込めませんでした。",
+  shared: {
+    label: "共有",
+  },
   memberNotFound: "メンバーが見つかりません。",
   addEntry: "エントリを追加",
   dateCard: {
