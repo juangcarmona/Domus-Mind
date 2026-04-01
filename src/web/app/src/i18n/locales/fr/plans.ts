@@ -26,6 +26,9 @@ export default {
   showPastPlans: "Afficher les événements passés",
   pastPlans: "Événements passés",
   noPastPlans: "Aucun événement passé.",
+  groupToday: "Aujourd'hui",
+  groupUpcoming: "À venir",
+  groupLater: "Plus tard",
   chooser: {
     title: "Qu'ajoutez-vous ?",
     routine: "Routine",

@@ -26,6 +26,9 @@ export default {
   showPastPlans: "Mostrar planes pasados",
   pastPlans: "Planes pasados",
   noPastPlans: "No hay planes pasados.",
+  groupToday: "Hoy",
+  groupUpcoming: "Próximamente",
+  groupLater: "Más tarde",
   chooser: {
     title: "¿Qué estás añadiendo?",
     routine: "Rutina",

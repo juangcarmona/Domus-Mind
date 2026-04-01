@@ -25,4 +25,10 @@ export default {
   createError: "Impossible de créer la tâche",
   unassigned: "non attribué",
   colorLabel: "Couleur",
+  groupOverdue: "En retard",
+  groupToday: "Aujourd'hui",
+  groupTomorrow: "Demain",
+  groupThisWeek: "Cette semaine",
+  groupLater: "Plus tard",
+  groupUndated: "Sans date",
 } as const;

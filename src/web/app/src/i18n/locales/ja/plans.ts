@@ -26,6 +26,9 @@ export default {
   showPastPlans: "過去の予定を表示",
   pastPlans: "過去の予定",
   noPastPlans: "過去の予定はありません。",
+  groupToday: "今日",
+  groupUpcoming: "まもなく",
+  groupLater: "後で",
   chooser: {
     title: "何を追加しますか？",
     routine: "ルーティン",

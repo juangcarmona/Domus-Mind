@@ -16,6 +16,7 @@ import { PlansTab } from "../components/PlansTab";
 import type {
   FamilyTimelineEventItem,
   EnrichedTimelineEntry,
+  RoutineListItem,
 } from "../../../api/domusmindApi";
 
 type PlanningTab = "routines" | "tasks" | "plans";
@@ -23,6 +24,72 @@ type PlanningTab = "routines" | "tasks" | "plans";
 function todayIso(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+interface OverviewProps {
+  activeTasks: EnrichedTimelineEntry[];
+  activePlans: FamilyTimelineEventItem[];
+  routineItems: RoutineListItem[];
+  onJumpToTab: (tab: PlanningTab) => void;
+}
+
+function PlanningOverview({ activeTasks, activePlans, routineItems, onJumpToTab }: OverviewProps) {
+  const { t: tTasks } = useTranslation("tasks");
+  const { t: tPlans } = useTranslation("plans");
+  const { t: tRoutines } = useTranslation("routines");
+
+  const today = todayIso();
+  const overdueCount = activeTasks.filter((task) => task.isOverdue).length;
+  const todayTaskCount = activeTasks.filter((task) => task.group === "Today").length;
+  const todayPlanCount = activePlans.filter((p) => p.date === today).length;
+  const activeRoutineCount = routineItems.filter((r) => r.status === "Active").length;
+
+  if (!overdueCount && !todayTaskCount && !todayPlanCount && !activeRoutineCount) return null;
+
+  return (
+    <div className="planning-overview">
+      {overdueCount > 0 && (
+        <button
+          type="button"
+          className="planning-stat planning-stat--danger"
+          onClick={() => onJumpToTab("tasks")}
+        >
+          <span className="planning-stat-count">{overdueCount}</span>
+          <span className="planning-stat-label">{tTasks("groupOverdue")}</span>
+        </button>
+      )}
+      {todayTaskCount > 0 && (
+        <button
+          type="button"
+          className="planning-stat"
+          onClick={() => onJumpToTab("tasks")}
+        >
+          <span className="planning-stat-count">{todayTaskCount}</span>
+          <span className="planning-stat-label">{tTasks("groupToday")}</span>
+        </button>
+      )}
+      {todayPlanCount > 0 && (
+        <button
+          type="button"
+          className="planning-stat"
+          onClick={() => onJumpToTab("plans")}
+        >
+          <span className="planning-stat-count">{todayPlanCount}</span>
+          <span className="planning-stat-label">{tPlans("groupToday")}</span>
+        </button>
+      )}
+      {activeRoutineCount > 0 && (
+        <button
+          type="button"
+          className="planning-stat planning-stat--quiet"
+          onClick={() => onJumpToTab("routines")}
+        >
+          <span className="planning-stat-count">{activeRoutineCount}</span>
+          <span className="planning-stat-label">{tRoutines("active")}</span>
+        </button>
+      )}
+    </div>
+  );
 }
 
 export function PlanningPage() {
@@ -184,6 +251,13 @@ export function PlanningPage() {
           + {tCommon("add")}
         </button>
       </div>
+
+      <PlanningOverview
+        activeTasks={activeTasks}
+        activePlans={activePlans}
+        routineItems={routineItems}
+        onJumpToTab={setActiveTab}
+      />
 
       <div className="settings-tabs" style={{ marginBottom: "1.5rem" }}>
         {tabs.map((tab) => (

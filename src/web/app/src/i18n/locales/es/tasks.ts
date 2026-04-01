@@ -25,4 +25,10 @@ export default {
   createError: "No se pudo crear la tarea",
   unassigned: "sin asignar",
   colorLabel: "Color",
+  groupOverdue: "Vencido",
+  groupToday: "Hoy",
+  groupTomorrow: "Mañana",
+  groupThisWeek: "Esta semana",
+  groupLater: "Más tarde",
+  groupUndated: "Sin fecha",
 } as const;

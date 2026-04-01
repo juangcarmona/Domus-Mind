@@ -25,4 +25,10 @@ export default {
   createError: "Failed to create task",
   unassigned: "unassigned",
   colorLabel: "Color",
+  groupOverdue: "Overdue",
+  groupToday: "Today",
+  groupTomorrow: "Tomorrow",
+  groupThisWeek: "This week",
+  groupLater: "Later",
+  groupUndated: "No date",
 } as const;

@@ -26,6 +26,9 @@ export default {
   showPastPlans: "查看过去的计划",
   pastPlans: "过去的计划",
   noPastPlans: "没有过去的计划。",
+  groupToday: "今天",
+  groupUpcoming: "即将到来",
+  groupLater: "稍后",
   chooser: {
     title: "你在添加什么？",
     routine: "例行",

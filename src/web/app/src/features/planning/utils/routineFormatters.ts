@@ -4,6 +4,40 @@ import type { TFunction } from "i18next";
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
 /**
+ * Returns a compact recurrence sentence for a routine row.
+ * Examples: "Daily · 08:00", "Mon, Wed, Fri · 09:00", "Monthly · 1, 15"
+ * Requires a `t` function from the `routines` i18n namespace.
+ */
+export function formatRoutineRecurrence(
+  routine: RoutineListItem,
+  t: TFunction<"routines">,
+): string {
+  const timePart = routine.time ? ` · ${routine.time.slice(0, 5)}` : "";
+  switch (routine.frequency) {
+    case "Daily":
+      return `${t("frequencyDaily")}${timePart}`;
+    case "Weekly": {
+      const days = formatRoutineDays(routine, t);
+      return days ? `${days}${timePart}` : `${t("frequencyWeekly")}${timePart}`;
+    }
+    case "Monthly": {
+      const days = formatRoutineDays(routine, t);
+      return days
+        ? `${t("frequencyMonthly")} · ${days}${timePart}`
+        : `${t("frequencyMonthly")}${timePart}`;
+    }
+    case "Yearly": {
+      const days = formatRoutineDays(routine, t);
+      return days
+        ? `${t("frequencyYearly")} · ${days}${timePart}`
+        : `${t("frequencyYearly")}${timePart}`;
+    }
+    default:
+      return routine.frequency + timePart;
+  }
+}
+
+/**
  * Returns a human-readable day-of-week / day-of-month string for a routine.
  * Requires a `t` function from the `routines` i18n namespace.
  */

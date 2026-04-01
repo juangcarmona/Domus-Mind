@@ -25,4 +25,10 @@ export default {
   createError: "创建家务失败",
   unassigned: "未分配",
   colorLabel: "颜色",
+  groupOverdue: "已逾期",
+  groupToday: "今天",
+  groupTomorrow: "明天",
+  groupThisWeek: "本周",
+  groupLater: "稍后",
+  groupUndated: "无日期",
 } as const;

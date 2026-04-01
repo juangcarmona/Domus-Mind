@@ -25,4 +25,10 @@ export default {
   createError: "家事を作成できませんでした",
   unassigned: "未割り当て",
   colorLabel: "色",
+  groupOverdue: "期限切れ",
+  groupToday: "今日",
+  groupTomorrow: "明日",
+  groupThisWeek: "今週",
+  groupLater: "後で",
+  groupUndated: "日付なし",
 } as const;

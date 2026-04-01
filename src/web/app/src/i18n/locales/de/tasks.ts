@@ -25,4 +25,10 @@ export default {
   createError: "Aufgabe konnte nicht erstellt werden",
   unassigned: "nicht zugewiesen",
   colorLabel: "Farbe",
+  groupOverdue: "Überfällig",
+  groupToday: "Heute",
+  groupTomorrow: "Morgen",
+  groupThisWeek: "Diese Woche",
+  groupLater: "Später",
+  groupUndated: "Kein Datum",
 } as const;

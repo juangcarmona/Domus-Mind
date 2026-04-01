@@ -25,4 +25,10 @@ export default {
   createError: "Impossibile creare la faccenda",
   unassigned: "non assegnato",
   colorLabel: "Colore",
+  groupOverdue: "Scaduto",
+  groupToday: "Oggi",
+  groupTomorrow: "Domani",
+  groupThisWeek: "Questa settimana",
+  groupLater: "Più tardi",
+  groupUndated: "Senza data",
 } as const;
