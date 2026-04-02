@@ -18,7 +18,7 @@ Depends on:
 |-------|--------|--------|
 | Phase 0 — Audit and Mapping | **Complete** | `specs/system/surface-system-reboot-plan-phase-0.md` |
 | Phase 1 — Shell Foundation | **Complete** | `specs/system/surface-system-reboot-plan-phase-1.md` |
-| Phase 2 — Planning | Not started | — |
+| Phase 2 — Planning | **Complete** | `specs/system/surface-system-reboot-plan-phase-2.md` |
 | Phase 3 — Shared Lists | Not started | — |
 | Phase 4 — Today | Not started | — |
 | Phase 5 — Member Agenda | Not started | — |

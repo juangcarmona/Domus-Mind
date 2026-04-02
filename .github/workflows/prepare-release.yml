@@ -1,0 +1,141 @@
+name: prepare-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: "Release lane"
+        required: true
+        type: choice
+        options:
+          - beta
+          - rc
+          - stable
+      bump:
+        description: "Base version bump from latest stable"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+concurrency:
+  group: prepare-release
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  suggest:
+    name: Suggest next version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      suggested_version: ${{ steps.compute.outputs.suggested_version }}
+      prerelease: ${{ steps.compute.outputs.prerelease }}
+      tag: ${{ steps.compute.outputs.tag }}
+
+    steps:
+      - name: Checkout main with tags
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Compute next version
+        id: compute
+        shell: bash
+        env:
+          LANE: ${{ inputs.lane }}
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -euo pipefail
+
+          latest_stable="$(git tag -l 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)"
+          latest_stable="${latest_stable#v}"
+
+          if [ -z "${latest_stable}" ]; then
+            latest_stable="1.0.0"
+          fi
+
+          IFS='.' read -r major minor patch <<< "${latest_stable}"
+
+          case "${BUMP}" in
+            patch)
+              base_major="${major}"
+              base_minor="${minor}"
+              base_patch="$((patch + 1))"
+              ;;
+            minor)
+              base_major="${major}"
+              base_minor="$((minor + 1))"
+              base_patch="0"
+              ;;
+            major)
+              base_major="$((major + 1))"
+              base_minor="0"
+              base_patch="0"
+              ;;
+            *)
+              echo "Unsupported bump: ${BUMP}"
+              exit 1
+              ;;
+          esac
+
+          base_version="${base_major}.${base_minor}.${base_patch}"
+
+          case "${LANE}" in
+            beta)
+              last_lane="$(git tag -l "v${base_version}-beta.*" | sed 's/^v//' | sort -V | tail -n 1 || true)"
+              if [ -n "${last_lane}" ]; then
+                next_n="$(echo "${last_lane}" | sed -E 's/^.*-beta\.([0-9]+)$/\1/')"
+                next_n="$((next_n + 1))"
+              else
+                next_n="1"
+              fi
+              suggested_version="${base_version}-beta.${next_n}"
+              prerelease="true"
+              ;;
+            rc)
+              last_lane="$(git tag -l "v${base_version}-rc.*" | sed 's/^v//' | sort -V | tail -n 1 || true)"
+              if [ -n "${last_lane}" ]; then
+                next_n="$(echo "${last_lane}" | sed -E 's/^.*-rc\.([0-9]+)$/\1/')"
+                next_n="$((next_n + 1))"
+              else
+                next_n="1"
+              fi
+              suggested_version="${base_version}-rc.${next_n}"
+              prerelease="true"
+              ;;
+            stable)
+              suggested_version="${base_version}"
+              prerelease="false"
+              ;;
+            *)
+              echo "Unsupported lane: ${LANE}"
+              exit 1
+              ;;
+          esac
+
+          tag="v${suggested_version}"
+
+          echo "suggested_version=${suggested_version}" >> "$GITHUB_OUTPUT"
+          echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        run: |
+          echo "## Suggested release" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- lane: \`${{ inputs.lane }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- bump: \`${{ inputs.bump }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- suggested version: \`${{ steps.compute.outputs.suggested_version }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- tag: \`${{ steps.compute.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- prerelease: \`${{ steps.compute.outputs.prerelease }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Run the release workflow with:" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`version=${{ steps.compute.outputs.suggested_version }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`prerelease=${{ steps.compute.outputs.prerelease }}\`" >> "$GITHUB_STEP_SUMMARY"
