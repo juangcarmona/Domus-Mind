@@ -7,6 +7,7 @@ import { fetchTimeline } from "../../../store/timelineSlice";
 import { PlanCrudForm } from "./PlanCrudForm";
 import { RoutineCrudForm } from "./RoutineCrudForm";
 import { TaskCrudForm } from "./TaskCrudForm";
+import "../editors.css";
 
 export type EditableEntityType = "task" | "routine" | "event";
 

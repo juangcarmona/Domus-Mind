@@ -33,4 +33,10 @@ export default {
   relatedWork: "関連する作業",
   relatedWorkEmpty: "このエリアに関連するアイテムはまだありません。",
   relatedWorkHint: "タスク、プラン、またはルーティンを作成し、このエリアを選択することでここに連り付けられます。",
+  filterAll: "すべて",
+  filterUnowned: "未割当",
+  filterMine: "自分のもの",
+  filterEmpty: "このフィルターに一致するエリアはありません。",
+  selectAreaHint: "エリアを選択して詳細を確認し、担当者を管理してください。",
+  viewDetail: "詳細を表示",
 } as const;

@@ -44,6 +44,10 @@ export default {
     empty: "Rien à afficher.",
     scrollHint: "Faites défiler pour explorer le temps →",
   },
+  item: {
+    edit: "Modifier",
+    select: "Sélectionner un élément pour voir les détails",
+  },
   loading: "Chargement…",
   error: "Impossible de charger les données.",
 } as const;

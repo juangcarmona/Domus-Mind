@@ -27,8 +27,31 @@
   --space-4: 1rem;
   --space-5: 1.25rem;
   --space-6: 1.5rem;
+  --space-7: 1.75rem;
+  --space-8: 2rem;
 
   --header-height: 3.5rem;
+
+  /* ---- Structural layout tokens ---- */
+  --rail-width: 14rem;
+  --rail-width-collapsed: 3rem;
+  --inspector-width: 20rem;
+  --toolbar-height: 2.75rem;
+  --list-switcher-width: 16rem;
+
+  /* ---- Component density tokens ---- */
+  --row-height-compact: 2.25rem;
+  --row-height-default: 2.75rem;
+  --row-height-relaxed: 3.25rem;
+
+  /* ---- Surface levels ---- */
+  --surface-alt: color-mix(in srgb, var(--primary) 3%, var(--surface));
+
+  /* ---- Typography scale ---- */
+  --font-size-xs: 0.72rem;
+  --font-size-sm: 0.82rem;
+  --font-size-base: 0.9rem;
+  --font-size-md: 1rem;
 
   --radius-sm: 2px;
   --radius-md: 2px;
@@ -39,8 +62,11 @@
 
   --z-header: 10;
   --z-menu: 20;
+  --z-inspector: 8;
   --z-drawer-backdrop: 30;
   --z-drawer: 40;
+  --z-bottom-sheet-backdrop: 50;
+  --z-bottom-sheet: 60;
   --z-modal: 100;
 }
 

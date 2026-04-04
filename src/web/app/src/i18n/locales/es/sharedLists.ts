@@ -54,4 +54,7 @@ export default {
   collapseChecked: "Ocultar hechos",
   expandChecked: "Mostrar hechos ({{count}})",
   kindLabel2: "Tipo",
-  createChecklistName: "Nombre de la nueva lista",} as const;
+  createChecklistName: "Nombre de la nueva lista",
+  reorderMode: "Reordenar",
+  exitReorder: "Listo",
+  reorderHint: "Arrastra para cambiar el orden",} as const;

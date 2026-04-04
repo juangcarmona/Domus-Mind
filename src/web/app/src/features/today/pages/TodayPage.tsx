@@ -3,24 +3,154 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { setSelectedDate } from "../../../store/todaySlice";
-import { fetchTimeline } from "../../../store/timelineSlice";
 import { weekApi } from "../api/weekApi";
-import type { WeeklyGridResponse } from "../types";
+import type { WeeklyGridResponse, WeeklyGridCell } from "../types";
 import type { ApiError } from "../../../api/domusmindApi";
 import { EditEntityModal, type EditableEntityType } from "../../editors/components/EditEntityModal";
 import { PlanningAddModal } from "../../planning/components/modals/PlanningAddModal";
 import { TodayBoard } from "../components/board/TodayBoard";
-import { MonthView } from "../components/MonthView";
-import { WeeklyHouseholdGrid } from "../components/grid/WeeklyHouseholdGrid";
-import { TimelineRuler } from "../components/timeline/TimelineRuler";
-import { startOfWeek, toIsoDate, addDays, addMonths } from "../utils/dateUtils";
-import { useMonthGridCache } from "../hooks/useMonthGridCache";
+import { InspectorPanel } from "../../../components/InspectorPanel";
+import { BottomSheetDetail } from "../../../components/BottomSheetDetail";
+import { startOfWeek, toIsoDate, addDays } from "../utils/dateUtils";
+import { ENTRY_GLYPH } from "../utils/calendarEntry";
 import { useIsMobile } from "../../../hooks/useIsMobile";
 
 
+// ----------------------------------------------------------------
+// Selected item model — used by inspector and bottom sheet
+// ----------------------------------------------------------------
+
+interface TodaySelectedItem {
+  type: "event" | "task" | "routine";
+  id: string;
+  title: string;
+  date: string | null;
+  time: string | null;
+  endTime?: string | null;
+  status?: string;
+  subtitle: string | null;
+  color?: string | null;
+}
+
+function findGridItem(
+  grid: WeeklyGridResponse | null,
+  type: "event" | "task" | "routine",
+  id: string,
+): TodaySelectedItem | null {
+  if (!grid) return null;
+
+  const allCells: WeeklyGridCell[] = [
+    ...grid.sharedCells,
+    ...grid.members.flatMap((m) => m.cells),
+  ];
+
+  for (const cell of allCells) {
+    if (type === "event") {
+      const e = (cell.events ?? []).find((ev) => ev.eventId === id);
+      if (e) {
+        return {
+          type: "event",
+          id: e.eventId,
+          title: e.title,
+          date: e.date,
+          time: e.time,
+          endTime: e.endTime,
+          status: e.status,
+          subtitle: e.participants?.map((p) => p.displayName).join(", ") || null,
+          color: e.color,
+        };
+      }
+    }
+    if (type === "task") {
+      const tk = (cell.tasks ?? []).find((t) => t.taskId === id);
+      if (tk) {
+        return {
+          type: "task",
+          id: tk.taskId,
+          title: tk.title,
+          date: tk.dueDate,
+          time: null,
+          status: tk.status,
+          subtitle: null,
+          color: tk.color,
+        };
+      }
+    }
+    if (type === "routine") {
+      const r = (cell.routines ?? []).find((rt) => rt.routineId === id);
+      if (r) {
+        return {
+          type: "routine",
+          id: r.routineId,
+          title: r.name,
+          date: null,
+          time: r.time,
+          endTime: r.endTime,
+          status: undefined,
+          subtitle: r.frequency,
+          color: r.color,
+        };
+      }
+    }
+  }
+
+  return { type, id, title: id, date: null, time: null, subtitle: null };
+}
+
+// ----------------------------------------------------------------
+// Item detail — shared by InspectorPanel and BottomSheetDetail
+// ----------------------------------------------------------------
+
+function TodayItemDetail({
+  item,
+  onEdit,
+}: {
+  item: TodaySelectedItem;
+  onEdit: (type: string, id: string) => void;
+}) {
+  const { t } = useTranslation("today");
+  const glyph = ENTRY_GLYPH[
+    item.type === "event" ? "event" : item.type === "task" ? "task" : "routine"
+  ];
+
+  return (
+    <div className="today-item-detail">
+      <p className="today-item-detail-type">
+        <span className="today-item-detail-glyph">{glyph}</span>
+        {item.type}
+      </p>
+      <p className="today-item-detail-title">{item.title}</p>
+      {item.date && <p className="today-item-detail-meta">{item.date}</p>}
+      {item.time && (
+        <p className="today-item-detail-meta">
+          {item.time}
+          {item.endTime ? ` – ${item.endTime}` : ""}
+        </p>
+      )}
+      {item.status && (
+        <p className="today-item-detail-status">{item.status}</p>
+      )}
+      {item.subtitle && (
+        <p className="today-item-detail-meta">{item.subtitle}</p>
+      )}
+      <button
+        className="btn btn-secondary btn-sm today-item-detail-edit"
+        type="button"
+        onClick={() => onEdit(item.type, item.id)}
+      >
+        {t("item.edit")}
+      </button>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------
+// Page
+// ----------------------------------------------------------------
+
 export function TodayPage() {
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation("today");
+  const { t } = useTranslation("today");
   const isMobile = useIsMobile();
 
   const family = useAppSelector((s) => s.household.family);
@@ -29,8 +159,6 @@ export function TodayPage() {
   const members = useAppSelector((s) => s.household.members);
 
   const selectedDate = useAppSelector((s) => s.today.selectedDate);
-  const { data: timelineData, status: timelineStatus, error: timelineError } =
-    useAppSelector((s) => s.timeline);
 
   // Reset to today every time the user enters this page.
   // selectedDate is shared Redux state and would otherwise persist whatever
@@ -40,27 +168,23 @@ export function TodayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Mid-term section: local tab state
-  // On mobile, always show month (week grid is not rendered).
-  const [midTermView, setMidTermView] = useState<"week" | "month">("week");
-  const effectiveMidTermView = isMobile ? "month" : midTermView;
-
-  // Month view anchor - navigated independently of selectedDate
-  const [monthAnchor, setMonthAnchor] = useState<string>(selectedDate);
-  useEffect(() => {
-    setMonthAnchor(selectedDate);
-  }, [selectedDate]);
-
-  // Grid data (shared by Day View + Week View)
+  // Grid data for the day board
   const [grid, setGrid] = useState<WeeklyGridResponse | null>(null);
   const [gridLoading, setGridLoading] = useState(false);
   const [gridError, setGridError] = useState<string | null>(null);
+
+  // Inspector / bottom-sheet: selected item
+  const [selectedItem, setSelectedItem] = useState<TodaySelectedItem | null>(null);
+
+  // Edit modal: opened from inspector / sheet
   const [editTarget, setEditTarget] = useState<{ type: EditableEntityType; id: string } | null>(
     null,
   );
+
+  // Add modal
   const [addModal, setAddModal] = useState(false);
 
-  // Compute week start for the selected date
+  // Compute week start for grid fetching
   const weekStartForSelected = toIsoDate(
     startOfWeek(new Date(selectedDate + "T00:00:00"), firstDayOfWeek),
   );
@@ -90,30 +214,10 @@ export function TodayPage() {
     }
   }, [weekStartForSelected, fetchGrid, familyId]);
 
-  const { monthDaySummary } = useMonthGridCache(
-    familyId,
-    monthAnchor,
-    firstDayOfWeek,
-    midTermView === "month",
-  );
-
-  // Load timeline data (for the ruler only - month dots now use weekly grids).
-  // Re-fetches whenever familyId changes or if a previous attempt failed.
-  useEffect(() => {
-    if (!familyId) return;
-    if (timelineStatus === "idle" || timelineStatus === "error") {
-      dispatch(fetchTimeline({ familyId }));
-    }
-  }, [familyId, timelineStatus, dispatch]);
-
   const todayIso = toIsoDate(new Date());
   const isToday = selectedDate === todayIso;
 
   // ---- Interaction handlers ----
-
-  function handleDaySelect(date: string) {
-    dispatch(setSelectedDate(date));
-  }
 
   function handlePrevDay() {
     dispatch(setSelectedDate(addDays(selectedDate, -1)));
@@ -128,7 +232,12 @@ export function TodayPage() {
   }
 
   function handleItemClick(type: "event" | "task" | "routine", id: string) {
-    setEditTarget({ type, id });
+    setSelectedItem(findGridItem(grid, type, id));
+  }
+
+  function handleEditItem(type: string, id: string) {
+    setEditTarget({ type: type as EditableEntityType, id });
+    setSelectedItem(null);
   }
 
   const navigate = useNavigate();
@@ -141,132 +250,51 @@ export function TodayPage() {
     navigate(`/agenda/shared?date=${selectedDate}`);
   }
 
-  function handlePrevWeek() {
-    dispatch(setSelectedDate(addDays(selectedDate, -7)));
-  }
-
-  function handleNextWeek() {
-    dispatch(setSelectedDate(addDays(selectedDate, 7)));
-  }
-
-  // ---- Labels ----
-
-  const weekEnd = addDays(weekStartForSelected, 6);
-  const weekNavLabel = `${new Date(weekStartForSelected + "T00:00:00").toLocaleDateString(
-    i18n.language,
-    { day: "numeric", month: "short" },
-  )} – ${new Date(weekEnd + "T00:00:00").toLocaleDateString(i18n.language, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })}`;
-
   return (
-    <div className="page-content coord-page">
-      {/* ── Section 1: Day View (always visible, nav integrated inside) ── */}
-      <TodayBoard
-        grid={grid}
-        selectedDate={selectedDate}
-        loading={gridLoading}
-        error={gridError}
-        isToday={isToday}
-        onPrevDay={handlePrevDay}
-        onNextDay={handleNextDay}
-        onToday={handleToday}
-        onItemClick={handleItemClick}
-        onMemberClick={handleMemberClick}
-        onSharedClick={handleSharedClick}
-      />
-
-      {/* ── Section 2: Mid-term navigation (Week / Month) ── */}
-      <div className={`coord-midterm-section${isMobile ? " coord-midterm-section--mobile" : ""}`}>
-        {/* Centered tab switcher — hidden on mobile (always shows month) */}
-        {!isMobile && (
-          <div className="coord-midterm-tabbar">
-            <button
-              className={`coord-midterm-tab${midTermView === "week" ? " coord-midterm-tab--active" : ""}`}
-              onClick={() => setMidTermView("week")}
-              type="button"
-            >
-              <span className="coord-midterm-tab-icon">▦</span>
-              {t("tabs.week")}
-            </button>
-            <button
-              className={`coord-midterm-tab${midTermView === "month" ? " coord-midterm-tab--active" : ""}`}
-              onClick={() => setMidTermView("month")}
-              type="button"
-            >
-              <span className="coord-midterm-tab-icon">🗓</span>
-              {t("tabs.month")}
-            </button>
-          </div>
-        )}
-
-        {/* Week nav - same style as month nav */}
-        {effectiveMidTermView === "week" && (
-          <div className="coord-month-nav coord-midterm-week-nav">
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={handlePrevWeek}
-              type="button"
-              aria-label={t("nav.prevWeek")}
-            >
-              ‹
-            </button>
-            <span className="coord-month-label">{weekNavLabel}</span>
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={handleNextWeek}
-              type="button"
-              aria-label={t("nav.nextWeek")}
-            >
-              ›
-            </button>
-          </div>
-        )}
-
-        {/* Week grid: only rendered on desktop */}
-        {effectiveMidTermView === "week" && (
-          <WeeklyHouseholdGrid
+    <div className="today-surface l-surface">
+      <div className="today-surface-body l-surface-body">
+        {/* Main day board — fills all available space */}
+        <div className="l-surface-content">
+          <TodayBoard
             grid={grid}
+            selectedDate={selectedDate}
             loading={gridLoading}
             error={gridError}
-            selectedDate={selectedDate}
-            onDayClick={handleDaySelect}
+            isToday={isToday}
+            onPrevDay={handlePrevDay}
+            onNextDay={handleNextDay}
+            onToday={handleToday}
             onItemClick={handleItemClick}
+            onMemberClick={handleMemberClick}
+            onSharedClick={handleSharedClick}
           />
-        )}
+        </div>
 
-        {effectiveMidTermView === "month" && (
-          <div className="coord-month-wrap">
-            <MonthView
-              selectedDate={selectedDate}
-              today={todayIso}
-              firstDayOfWeek={firstDayOfWeek}
-              displayAnchor={monthAnchor}
-              daySummary={monthDaySummary}
-              onSelectDay={handleDaySelect}
-              onPrevMonth={() => setMonthAnchor(addMonths(monthAnchor, -1))}
-              onNextMonth={() => setMonthAnchor(addMonths(monthAnchor, 1))}
-            />
-          </div>
+        {/* Desktop inspector — shows selected item detail */}
+        {!isMobile && selectedItem && (
+          <InspectorPanel
+            title={selectedItem.title}
+            onClose={() => setSelectedItem(null)}
+          >
+            <TodayItemDetail item={selectedItem} onEdit={handleEditItem} />
+          </InspectorPanel>
         )}
       </div>
 
-      {/* ── Section 3: Horizontal Timeline Ruler ── */}
-      <div className="coord-ruler-section">
-        <TimelineRuler
-          selectedDate={selectedDate}
-          today={todayIso}
-          timelineData={timelineStatus === "success" ? timelineData : null}
-          onSelectDay={handleDaySelect}
-        />
-        {timelineError && (
-          <p className="error-msg" style={{ padding: "0.5rem 0.75rem", margin: 0 }}>
-            {timelineError}
-          </p>
-        )}
-      </div>
+      {/* Mobile bottom sheet — contextual item detail */}
+      {isMobile && (
+        <BottomSheetDetail
+          open={!!selectedItem}
+          onClose={() => setSelectedItem(null)}
+          title={selectedItem?.title ?? ""}
+        >
+          {selectedItem && (
+            <TodayItemDetail item={selectedItem} onEdit={handleEditItem} />
+          )}
+        </BottomSheetDetail>
+      )}
+
+      {/* Edit modal — opened from inspector / sheet */}
       {editTarget && (
         <EditEntityModal
           type={editTarget.type}
@@ -274,15 +302,13 @@ export function TodayPage() {
           onClose={() => setEditTarget(null)}
           onEntitySaved={async () => {
             setEditTarget(null);
-            if (familyId) {
-              await Promise.all([
-                fetchGrid(weekStartForSelected),
-                dispatch(fetchTimeline({ familyId })),
-              ]);
-            }
+            setSelectedItem(null);
+            await fetchGrid(weekStartForSelected);
           }}
         />
       )}
+
+      {/* FAB — quick add */}
       <button
         className="fab-add"
         type="button"

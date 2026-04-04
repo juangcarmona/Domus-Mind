@@ -1,0 +1,65 @@
+/* ---- QuickAddBar — always-visible inline capture ---- */
+
+.quick-add-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.quick-add-bar-input {
+  flex: 1;
+  min-width: 0;
+  height: var(--row-height-compact);
+  padding: 0 0.65rem;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  transition: border-color 0.12s;
+}
+
+.quick-add-bar-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.quick-add-bar-input::placeholder {
+  color: var(--muted);
+}
+
+.quick-add-bar-submit {
+  height: var(--row-height-compact);
+  padding: 0 0.75rem;
+  background: var(--primary);
+  color: #fff;
+  border: 1px solid var(--primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 1.1rem;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.12s;
+  line-height: 1;
+}
+
+.quick-add-bar-submit:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.quick-add-bar-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .quick-add-bar {
+    padding: 0.5rem 0.75rem;
+  }
+}

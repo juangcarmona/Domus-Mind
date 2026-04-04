@@ -1,0 +1,15 @@
+/* ---- EmptyStateCompact — compact inline empty state ---- */
+
+.empty-state-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.empty-state-compact-msg {
+  font-size: var(--font-size-base);
+  margin: 0;
+}

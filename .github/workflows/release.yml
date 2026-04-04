@@ -1,38 +1,29 @@
 name: release
 
-# Manual release workflow.
-# Run from the Actions tab on the main branch.
-# Inputs:
-#   version   - semver string without leading 'v', e.g. 0.1.4  0.1.4-beta.1  1.0.0-rc.1
-#   prerelease - whether to mark the GitHub Release as a pre-release
-
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version (semver, no leading v — e.g. 0.1.4 or 0.1.4-beta.1)'
+        description: "SemVer without leading v, e.g. 1.0.1, 1.0.1-beta.1, 1.0.1-rc.1"
         required: true
         type: string
       prerelease:
-        description: 'Mark as pre-release'
+        description: "Mark GitHub Release as prerelease"
         required: true
         type: boolean
         default: true
+      summary:
+        description: "Short release summary"
+        required: true
+        type: string
 
-# One release at a time; do NOT cancel in-progress releases.
 concurrency:
   group: release
   cancel-in-progress: false
 
-# Per-job permissions are set on each job below; no global grants.
 permissions: {}
 
-# ─────────────────────────────────────────────────────────────────────────────
 jobs:
-
-  # ---------------------------------------------------------------------------
-  # Validate inputs, check branch, reject duplicate tags, compute image tags
-  # ---------------------------------------------------------------------------
   prepare:
     name: Prepare release
     runs-on: ubuntu-latest
@@ -40,81 +31,79 @@ jobs:
     permissions:
       contents: read
     outputs:
-      version:              ${{ steps.parse.outputs.version }}
-      tag:                  ${{ steps.parse.outputs.tag }}
-      short_sha:            ${{ steps.parse.outputs.short_sha }}
-      release_date:         ${{ steps.parse.outputs.release_date }}
-      is_prerelease:        ${{ inputs.prerelease }}
-      image_tags_domusmind: ${{ steps.parse.outputs.image_tags_domusmind }}
+      version: ${{ steps.meta.outputs.version }}
+      tag: ${{ steps.meta.outputs.tag }}
+      short_sha: ${{ steps.meta.outputs.short_sha }}
+      release_date: ${{ steps.meta.outputs.release_date }}
+      image: ${{ steps.meta.outputs.image }}
+      image_tags: ${{ steps.meta.outputs.image_tags }}
+      prerelease: ${{ inputs.prerelease }}
 
     steps:
-      - name: Checkout main (full history + tags)
+      - name: Checkout main
         uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Fail if not on main
+      - name: Validate version and branch
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
+          set -euo pipefail
+
           BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-          if [ "$BRANCH" != "main" ]; then
-            echo "ERROR: release must be triggered from main (currently on '${BRANCH}')."
+          [ "$BRANCH" = "main" ] || { echo "Release must run from main"; exit 1; }
+
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(beta|rc)\.[0-9]+)?$ ]]; then
+            echo "Invalid version. Allowed: x.y.z, x.y.z-beta.n, x.y.z-rc.n"
             exit 1
           fi
 
-      - name: Validate version format
+      - name: Reject duplicate tag
+        shell: bash
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          # Accepts: MAJOR.MINOR.PATCH[-prerelease][+buildmeta]
-          # Examples: 0.1.4  0.1.4-beta.1  1.0.0-rc.1  1.2.3+build.5  1.2.3-rc.1+build.5
-          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?(\+[a-zA-Z0-9.]+)?$ ]]; then
-            echo "ERROR: '${VERSION}' is not a valid semver string."
-            echo "Expected examples: 0.1.4  0.1.4-beta.1  1.0.0-rc.1  1.2.3+build.5"
-            exit 1
-          fi
-
-      - name: Reject duplicate tags
-        env:
-          VERSION: ${{ inputs.version }}
-        run: |
+          set -euo pipefail
           TAG="v${VERSION}"
-          if git rev-parse --verify "refs/tags/${TAG}" >/dev/null 2>&1; then
-            echo "ERROR: tag '${TAG}' already exists. Bump the version."
+          git rev-parse --verify "refs/tags/${TAG}" >/dev/null 2>&1 && {
+            echo "Tag already exists: ${TAG}"
             exit 1
-          fi
+          }
 
-      - name: Compute image tags and release metadata
-        id: parse
+      - name: Compute metadata
+        id: meta
+        shell: bash
         env:
           VERSION: ${{ inputs.version }}
         run: |
+          set -euo pipefail
+
           TAG="v${VERSION}"
           SHORT_SHA="$(git rev-parse --short HEAD)"
           RELEASE_DATE="$(date -u +%Y-%m-%d)"
-
-          # GHCR requires lowercase image names.
           OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
-          REGISTRY="ghcr.io/${OWNER}"
+          IMAGE="ghcr.io/${OWNER}/domusmind"
 
-          echo "version=${VERSION}"           >> "$GITHUB_OUTPUT"
-          echo "tag=${TAG}"                   >> "$GITHUB_OUTPUT"
-          echo "short_sha=${SHORT_SHA}"       >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           echo "release_date=${RELEASE_DATE}" >> "$GITHUB_OUTPUT"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
 
-          # Immutable exact tags + sha tag only; no 'latest', no mutable aliases.
-          echo "image_tags_domusmind<<EOF"                       >> "$GITHUB_OUTPUT"
-          echo "${REGISTRY}/domusmind:${TAG}"                    >> "$GITHUB_OUTPUT"
-          echo "${REGISTRY}/domusmind:${VERSION}"                >> "$GITHUB_OUTPUT"
-          echo "${REGISTRY}/domusmind:sha-${SHORT_SHA}"          >> "$GITHUB_OUTPUT"
-          echo "EOF"                                             >> "$GITHUB_OUTPUT"
+          {
+            echo "image_tags<<EOF"
+            echo "${IMAGE}:${TAG}"
+            echo "${IMAGE}:${VERSION}"
+            echo "${IMAGE}:sha-${SHORT_SHA}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
-  # ---------------------------------------------------------------------------
-  # Backend: restore → build → test
-  # ---------------------------------------------------------------------------
   backend:
-    name: Backend - build & test
+    name: Backend validation
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [prepare]
@@ -129,7 +118,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: "10.0.x"
 
       - name: Restore
         run: dotnet restore DomusMind.slnx
@@ -140,43 +129,67 @@ jobs:
       - name: Test
         run: dotnet test DomusMind.slnx --no-build --configuration Release
 
-  # ---------------------------------------------------------------------------
-  # Create and push the annotated git tag
-  # ---------------------------------------------------------------------------
+  webapp:
+    name: Web app validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    needs: [prepare]
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: src/web/app
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/web/app/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
   tag:
     name: Create tag
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [prepare, backend]
+    needs: [prepare, backend, webapp]
     permissions:
       contents: write
 
     steps:
-      - name: Checkout main (full history + tags)
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Configure git identity
+      - name: Configure git
         run: |
-          git config user.name  "github-actions[bot]"
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create and push annotated tag
+      - name: Create and push tag
+        shell: bash
         env:
-          TAG:     ${{ needs.prepare.outputs.tag }}
+          TAG: ${{ needs.prepare.outputs.tag }}
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
+          set -euo pipefail
           git tag -a "$TAG" -m "DomusMind ${VERSION}"
           git push origin "$TAG"
 
-  # ---------------------------------------------------------------------------
-  # Build and push Docker images to GHCR
-  # ---------------------------------------------------------------------------
-  images:
-    name: Build & push images
+  image:
+    name: Build and push image
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [prepare, tag]
@@ -185,89 +198,124 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout at release tag
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.prepare.outputs.tag }}
 
-      - name: Generate version metadata for web app
+      - name: Generate app version metadata
+        shell: bash
         env:
-          VERSION:      ${{ needs.prepare.outputs.version }}
-          SHORT_SHA:    ${{ needs.prepare.outputs.short_sha }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
           RELEASE_DATE: ${{ needs.prepare.outputs.release_date }}
-          IS_PRERELEASE: ${{ needs.prepare.outputs.is_prerelease }}
+          IS_PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
         run: |
+          set -euo pipefail
           mkdir -p src/web/app/src/generated
-          cat > src/web/app/src/generated/version.ts << EOF
-          // Auto-generated by the release workflow. Do not edit manually.
-          export const APP_VERSION      = "v${VERSION}";
+          cat > src/web/app/src/generated/version.ts <<EOF
+          export const APP_VERSION = "v${VERSION}";
           export const APP_RELEASE_DATE = "${RELEASE_DATE}";
-          export const APP_COMMIT_SHA   = "${SHORT_SHA}";
+          export const APP_COMMIT_SHA = "${SHORT_SHA}";
           export const APP_IS_PRERELEASE = ${IS_PRERELEASE};
           EOF
 
-      - name: Log in to GHCR
+      - name: Generate release manifest
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          SHORT_SHA: ${{ needs.prepare.outputs.short_sha }}
+          RELEASE_DATE: ${{ needs.prepare.outputs.release_date }}
+          IS_PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+          IMAGE: ${{ needs.prepare.outputs.image }}
+          SUMMARY: ${{ inputs.summary }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-artifacts
+          cat > release-artifacts/release-manifest.json <<EOF
+          {
+            "version": "${VERSION}",
+            "tag": "${TAG}",
+            "releaseDate": "${RELEASE_DATE}",
+            "commitSha": "${SHORT_SHA}",
+            "prerelease": ${IS_PRERELEASE},
+            "image": "${IMAGE}:${TAG}",
+            "summary": "${SUMMARY}"
+          }
+          EOF
+
+      - name: Login to GHCR
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
+      - name: Setup Buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Build and push DomusMind image
+      - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           file: src/backend/DomusMind.Api/Dockerfile
           push: true
-          tags: ${{ needs.prepare.outputs.image_tags_domusmind }}
+          tags: ${{ needs.prepare.outputs.image_tags }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.revision=${{ needs.prepare.outputs.short_sha }}
             org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
           cache-from: type=gha,scope=domusmind
-          cache-to:   type=gha,scope=domusmind,mode=max
+          cache-to: type=gha,scope=domusmind,mode=max
 
-  # ---------------------------------------------------------------------------
-  # Validate release assets and publish GitHub Release
-  # ---------------------------------------------------------------------------
+      - name: Upload release manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-manifest
+          path: release-artifacts/release-manifest.json
+
   github-release:
-    name: GitHub Release
+    name: Publish GitHub Release
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [prepare, images]
+    needs: [prepare, image]
     permissions:
       contents: write
 
     steps:
-      - name: Checkout at release tag
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.prepare.outputs.tag }}
 
-      - name: Validate compose configuration
+      - name: Download manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: release-manifest
+          path: release-artifacts
+
+      - name: Validate compose
         env:
-          # Dummy values - only used to confirm variable resolution; nothing is deployed.
-          DB_USER:         ci-test
-          DB_PASSWORD:     ci-test-password
-          JWT_SECRET:      ci-test-jwt-secret-placeholder-32ch
-          JWT_ISSUER:      domusmind
-          VERSION:         ${{ needs.prepare.outputs.version }}
-          IMAGE_REGISTRY:  ghcr.io
-          IMAGE_OWNER:     ${{ github.repository_owner }}
-          APP_PORT:        "24365"
+          DB_USER: ci-test
+          DB_PASSWORD: ci-test-password
+          JWT_SECRET: ci-test-jwt-secret-placeholder-32ch
+          JWT_ISSUER: domusmind
+          JWT_AUDIENCE: domusmind
+          VERSION: ${{ needs.prepare.outputs.version }}
+          IMAGE_REGISTRY: ghcr.io
+          IMAGE_OWNER: ${{ github.repository_owner }}
+          APP_PORT: "24365"
         run: docker compose -f deploy/docker-compose.yml config --quiet
 
-      - name: Create GitHub Release
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name:               ${{ needs.prepare.outputs.tag }}
-          name:                   DomusMind ${{ needs.prepare.outputs.tag }}
-          prerelease:             ${{ inputs.prerelease }}
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          name: DomusMind ${{ needs.prepare.outputs.tag }}
+          prerelease: ${{ inputs.prerelease }}
           generate_release_notes: true
+          body: ${{ inputs.summary }}
           files: |
             deploy/docker-compose.yml
             deploy/.env.example
             deploy/README.md
+            release-artifacts/release-manifest.json

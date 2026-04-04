@@ -6,9 +6,10 @@ import type { SharedListItemDetail } from "../../../api/types/sharedListTypes";
 interface SortableItemRowProps {
   item: SharedListItemDetail;
   listId: string;
+  reorderMode?: boolean;
 }
 
-export function SortableItemRow({ item, listId }: SortableItemRowProps) {
+export function SortableItemRow({ item, listId, reorderMode = false }: SortableItemRowProps) {
   const {
     attributes,
     listeners,
@@ -16,7 +17,7 @@ export function SortableItemRow({ item, listId }: SortableItemRowProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.itemId });
+  } = useSortable({ id: item.itemId, disabled: !reorderMode });
 
   return (
     <div
@@ -29,7 +30,12 @@ export function SortableItemRow({ item, listId }: SortableItemRowProps) {
         position: "relative",
       }}
     >
-      <ItemRow item={item} listId={listId} dragHandleProps={{ ...listeners, ...attributes }} />
+      <ItemRow
+        item={item}
+        listId={listId}
+        reorderMode={reorderMode}
+        dragHandleProps={reorderMode ? { ...listeners, ...attributes } : undefined}
+      />
     </div>
   );
 }

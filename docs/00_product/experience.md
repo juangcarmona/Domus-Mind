@@ -1,47 +1,67 @@
 Status: Canonical
 Audience: Product / Design / Engineering / Marketing
-Scope: V1 with future-direction notes
-Owns: Product experience, household language, Today and Week behavior, onboarding shape, and scope guardrails
+Scope: V1 with near-term UX refactor direction
+Owns: Product experience, household language, major surface roles, onboarding shape, and scope guardrails
 Depends on: docs/00_product/strategy.md, specs/system/system-spec.md
-Replaces: docs/00_vision/household-experience.md, docs/00_vision/household-timeline.md, docs/00_vision/household-onboarding.md, docs/00_vision/calendar-coordination.md, docs/00_vision/chore-assignment.md
+
 
 # DomusMind - Product Experience
 
-This document is the canonical product-experience file for DomusMind.
+This document defines how DomusMind should behave in real household use.
 
-It defines how the product should feel and behave in real household use.
+It does not define the visual system in detail.
+Cross-surface shell, layout, density, and interaction rules belong in `surface-system.md`.
 
 ---
 
-# Core UX Principles
+# Purpose
 
-DomusMind should feel like a quiet shared household system.
+DomusMind should make the household understandable in seconds.
 
-The experience is guided by these principles:
+It should reduce:
 
-- Reduce cognitive load. The system should remove remembering, reminding, and constant negotiation work.
-- Action first. The product should answer what matters today before it asks for setup or interpretation.
-- No configuration barrier. A household should reach useful operation in minutes.
-- Household-first. The main view reflects the household's shared reality, not one person's productivity space.
-- Timeline-first. Plans, routines, tasks, lists, and reminders should become legible together.
+- remembering
+- reminding
+- re-explaining
+- renegotiating
+- checking multiple tools to reconstruct what is happening
+
+It should increase:
+
+- shared visibility
+- clarity
+- ownership
+- calm
+- anticipation
+
+The product should feel like one shared household system, not a collection of disconnected tools.
+
+---
+
+# Core Experience Principles
+
+- Household-first. The product reflects shared household reality, not one person's private productivity space.
+- Action first. The product should answer what matters now before asking for setup or interpretation.
+- Timeline-first. Plans, routines, tasks, and relevant shared state should become legible together.
+- Capture must stay easier than remembering. If adding or updating state becomes slow, adoption fails.
 - Simplicity at the surface. Product complexity belongs in the model, not in the interface.
+- One product, one language. All surfaces must feel like part of the same system.
 
-The experience should feel:
+The product should feel:
 
 - quiet
-- helpful
-- predictable
+- clear
+- useful
 - lightweight
-
-The product should feel like a smart household board, not a management tool.
+- operational
 
 ---
 
 # Household Language
 
-DomusMind must speak in natural household concepts.
+DomusMind should speak in natural household terms.
 
-The interface should use:
+Prefer:
 
 - household
 - people
@@ -51,11 +71,10 @@ The interface should use:
 - lists
 - areas
 - today
+- this week
 - what matters
 - what needs attention
 - who owns what
-
-Internal model terms stay out of the experience whenever household language can express the same idea more naturally.
 
 Core translations:
 
@@ -65,71 +84,83 @@ Core translations:
 | Member | Person |
 | Event | Plan |
 | Responsibility | Area |
-| Routine | Routine |
 | Shared List | List |
 
 Task stays Task by design.
 
 ---
 
-# Home / Today
+# Surface Roles
 
-The home screen is the Today view.
+## Today
 
-It is the primary operational surface of the product.
+Today is the primary household operational surface.
 
-It answers one question:
+It answers:
 
 > What matters today for this household?
 
-The screen should make the household state understandable in seconds.
+It should be:
 
-Typical Today information includes:
+- dense
+- fast to scan
+- truthful
+- low-navigation
+- shared-reality first
 
-- plans happening today
-- routines affecting today
-- tasks needing completion
-- lists that matter today when relevant
-- reminders needing attention
+## Planning
 
-Example:
+Planning is the write-heavy temporal coordination surface.
 
-```
-Today
+It answers:
 
-09:00
-Lucia dentist appointment
+> What is coming, when is it happening, and what needs adjustment?
 
-18:00
-Mateo football practice
+It should support:
 
-Trash -> Juan
-Laundry -> Lucia
+- day, week, and month awareness
+- plan creation and inspection
+- quick date navigation
+- conflict visibility
+- preparation awareness
 
-Buy milk
-```
+## Lists
 
-Users should not need separate tools to understand what is happening.
+Lists are the reusable shared-state surface.
 
----
+They answer:
 
-# Week View
+> What should be remembered, bought, checked, or prepared next time?
 
-The week view is a primary operational surface, not a secondary calendar page.
+They should feel:
 
-It should feel like a smart household whiteboard for the upcoming week.
+- fast
+- compact
+- row-based
+- low-ceremony
+- shared
 
-The week view helps the household understand:
+Lists are not a task manager and not a calendar.
 
-- where people need to be
-- when commitments occur
-- what routine and task work exists around those commitments
-- which days are overloaded
-- what needs preparation
+## Areas
 
-This view may combine information from multiple sources, but it should still feel like one shared household picture.
+Areas are the ownership surface.
 
-The goal is fast situational awareness, not detailed schedule management.
+They answer:
+
+> Which parts of household life exist, and who owns what?
+
+They should make ownership visible without becoming administrative.
+
+## Member Agenda
+
+Member Agenda is the individual deep temporal surface.
+
+It answers:
+
+> What does this person's day, week, or month actually look like?
+
+It exists to inspect and plan one person's temporal load without losing shared context.
 
 ---
 
@@ -137,89 +168,15 @@ The goal is fast situational awareness, not detailed schedule management.
 
 DomusMind distinguishes between planning surfaces and the timeline.
 
-Planning is the write-heavy surface where the household creates or edits future work.
+- Planning is where the household creates or adjusts future temporal state.
+- Timeline-oriented surfaces are where current household reality becomes legible.
 
-The timeline is the read-first operational surface where the current household state becomes legible.
+The household should not need separate tools to understand:
 
-Anything that affects the household should appear in the timeline, including:
-
-- plans
-- routines
-- tasks
-- reminders
-- list state where explicitly relevant
-
-These are different kinds of entries inside one household flow, not separate applications.
-
-The timeline replaces the need to check multiple disconnected tools to understand the day.
-
----
-
-# Navigation
-
-The primary navigation surfaces the household's operational tools:
-
-- Today
-- Planning
-- Areas
-- Lists
-
-People management is not a primary navigation destination.
-
-Managing people in the household is a configuration task. It belongs under **Settings → Household**, not in the main navigation rail.
-
-Within Settings → Household, people can:
-
-- view all household members
-- add a new person
-- edit a person's full name, role, and optional birth date
-- manage access (for managers)
-
-User-facing language uses **People** and **Person**, not Members or Member.
-
----
-
-# Scope Guardrails
-
-The V1 experience must stay inside the current system scope.
-
-- no separate routine manager
-- no personal-productivity framing
-- no setup-heavy first run
-- no calendar-first experience
-- no hidden ownership
-
-The V1 product surface should stay grounded in Family, Responsibilities, Calendar, Tasks, and the unified household timeline.
-
----
-
-# Onboarding
-
-Onboarding must create a functional household system in minutes.
-
-The flow should:
-
-- minimize user input
-- avoid technical concepts
-- create immediate usefulness
-- establish the household model quickly
-
-The first-run sequence is:
-
-1. Start household.
-2. Name the household.
-3. Add people.
-4. Add the first plans, routines, or lists.
-5. Show Today and Week immediately.
-
-Example starting flow:
-
-- create the household
-- add the people the household coordinates
-- add a few first plans or routines
-- show those items in Today and Week immediately
-
-At the end of onboarding, the household should already have a working shared system rather than an empty app shell.
+- what is happening
+- what needs attention
+- who is involved
+- what comes next
 
 ---
 
@@ -227,75 +184,98 @@ At the end of onboarding, the household should already have a working shared sys
 
 Routines are recurring household work.
 
-DomusMind should reduce routine negotiation rather than create a routine-management hobby.
+They should appear where they matter, not in a separate routine-management world.
 
 Core expectations:
 
-- the system can rotate routines when appropriate
-- some routines may have a default owner
-- some work may stay open to anyone in the household
-- completion should be simple
-- missed routines should surface quietly with useful correction suggestions
-
-Routines should appear in the timeline as part of household reality.
-
-Users should not feel that they are opening a separate routine manager.
-
-The household should simply know what is their responsibility today.
+- routines are visible in operational surfaces
+- ownership is understandable
+- completion stays lightweight
+- missed routine work surfaces quietly
 
 ---
 
 # Calendar Coordination
 
-DomusMind does not treat the calendar as a separate product to manage.
-
-It coordinates people and time.
+DomusMind does not treat calendar coordination as a separate product.
 
 The core question is:
 
 > Who needs to be where, and when?
 
-Plans may come from different sources, but the household should not have to care where a plan originated.
+The product should make visible:
 
-Creating a plan should stay simple and participant visibility must be first-class.
-
-The product should clearly show:
-
+- what is happening
+- when it happens
 - who is involved
-- who must be present
-- who may be affected
+- where overload or conflict appears
 
-Recurring fixed-time activities belong to calendar coordination, not to tasks.
-
-Examples include:
-
-- football practice every Tuesday
-- piano class every Thursday
-- school every weekday
-
-The system should also surface conflicts between plans and responsibilities so the household can make quick adjustments.
-
-Calendar coordination should disappear as a tool and remain visible as shared household awareness.
+Recurring fixed-time activities belong here as plans, not as tasks.
 
 ---
 
-# Future Direction
+# Onboarding
 
-DomusMind should gradually move toward household autopilot.
+Onboarding must create a useful household system quickly.
 
-Future behavior may include:
+The flow should:
 
-- noticing missed recurring work
-- suggesting reminders or reassignment
-- spotting patterns in household routines
-- identifying overloaded periods early
-- suggesting lightweight adjustments before stress appears
+1. Start household.
+2. Name the household.
+3. Add people.
+4. Add first useful state such as plans, routines, or lists.
+5. Show Today and Planning immediately.
 
-This direction must remain grounded in the same product model:
+The result should be a working system, not an empty shell.
 
-- structured household state
-- shared visibility
-- clear responsibility
-- useful suggestions instead of magic claims
+---
 
-The product should evolve toward anticipation without losing its quiet, lightweight feel.
+# Scope Guardrails
+
+V1 must not drift into:
+
+- a generic productivity app
+- a calendar-first product
+- an admin-heavy household manager
+- a dashboard full of metrics
+- a collection of unrelated page styles
+
+Guardrails:
+
+- one coherent product shell
+- one household language
+- dense operational surfaces
+- visible ownership
+- no separate routine manager
+- no hidden work
+- no floating-card composition as the product default
+
+---
+
+# Success Criteria
+
+The experience direction is successful when:
+
+- the household can understand Today in seconds
+- planning the week feels calm and fast
+- lists feel efficient and obvious
+- ownership is visible without admin overhead
+- desktop and mobile feel like the same product
+- content dominates chrome
+
+---
+
+# Summary
+
+DomusMind should feel like a quiet household operating system.
+
+Its experience must be:
+
+- household-first
+- action-first
+- timeline-first
+- calm
+- clear
+- coherent
+
+The product is one shared system with multiple operational surfaces inside it.

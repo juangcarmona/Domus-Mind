@@ -29,6 +29,7 @@ export default {
   groupToday: "Heute",
   groupUpcoming: "Demnächst",
   groupLater: "Später",
+  inspectorIdle: "Wählen Sie einen Plan zur Ansicht",
   chooser: {
     title: "Was möchtest du hinzufügen?",
     routine: "Routine",

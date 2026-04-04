@@ -1,4 +1,8 @@
-/* ---- Header ---- */
+/* ---- Site header (mobile-only) ---- */
+/*
+ * On desktop the NavRail replaces this header.
+ * On mobile this stays as the top bar with hamburger + brand + avatar.
+ */
 .site-header {
   display: flex;
   align-items: center;
@@ -11,6 +15,13 @@
   top: 0;
   z-index: var(--z-header);
   flex-shrink: 0;
+}
+
+/* Hide site-header on desktop — NavRail takes over */
+@media (min-width: 641px) {
+  .site-header {
+    display: none;
+  }
 }
 
 .brand {
@@ -32,59 +43,7 @@
   flex-shrink: 0;
 }
 
-.site-header nav {
-  flex: 1;
-  min-width: 0;
-  overflow-x: auto;
-}
-
-.site-header ul {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0.15rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.site-header nav a {
-  display: inline-block;
-  padding: 0.3rem 0.55rem;
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  color: var(--muted);
-  font-size: 0.9rem;
-  transition:
-    color 0.15s,
-    background 0.15s;
-  white-space: nowrap;
-}
-
-.site-header nav a:hover {
-  color: var(--text);
-  background: color-mix(in srgb, var(--primary) 8%, transparent);
-}
-
-.site-header nav a.active {
-  color: var(--primary);
-  font-weight: 600;
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
-}
-
-.header-controls {
-  display: flex;
-  gap: 0.4rem;
-  align-items: center;
-  flex-shrink: 0;
-}
-.header-user {
-  font-size: 0.82rem;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-
-/* ---- Header end slot (avatar + dropdown) ---- */
+/* ---- Header end slot (avatar + dropdown) — mobile header ---- */
 .header-end {
   position: relative;
   display: flex;
@@ -103,6 +62,7 @@
   min-width: 168px;
   z-index: var(--z-menu);
   overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 .avatar-menu-item {
   display: block;
@@ -134,9 +94,9 @@
   margin: 0.2rem 0;
 }
 
-/* ---- Hamburger (shown only on mobile) ---- */
+/* ---- Hamburger (mobile only) ---- */
 .hamburger {
-  display: none;
+  display: flex;
   flex-direction: column;
   justify-content: space-between;
   width: 1.75rem;
@@ -154,11 +114,11 @@
   border-radius: 2px;
 }
 
-/* ---- Primary nav (hidden on mobile) ---- */
-.primary-nav {
-  flex: 1;
-  min-width: 0;
-  overflow-x: auto;
+/* On desktop, hamburger is never rendered */
+@media (min-width: 641px) {
+  .hamburger {
+    display: none;
+  }
 }
 
 /* ---- Mobile drawer ---- */
@@ -169,35 +129,13 @@
   display: none;
 }
 
-
-/* ---- Responsive ---- */
-@media (max-width: 600px) {
-  .app-main {
-    padding: 1rem 0.85rem;
-  }
-  .site-header {
-    padding: 0 0.85rem;
-  }
-}
-
-
 /* ---- Mobile: hamburger + drawer ---- */
 @media (max-width: 640px) {
-  .hamburger {
-    display: flex;
-  }
-  .primary-nav {
-    display: none;
-  }
-  .header-end {
-    margin-left: 0;
-  }
-  /* Shift brand to center on mobile */
-  .site-header {
-    justify-content: space-between;
-  }
   .brand-name {
     display: none;
+  }
+  .site-header {
+    justify-content: space-between;
   }
 
   .drawer-backdrop {
@@ -274,5 +212,3 @@
     font-weight: 600;
   }
 }
-
-

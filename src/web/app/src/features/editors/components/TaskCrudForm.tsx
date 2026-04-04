@@ -148,57 +148,73 @@ export function TaskCrudForm({
             placeholder={tTasks("titlePlaceholder")}
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="task-form-due">{tTasks("dueLabel")}</label>
-          <DateInput
-            id="task-form-due"
-            className="form-control"
-            value={dueDate}
-            onChange={setDueDate}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="task-form-time">{tTasks("timeLabel")}</label>
-          <input
-            id="task-form-time"
-            className="form-control"
-            type="time"
-            value={dueTime}
-            onChange={(e) => setDueTime(e.target.value)}
-          />
+        <div className="inline-form">
+          <div className="form-group" style={{ flex: 1 }}>
+            <label htmlFor="task-form-due">{tTasks("dueLabel")}</label>
+            <DateInput
+              id="task-form-due"
+              className="form-control"
+              value={dueDate}
+              onChange={setDueDate}
+            />
+          </div>
+          <div className="form-group" style={{ flex: "0 0 7rem" }}>
+            <label htmlFor="task-form-time">{tTasks("timeLabel")}</label>
+            <input
+              id="task-form-time"
+              className="form-control"
+              type="time"
+              value={dueTime}
+              onChange={(e) => setDueTime(e.target.value)}
+            />
+          </div>
         </div>
         {areas.length > 0 && (
-          <div className="form-group">
-            <label htmlFor="task-form-area">{tAreas("areaLabel")}</label>
-            <select
-              id="task-form-area"
-              className="form-control"
-              value={selectedAreaId}
-              onChange={(e) => {
-                const id = e.target.value;
-                setSelectedAreaId(id);
-                if (!id) return;
-                const selected = areas.find((a) => a.areaId === id);
-                if (selected?.color) setColor(selected.color);
-              }}
-            >
-              <option value="">{tAreas("noArea")}</option>
-              {areas.map((a) => (
-                <option key={a.areaId} value={a.areaId}>{a.name}</option>
-              ))}
-            </select>
+          <div className="inline-form">
+            <div className="form-group" style={{ flex: 1 }}>
+              <label htmlFor="task-form-area">{tAreas("areaLabel")}</label>
+              <select
+                id="task-form-area"
+                className="form-control"
+                value={selectedAreaId}
+                onChange={(e) => {
+                  const id = e.target.value;
+                  setSelectedAreaId(id);
+                  if (!id) return;
+                  const selected = areas.find((a) => a.areaId === id);
+                  if (selected?.color) setColor(selected.color);
+                }}
+              >
+                <option value="">{tAreas("noArea")}</option>
+                {areas.map((a) => (
+                  <option key={a.areaId} value={a.areaId}>{a.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group" style={{ flex: "0 0 auto" }}>
+              <label htmlFor="task-form-color">{tTasks("colorLabel")}</label>
+              <input
+                id="task-form-color"
+                className="form-control editor-color-swatch"
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value.toUpperCase())}
+              />
+            </div>
           </div>
         )}
-        <div className="form-group">
-          <label htmlFor="task-form-color">{tTasks("colorLabel")}</label>
-          <input
-            id="task-form-color"
-            className="form-control"
-            type="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value.toUpperCase())}
-          />
-        </div>
+        {areas.length === 0 && (
+          <div className="form-group">
+            <label htmlFor="task-form-color">{tTasks("colorLabel")}</label>
+            <input
+              id="task-form-color"
+              className="form-control editor-color-swatch"
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value.toUpperCase())}
+            />
+          </div>
+        )}
         {members && members.length > 0 && (
           <div className="form-group">
             <label htmlFor="task-form-assignee">{tTasks("assignTo")}</label>

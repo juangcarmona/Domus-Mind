@@ -1,0 +1,46 @@
+/* ================================================================
+   Shared editor form styles (PlanCrudForm, RoutineCrudForm, TaskCrudForm)
+   ================================================================ */
+
+/* Compact color swatch — fits inline next to area select */
+.editor-color-swatch {
+  width: 2.75rem;
+  height: 2.4rem;
+  padding: 0.15rem 0.2rem;
+  cursor: pointer;
+}
+
+/* Day-of-week chip row */
+.editor-day-chips {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: nowrap;
+}
+
+.editor-day-chip {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.1rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+  line-height: 1;
+}
+
+.editor-day-chip--active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* Tighten form-group spacing inside modals */
+.planning-modal .form-group,
+.c-modal .form-group {
+  margin-bottom: 0.65rem;
+}

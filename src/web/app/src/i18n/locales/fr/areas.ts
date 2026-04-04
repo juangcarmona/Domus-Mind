@@ -33,4 +33,10 @@ export default {
   relatedWork: "Travaux liés",
   relatedWorkEmpty: "Aucun élément lié à cet espace pour l'instant.",
   relatedWorkHint: "Créez des tâches, plans ou routines et sélectionnez cet espace pour les lier ici.",
+  filterAll: "Tous",
+  filterUnowned: "Sans responsable",
+  filterMine: "Les miens",
+  filterEmpty: "Aucun espace ne correspond à ce filtre.",
+  selectAreaHint: "Sélectionnez un espace pour voir ses détails et gérer la responsabilité.",
+  viewDetail: "Voir le détail complet",
 } as const;

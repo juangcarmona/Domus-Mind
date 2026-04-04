@@ -1,0 +1,23 @@
+/* ---- CompactToolbar — dense controls strip ---- */
+
+.compact-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  height: var(--toolbar-height);
+  overflow-x: auto;
+}
+
+.compact-toolbar > * {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .compact-toolbar {
+    padding: 0.4rem 0.75rem;
+  }
+}

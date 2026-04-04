@@ -2,314 +2,323 @@
 
 ## Purpose
 
-This document defines how DomusMind is built, versioned, distributed, updated, and operated in self-hosted environments.
+This document defines how DomusMind is built, versioned, released, deployed, updated, and operated in self-hosted environments.
 
-DomusMind is designed to run at home - on a mini PC, a NAS, a home server, or any machine capable of running Docker. It must be trivial to install, safe to update, and straightforward to maintain with no DevOps expertise.
+DomusMind is packaged for a single self-hosted household installation. The goal is boring, predictable operation:
 
-This document defines the application lifecycle for that model: from code commit to a running household installation.
+- exact versions
+- simple upgrades
+- clear runtime identity
+- low operational friction
 
 ---
 
-## Stack Composition
+## Runtime Model
 
-DomusMind is deployed as a Docker Compose stack.
+DomusMind runs as a Docker Compose stack.
 
-The production stack includes two services:
+Default production stack:
 
 | Service | Image | Purpose |
 |---|---|---|
-| `postgres` | `postgres:16-alpine` | Relational database (family state, events, auth) |
-| `domusmind` | `ghcr.io/<owner>/domusmind` | ASP.NET Core app serving API and static web |
+| `postgres` | `postgres:17-alpine` | Relational database |
+| `domusmind` | `ghcr.io/<owner>/domusmind` | ASP.NET Core app serving API and web app |
 
-The DomusMind app is the ingress surface. PostgreSQL is internal to the Docker network - it is never exposed to the host unless explicitly configured.
+Rules:
 
----
-
-## .NET Aspire Role: Inner Loop Only
-
-.NET Aspire **orchestrates local development only**. It is not used in production.
-
-In local development (current state):
-- Aspire starts all services - API, web, PostgreSQL, pgAdmin
-- Aspire injects connection strings and service references automatically
-- Aspire provides the developer dashboard, health checks, and structured telemetry
-- The AppHost definition is the source of truth for the service topology
-
-In production:
-- Aspire does not run
-- Docker Compose replaces Aspire's orchestration role
-- Service dependencies, health checks, environment wiring, and volumes are defined in `docker-compose.yml`
-
-### Keeping Compose Aligned with AppHost
-
-`dotnet aspire publish --publisher docker-compose` generates a Docker Compose baseline from the AppHost definition. This command should be run whenever a new service is added to `AppHost.cs`, to regenerate a canonical starting point. Manual adjustments (image tags, environment variable names, health check tuning) are applied on top of the generated baseline.
-
-The flow is:
-
-```
-AppHost.cs → aspire publish → docker-compose.yml (baseline) → manual overlay → release artifact
-```
-
-This ensures the production Compose file is never drafted from scratch and always reflects the actual topology.
-
----
-
-## Docker Compose Definition
-
-The canonical `docker-compose.yml` released with each version:
-
-```yaml
-services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: domusmind
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d domusmind"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-  domusmind:
-    image: ghcr.io/${IMAGE_OWNER}/domusmind:${VERSION:-latest}
-    environment:
-      ConnectionStrings__domusmind: Host=postgres;Database=domusmind;Username=${DB_USER};Password=${DB_PASSWORD}
-      Jwt__SigningKey: ${JWT_SECRET}
-      Jwt__Issuer: ${JWT_ISSUER:-domusmind}
-      ASPNETCORE_URLS: http://0.0.0.0:8080
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports:
-      - "${APP_PORT:-24365}:8080"
-    restart: unless-stopped
-
-volumes:
-  postgres_data:
-```
-
-The `docker-compose.yml` and a `.env.example` file are published as release assets on every GitHub Release.
+- PostgreSQL stays internal to the Compose network
+- the app is the only exposed service
+- self-hosted runtime stays single-instance and simple
+- Aspire is for local development only, not production
 
 ---
 
 ## Configuration
 
-All sensitive and environment-specific values live in a `.env` file on the host machine. This file is never committed to source control.
-
-Users copy `.env.example` to `.env` and fill in their values.
+All installation-specific values live in `.env` on the host.
 
 Required variables:
 
-| Variable | Description | Example |
-|---|---|---|
-| `DB_USER` | PostgreSQL username | `domusmind` |
-| `DB_PASSWORD` | PostgreSQL password | *(generate a strong password)* |
-| `JWT_SECRET` | JWT signing secret, minimum 32 characters | *(generate randomly)* |
-| `JWT_ISSUER` | Token issuer identifier | `domusmind` |
-| `VERSION` | Image version to run | `1.0.0` or `latest` |
-| `APP_PORT` | Host port for the DomusMind app | `24365` |
+| Variable | Description |
+|---|---|
+| `IMAGE_REGISTRY` | Container registry |
+| `IMAGE_OWNER` | Image namespace |
+| `VERSION` | Exact image version to run |
+| `DB_USER` | PostgreSQL username |
+| `DB_PASSWORD` | PostgreSQL password |
+| `JWT_SECRET` | JWT signing secret |
+| `JWT_ISSUER` | Token issuer |
+| `JWT_AUDIENCE` | Token audience |
+| `APP_PORT` | Host port |
 
-The `JWT_SECRET` must be generated per installation. DomusMind may provide a setup helper command in a future release (see Open Decisions).
+Rules:
+
+- `.env` is never committed
+- exact versions only
+- no floating release aliases
+- `JWT_SECRET` must be generated per installation
 
 ---
 
 ## Database Migrations
 
-EF Core migrations are applied automatically at API startup.
+EF Core migrations run automatically at app startup.
 
-The API runs `dbContext.Database.Migrate()` during the startup sequence, before accepting traffic. This is safe for single-instance deployments.
+Rules:
 
-Migration rules for V1:
-
-- All schema changes are **additive only** - no column drops, no renames, no destructive changes
-- Every release that includes a migration must document it in the release notes
-- Breaking schema changes (if ever required) will be explicitly versioned as a MAJOR release with a documented migration note and an upgrade path
-
-If horizontal scaling is introduced in a future version, the startup migration will be replaced with a dedicated `migrate` Compose target that runs as a one-shot init container before the API starts.
+- additive schema changes by default
+- migration notes required when schema changes are included
+- breaking schema changes require a MAJOR release and explicit upgrade notes
 
 ---
 
-## Versioning Strategy
+## Versioning
 
-DomusMind uses semantic versioning: `MAJOR.MINOR.PATCH`
+DomusMind uses semantic versioning with explicit prerelease lanes.
+
+Allowed shapes:
+
+- `MAJOR.MINOR.PATCH-beta.N`
+- `MAJOR.MINOR.PATCH-rc.N`
+- `MAJOR.MINOR.PATCH`
+
+Examples:
+
+- `1.0.0-beta.1`
+- `1.0.0-rc.1`
+- `1.0.0`
+
+Meaning:
+
+| Lane | Meaning |
+|---|---|
+| `beta` | testing release |
+| `rc` | release candidate |
+| stable | intended upgrade target |
+
+Bump rules:
 
 | Segment | When it changes |
 |---|---|
-| MAJOR | Breaking changes requiring manual user action (schema rename, .env restructure) |
-| MINOR | New capabilities added; migrations run automatically; safe update |
-| PATCH | Bug fixes, no schema changes |
+| MAJOR | breaking upgrade or required manual action |
+| MINOR | significant capability increment |
+| PATCH | bug fix, UX refinement, packaging or operational hardening |
 
-Docker images are tagged with:
+---
 
-- `v1.2.3` — exact release (immutable, prefixed with `v`)
-- `1.2.3` — same commit, no prefix (immutable)
-- `sha-<shortsha>` — commit-pinned reference
+## Distribution Policy
 
-Mutable aliases such as `latest` and `1.2` are not published for releases. Users pin to an exact version in `.env`.
+There is one public distribution path:
+
+- manual release from `main`
+
+There is no public floating `edge` release lane.
+
+Public releases publish immutable GHCR image tags:
+
+- `v<version>`
+- `<version>`
+- `sha-<shortsha>`
+
+Examples:
+
+- `ghcr.io/<owner>/domusmind:v1.0.1-beta.2`
+- `ghcr.io/<owner>/domusmind:1.0.1-beta.2`
+- `ghcr.io/<owner>/domusmind:sha-abc1234`
+
+Mutable tags such as `latest` or `edge` are not used for releases.
 
 ---
 
 ## Release Pipeline
 
-**Trigger:** manual `workflow_dispatch` from the Actions tab on the `main` branch.
+Canonical workflow: `.github/workflows/release.yml`
 
-**Inputs:**
+Trigger:
 
-| Input | Type | Description |
-|---|---|---|
-| `version` | string, required | Semver string without leading `v` — e.g. `0.1.4` or `0.1.4-beta.1` |
-| `prerelease` | boolean, required | Whether to mark the GitHub Release as a pre-release |
+- manual `workflow_dispatch` from `main`
 
-**Steps:**
+Inputs:
 
-1. Validate `version` matches a semver pattern (supports optional prerelease and build metadata).
-2. Fail if not on `main`.
-3. Fail if the tag `v<version>` already exists.
-4. Run backend restore, build, and test gate.
-5. Create and push annotated git tag `v<version>`.
-6. Generate `src/web/app/src/generated/version.ts` with version, release date, short SHA, and prerelease flag.
-7. Build the `domusmind` Docker image (with the generated version metadata baked in) and push to GHCR with three immutable tags: `v<version>`, `<version>`, `sha-<shortsha>`.
-8. Validate the `docker-compose.yml` resolves correctly.
-9. Publish a GitHub Release with:
-   - auto-generated release notes from commit history
-   - `docker-compose.yml`
-   - `.env.example`
-   - `deploy/README.md`
+| Input | Description |
+|---|---|
+| `version` | SemVer string without leading `v` |
+| `prerelease` | mark GitHub Release as prerelease |
 
-**CI tool:** GitHub Actions (`.github/workflows/release.yml`)
+Flow:
 
-### Publishing a pre-release
+1. validate version
+2. reject duplicate tag
+3. run validation gates
+4. create annotated tag `v<version>`
+5. generate release metadata for the app
+6. build and push immutable GHCR images
+7. validate Compose packaging
+8. publish GitHub Release with deploy assets
 
-```
-Actions → release → Run workflow
-  version:    0.1.4-beta.1
-  prerelease: true (checked)
-```
+Release assets:
 
-This creates tag `v0.1.4-beta.1`, a GitHub pre-release, and GHCR images tagged
-`v0.1.4-beta.1`, `0.1.4-beta.1`, and `sha-<shortsha>`.
-
-### Publishing a stable release
-
-```
-Actions → release → Run workflow
-  version:    0.1.4
-  prerelease: false (unchecked)
-```
-
-This creates tag `v0.1.4`, a normal GitHub Release, and GHCR images tagged
-`v0.1.4`, `0.1.4`, and `sha-<shortsha>`.
-
-Main branch builds (non-release) produce images tagged `:edge` via the separate
-`docker-edge` workflow for integration testing.
+- `deploy/docker-compose.yml`
+- `deploy/.env.example`
+- `deploy/README.md`
 
 ---
 
-## Release Metadata in the Web App
+## Runtime Version Traceability
 
-During each release build the workflow generates `src/web/app/src/generated/version.ts`
-with the following exports, which are baked into the compiled web bundle:
+Each release must be traceable across:
+
+1. git tag
+2. GitHub Release
+3. immutable image tags
+4. OCI image labels
+5. in-app version metadata
+
+Release builds generate app metadata such as:
 
 ```ts
-export const APP_VERSION       = "v0.1.4-beta.1";
-export const APP_RELEASE_DATE  = "2026-03-31";
+export const APP_VERSION       = "v1.0.1-beta.2";
+export const APP_RELEASE_DATE  = "2026-04-02";
 export const APP_COMMIT_SHA    = "abc1234";
 export const APP_IS_PRERELEASE = true;
-```
+````
 
-These are consumed by the **About** section in Settings (`Settings → About`).
+This should be visible in:
+
+* Settings → About
+* backend runtime version endpoint
+* startup logs
 
 ---
 
-## User Update Flow
+## Recommended Pipelines
 
-A home user updating from one release to the next:
+### `backend-ci.yml`
+
+Backend validation only:
+
+* restore
+* build
+* test
+
+### `webapp-ci.yml`
+
+Web app validation only:
+
+* install
+* build
+* optional lint/test
+
+### `public-site-ci.yml`
+
+Public site validation only.
+
+### `public-site-cd.yml`
+
+Public site deployment only.
+
+### `mobile-ci.yml`
+
+Mobile validation only.
+
+### `release.yml`
+
+Only public release publisher.
+
+### Reusable validation workflows
+
+Recommended next step:
+
+* reusable backend validation workflow
+* reusable web app validation workflow
+
+These should be called by CI and release to remove duplication.
+
+---
+
+## Update Flow
+
+Typical self-hosted update:
 
 ```bash
-# 1. Download the new docker-compose.yml from the GitHub Release
-#    (or replace in place if using a fixed path)
-
-# 2. Read the release notes
-#    Check for new required .env variables or migration notes
-
-# 3. Update .env if new variables were introduced
-
-# 4. Pull the new images
+# 1. Read release notes
+# 2. Update .env if required
+# 3. Set VERSION to the target release
 docker compose pull
-
-# 5. Restart the stack
 docker compose up -d
-
-# Migrations run automatically on app startup.
-# The stack is live within seconds.
 ```
 
-No CLI tooling, no package manager, no cloud account.
+Migrations run automatically at startup.
 
 ---
 
-## Reverse Proxy Integration
+## Reverse Proxy
 
-DomusMind is designed to sit behind a reverse proxy for HTTPS termination and external access. The stack itself serves plain HTTP from a single app container.
+DomusMind is designed to sit behind a reverse proxy for HTTPS and external access.
 
-Recommended pattern:
-- `https://domusmind.home.example.com` → `http://[host]:24365` (or your configured `APP_PORT`)
-- API remains available under `/api` on the same origin
+Pattern:
 
-Compatible reverse proxies: Nginx Proxy Manager, Caddy, Traefik, HAProxy, Home Assistant Nginx Add-on.
+```text
+https://domusmind.example.com -> http://host:24365
+```
 
-HTTPS termination at the reverse proxy is strongly recommended, especially when exposing DomusMind outside the LAN.
+Forwarded headers must be configured correctly.
 
 ---
 
-## Backup Strategy
+## Backup
 
-All persistent state lives in the `postgres_data` Docker volume.
+All persistent state lives in PostgreSQL.
 
-Minimum recommended backup:
+Minimum backup example:
 
 ```bash
-docker exec domusmind-postgres-1 \
+docker exec <postgres-container> \
   pg_dump -U $DB_USER domusmind \
   > ~/backups/domusmind_$(date +%Y%m%d_%H%M%S).sql
 ```
 
-This can be automated with a cron job on the host. A built-in backup mechanism is out of scope for V1 and delegated to the host OS or a dedicated backup container.
-
-Restore:
+Restore example:
 
 ```bash
-docker exec -i domusmind-postgres-1 \
+docker exec -i <postgres-container> \
   psql -U $DB_USER -d domusmind \
-  < ~/backups/domusmind_20260321_120000.sql
+  < ~/backups/domusmind_YYYYMMDD_HHMMSS.sql
 ```
 
 ---
 
-## Release Cadence
+## Operational Rules
 
-| Phase | Cadence | Focus |
-|---|---|---|
-| V1 | On-demand | Feature completeness, first installations |
-| V1.1 | Monthly | Stability, operational hardening, no new contexts |
-| V2+ | Quarterly | Capability expansion |
-
-Patch releases are unscheduled and released as needed.
+* exact versions only
+* one public release path
+* no public `edge`
+* self-hosted runtime stays simple
+* release notes required
+* migration notes required when schema changes exist
+* runtime version must be visible in the app
+* CI validates; release publishes
 
 ---
 
-## Open Decisions
+## Current Focus
 
-| # | Question | Notes |
-|---|---|---|
-| OD-1 | Should the API run migrations on startup or as a separate `migrate` Compose service? | Startup is simpler for V1; init container is safer at scale |
-| OD-2 | Should images be on Docker Hub (public, no auth to pull) or ghcr.io (GitHub-linked)? | ghcr.io is free for public repos; Docker Hub has wider tooling support |
-| OD-3 | Should DomusMind provide a `domusmind-setup` CLI to generate `.env` and validate the config? | Reduces friction for non-technical users |
-| OD-4 | First-run bootstrap: is there an admin registration page, or does the first `CreateFamily` call auto-promote the user? | Relevant to the initial onboarding UX |
-| OD-5 | Should the web app be served from its own nginx container or should the API serve the built SPA? | Resolved: API serves the built SPA in self-hosted packaging |
-| OD-6 | Should DomusMind publish a Watchtower-compatible label scheme for automatic update notifications? | Optional convenience for technically-minded home users |
+Current focus is V1 hardening:
+
+* operational stability
+* upgrade confidence
+* coherent major surfaces
+* packaging reliability
+* bug fixing and UX refinement
+
+---
+
+## Summary
+
+DomusMind DevOps optimizes for:
+
+* predictable self-hosting
+* exact release identity
+* simple upgrades
+* reproducible packaging
+* low operational overhead

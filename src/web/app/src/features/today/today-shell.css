@@ -1,21 +1,32 @@
 /* ================================================================
-  Coordination Page - redesigned layout (3 stacked sections)
+  Today Board — header and container layout overrides
   ================================================================ */
 
-/* Remove bottom-margin from today-summary inside coord page so
-   it flows naturally into the mid-term section */
-.coord-day-panel {
-  margin-bottom: 0;
+/* ---- Board container — clean section inside l-surface-content ---- */
+.today-board {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
 }
 
-/* Override today-summary-header inside the day panel to accommodate nav buttons */
-.coord-day-header {
-  align-items: center !important;
+@media (max-width: 640px) {
+  .today-board {
+    padding: 0.5rem 0;
+  }
+}
+
+/* ---- Board header: day navigation + date label ---- */
+.today-board-header {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-.coord-day-header-label {
+/* Center section: Today / Day label + formatted date */
+.today-board-header-center {
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
@@ -23,82 +34,34 @@
   justify-content: center;
 }
 
-.coord-day-header-right {
+/* Right section: Today jump + next nav */
+.today-board-header-right {
   display: flex;
   align-items: center;
   gap: 0.35rem;
 }
 
-/* ---- Mid-term section container ---- */
-.coord-midterm-section {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  margin-top: 1rem;
-  background: var(--surface);
+/* ---- Board title label ("Today" / "Day") ---- */
+.today-board-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* Centered tab bar (replaces old flex header with two groups) */
-.coord-midterm-tabbar {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.6rem 0.75rem 0;
-  background: color-mix(in srgb, var(--primary) 4%, var(--surface));
-  border-bottom: 1px solid var(--border);
-}
-
-.coord-midterm-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  background: transparent;
-  border: 1px solid var(--border);
-  padding: 0.3rem 1rem;
-  border-radius: var(--radius-sm);
+/* ---- Board date ---- */
+.today-board-date {
   font-size: 0.875rem;
   color: var(--muted);
-  cursor: pointer;
-  transition: all 0.15s;
+  font-weight: 500;
 }
 
-.coord-midterm-tab:hover {
-  color: var(--text);
-  border-color: var(--primary);
-}
-
-.coord-midterm-tab--active {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-  font-weight: 600;
-}
-
-.coord-midterm-tab-icon {
-  font-size: 0.9rem;
-  line-height: 1;
-}
-
-/* Week nav - same style as month nav, shares .coord-month-nav CSS */
-.coord-midterm-week-nav {
+/* ---- Empty state ---- */
+.today-board-empty {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--border);
-  justify-content: center;
 }
-
-/* Week view: match month's 0.75rem inner padding so both sections look the same */
-.coord-week-view {
-  overflow-x: auto;
-  padding: 0.75rem;
-}
-
-/* Month view inside mid-term section (remove extra borders) */
-.coord-month-wrap .coord-month {
-  padding: 0.75rem;
-}
-
-.coord-month-wrap .coord-month-nav {
-  justify-content: center;
-}
-
 

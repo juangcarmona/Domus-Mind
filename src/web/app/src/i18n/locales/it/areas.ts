@@ -33,4 +33,10 @@ export default {
   relatedWork: "Lavoro correlato",
   relatedWorkEmpty: "Nessun elemento collegato a quest'area ancora.",
   relatedWorkHint: "Crea attività, piani o routine e seleziona questa area per collegarli qui.",
+  filterAll: "Tutte",
+  filterUnowned: "Senza proprietario",
+  filterMine: "Le mie",
+  filterEmpty: "Nessuna area corrisponde a questo filtro.",
+  selectAreaHint: "Seleziona un'area per vedere i dettagli e gestire la titolarità.",
+  viewDetail: "Vedi dettaglio completo",
 } as const;

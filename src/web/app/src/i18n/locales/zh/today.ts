@@ -44,6 +44,10 @@ export default {
     empty: "没有内容显示。",
     scrollHint: "滚动探索时间 →",
   },
+  item: {
+    edit: "编辑",
+    select: "选择项目以查看详情",
+  },
   loading: "加载中…",
   error: "加载数据失败。",
 } as const;

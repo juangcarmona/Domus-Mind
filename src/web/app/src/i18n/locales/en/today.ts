@@ -44,6 +44,10 @@ export default {
     empty: "Nothing to show.",
     scrollHint: "Scroll to explore time →",
   },
+  item: {
+    edit: "Edit",
+    select: "Select an item to see details",
+  },
   loading: "Loading…",
   error: "Failed to load data.",
 } as const;

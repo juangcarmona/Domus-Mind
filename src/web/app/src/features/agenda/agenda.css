@@ -2,12 +2,15 @@
    Member Agenda Surface
    ================================================================ */
 
-/* ---- Page wrapper ---- */
-.agenda-page {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  min-height: 0;
+/* ---- Surface wrapper: cancels app-main padding so content reaches the edges ---- */
+.agenda-surface {
+  margin: -1.5rem -1.25rem;
+}
+
+@media (max-width: 640px) {
+  .agenda-surface {
+    margin: 0;
+  }
 }
 
 /* ================================================================
@@ -109,46 +112,101 @@
 }
 
 /* ================================================================
-   Agenda body — sidebar + main layout
+   Agenda body — l-surface-body proxy + canvas
    ================================================================ */
 
+/* .agenda-body is a semantic alias; l-surface-body provides the flex layout */
 .agenda-body {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
-  gap: 0.4rem 0;
+  /* l-surface-body handles: flex, overflow, height */
+}
+
+/* Main time canvas — fills l-surface-content, flex column */
+.agenda-canvas {
+  display: flex;
+  flex-direction: column;
   min-height: 0;
-  padding: 0.4rem 0.5rem 0.75rem;
 }
 
-@media (min-width: 680px) {
-  .agenda-body {
-    grid-template-columns: 11rem 1fr;
-    grid-template-rows: 1fr;
-    gap: 0 0.5rem;
-    align-items: start;
+/* ================================================================
+   Agenda FAB — add-entry floating action button
+   ================================================================ */
+
+.agenda-fab {
+  position: fixed;
+  bottom: calc(var(--bottom-nav-h, 3.5rem) + 1rem);
+  right: 1.25rem;
+  z-index: 45; /* below backdrop (50) so sheets can overlay */
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  border: none;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 40%, transparent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.agenda-fab:hover {
+  background: color-mix(in srgb, var(--primary) 85%, #000);
+  transform: scale(1.06);
+}
+
+@media (min-width: 768px) {
+  .agenda-fab {
+    bottom: 1.5rem;
   }
 }
 
-@media (min-width: 900px) {
-  .agenda-body {
-    grid-template-columns: 12rem 1fr;
-  }
-}
+/* ================================================================
+   Inspector item detail content
+   ================================================================ */
 
-.agenda-sidebar {
+.agenda-inspector-item {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  flex-shrink: 0;
+  gap: 0.35rem;
+  padding: 0.5rem 0.1rem;
 }
 
-.agenda-main {
-  min-width: 0;
+.agenda-inspector-item-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.agenda-inspector-item-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.agenda-inspector-item-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.agenda-inspector-item-actions {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.agenda-inspector-idle-hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 0.5rem 0.1rem;
+  font-style: italic;
 }
 
 /* ================================================================
@@ -178,11 +236,11 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  /* Scroll the timeline internally so the sidebar stays fixed while the
-     day grid can be long. Max-height is viewport-relative with room for
-     header, tab bar, and the add-row button above the body. */
+  /* Scroll the timeline internally so the header stays fixed while the
+     day grid scrolls. Max-height is viewport-relative with room for
+     the three-row header. */
   overflow-y: auto;
-  max-height: calc(100dvh - 11rem);
+  max-height: calc(100dvh - 8rem);
 }
 
 .hour-timeline {
@@ -419,21 +477,7 @@
   text-overflow: unset;
 }
 
-/* ================================================================
-   Agenda add-entry button row
-   ================================================================ */
-
-.agenda-add-row {
-  display: flex;
-  justify-content: flex-end;
-  padding: 0.3rem 0.6rem 0;
-  flex-shrink: 0;
-}
-
-.agenda-add-btn {
-  font-size: 0.78rem;
-  padding: 0.22rem 0.65rem;
-}
+/* agenda-add-row and agenda-add-btn removed in Phase 5 (replaced by FAB) */
 
 /* ================================================================
    MemberWeekView — compact day-list
@@ -723,24 +767,6 @@
    ================================================================ */
 
 @media (max-width: 767px) {
-  /* ---- Hide the sidebar (mini calendar + selected date card) ---- */
-  .agenda-sidebar {
-    display: none;
-  }
-
-  /* ---- Body: single column, no padding ---- */
-  .agenda-body {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-    padding: 0 0 1rem;
-    gap: 0;
-  }
-
-  /* ---- Agenda page: no outer page padding ---- */
-  .agenda-page {
-    gap: 0;
-  }
-
   /* ---- Header: tighter rows ---- */
   .agenda-header {
     border-bottom: 1px solid var(--border);
@@ -768,32 +794,6 @@
   .agenda-view-tab {
     padding: 0.45rem 0.5rem;
     font-size: 0.82rem;
-  }
-
-  /* ---- Add-entry button: full width on mobile ---- */
-  .agenda-add-row {
-    padding: 0.25rem 0 0;
-    justify-content: stretch;
-  }
-
-  .agenda-add-btn {
-    width: 100%;
-    justify-content: center;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-    font-size: 0.85rem;
-    padding: 0.5rem 1rem;
-    border-top: none;
-    border-bottom: 1px solid var(--border);
-    background: transparent;
-    color: var(--primary);
-    font-weight: 600;
-  }
-  .agenda-add-btn:hover {
-    background: color-mix(in srgb, var(--primary) 5%, transparent);
-    opacity: 1;
-    color: var(--primary);
   }
 
   /* ---- Week view: strip card containers, flat separator-only rows ---- */

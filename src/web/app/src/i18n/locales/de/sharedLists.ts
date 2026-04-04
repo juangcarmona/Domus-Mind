@@ -56,4 +56,7 @@ export default {
   expandChecked: "Erledigt anzeigen ({{count}})",
   kindLabel2: "Art",
   createChecklistName: "Name der neuen Checkliste",
+  reorderMode: "Neu anordnen",
+  exitReorder: "Fertig",
+  reorderHint: "Elemente ziehen, um die Reihenfolge zu ändern",
 } as const;

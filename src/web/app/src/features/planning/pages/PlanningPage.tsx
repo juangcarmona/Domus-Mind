@@ -1,361 +1,353 @@
-import { useEffect, useState, useCallback } from "react";
+// Legacy imports removed — this file has been replaced by the temporal
+// workbench implementation below. The old list-manager shell (tabs,
+// PlanningOverview, PlansTab, RoutinesTab, TasksTab) is no longer used here.
+// Those components remain in the repo temporarily until Phase 3+.
+
+import { useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useAppDispatch, useAppSelector } from "../../../store/hooks";
-import { fetchPlans, cancelEvent } from "../../../store/plansSlice";
-import { fetchRoutines, pauseRoutine, resumeRoutine } from "../../../store/routinesSlice";
-import { fetchAreas } from "../../../store/areasSlice";
-import { completeTask, cancelTask, assignTask } from "../../../store/tasksSlice";
-import { domusmindApi } from "../../../api/domusmindApi";
-import { ConfirmDialog } from "../../../components/ConfirmDialog";
-import { PlanningAddModal } from "../components/modals/PlanningAddModal";
-import { EditEntityModal } from "../../editors/components/EditEntityModal";
-import { AssignTaskModal } from "../components/modals/AssignTaskModal";
-import { RoutinesTab } from "../components/RoutinesTab";
-import { TasksTab } from "../components/TasksTab";
-import { PlansTab } from "../components/PlansTab";
-import type {
-  FamilyTimelineEventItem,
-  EnrichedTimelineEntry,
-  RoutineListItem,
-} from "../../../api/domusmindApi";
+import { useAppSelector } from "../../../store/hooks";
+import { weekApi } from "../../today/api/weekApi";
+import type { WeeklyGridResponse } from "../../today/types";
+import type { ApiError } from "../../../api/domusmindApi";
+import { toIsoDate, addDays, addMonths, startOfWeek } from "../../today/utils/dateUtils";
+import { useMonthGridCache } from "../../today/hooks/useMonthGridCache";
+import { useIsMobile } from "../../../hooks/useIsMobile";
+import { EditEntityModal, type EditableEntityType } from "../../editors/components/EditEntityModal";
+import {
+  PlanningAddModal,
+  type PlanningAddModalDefaults,
+} from "../components/modals/PlanningAddModal";
+import { InspectorPanel } from "../../../components/InspectorPanel";
+import { BottomSheetDetail } from "../../../components/BottomSheetDetail";
+import { WeeklyHouseholdGrid } from "../../today/components/grid/WeeklyHouseholdGrid";
+import { MonthView } from "../../today/components/MonthView";
+import { PlanningHeader, type PlanningView } from "../components/PlanningHeader";
+import { PlanningDayCanvas } from "../components/PlanningDayCanvas";
+import { PlanningInspectorContent, type SelectedPlanItem } from "../components/PlanningInspectorContent";
+import { PlanningMobileWeekStrip } from "../components/PlanningMobileWeekStrip";
+import "../planning.css";
 
-type PlanningTab = "routines" | "tasks" | "plans";
+/**
+ * Locate an item in the weekly grid response by type and id.
+ * Returns a SelectedPlanItem for the inspector / bottom sheet.
+ */
+function findGridItem(
+  grid: WeeklyGridResponse | null,
+  type: "event" | "task" | "routine",
+  id: string,
+): SelectedPlanItem | null {
+  if (!grid) return null;
 
-function todayIso(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
+  const allCells = [
+    ...grid.sharedCells,
+    ...grid.members.flatMap((m) => m.cells),
+  ];
 
-interface OverviewProps {
-  activeTasks: EnrichedTimelineEntry[];
-  activePlans: FamilyTimelineEventItem[];
-  routineItems: RoutineListItem[];
-  onJumpToTab: (tab: PlanningTab) => void;
-}
+  for (const cell of allCells) {
+    if (type === "event") {
+      const e = (cell.events ?? []).find((ev) => ev.eventId === id);
+      if (e) {
+        return {
+          type: "event",
+          id: e.eventId,
+          title: e.title,
+          date: e.date,
+          time: e.time,
+          endTime: e.endTime,
+          status: e.status,
+          subtitle: e.participants?.map((p) => p.displayName).join(", ") || null,
+          color: e.color,
+        };
+      }
+    }
+    if (type === "task") {
+      const tk = (cell.tasks ?? []).find((t) => t.taskId === id);
+      if (tk) {
+        return {
+          type: "task",
+          id: tk.taskId,
+          title: tk.title,
+          date: tk.dueDate,
+          time: null,
+          status: tk.status,
+          subtitle: null,
+          color: tk.color,
+        };
+      }
+    }
+    if (type === "routine") {
+      const r = (cell.routines ?? []).find((rt) => rt.routineId === id);
+      if (r) {
+        return {
+          type: "routine",
+          id: r.routineId,
+          title: r.name,
+          date: null,
+          time: r.time,
+          endTime: r.endTime,
+          status: undefined,
+          subtitle: r.frequency,
+          color: r.color,
+        };
+      }
+    }
+  }
 
-function PlanningOverview({ activeTasks, activePlans, routineItems, onJumpToTab }: OverviewProps) {
-  const { t: tTasks } = useTranslation("tasks");
-  const { t: tPlans } = useTranslation("plans");
-  const { t: tRoutines } = useTranslation("routines");
-
-  const today = todayIso();
-  const overdueCount = activeTasks.filter((task) => task.isOverdue).length;
-  const todayTaskCount = activeTasks.filter((task) => task.group === "Today").length;
-  const todayPlanCount = activePlans.filter((p) => p.date === today).length;
-  const activeRoutineCount = routineItems.filter((r) => r.status === "Active").length;
-
-  if (!overdueCount && !todayTaskCount && !todayPlanCount && !activeRoutineCount) return null;
-
-  return (
-    <div className="planning-overview">
-      {overdueCount > 0 && (
-        <button
-          type="button"
-          className="planning-stat planning-stat--danger"
-          onClick={() => onJumpToTab("tasks")}
-        >
-          <span className="planning-stat-count">{overdueCount}</span>
-          <span className="planning-stat-label">{tTasks("groupOverdue")}</span>
-        </button>
-      )}
-      {todayTaskCount > 0 && (
-        <button
-          type="button"
-          className="planning-stat"
-          onClick={() => onJumpToTab("tasks")}
-        >
-          <span className="planning-stat-count">{todayTaskCount}</span>
-          <span className="planning-stat-label">{tTasks("groupToday")}</span>
-        </button>
-      )}
-      {todayPlanCount > 0 && (
-        <button
-          type="button"
-          className="planning-stat"
-          onClick={() => onJumpToTab("plans")}
-        >
-          <span className="planning-stat-count">{todayPlanCount}</span>
-          <span className="planning-stat-label">{tPlans("groupToday")}</span>
-        </button>
-      )}
-      {activeRoutineCount > 0 && (
-        <button
-          type="button"
-          className="planning-stat planning-stat--quiet"
-          onClick={() => onJumpToTab("routines")}
-        >
-          <span className="planning-stat-count">{activeRoutineCount}</span>
-          <span className="planning-stat-label">{tRoutines("active")}</span>
-        </button>
-      )}
-    </div>
-  );
+  // Fallback: item not in current grid window
+  return { type, id, title: id, date: null, time: null };
 }
 
 export function PlanningPage() {
-  const dispatch = useAppDispatch();
-  const { family, members } = useAppSelector((s) => s.household);
-  const { items: planItems, status: plansStatus } = useAppSelector((s) => s.plans);
-  const { items: routineItems, status: routinesStatus } = useAppSelector((s) => s.routines);
-  const { status: areasStatus } = useAppSelector((s) => s.areas);
-  const familyId = family?.familyId;
+  const { t } = useTranslation("agenda");
 
-  const { t: tRoutines } = useTranslation("routines");
-  const { t: tTasks } = useTranslation("tasks");
-  const { t: tPlans } = useTranslation("plans");
-  const { t: tCommon } = useTranslation("common");
-  const { t: tNav } = useTranslation("nav");
+  const isMobile = useIsMobile();
+  const family = useAppSelector((s) => s.household.family);
+  const members = useAppSelector((s) => s.household.members);
+  const familyId = family?.familyId ?? "";
+  const firstDayOfWeek = family?.firstDayOfWeek ?? null;
 
-  const [activeTab, setActiveTab] = useState<PlanningTab>("routines");
-  const [addModal, setAddModal] = useState<"plan" | "task" | "routine" | "choose" | null>(null);
-  const [cancelTarget, setCancelTarget] = useState<FamilyTimelineEventItem | null>(null);
-  const [assignTarget, setAssignTarget] = useState<EnrichedTimelineEntry | null>(null);
-  const [editTarget, setEditTarget] = useState<{ type: "routine" | "task" | "event"; id: string } | null>(null);
+  // ---- View and date state ----
+  const [view, setView] = useState<PlanningView>("week"); // Week is the default
+  const [selectedDate, setSelectedDate] = useState<string>(toIsoDate(new Date()));
 
-  // ---- Tasks: local state (separate from shared timelineSlice) ----
-  const [activeTasks, setActiveTasks] = useState<EnrichedTimelineEntry[]>([]);
-  const [tasksLoading, setTasksLoading] = useState(false);
-  const [taskHistory, setTaskHistory] = useState<EnrichedTimelineEntry[] | null>(null);
-  const [taskHistoryLoading, setTaskHistoryLoading] = useState(false);
+  // ---- Week grid data ----
+  const [grid, setGrid] = useState<WeeklyGridResponse | null>(null);
+  const [gridLoading, setGridLoading] = useState(false);
+  const [gridError, setGridError] = useState<string | null>(null);
 
-  // ---- Plans: history is local state, active plans live in plansSlice ----
-  const [pastPlans, setPastPlans] = useState<FamilyTimelineEventItem[] | null>(null);
-  const [pastPlansLoading, setPastPlansLoading] = useState(false);
+  // ---- Selected item (for inspector / bottom sheet) ----
+  const [selectedItem, setSelectedItem] = useState<SelectedPlanItem | null>(null);
 
-  const memberMap = Object.fromEntries(members.map((m) => [m.memberId, m.name]));
+  // ---- Modals ----
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addModalDefaults, setAddModalDefaults] = useState<PlanningAddModalDefaults>({});
+  const [editTarget, setEditTarget] = useState<{ type: EditableEntityType; id: string } | null>(
+    null,
+  );
 
-  const loadPlans = useCallback(() => {
-    if (familyId) dispatch(fetchPlans({ familyId, from: todayIso() }));
-  }, [familyId, dispatch]);
+  // ---- Month anchor (can drift independently from selected date) ----
+  const [monthAnchor, setMonthAnchor] = useState<string>(selectedDate);
+  useEffect(() => {
+    setMonthAnchor(selectedDate);
+  }, [selectedDate]);
 
-  const loadActiveTasks = useCallback(async () => {
-    if (!familyId) return;
-    setTasksLoading(true);
-    try {
-      const res = await domusmindApi.getEnrichedTimeline(familyId, {
-        types: "Task",
-        statuses: "Pending",
-      });
-      setActiveTasks(
-        res.groups.flatMap((g) => g.entries),
-      );
-    } finally {
-      setTasksLoading(false);
+  // ---- Month grid cache ----
+  const { monthDaySummary } = useMonthGridCache(
+    familyId,
+    monthAnchor,
+    firstDayOfWeek,
+    view === "month",
+  );
+
+  // ---- Week start for selected date ----
+  const weekStartForSelected = toIsoDate(
+    startOfWeek(new Date(selectedDate + "T00:00:00"), firstDayOfWeek),
+  );
+
+  // ---- Grid fetching ----
+  const fetchGrid = useCallback(
+    async (weekStart: string) => {
+      if (!familyId) return;
+      setGridLoading(true);
+      setGridError(null);
+      try {
+        const data = await weekApi.getWeeklyGrid(familyId, weekStart);
+        setGrid(data);
+      } catch (err) {
+        const apiErr = err as Partial<ApiError>;
+        setGridError(apiErr.message ?? t("error"));
+      } finally {
+        setGridLoading(false);
+      }
+    },
+    [familyId, t],
+  );
+
+  useEffect(() => {
+    if (familyId) {
+      fetchGrid(weekStartForSelected);
     }
-  }, [familyId]);
+  }, [weekStartForSelected, fetchGrid, familyId]);
 
-  const loadTaskHistory = useCallback(async () => {
-    if (!familyId) return;
-    setTaskHistoryLoading(true);
-    try {
-      const res = await domusmindApi.getEnrichedTimeline(familyId, {
-        types: "Task",
-        statuses: "Completed,Cancelled",
-      });
-      setTaskHistory(res.groups.flatMap((g) => g.entries));
-    } finally {
-      setTaskHistoryLoading(false);
-    }
-  }, [familyId]);
-
-  const loadPastPlans = useCallback(async () => {
-    if (!familyId) return;
-    setPastPlansLoading(true);
-    try {
-      const res = await domusmindApi.getEvents(familyId, undefined, todayIso());
-      // Exclude today's events (today is already shown in active plans) and active-status items
-      // that might overlap due to the to= boundary being exclusive-ish; filter to truly past.
-      const today = todayIso();
-      const past = res.events.filter((e) => (e.date ?? "") < today);
-      setPastPlans(past);
-    } finally {
-      setPastPlansLoading(false);
-    }
-  }, [familyId]);
-
-  function loadRoutines() {
-    if (familyId && routinesStatus === "idle") dispatch(fetchRoutines(familyId));
+  // ---- Navigation ----
+  function handlePrev() {
+    if (view === "week") setSelectedDate(addDays(selectedDate, -7));
+    else if (view === "day") setSelectedDate(addDays(selectedDate, -1));
+    else setSelectedDate(addMonths(selectedDate, -1));
   }
 
-  useEffect(() => {
-    loadPlans();
-    loadActiveTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [familyId]);
-
-  useEffect(() => {
-    if (familyId && areasStatus === "idle") dispatch(fetchAreas(familyId));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [familyId, areasStatus]);
-
-  useEffect(() => {
-    // Reset local task history when family changes so stale data isn't shown
-    setTaskHistory(null);
-    setPastPlans(null);
-  }, [familyId]);
-
-  useEffect(() => {
-    loadRoutines();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [familyId, routinesStatus]);
-
-  async function handleCancelPlan() {
-    if (!cancelTarget || !familyId) return;
-    await dispatch(cancelEvent({ eventId: cancelTarget.calendarEventId, familyId, from: todayIso() }));
-    setCancelTarget(null);
+  function handleNext() {
+    if (view === "week") setSelectedDate(addDays(selectedDate, 7));
+    else if (view === "day") setSelectedDate(addDays(selectedDate, 1));
+    else setSelectedDate(addMonths(selectedDate, 1));
   }
 
-  async function handleCompleteTask(taskId: string) {
-    await dispatch(completeTask(taskId));
-    setTaskHistory(null); // invalidate stale history
-    await loadActiveTasks();
+  function handleToday() {
+    setSelectedDate(toIsoDate(new Date()));
   }
 
-  async function handleCancelTask(taskId: string) {
-    await dispatch(cancelTask(taskId));
-    setTaskHistory(null); // invalidate stale history
-    await loadActiveTasks();
+  function handleDayClick(date: string) {
+    setSelectedDate(date);
+    if (view !== "day") setView("day");
   }
 
-  async function handleAssign(taskId: string, memberId: string) {
-    await dispatch(assignTask({ taskId, assigneeId: memberId }));
-    await loadActiveTasks();
+  // ---- Item interaction ----
+  function handleItemClick(type: "event" | "task" | "routine", id: string) {
+    setSelectedItem(findGridItem(grid, type, id));
   }
 
-  async function handlePauseRoutine(routineId: string) {
-    if (!familyId) return;
-    await dispatch(pauseRoutine({ routineId, familyId }));
+  function handleSlotClick(time: string) {
+    setAddModalDefaults({ initialStartDate: selectedDate, initialStartClock: time });
+    setShowAddModal(true);
   }
 
-  async function handleResumeRoutine(routineId: string) {
-    if (!familyId) return;
-    await dispatch(resumeRoutine({ routineId, familyId }));
+  function handleAddPlan(defaults?: PlanningAddModalDefaults) {
+    setAddModalDefaults(defaults ?? {});
+    setShowAddModal(true);
   }
 
-  if (!familyId) return null;
+  function handleEditItem(type: string, id: string) {
+    setEditTarget({ type: type as EditableEntityType, id });
+    setSelectedItem(null);
+  }
 
-  // Active plans: non-cancelled, start date >= today (enforced by from= parameter)
-  const activePlans = planItems.filter((p) => p.status !== "Cancelled");
+  function handleModalSuccess() {
+    fetchGrid(weekStartForSelected);
+  }
 
-  const tabs: { key: PlanningTab; label: string }[] = [
-    { key: "routines", label: tRoutines("title") },
-    { key: "tasks", label: tTasks("title") },
-    { key: "plans", label: tPlans("title") },
-  ];
+  const inspectorContent = (
+    <PlanningInspectorContent
+      selectedDate={selectedDate}
+      view={view}
+      firstDayOfWeek={firstDayOfWeek}
+      selectedItem={selectedItem}
+      onSelectDate={setSelectedDate}
+      onEditItem={handleEditItem}
+      onClearSelection={() => setSelectedItem(null)}
+    />
+  );
 
   return (
-    <div>
-      <div className="page-header">
-        <h1>{tNav("planning")}</h1>
-        <button className="btn" onClick={() => setAddModal("choose")}>
-          + {tCommon("add")}
-        </button>
-      </div>
-
-      <PlanningOverview
-        activeTasks={activeTasks}
-        activePlans={activePlans}
-        routineItems={routineItems}
-        onJumpToTab={setActiveTab}
+    <div className="planning-surface l-surface">
+      <PlanningHeader
+        selectedDate={selectedDate}
+        view={view}
+        firstDayOfWeek={firstDayOfWeek}
+        onViewChange={setView}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        onToday={handleToday}
       />
 
-      <div className="settings-tabs" style={{ marginBottom: "1.5rem" }}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            className={`settings-tab${activeTab === tab.key ? " active" : ""}`}
-            onClick={() => setActiveTab(tab.key)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="planning-body l-surface-body">
+        {/* Calendar canvas — fills all available space */}
+        <div className="planning-canvas l-surface-content">
+          {view === "week" && isMobile && (
+            <PlanningMobileWeekStrip
+              grid={grid}
+              loading={gridLoading}
+              error={gridError}
+              selectedDate={selectedDate}
+              onDaySelect={setSelectedDate}
+              onItemClick={handleItemClick}
+            />
+          )}
+          {view === "week" && !isMobile && (
+            <WeeklyHouseholdGrid
+              grid={grid}
+              loading={gridLoading}
+              error={gridError}
+              selectedDate={selectedDate}
+              onDayClick={handleDayClick}
+              onItemClick={handleItemClick}
+            />
+          )}
+          {view === "day" && (
+            <PlanningDayCanvas
+              grid={grid}
+              selectedDate={selectedDate}
+              loading={gridLoading}
+              error={gridError}
+              onItemClick={handleItemClick}
+              onSlotClick={handleSlotClick}
+            />
+          )}
+          {view === "month" && (
+            <MonthView
+              selectedDate={selectedDate}
+              today={toIsoDate(new Date())}
+              firstDayOfWeek={firstDayOfWeek}
+              displayAnchor={monthAnchor}
+              daySummary={monthDaySummary}
+              onSelectDay={handleDayClick}
+              onPrevMonth={() => setMonthAnchor(addMonths(monthAnchor, -1))}
+              onNextMonth={() => setMonthAnchor(addMonths(monthAnchor, 1))}
+            />
+          )}
+        </div>
+
+        {/* Desktop inspector — hidden on mobile via InspectorPanel.css */}
+        <InspectorPanel title="Planning">
+          {inspectorContent}
+        </InspectorPanel>
       </div>
 
-      {activeTab === "routines" && (
-        <RoutinesTab
-          routineItems={routineItems}
-          routinesStatus={routinesStatus}
-          memberMap={memberMap}
-          onEdit={(id) => setEditTarget({ type: "routine", id })}
-          onPause={handlePauseRoutine}
-          onResume={handleResumeRoutine}
-        />
+      {/* Mobile bottom sheet for selected item detail */}
+      {isMobile && (
+        <BottomSheetDetail
+          open={!!selectedItem}
+          onClose={() => setSelectedItem(null)}
+          title={selectedItem?.title ?? ""}
+        >
+          {inspectorContent}
+        </BottomSheetDetail>
       )}
 
-      {activeTab === "tasks" && (
-        <TasksTab
-          activeTasks={activeTasks}
-          tasksLoading={tasksLoading}
-          taskHistory={taskHistory}
-          taskHistoryLoading={taskHistoryLoading}
-          memberMap={memberMap}
-          onEdit={(id) => setEditTarget({ type: "task", id })}
-          onAssign={setAssignTarget}
-          onComplete={handleCompleteTask}
-          onCancel={handleCancelTask}
-          onLoadHistory={loadTaskHistory}
-        />
-      )}
-
-      {activeTab === "plans" && (
-        <PlansTab
-          activePlans={activePlans}
-          plansStatus={plansStatus}
-          pastPlans={pastPlans}
-          pastPlansLoading={pastPlansLoading}
-          onEdit={(id) => setEditTarget({ type: "event", id })}
-          onCancelPlan={setCancelTarget}
-          onLoadPastPlans={loadPastPlans}
-        />
-      )}
-
-      {addModal && (
+      {/* Create modal */}
+      {showAddModal && familyId && (
         <PlanningAddModal
           familyId={familyId}
           members={members}
-          initialStep={addModal === "choose" ? "choose" : addModal}
-          onClose={() => setAddModal(null)}
+          initialStep="plan"
+          defaults={addModalDefaults}
+          onClose={() => setShowAddModal(false)}
           onSuccess={() => {
-            setAddModal(null);
-            loadPlans();
-            loadActiveTasks();
-            dispatch(fetchRoutines(familyId));
+            setShowAddModal(false);
+            handleModalSuccess();
           }}
         />
       )}
 
-      {assignTarget && (
-        <AssignTaskModal
-          entry={assignTarget}
-          members={members}
-          onAssign={handleAssign}
-          onClose={() => setAssignTarget(null)}
-        />
-      )}
-
+      {/* Edit modal */}
       {editTarget && (
         <EditEntityModal
           type={editTarget.type}
           id={editTarget.id}
           onClose={() => setEditTarget(null)}
-          onEntitySaved={async () => {
+          onEntitySaved={() => {
             setEditTarget(null);
-            loadPlans();
-            await loadActiveTasks();
-            await dispatch(fetchRoutines(familyId));
+            handleModalSuccess();
           }}
         />
       )}
 
-      <ConfirmDialog
-        isOpen={!!cancelTarget}
-        title={tPlans("cancelEvent")}
-        message={tPlans("confirmCancel")}
-        confirmLabel={tPlans("yes")}
-        onConfirm={handleCancelPlan}
-        onCancel={() => setCancelTarget(null)}
-      />
+      {/* Floating add button */}
+      <button
+        type="button"
+        className="planning-fab"
+        aria-label="Add"
+        onClick={() => handleAddPlan({ initialStartDate: selectedDate })}
+      >
+        +
+      </button>
     </div>
   );
 }
+
+// The following functions/components are no longer part of this file.
+// They are defined in their own modules and not referenced here.
+// The old list-manager exports below were removed in Phase 2 of the
+// surface-system reboot. See:
+//   features/planning/components/PlansTab.tsx
+//   features/planning/components/RoutinesTab.tsx
+//   features/planning/components/TasksTab.tsx

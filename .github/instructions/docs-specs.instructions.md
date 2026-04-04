@@ -24,3 +24,15 @@ Docs and specs are the source of truth for behavior, terminology, and architectu
 
 - keep sections short and structured
 - prefer bullet points over long paragraphs
+
+## Canonical precedence
+
+When working on UX, surfaces, layout, or interaction behavior, treat these as canonical and upstream:
+
+- docs/00_product/strategy.md
+- docs/00_product/experience.md
+- docs/00_product/surface-system.md
+- specs/surfaces/*.md
+
+Do not let implementation files, old comments, or outdated docs override these documents.
+If code conflicts with them, update code or explicitly document the blocker.

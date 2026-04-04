@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { WeeklyGridResponse } from "../../types";
 import {
@@ -46,6 +46,13 @@ export function TodayBoard({
   const { t, i18n } = useTranslation("today");
   const { t: tCommon } = useTranslation("common");
   const isMobile = useIsMobile();
+
+  // One member expanded at a time (in place).
+  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
+
+  function handleMemberToggle(memberId: string) {
+    setExpandedMemberId((prev) => (prev === memberId ? null : memberId));
+  }
 
   // Swipe gesture: left = next day, right = prev day.
   const touchStartX = useRef<number | null>(null);
@@ -101,12 +108,12 @@ export function TodayBoard({
 
   return (
     <div
-      className="today-summary coord-day-panel"
+      className="today-board"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {/* ---- Header with day navigation ---- */}
-      <div className="today-summary-header coord-day-header">
+      <div className="today-board-header">
         {!isMobile ? (
           <button
             className="btn btn-ghost btn-sm"
@@ -120,13 +127,13 @@ export function TodayBoard({
           /* Swipe affordance: muted chevron hints, not interactive buttons */
           <span className="tp-swipe-hint" aria-hidden="true">‹</span>
         )}
-        <div className="coord-day-header-label">
-          <span className="today-summary-label">
+        <div className="today-board-header-center">
+          <span className="today-board-title">
             {isToday ? t("nav.today") : t("day.title")}
           </span>
-          <span className="today-summary-date">{dateLabel}</span>
+          <span className="today-board-date">{dateLabel}</span>
         </div>
-        <div className="coord-day-header-right">
+        <div className="today-board-header-right">
           {!isToday && (
             <button
               className="btn btn-ghost btn-sm"
@@ -153,7 +160,7 @@ export function TodayBoard({
 
       {/* ---- No members yet ---- */}
       {members.length === 0 && (
-        <p className="today-summary-empty">{t("day.noMembers")}</p>
+        <p className="today-board-empty">{t("day.noMembers")}</p>
       )}
 
       {/* ---- Compact member snapshot grid (one cell per person) ---- */}
@@ -165,6 +172,8 @@ export function TodayBoard({
               memberId={member.memberId}
               name={member.name}
               entries={entries}
+              isExpanded={expandedMemberId === member.memberId}
+              onToggle={() => handleMemberToggle(member.memberId)}
               onMemberClick={onMemberClick}
               onItemClick={onItemClick}
             />

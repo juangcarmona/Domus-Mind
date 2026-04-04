@@ -15,9 +15,10 @@ interface ItemRowProps {
   item: SharedListItemDetail;
   listId: string;
   dragHandleProps?: Record<string, unknown>;
+  reorderMode?: boolean;
 }
 
-export function ItemRow({ item, listId, dragHandleProps }: ItemRowProps) {
+export function ItemRow({ item, listId, dragHandleProps, reorderMode = false }: ItemRowProps) {
   const { t } = useTranslation("sharedLists");
   const dispatch = useAppDispatch();
   const [editing, setEditing] = useState(false);
@@ -55,7 +56,7 @@ export function ItemRow({ item, listId, dragHandleProps }: ItemRowProps) {
   }
 
   function handleRowClick() {
-    if (editing || expanded) return;
+    if (editing || expanded || reorderMode) return;
     dispatch(optimisticToggleItem({ itemId: item.itemId }));
     dispatch(toggleSharedListItem({ listId, itemId: item.itemId }));
   }

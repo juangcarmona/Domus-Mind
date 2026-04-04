@@ -1,21 +1,105 @@
-/* ---- Layout ---- */
+/* ---- App shell layout ---- */
+
+/*
+ * .app-layout — outer shell container.
+ *   Mobile: flex column (header on top, content below).
+ *   Desktop: flex row (NavRail on left, app-main fills rest).
+ */
 .app-layout,
 .l-app-shell {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  min-height: 100dvh;
+  background: var(--bg);
 }
 
+@media (min-width: 641px) {
+  .app-layout,
+  .l-app-shell {
+    flex-direction: row;
+    height: 100dvh;
+    overflow: hidden;
+  }
+}
+
+/*
+ * .app-main — scrollable content zone.
+ *   No max-width centering. Surfaces manage their own content layout.
+ */
 .app-main,
 .l-page {
   flex: 1;
-  max-width: 960px;
-  margin: 0 auto;
+  min-width: 0;
+  overflow-y: auto;
   padding: 1.5rem 1.25rem;
-  width: 100%;
 }
 
+/* Mobile: tighter padding */
+@media (max-width: 640px) {
+  .app-main,
+  .l-page {
+    padding: 0;
+  }
+}
+
+/* ---- Surface layout helpers ---- */
+
+/*
+ * .l-surface — full-height surface container (used inside app-main).
+ *   Provides flex column so PageHeader + body stack cleanly.
+ */
+.l-surface {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/*
+ * .l-surface-body — horizontal content zone.
+ *   Renders content pane and optional InspectorPanel side by side.
+ */
+.l-surface-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/*
+ * .l-surface-content — primary scrollable content inside a surface.
+ */
+.l-surface-content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/*
+ * .l-surface-inspector — right inspector slot.
+ *   Rendered only when a surface wants an inspector present.
+ */
+.l-surface-inspector {
+  width: var(--inspector-width);
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+/*
+ * .l-page-canvas — standard content canvas with default padding.
+ *   Use inside app-main for surfaces that do not need full-bleed.
+ */
+.l-page-canvas {
+  padding: 1.5rem 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .l-page-canvas {
+    padding: 0.75rem 0;
+  }
+}
 
 /* ---- Page header ---- */
 .page-header,
@@ -32,29 +116,22 @@
   margin: 0;
 }
 
-
-/* ---- Page wrap ---- */
+/* ---- Page wrap (legacy — kept for surfaces not yet migrated) ---- */
+/*
+ * Previously: max-width: 680px; margin: 0 auto.
+ * After shell reboot, content fills its container.
+ * Legacy surfaces use this class and will naturally use the available width.
+ */
 .page-wrap {
-  max-width: 680px;
-  margin: 0 auto;
+  /* Centering removed. Padding inherited from app-main. */
 }
 .page-title {
   font-size: 1.3rem;
   margin-bottom: 1rem;
 }
 
-/* ================================================================
-   Mobile density: global layout overrides (max-width: 767px)
-   ================================================================ */
-
+/* Mobile density overrides */
 @media (max-width: 767px) {
-  /* Tighter page padding — frees horizontal space */
-  .app-main,
-  .l-page {
-    padding: 0.75rem 0;
-  }
-
-  /* Page headers: reduce bottom margin */
   .page-header,
   .l-page-header {
     margin-bottom: 0.75rem;

@@ -44,6 +44,10 @@ export default {
     empty: "表示するものがありません。",
     scrollHint: "スクロールして時間を探索 →",
   },
+  item: {
+    edit: "編集",
+    select: "詳細を表示するにはアイテムを選択してください",
+  },
   loading: "読み込み中…",
   error: "データの読み込みに失敗しました。",
 } as const;

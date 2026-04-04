@@ -33,4 +33,10 @@ export default {
   relatedWork: "相关工作",
   relatedWorkEmpty: "此区域尚无关联项目。",
   relatedWorkHint: "创建任务、计划或例行程序并选择此区域，将其关联到此处。",
+  filterAll: "全部",
+  filterUnowned: "无负责人",
+  filterMine: "我的",
+  filterEmpty: "没有区域符合此筛选条件。",
+  selectAreaHint: "选择一个区域以查看详情并管理负责人。",
+  viewDetail: "查看完整详情",
 } as const;

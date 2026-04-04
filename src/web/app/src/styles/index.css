@@ -6,6 +6,13 @@
 /* Shared component styles (stable order). */
 @import "../components/styles/primitives.css";
 @import "../components/AppShell.css";
+@import "../components/NavRail.css";
+@import "../components/InspectorPanel.css";
+@import "../components/BottomSheetDetail.css";
+@import "../components/PageHeader.css";
+@import "../components/CompactToolbar.css";
+@import "../components/QuickAddBar.css";
+@import "../components/EmptyStateCompact.css";
 @import "../components/ThemeToggle.css";
 @import "../components/UserAvatar.css";
 @import "../components/SplashScreen.css";

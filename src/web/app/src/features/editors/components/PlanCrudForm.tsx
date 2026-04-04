@@ -205,92 +205,47 @@ export function PlanCrudForm({
             autoFocus
           />
         </div>
-        <div className="inline-form">
-          <div className="form-group" style={{ flex: 1 }}>
-            <label htmlFor="plan-form-start-date">{tPlans("form.startDate")}</label>
-            <DateInput
-              id="plan-form-start-date"
-              className="form-control"
-              value={startDate}
-              onChange={setStartDate}
-              required
-            />
-          </div>
-          <div className="form-group" style={{ flex: 1 }}>
-            <label htmlFor="plan-form-start-time">{tPlans("form.startTime")}</label>
-            <input
-              id="plan-form-start-time"
-              className="form-control"
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="inline-form">
-          <div className="form-group" style={{ flex: 1 }}>
-            <label htmlFor="plan-form-end-date">{tPlans("form.endDate")}</label>
-            <DateInput
-              id="plan-form-end-date"
-              className="form-control"
-              value={endDate}
-              onChange={setEndDate}
-              required
-            />
-          </div>
-          <div className="form-group" style={{ flex: 1 }}>
-            <label htmlFor="plan-form-end-time">{tPlans("form.endTime")}</label>
-            <input
-              id="plan-form-end-time"
-              className="form-control"
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="form-group">
-          <label htmlFor="plan-form-desc">{tPlans("form.description")}</label>
-          <input
-            id="plan-form-desc"
-            className="form-control"
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-        {areas.length > 0 && (
-          <div className="form-group">
-            <label htmlFor="plan-form-area">{tAreas("areaLabel")}</label>
-            <select
-              id="plan-form-area"
-              className="form-control"
-              value={selectedAreaId}
-              onChange={(e) => {
-                const id = e.target.value;
-                setSelectedAreaId(id);
-                if (!id) return;
-                const selected = areas.find((a) => a.areaId === id);
-                if (selected?.color) setColor(selected.color);
-              }}
-            >
-              <option value="">{tAreas("noArea")}</option>
-              {areas.map((a) => (
-                <option key={a.areaId} value={a.areaId}>{a.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-        <div className="form-group">
-          <label htmlFor="plan-form-color">{tPlans("form.colorLabel")}</label>
-          <input
-            id="plan-form-color"
-            className="form-control"
-            type="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value.toUpperCase())}
-          />
-        </div>
+       <div className="form-group">
+  <label>{tPlans("form.startDate")}</label>
+  <div className="editor-date-time-row">
+    <DateInput
+      id="plan-form-start-date"
+      className="form-control"
+      value={startDate}
+      onChange={setStartDate}
+      required
+    />
+    <input
+      id="plan-form-start-time"
+      className="form-control"
+      type="time"
+      value={startTime}
+      onChange={(e) => setStartTime(e.target.value)}
+      aria-label={tPlans("form.startTime")}
+    />
+  </div>
+</div>
+
+<div className="form-group">
+  <label>{tPlans("form.endDate")}</label>
+  <div className="editor-date-time-row">
+    <DateInput
+      id="plan-form-end-date"
+      className="form-control"
+      value={endDate}
+      onChange={setEndDate}
+      required
+    />
+    <input
+      id="plan-form-end-time"
+      className="form-control"
+      type="time"
+      value={endTime}
+      onChange={(e) => setEndTime(e.target.value)}
+      aria-label={tPlans("form.endTime")}
+    />
+  </div>
+</div>
         {members && members.length > 0 && (
           <>
             <div className="form-group">
@@ -348,6 +303,61 @@ export function PlanCrudForm({
             )}
           </>
         )}
+        {areas.length > 0 ? (
+          <div className="inline-form">
+            <div className="form-group" style={{ flex: 1 }}>
+              <label htmlFor="plan-form-area">{tAreas("areaLabel")}</label>
+              <select
+                id="plan-form-area"
+                className="form-control"
+                value={selectedAreaId}
+                onChange={(e) => {
+                  const id = e.target.value;
+                  setSelectedAreaId(id);
+                  if (!id) return;
+                  const selected = areas.find((a) => a.areaId === id);
+                  if (selected?.color) setColor(selected.color);
+                }}
+              >
+                <option value="">{tAreas("noArea")}</option>
+                {areas.map((a) => (
+                  <option key={a.areaId} value={a.areaId}>{a.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group" style={{ flex: "0 0 auto" }}>
+              <label htmlFor="plan-form-color">{tPlans("form.colorLabel")}</label>
+              <input
+                id="plan-form-color"
+                className="form-control editor-color-swatch"
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value.toUpperCase())}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="form-group">
+            <label htmlFor="plan-form-color">{tPlans("form.colorLabel")}</label>
+            <input
+              id="plan-form-color"
+              className="form-control editor-color-swatch"
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value.toUpperCase())}
+            />
+          </div>
+        )}
+        <div className="form-group">
+          <label htmlFor="plan-form-desc">{tPlans("form.description")}</label>
+          <input
+            id="plan-form-desc"
+            className="form-control"
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
         {error && <p className="error-msg">{error}</p>}
         {mode === "edit" && eventId && (
           <EventChecklistSection eventId={eventId} familyId={familyId} />

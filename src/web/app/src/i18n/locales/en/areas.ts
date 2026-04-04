@@ -33,4 +33,10 @@ export default {
   relatedWork: "Related work",
   relatedWorkEmpty: "No items linked to this area yet.",
   relatedWorkHint: "Create tasks, plans, or routines and select this area to link them here.",
+  filterAll: "All",
+  filterUnowned: "Unowned",
+  filterMine: "Mine",
+  filterEmpty: "No areas match this filter.",
+  selectAreaHint: "Select an area to see its details and manage ownership.",
+  viewDetail: "View full detail",
 } as const;

@@ -6,11 +6,14 @@ import { HouseholdLogo } from "./HouseholdLogo";
 import { ThemeToggle } from "./ThemeToggle";
 import { useAppSelector } from "../store/hooks";
 import { MemberAvatar } from "../features/settings/components/avatar/MemberAvatar";
+import { NavRail } from "./NavRail";
+import type { NavRailItem } from "./NavRail";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: readonly NavRailItem[] = [
   { to: "/", labelKey: "today" },
   { to: "/planning", labelKey: "planning" },
   { to: "/lists", labelKey: "lists" },
+  { to: "/areas", labelKey: "areas" },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -58,8 +61,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-layout">
+      {/* Desktop navigation rail — hidden on mobile via CSS */}
+      <NavRail items={NAV_ITEMS} />
+
+      {/* Mobile header — hidden on desktop via CSS */}
       <header className="site-header">
-        {/* Mobile: hamburger button */}
         <button
           className="hamburger"
           aria-label="Open navigation"
@@ -77,20 +83,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="brand-name">{family?.name ?? "DomusMind"}</span>
         </NavLink>
 
-        {/* Desktop nav - hidden on mobile via CSS */}
-        <nav aria-label="Primary" className="primary-nav">
-          <ul>
-            {NAV_ITEMS.map(({ to, labelKey }) => (
-              <li key={to}>
-                <NavLink to={to} className={({ isActive }) => isActive ? "active" : undefined}>
-                  {tNav(labelKey as never)}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* Avatar + dropdown */}
         <div className="header-end" ref={avatarMenuRef}>
           <button
             className="user-avatar"
@@ -160,6 +152,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <li key={to}>
                   <NavLink
                     to={to}
+                    end={to === "/"}
                     className={({ isActive }) => isActive ? "active" : undefined}
                     onClick={() => setDrawerOpen(false)}
                   >

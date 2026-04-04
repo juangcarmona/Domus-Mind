@@ -1,4 +1,319 @@
-/* ---- Areas page ---- */
+/* ---- Areas surface ---- */
+
+/* Cancel app-main padding so header/list reach edges */
+.areas-surface {
+  margin: -1.5rem -1.25rem;
+}
+
+@media (max-width: 640px) {
+  .areas-surface {
+    margin: 0;
+  }
+}
+
+/* ---- Compact header ---- */
+
+.areas-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.areas-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem 0.3rem;
+}
+
+.areas-header-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+/* ---- Filter tabs ---- */
+
+.areas-filter-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+.areas-filter-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.28rem 0.75rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+
+.areas-filter-tab:hover {
+  color: var(--text);
+}
+
+.areas-filter-tab--active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+/* ---- List pane ---- */
+
+.areas-list-pane {
+  padding: 0.75rem 0;
+}
+
+/* ---- Area groups ---- */
+
+.areas-group {
+  margin-bottom: 0.5rem;
+}
+
+.areas-group-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  padding: 0.4rem 1rem 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.areas-group-label--gap {
+  color: color-mix(in srgb, var(--accent) 85%, var(--text));
+}
+
+.areas-group-count {
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-radius: 999px;
+  padding: 0 0.4rem;
+  font-size: 0.65rem;
+  line-height: 1.5;
+  color: inherit;
+}
+
+/* ---- Dense area list row ---- */
+
+.area-list-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+  min-height: 2.5rem;
+}
+
+.area-list-row:hover {
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.area-list-row--selected {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.area-list-row--selected:hover {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+/* Unowned rows: subtle amber tint */
+.area-list-row--unowned {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+.area-list-row--unowned:hover {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+/* Color dot */
+.area-row-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Row body: name + meta line */
+.area-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.area-row-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.area-row-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.area-row-owner {
+  color: var(--muted);
+}
+
+.area-row-supporters {
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+/* Ownership gap cue — amber/accent text */
+.area-row-gap-cue {
+  color: color-mix(in srgb, var(--accent) 80%, var(--text));
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+/* ---- Filter empty state ---- */
+
+.areas-filter-empty {
+  padding: 1rem 1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* ---- Inspector content ---- */
+
+.area-inspector-idle {
+  padding: 1rem;
+}
+
+.area-inspector-idle-hint {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.area-inspector-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0.75rem 1rem;
+}
+
+/* Name row: dot + editable name */
+.area-inspector-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.area-inspector-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Name button — click to rename */
+.area-inspector-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: text;
+  text-align: left;
+  border-bottom: 1px dashed transparent;
+  transition: border-color 0.1s;
+  line-height: 1.3;
+}
+
+.area-inspector-name:hover {
+  border-bottom-color: var(--muted);
+}
+
+/* Inline rename input */
+.area-inspector-name-input {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--primary);
+  outline: none;
+  padding: 0;
+  width: 100%;
+  line-height: 1.3;
+}
+
+/* Inspector section: owner / support */
+.area-inspector-section {
+  margin-bottom: 1rem;
+}
+
+.area-inspector-section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  margin: 0 0 0.4rem;
+}
+
+.area-inspector-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+  line-height: 1.4;
+}
+
+.area-inspector-error {
+  font-size: 0.78rem;
+  margin: 0.3rem 0 0;
+}
+
+/* Full detail link */
+.area-inspector-actions {
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.area-inspector-detail-link {
+  font-size: 0.8rem;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.area-inspector-detail-link:hover {
+  text-decoration: underline;
+}
+
+/* Legacy: area-row--unowned kept for any remaining usages (AreaDetailPage etc.) */
 .area-row--unowned {
   background: color-mix(in srgb, var(--accent) 5%, var(--surface));
 }

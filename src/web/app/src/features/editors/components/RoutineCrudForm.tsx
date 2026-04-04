@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import type { RoutineListItem } from "../../../api/domusmindApi";
 import { toLocalTimeInput } from "../utils";
 import { MemberAvatar } from "../../settings/components/avatar/MemberAvatar";
+import { DAY_ORDER } from "../../today/utils/dateUtils";
 
 interface RoutineCrudFormProps {
   mode: "create" | "edit";
@@ -52,6 +53,19 @@ export function RoutineCrudForm({
 
   const areas = useAppSelector((s) => s.areas.items);
   const areasStatus = useAppSelector((s) => s.areas.status);
+  const familyFirstDayOfWeek = useAppSelector((s) => s.household.family?.firstDayOfWeek ?? null);
+
+  const ALL_DAYS = [
+    { value: 0, label: tRoutines("sun") },
+    { value: 1, label: tRoutines("mon") },
+    { value: 2, label: tRoutines("tue") },
+    { value: 3, label: tRoutines("wed") },
+    { value: 4, label: tRoutines("thu") },
+    { value: 5, label: tRoutines("fri") },
+    { value: 6, label: tRoutines("sat") },
+  ] as const;
+  const fdow = Math.max(0, DAY_ORDER.indexOf((familyFirstDayOfWeek ?? "monday").toLowerCase()));
+  const orderedDays = [...ALL_DAYS.slice(fdow), ...ALL_DAYS.slice(0, fdow)];
 
   useEffect(() => {
     if (areasStatus === "idle") dispatch(fetchAreas(familyId));
@@ -243,33 +257,22 @@ export function RoutineCrudForm({
         {routineFrequency === "Weekly" && (
           <div className="form-group">
             <label>{tRoutines("daysOfWeekLabel")}</label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-              {[
-                { value: 0, label: tRoutines("sun") },
-                { value: 1, label: tRoutines("mon") },
-                { value: 2, label: tRoutines("tue") },
-                { value: 3, label: tRoutines("wed") },
-                { value: 4, label: tRoutines("thu") },
-                { value: 5, label: tRoutines("fri") },
-                { value: 6, label: tRoutines("sat") },
-              ].map((d) => (
-                <label
+            <div className="editor-day-chips">
+              {orderedDays.map((d) => (
+                <button
                   key={d.value}
-                  style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
+                  type="button"
+                  className={`editor-day-chip${routineDaysOfWeek.includes(d.value) ? " editor-day-chip--active" : ""}`}
+                  onClick={() => {
+                    setRoutineDaysOfWeek((prev) =>
+                      prev.includes(d.value)
+                        ? prev.filter((v) => v !== d.value)
+                        : [...prev, d.value].sort(),
+                    );
+                  }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={routineDaysOfWeek.includes(d.value)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setRoutineDaysOfWeek((prev) => [...prev, d.value].sort());
-                      } else {
-                        setRoutineDaysOfWeek((prev) => prev.filter((v) => v !== d.value));
-                      }
-                    }}
-                  />
                   {d.label}
-                </label>
+                </button>
               ))}
             </div>
           </div>
@@ -305,32 +308,34 @@ export function RoutineCrudForm({
             </select>
           </div>
         )}
-        <div className="form-group">
-          <label htmlFor="routine-form-time">{tRoutines("timeLabel")}</label>
-          <input
-            id="routine-form-time"
-            className="form-control"
-            type="time"
-            value={routineTime}
-            onChange={(e) => {
-              setRoutineTime(e.target.value);
-              if (!e.target.value) setRoutineEndTime("");
-            }}
-          />
-        </div>
-        {routineTime && (
-          <div className="form-group">
-            <label htmlFor="routine-form-end-time">{tRoutines("endTimeLabel")}</label>
+        <div className="inline-form">
+          <div className="form-group" style={{ flex: 1 }}>
+            <label htmlFor="routine-form-time">{tRoutines("timeLabel")}</label>
             <input
-              id="routine-form-end-time"
+              id="routine-form-time"
               className="form-control"
               type="time"
-              value={routineEndTime}
-              min={routineTime}
-              onChange={(e) => setRoutineEndTime(e.target.value)}
+              value={routineTime}
+              onChange={(e) => {
+                setRoutineTime(e.target.value);
+                if (!e.target.value) setRoutineEndTime("");
+              }}
             />
           </div>
-        )}
+          {routineTime && (
+            <div className="form-group" style={{ flex: 1 }}>
+              <label htmlFor="routine-form-end-time">{tRoutines("endTimeLabel")}</label>
+              <input
+                id="routine-form-end-time"
+                className="form-control"
+                type="time"
+                value={routineEndTime}
+                min={routineTime}
+                onChange={(e) => setRoutineEndTime(e.target.value)}
+              />
+            </div>
+          )}
+        </div>
         <div className="form-group">
           <label htmlFor="routine-form-color">{tRoutines("colorLabel")}</label>
           <input

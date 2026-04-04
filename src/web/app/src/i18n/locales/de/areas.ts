@@ -33,4 +33,10 @@ export default {
   relatedWork: "Zugehörige Aufgaben",
   relatedWorkEmpty: "Noch keine Elemente mit diesem Bereich verknüpft.",
   relatedWorkHint: "Erstelle Aufgaben, Pläne oder Routinen und wähle diesen Bereich aus, um sie hier zu verknüpfen.",
+  filterAll: "Alle",
+  filterUnowned: "Ohne Eigentümer",
+  filterMine: "Meine",
+  filterEmpty: "Keine Bereiche entsprechen diesem Filter.",
+  selectAreaHint: "Wählen Sie einen Bereich aus, um Details anzuzeigen und Eigentümer zu verwalten.",
+  viewDetail: "Vollständige Details anzeigen",
 } as const;

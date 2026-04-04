@@ -2,11 +2,14 @@ import { useState, useCallback, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "../../../store/hooks";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 import { weekApi } from "../../today/api/weekApi";
 import type { WeeklyGridResponse } from "../../today/types";
 import type { ApiError } from "../../../api/domusmindApi";
 import { EditEntityModal, type EditableEntityType } from "../../editors/components/EditEntityModal";
 import { PlanningAddModal } from "../../planning/components/modals/PlanningAddModal";
+import { InspectorPanel } from "../../../components/InspectorPanel";
+import { BottomSheetDetail } from "../../../components/BottomSheetDetail";
 import { AgendaHeader, type AgendaView } from "../components/AgendaHeader";
 import { AgendaMiniCalendar } from "../components/AgendaMiniCalendar";
 import { SelectedDateCard } from "../components/SelectedDateCard";
@@ -15,6 +18,7 @@ import { MemberWeekView } from "../components/MemberWeekView";
 import { MemberMonthView } from "../components/MemberMonthView";
 import { SharedDayView } from "../components/SharedDayView";
 import { SharedWeekView } from "../components/SharedWeekView";
+import type { CalendarEntry } from "../../today/utils/calendarEntry";
 import { buildMemberEntries, buildSharedEntries } from "../../today/utils/todayPanelHelpers";
 import {
   toIsoDate,
@@ -28,13 +32,13 @@ import {
  *  - member  — routed as /agenda/members/:memberId
  *  - shared  — routed as /agenda/shared
  *
- * Subject is resolved from the :memberId route param.
- * When memberId is absent the shared/collective subject is active.
+ * Phase 5: aligned with the shared surface shell (l-surface / InspectorPanel / BottomSheetDetail / FAB).
  */
 export function AgendaPage() {
   const { memberId } = useParams<{ memberId?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { t } = useTranslation("agenda");
+  const { t, i18n } = useTranslation("agenda");
+  const isMobile = useIsMobile();
 
   const isShared = memberId === undefined;
 
@@ -58,6 +62,9 @@ export function AgendaPage() {
   const [grid, setGrid] = useState<WeeklyGridResponse | null>(null);
   const [gridLoading, setGridLoading] = useState(false);
   const [gridError, setGridError] = useState<string | null>(null);
+
+  // Selected calendar entry (drives inspector on desktop, bottom sheet on mobile).
+  const [selectedEntry, setSelectedEntry] = useState<CalendarEntry | null>(null);
 
   // Entity edit modal state.
   const [editTarget, setEditTarget] = useState<{ type: EditableEntityType; id: string } | null>(null);
@@ -99,6 +106,11 @@ export function AgendaPage() {
     setSearchParams({ date: selectedDate }, { replace: true });
   }, [selectedDate, setSearchParams]);
 
+  // Clear selected entry when date or view changes.
+  useEffect(() => {
+    setSelectedEntry(null);
+  }, [selectedDate, view]);
+
   // Derived grid data for the active subject.
   const memberGrid = isShared
     ? null
@@ -132,7 +144,19 @@ export function AgendaPage() {
   }
 
   function handleItemClick(type: "event" | "task" | "routine", id: string) {
-    setEditTarget({ type, id });
+    // Look up the entry so we can display it in the inspector first.
+    const allEntries: CalendarEntry[] = isShared
+      ? buildSharedEntries(sharedCells, selectedDate)
+      : memberGrid
+      ? buildMemberEntries(memberGrid, selectedDate)
+      : [];
+    const found = allEntries.find((e) => e.id === id && e.sourceType === type) ?? null;
+    if (found) {
+      setSelectedEntry(found);
+    } else {
+      // Entry not in current date slice (e.g. week view, other day) — open edit directly.
+      setEditTarget({ type, id });
+    }
   }
 
   /** Called from Week view: select the date and switch to Day view. */
@@ -158,17 +182,21 @@ export function AgendaPage() {
     setShowAddModal(true);
   }
 
-  // Untimed entries for the selected date — feeds the SelectedDateCard in the sidebar.
-  const sidebarEntries = isShared
+  async function handleModalSuccess() {
+    await fetchGrid(weekStartForSelected);
+  }
+
+  // Untimed entries for the selected date — feeds the SelectedDateCard in the inspector.
+  const backlogEntries = isShared
     ? buildSharedEntries(sharedCells, selectedDate).filter((e) => e.time === null)
     : memberGrid
     ? buildMemberEntries(memberGrid, selectedDate).filter((e) => e.time === null)
     : [];
 
-  const sidebarDateLabel =
+  const backlogDateLabel =
     selectedDate === todayIso
       ? t("dateCard.today")
-      : new Date(selectedDate + "T00:00:00").toLocaleDateString(undefined, {
+      : new Date(selectedDate + "T00:00:00").toLocaleDateString(i18n.language, {
           weekday: "long",
           month: "long",
           day: "numeric",
@@ -180,6 +208,68 @@ export function AgendaPage() {
     ? t("shared.label")
     : (householdMember?.name ?? memberId ?? "");
 
+  // ---- Inspector content ----
+
+  function renderInspectorContent() {
+    if (selectedEntry) {
+      return (
+        <div className="agenda-inspector-item">
+          <p className="agenda-inspector-item-title">{selectedEntry.title}</p>
+          {selectedEntry.time && (
+            <p className="agenda-inspector-item-meta">
+              {selectedEntry.time}
+              {selectedEntry.endTime ? ` – ${selectedEntry.endTime}` : ""}
+            </p>
+          )}
+          {selectedEntry.subtitle && (
+            <p className="agenda-inspector-item-meta">{selectedEntry.subtitle}</p>
+          )}
+          {selectedEntry.status && (
+            <p className="agenda-inspector-item-status">{selectedEntry.status}</p>
+          )}
+          <div className="agenda-inspector-item-actions">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => {
+                setEditTarget({ type: selectedEntry.sourceType, id: selectedEntry.id });
+                setSelectedEntry(null);
+              }}
+            >
+              {t("editEntry", "Edit")}
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => setSelectedEntry(null)}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <AgendaMiniCalendar
+          selectedDate={selectedDate}
+          today={todayIso}
+          view={view}
+          firstDayOfWeek={firstDayOfWeek}
+          onSelectDate={setSelectedDate}
+        />
+        {backlogEntries.length > 0 && (
+          <SelectedDateCard
+            entries={backlogEntries}
+            dateLabel={backlogDateLabel}
+            onItemClick={(type, id) => handleItemClick(type, id)}
+          />
+        )}
+      </>
+    );
+  }
+
   // ---- Early-exit guards ----
 
   if (!familyId) {
@@ -187,15 +277,12 @@ export function AgendaPage() {
   }
 
   if (!isShared && memberId && !householdMember) {
-    return (
-      <div className="page-content agenda-page">
-        <p className="error-msg">{t("memberNotFound")}</p>
-      </div>
-    );
+    return <p className="error-msg">{t("memberNotFound")}</p>;
   }
 
   return (
-    <div className="page-content agenda-page">
+    <div className="agenda-surface l-surface">
+      {/* ── Header ── */}
       <AgendaHeader
         subjectLabel={subjectLabel}
         selectedDate={selectedDate}
@@ -206,47 +293,16 @@ export function AgendaPage() {
         onToday={handleToday}
       />
 
-      {/* Add-entry button — visible in all views */}
-      <div className="agenda-add-row">
-        <button
-          type="button"
-          className="btn agenda-add-btn"
-          onClick={() => handleAddEntry()}
-          aria-label={t("addEntry")}
-        >
-          + {t("addEntry")}
-        </button>
-      </div>
-
-      <div className="agenda-body">
-        {/* Sidebar: mini calendar + selected-date card — always visible across all views */}
-        <aside className="agenda-sidebar">
-          <AgendaMiniCalendar
-            selectedDate={selectedDate}
-            today={todayIso}
-            view={view}
-            firstDayOfWeek={firstDayOfWeek}
-            onSelectDate={setSelectedDate}
-          />
-          <SelectedDateCard
-            entries={sidebarEntries}
-            dateLabel={sidebarDateLabel}
-            onItemClick={handleItemClick}
-          />
-        </aside>
-
-        {/* Main content: the active view */}
-        <div className="agenda-main">
-          {gridLoading && (
-            <div className="loading-wrap">{t("loading")}</div>
-          )}
-          {gridError && (
-            <p className="error-msg">{gridError}</p>
-          )}
+      {/* ── Surface body: canvas | inspector ── */}
+      <div className="agenda-body l-surface-body">
+        {/* Main time canvas */}
+        <div className="agenda-canvas l-surface-content">
+          {gridLoading && <div className="loading-wrap">{t("loading")}</div>}
+          {gridError && <p className="error-msg">{gridError}</p>}
 
           {!gridLoading && !gridError && (
             <>
-              {/* ---- Member subject views ---- */}
+              {/* Member subject views */}
               {!isShared && view === "day" && (
                 <MemberDayView
                   member={memberGrid ?? emptyMember}
@@ -272,7 +328,7 @@ export function AgendaPage() {
                 />
               )}
 
-              {/* ---- Shared subject views ---- */}
+              {/* Shared subject views */}
               {isShared && view === "day" && (
                 <SharedDayView
                   sharedCells={sharedCells}
@@ -299,8 +355,34 @@ export function AgendaPage() {
               )}
             </>
           )}
-        </div>{/* end agenda-main */}
-      </div>{/* end agenda-body */}
+        </div>
+
+        {/* Desktop inspector — always present; hidden on mobile via CSS */}
+        <InspectorPanel title={selectedEntry ? selectedEntry.title : subjectLabel}>
+          {renderInspectorContent()}
+        </InspectorPanel>
+      </div>
+
+      {/* FAB — add entry */}
+      <button
+        type="button"
+        className="agenda-fab"
+        aria-label={t("addEntry")}
+        onClick={() => handleAddEntry()}
+      >
+        +
+      </button>
+
+      {/* Mobile: item detail bottom sheet */}
+      {isMobile && selectedEntry && (
+        <BottomSheetDetail
+          open
+          onClose={() => setSelectedEntry(null)}
+          title={selectedEntry.title}
+        >
+          {renderInspectorContent()}
+        </BottomSheetDetail>
+      )}
 
       {editTarget && (
         <EditEntityModal
@@ -309,7 +391,7 @@ export function AgendaPage() {
           onClose={() => setEditTarget(null)}
           onEntitySaved={async () => {
             setEditTarget(null);
-            await fetchGrid(weekStartForSelected);
+            await handleModalSuccess();
           }}
         />
       )}
@@ -321,11 +403,9 @@ export function AgendaPage() {
           onClose={() => setShowAddModal(false)}
           onSuccess={async () => {
             setShowAddModal(false);
-            await fetchGrid(weekStartForSelected);
+            await handleModalSuccess();
           }}
           defaults={{
-            // For member subject: pre-select the member.
-            // For shared subject: no participant pre-selection.
             participantMemberIds: isShared || !memberId ? [] : [memberId],
             initialStartDate: selectedDate,
             initialStartClock: addModalTime,

@@ -332,3 +332,96 @@
 }
 
 
+/* ---- CountBadge — compact count indicator ---- */
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+  border-radius: 3px;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+
+/* ---- ContextChip — small context/area link chip ---- */
+.context-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  color: var(--muted);
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  border-radius: 3px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  white-space: nowrap;
+  font-family: inherit;
+  cursor: default;
+  text-decoration: none;
+}
+
+button.context-chip {
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+button.context-chip:hover {
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--text);
+}
+
+
+/* ---- CollapsedSection — collapsible secondary content ---- */
+.collapsed-section {
+  border-top: 1px solid var(--border);
+}
+
+.collapsed-section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.collapsed-section-toggle:hover {
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.collapsed-section-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  flex: 1;
+}
+
+.collapsed-section-count {
+  font-size: var(--font-size-xs);
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.collapsed-section-chevron {
+  font-size: 0.6rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.collapsed-section-body {
+  padding: 0;
+}

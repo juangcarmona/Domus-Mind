@@ -3,7 +3,7 @@ Audience: Product / Design / Engineering / Marketing
 Scope: V1 with future-direction notes
 Owns: Product definition, positioning, value proposition, differentiators, and language rules
 Depends on: specs/system/system-spec.md
-Replaces: docs/00_vision/mission.md, docs/00_vision/value-proposition.md, docs/00_vision/domusmind-public-marketing-foundation.md, docs/01_principles/product-principles.md
+
 
 # DomusMind - Product Strategy
 

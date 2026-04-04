@@ -56,4 +56,7 @@ export default {
   expandChecked: "Show done ({{count}})",
   kindLabel2: "Kind",
   createChecklistName: "New checklist name",
+  reorderMode: "Reorder",
+  exitReorder: "Done",
+  reorderHint: "Drag items to change order",
 } as const;

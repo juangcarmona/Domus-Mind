@@ -1,9 +1,6 @@
-/* ---- Page wrapper ---- */
-.coord-page {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
+/* ================================================================
+   Today Surface — floating action button
+   ================================================================ */
 
 /* ---- Floating action button ---- */
 .fab-add {
@@ -34,140 +31,29 @@
   transform: scale(0.96);
 }
 
-/* ---- Controls bar (tabs + date nav) ---- */
-.coord-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border);
-}
-
-/* ---- View mode tabs ---- */
-.coord-view-tabs {
-  display: flex;
-  gap: 0.2rem;
-  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 0.2rem;
-}
-
-.coord-tab {
-  background: transparent;
-  border: none;
-  padding: 0.3rem 0.75rem;
-  border-radius: calc(var(--radius-md) - 0.1rem);
-  font-size: 0.875rem;
-  color: var(--muted);
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-
-.coord-tab:hover {
-  color: var(--text);
-  background: color-mix(in srgb, var(--primary) 8%, transparent);
-}
-
-.coord-tab--active {
-  background: var(--primary);
-  color: #fff;
-  font-weight: 600;
-}
-
-/* ---- Date navigation ---- */
-.coord-date-nav {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.coord-date-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text);
-  min-width: 12rem;
-  text-align: center;
-}
-
-.coord-today-btn {
-  font-size: 0.8rem;
-  opacity: 0.75;
-}
-
-/* ---- Content area ---- */
-.coord-content {
-  flex: 1;
-}
-
 /* ================================================================
-   Day View
+   Today Surface layout
    ================================================================ */
 
-.coord-day-view {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.today-surface {
+  /* Strip the default app-main padding so the board goes edge-to-edge. */
+  margin: -1.5rem -1.25rem;
 }
 
-.coord-day-header {
-  margin-bottom: 0.5rem;
+@media (max-width: 640px) {
+  .today-surface {
+    margin: -0.75rem 0;
+  }
 }
 
-.coord-day-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0;
+.today-surface-body {
+  padding: 1rem 1.25rem;
 }
 
-.coord-day-sections {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.coord-day-member {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 0.65rem 0.85rem;
-}
-
-.coord-day-member-label {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.coord-day-member-name {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.coord-day-member-role {
-  font-size: 0.75rem;
-  color: var(--muted);
-  text-transform: capitalize;
-}
-
-.coord-day-member-items {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.coord-day-empty-member {
-  font-size: 0.8rem;
-  color: var(--muted);
-  font-style: italic;
+@media (max-width: 640px) {
+  .today-surface-body {
+    padding: 0.75rem 0;
+  }
 }
 
 /* ================================================================
@@ -288,13 +174,79 @@
   display: none;
 }
 
+/* ---- Expanded member cell — shows full list ---- */
+.tp-cell--expanded {
+  /* On desktop, allow the card to grow taller to show all items. */
+  min-height: auto;
+}
+
+/* Completed items section inside expanded cell — low emphasis */
+.tp-cell-completed-section {
+  margin-top: 0.25rem;
+  padding-top: 0.2rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  opacity: 0.55;
+}
+
+/* ================================================================
+   Today item detail — inspector / bottom-sheet content
+   ================================================================ */
+
+.today-item-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0;
+}
+
+.today-item-detail-type {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.today-item-detail-glyph {
+  font-size: 0.75rem;
+}
+
+.today-item-detail-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.today-item-detail-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.today-item-detail-status {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.today-item-detail-edit {
+  margin-top: 0.5rem;
+  align-self: flex-start;
+}
+
 /* ================================================================
    Mobile overrides  (max-width: 767px)
    ================================================================ */
 
 @media (max-width: 767px) {
   /* ---- Page: add bottom padding so FAB doesn't overlap last item ---- */
-  .coord-page {
+  .today-surface-body {
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem);
   }
 
@@ -307,8 +259,8 @@
     right: 1rem;
   }
 
-  /* ---- Today board: strip card shell ---- */
-  .today-summary {
+  /* ---- Today board: flat on mobile (no card shell) ---- */
+  .today-board {
     background: transparent;
     border: none;
     border-radius: 0;
@@ -326,11 +278,6 @@
     pointer-events: none;
     padding: 0 0.25rem;
     flex-shrink: 0;
-  }
-
-  /* ---- Remove old hidden-button approach ---- */
-  .coord-day-nav-btn--hidden {
-    display: none;
   }
 
   /* ---- Member grid: single-column flat list ---- */
@@ -415,6 +362,24 @@
   }
   .tp-cell--household .tp-cell-left[role="button"] {
     cursor: pointer;
+  }
+
+  /* Expanded cell: auto-height on mobile */
+  .tp-cell--expanded {
+    min-height: auto;
+    align-items: flex-start;
+  }
+
+  /* Right zone clickable (expand trigger) */
+  .tp-cell-right[role="button"] {
+    cursor: pointer;
+  }
+
+  /* Completed section inside expanded cell */
+  .tp-cell-completed-section {
+    margin-top: 0.2rem;
+    padding-top: 0.15rem;
+    width: 100%;
   }
 
   /* Entries inside right zone always shown (no collapsing) */

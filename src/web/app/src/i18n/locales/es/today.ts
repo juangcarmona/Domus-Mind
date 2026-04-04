@@ -44,6 +44,10 @@ export default {
     empty: "Nada que mostrar.",
     scrollHint: "Desplázate para explorar el tiempo →",
   },
+  item: {
+    edit: "Editar",
+    select: "Selecciona un elemento para ver los detalles",
+  },
   loading: "Cargando…",
   error: "Error al cargar los datos.",
 } as const;
