@@ -237,7 +237,6 @@ export function PlanningPage() {
         onPrev={handlePrev}
         onNext={handleNext}
         onToday={handleToday}
-        onAddPlan={() => handleAddPlan({ initialStartDate: selectedDate })}
       />
 
       <div className="planning-body l-surface-body">

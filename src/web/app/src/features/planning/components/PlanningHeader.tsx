@@ -32,7 +32,6 @@ export function PlanningHeader({
   onToday,
 }: PlanningHeaderProps) {
   const { t, i18n } = useTranslation("agenda");
-  const { t: tPlans } = useTranslation("plans");
   const { t: tNav } = useTranslation("nav");
 
   const todayIso = toIsoDate(new Date());

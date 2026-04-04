@@ -75,6 +75,8 @@ export function SharedListsPage() {
   const [deleting, setDeleting] = useState(false);
   const [showLinkedEvent, setShowLinkedEvent] = useState(false);
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
+  const [reorderMode, setReorderMode] = useState(false);
+  const [showAddComposer, setShowAddComposer] = useState(false);
 
   const addInputRef = useRef<HTMLInputElement>(null);
 
@@ -109,22 +111,19 @@ export function SharedListsPage() {
       setRenameDraft(null);
       setRenameError(null);
       setSelectedItem(null);
+      setReorderMode(false);
+      setShowAddComposer(false);
     } else {
       dispatch(clearDetail());
     }
   }, [activeListId, dispatch]);
 
-  // Auto-focus add input once detail loads
-  useEffect(() => {
-    if (detailStatus === "success") {
-      addInputRef.current?.focus();
-    }
-  }, [detailStatus]);
-
   // ---- Switcher selection ----
   function handleSelectList(listId: string) {
     setActiveListId(listId);
     setShowSwitcherSheet(false);
+    setShowAddComposer(false);
+    setReorderMode(false);
     // When a deep-link brought us here, collapse the route back to /lists
     if (routeListId) {
       navigate("/lists", { replace: true });
@@ -133,6 +132,13 @@ export function SharedListsPage() {
 
   // ---- Add item ----
   async function handleAddKey(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setShowAddComposer(false);
+      setAddItemName("");
+      setAddError(null);
+      return;
+    }
     if (e.key !== "Enter") return;
     const name = addItemName.trim();
     if (!name || !activeListId) return;
@@ -255,14 +261,13 @@ export function SharedListsPage() {
             className="lists-switcher-trigger"
             onClick={() => setShowSwitcherSheet(true)}
           >
-            {activeListSummary ? activeListSummary.name : t("title")} ▾
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={() => setShowCreate(true)}
-          >
-            + {t("newList")}
+            <span className="lists-switcher-trigger-name">
+              {activeListSummary ? activeListSummary.name : t("title")}
+            </span>
+            {activeListSummary && activeListSummary.uncheckedCount > 0 && (
+              <span className="lists-list-count">{activeListSummary.uncheckedCount}</span>
+            )}
+            <span className="lists-switcher-trigger-chevron" aria-hidden="true">▾</span>
           </button>
         </header>
       )}
@@ -325,8 +330,8 @@ export function SharedListsPage() {
                           <button
                             type="button"
                             className="lists-list-name-btn"
-                            onClick={() => setRenameDraft(detail.name)}
-                            title={t("renameList")}
+                            onClick={() => !reorderMode && setRenameDraft(detail.name)}
+                            title={reorderMode ? undefined : t("renameList")}
                           >
                             {detail.name}
                             {activeListSummary && activeListSummary.uncheckedCount > 0 && (
@@ -337,7 +342,7 @@ export function SharedListsPage() {
                         {renameError && <p className="error-msg" style={{ margin: 0 }}>{renameError}</p>}
                       </div>
                       <div className="lists-list-header-actions">
-                        {detail.linkedEntityDisplayName && (
+                        {!reorderMode && detail.linkedEntityDisplayName && (
                           <button
                             type="button"
                             className="btn btn-ghost btn-sm"
@@ -348,18 +353,31 @@ export function SharedListsPage() {
                         )}
                         <button
                           type="button"
-                          className="btn btn-ghost btn-sm lists-delete-btn"
-                          onClick={handleDelete}
-                          disabled={deleting}
-                          title={t("deleteList")}
+                          className={`lists-reorder-btn${reorderMode ? " lists-reorder-btn--active" : ""}`}
+                          onClick={() => setReorderMode((m) => !m)}
+                          title={reorderMode ? t("exitReorder") : t("reorderMode")}
                         >
-                          {deleting ? "…" : "···"}
+                          {reorderMode ? t("exitReorder") : "⠿"}
                         </button>
+                        {!reorderMode && (
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm lists-delete-btn"
+                            onClick={handleDelete}
+                            disabled={deleting}
+                            title={t("deleteList")}
+                          >
+                            {deleting ? "…" : "···"}
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
-                  <div className="lists-active-body">
+                  <div className={`lists-active-body${reorderMode ? " lists-reorder-mode" : ""}`}>
                   <div className="shared-list-items-wrap">
+                    {reorderMode && (
+                      <div className="lists-reorder-banner">{t("reorderHint")}</div>
+                    )}
                     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                       <SortableContext
                         items={unchecked.map((i) => i.itemId)}
@@ -370,6 +388,7 @@ export function SharedListsPage() {
                             key={item.itemId}
                             item={item}
                             listId={detail.listId}
+                            reorderMode={reorderMode}
                           />
                         ))}
                       </SortableContext>
@@ -400,20 +419,6 @@ export function SharedListsPage() {
                       </>
                     )}
 
-                    {/* Quick add bar — always visible */}
-                    <div className="shared-list-add-row">
-                      <input
-                        ref={addInputRef}
-                        type="text"
-                        className="shared-list-add-input"
-                        placeholder={t("addItemPlaceholder")}
-                        value={addItemName}
-                        onChange={(e) => setAddItemName(e.target.value)}
-                        onKeyDown={handleAddKey}
-                        aria-label={t("addItem")}
-                      />
-                    </div>
-
                     {addError && (
                       <p className="error-msg" style={{ padding: "0 0.75rem 0.5rem" }}>
                         {addError}
@@ -427,6 +432,31 @@ export function SharedListsPage() {
                     </div>
                   )}
                   </div>
+
+                  {/* Inline add composer — sticky bottom of content pane */}
+                  {showAddComposer && (
+                    <div className="lists-add-composer">
+                      <input
+                        ref={addInputRef}
+                        type="text"
+                        className="lists-add-composer-input"
+                        placeholder={t("addItemPlaceholder")}
+                        value={addItemName}
+                        onChange={(e) => setAddItemName(e.target.value)}
+                        onKeyDown={handleAddKey}
+                        autoFocus
+                        aria-label={t("addItem")}
+                      />
+                      <button
+                        type="button"
+                        className="lists-add-composer-close"
+                        onClick={() => { setShowAddComposer(false); setAddItemName(""); setAddError(null); }}
+                        aria-label={t("cancel")}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </>
@@ -438,6 +468,18 @@ export function SharedListsPage() {
           {inspectorContent}
         </InspectorPanel>
       </div>
+
+      {/* FAB — add item (hidden in reorder mode or when composer is open) */}
+      {activeListId && !reorderMode && !showAddComposer && (
+        <button
+          type="button"
+          className="lists-fab"
+          aria-label={t("addItem")}
+          onClick={() => setShowAddComposer(true)}
+        >
+          +
+        </button>
+      )}
 
       {/* Mobile: list switcher sheet */}
       {isMobile && (

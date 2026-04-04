@@ -56,4 +56,7 @@ export default {
   expandChecked: "显示已完成 ({{count}})",
   kindLabel2: "类型",
   createChecklistName: "新清单名称",
+  reorderMode: "重新排序",
+  exitReorder: "完成",
+  reorderHint: "拖动以更改顺序",
 } as const;

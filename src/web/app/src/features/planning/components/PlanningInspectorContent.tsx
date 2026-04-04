@@ -3,8 +3,6 @@ import { toIsoDate } from "../../today/utils/dateUtils";
 import { AgendaMiniCalendar } from "../../agenda/components/AgendaMiniCalendar";
 import type { PlanningView } from "./PlanningHeader";
 
-const SELECT_PROMPT = "Select a plan to inspect";
-
 export interface SelectedPlanItem {
   type: "event" | "task" | "routine";
   id: string;
@@ -43,6 +41,7 @@ export function PlanningInspectorContent({
   onClearSelection,
 }: PlanningInspectorContentProps) {
   const { t: tCommon } = useTranslation("common");
+  const { t: tPlans } = useTranslation("plans");
   const { i18n } = useTranslation();
 
   const todayIso = toIsoDate(new Date());
@@ -116,7 +115,9 @@ export function PlanningInspectorContent({
             )}
           </div>
         ) : (
-          <p className="planning-inspector-empty">{SELECT_PROMPT}</p>
+          <div className="planning-inspector-idle">
+            <p className="planning-inspector-idle-hint">{tPlans("inspectorIdle")}</p>
+          </div>
         )}
       </div>
     </div>

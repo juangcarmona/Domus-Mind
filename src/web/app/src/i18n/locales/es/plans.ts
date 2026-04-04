@@ -29,6 +29,7 @@ export default {
   groupToday: "Hoy",
   groupUpcoming: "Próximamente",
   groupLater: "Más tarde",
+  inspectorIdle: "Selecciona un plan para inspeccionar",
   chooser: {
     title: "¿Qué estás añadiendo?",
     routine: "Rutina",

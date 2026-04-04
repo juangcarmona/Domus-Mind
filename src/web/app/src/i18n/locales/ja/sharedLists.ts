@@ -56,4 +56,7 @@ export default {
   expandChecked: "完了を表示 ({{count}})",
   kindLabel2: "種類",
   createChecklistName: "新しいチェックリスト名",
+  reorderMode: "並び替え",
+  exitReorder: "完了",
+  reorderHint: "ドラッグして順序を変更",
 } as const;

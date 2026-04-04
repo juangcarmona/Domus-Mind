@@ -29,6 +29,7 @@ export default {
   groupToday: "今天",
   groupUpcoming: "即将到来",
   groupLater: "稍后",
+  inspectorIdle: "选择计划以查看详情",
   chooser: {
     title: "你在添加什么？",
     routine: "例行",

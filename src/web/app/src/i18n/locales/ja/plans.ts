@@ -29,6 +29,7 @@ export default {
   groupToday: "今日",
   groupUpcoming: "まもなく",
   groupLater: "後で",
+  inspectorIdle: "プランを選択して詳細を確認",
   chooser: {
     title: "何を追加しますか？",
     routine: "ルーティン",
