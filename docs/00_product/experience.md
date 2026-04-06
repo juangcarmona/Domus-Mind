@@ -92,37 +92,34 @@ Task stays Task by design.
 
 # Surface Roles
 
-## Today
+## Agenda
 
-Today is the primary household operational surface.
+Agenda is the unified household temporal surface.
 
 It answers:
 
-> What matters today for this household?
+> What is happening in this household — today, this week, this month — for everyone or for one person?
 
-It should be:
+It operates in two scopes:
+
+- **Household**: shows the shared household picture — all members, shared plans, owned tasks, routines
+- **Member**: shows one person's temporal reality in depth
+
+And in three time modes:
+
+- **Day**: household board (compact, all members) or individual timeline (hour-positioned, one member)
+- **Week**: 7-day coordination view
+- **Month**: density and navigation overview
+
+Default entry: Household scope, Day mode, today's date — the operational "what matters today" question.
+
+Agenda must be:
 
 - dense
 - fast to scan
 - truthful
 - low-navigation
-- shared-reality first
-
-## Planning
-
-Planning is the write-heavy temporal coordination surface.
-
-It answers:
-
-> What is coming, when is it happening, and what needs adjustment?
-
-It should support:
-
-- day, week, and month awareness
-- plan creation and inspection
-- quick date navigation
-- conflict visibility
-- preparation awareness
+- write-capable in-place
 
 ## Lists
 
@@ -152,24 +149,15 @@ They answer:
 
 They should make ownership visible without becoming administrative.
 
-## Member Agenda
-
-Member Agenda is the individual deep temporal surface.
-
-It answers:
-
-> What does this person's day, week, or month actually look like?
-
-It exists to inspect and plan one person's temporal load without losing shared context.
-
 ---
 
-# Planning vs Timeline
+# Agenda and the Household Timeline
 
-DomusMind distinguishes between planning surfaces and the timeline.
+DomusMind does not require the user to navigate between surfaces to understand household time.
 
-- Planning is where the household creates or adjusts future temporal state.
-- Timeline-oriented surfaces are where current household reality becomes legible.
+The Agenda surface is the single temporal entry point.
+
+Scope (Household or Member) and time mode (Day, Week, Month) are selections within one surface, not separate navigation destinations.
 
 The household should not need separate tools to understand:
 

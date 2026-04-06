@@ -7,8 +7,11 @@ export default {
   planning: "规划",
   week: "周",
   today: "今天",
+  agenda: "日程",
   members: "成员",
   lists: "清单",
   signOut: "退出",
   settings: "设置",
+  switchToLight: "切换到亮色模式",
+  switchToDark: "切换到深色模式",
 } as const;

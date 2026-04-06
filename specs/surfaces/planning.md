@@ -1,4 +1,8 @@
-# Surface Spec - Planning
+> **Status: Retired** — This spec has been superseded by `specs/surfaces/agenda.md`.
+> Planning is now the Household scope Week/Day/Month mode of the unified Agenda surface.
+> Do not update this file. Update `specs/surfaces/agenda.md` instead.
+
+# Surface Spec - Planning (Retired)
 
 ## Purpose
 

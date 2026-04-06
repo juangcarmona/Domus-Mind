@@ -1,4 +1,8 @@
-# Surface Spec - Member Agenda
+> **Status: Retired** — This spec has been superseded by `specs/surfaces/agenda.md`.
+> Member Agenda is now the Member scope of the unified Agenda surface (Day/Week/Month modes).
+> Do not update this file. Update `specs/surfaces/agenda.md` instead.
+
+# Surface Spec - Member Agenda (Retired)
 
 ## Purpose
 

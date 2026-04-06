@@ -7,8 +7,11 @@ export default {
   planning: "プランニング",
   week: "週間",
   today: "今日",
+  agenda: "アジェンダ",
   members: "メンバー",
   lists: "リスト",
   signOut: "サインアウト",
   settings: "設定",
+  switchToLight: "ライトモードに切り替える",
+  switchToDark: "ダークモードに切り替える",
 } as const;

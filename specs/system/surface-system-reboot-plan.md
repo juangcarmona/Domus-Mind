@@ -6,10 +6,8 @@ Depends on:
 - docs/00_product/strategy.md
 - docs/00_product/experience.md
 - docs/00_product/surface-system.md
-- specs/surfaces/planning.md
+- specs/surfaces/agenda.md
 - specs/surfaces/shared-lists.md
-- specs/surfaces/today.md
-- specs/surfaces/member-agenda.md
 - specs/surfaces/areas.md
 
 ## Phase status
@@ -21,7 +19,7 @@ Depends on:
 | Phase 2 — Planning | **Complete** | `specs/system/surface-system-reboot-plan-phase-2.md` |
 | Phase 3 — Shared Lists | **Complete** | `specs/system/surface-system-reboot-plan-phase-3.md` |
 | Phase 4 — Today | **Complete** | `specs/system/surface-system-reboot-plan-phase-4.md` |
-| Phase 5 — Member Agenda | Not started | — |
+| Phase 5 — Agenda Unification | Not started | `specs/system/surface-system-reboot-plan-phase-5.md` |
 | Phase 6 — Areas | Not started | — |
 
 # DomusMind - Surface System Reboot Plan
@@ -99,10 +97,8 @@ They are the operating rules of the reboot.
 
 This reboot applies to the major operational surfaces:
 
-- Planning
+- Agenda (unified: Today, Planning, Member Agenda)
 - Shared Lists
-- Today
-- Member Agenda
 - Areas
 
 It also applies to the shared cross-surface shell and interaction system used by those surfaces.

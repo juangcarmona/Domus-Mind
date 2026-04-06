@@ -8,7 +8,7 @@ Depends on: docs/00_product/strategy.md, docs/00_product/experience.md
 
 This document defines the shared UX system for DomusMind.
 
-It exists to keep Today, Planning, Lists, Areas, and Member Agenda inside one coherent product shell.
+It exists to keep Agenda, Lists, Areas, and Settings inside one coherent product shell.
 
 It does not define domain behavior.
 It defines how product surfaces should be structured and behave.

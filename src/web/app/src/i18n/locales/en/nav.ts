@@ -7,8 +7,11 @@ export default {
   planning: "Planning",
   week: "Week",
   today: "Today",
+  agenda: "Agenda",
   members: "Members",
   lists: "Lists",
   signOut: "Sign out",
   settings: "Settings",
+  switchToLight: "Switch to light mode",
+  switchToDark: "Switch to dark mode",
 } as const;

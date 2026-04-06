@@ -19,11 +19,9 @@ import { SetupPage } from "./features/setup/pages/SetupPage";
 import { OnboardingPage } from "./features/onboarding/pages/OnboardingPage";
 import { AreaDetailPage } from "./features/areas/pages/AreaDetailPage";
 import { AreasPage } from "./features/areas/pages/AreasPage";
-import { PlanningPage } from "./features/planning/pages/PlanningPage";
 import { SettingsPage } from "./features/settings/pages/SettingsPage";
-import { TodayPage } from "./features/today/pages/TodayPage";
+import { AgendaPage } from "./features/agenda/pages/AgendaPage";
 import { SharedListsPage } from "./features/shared-lists/pages/SharedListsPage";
-import { AgendaPage, MemberAgendaPage } from "./features/agenda/pages/MemberAgendaPage";
 import { setupApi } from "./api/setupApi";
 import { SplashScreen } from "./components/SplashScreen";
 
@@ -86,21 +84,22 @@ function AuthedApp() {
       <Routes>
         <Route path="/areas" element={<AreasPage />} />
         <Route path="/areas/:areaId" element={<AreaDetailPage />} />
-        <Route path="/planning" element={<PlanningPage />} />
-        <Route path="/members" element={<Navigate to="/settings" replace />} />
-        <Route path="/members/:memberId" element={<Navigate to="/settings" replace />} />
-        <Route path="/agenda/members/:memberId" element={<MemberAgendaPage />} />
-        <Route path="/agenda/shared" element={<AgendaPage />} />
+        <Route path="/agenda" element={<AgendaPage />} />
+        <Route path="/agenda/members/:memberId" element={<AgendaPage />} />
         <Route path="/lists" element={<SharedListsPage />} />
         <Route path="/lists/:listId" element={<SharedListsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/timeline" element={<Navigate to="/planning" replace />} />
-        <Route path="/" element={<TodayPage />} />
-        <Route path="/agenda" element={<Navigate to="/" replace />} />
-        <Route path="/coordination" element={<Navigate to="/" replace />} />
-        <Route path="/plans" element={<Navigate to="/planning" replace />} />
-        <Route path="/tasks" element={<Navigate to="/planning" replace />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Legacy redirects */}
+        <Route path="/" element={<Navigate to="/agenda" replace />} />
+        <Route path="/planning" element={<Navigate to="/agenda?mode=week" replace />} />
+        <Route path="/agenda/shared" element={<Navigate to="/agenda" replace />} />
+        <Route path="/members" element={<Navigate to="/settings" replace />} />
+        <Route path="/members/:memberId" element={<Navigate to="/settings" replace />} />
+        <Route path="/timeline" element={<Navigate to="/agenda?mode=week" replace />} />
+        <Route path="/coordination" element={<Navigate to="/agenda" replace />} />
+        <Route path="/plans" element={<Navigate to="/agenda" replace />} />
+        <Route path="/tasks" element={<Navigate to="/agenda" replace />} />
+        <Route path="*" element={<Navigate to="/agenda" replace />} />
       </Routes>
     </AppShell>
   );

@@ -1,14 +1,30 @@
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { weekRangeFor } from "../utils/agendaDateGrid";
 import { toIsoDate } from "../../today/utils/dateUtils";
+import { MemberAvatar } from "../../settings/components/avatar/MemberAvatar";
+import { HouseholdLogo } from "../../../components/HouseholdLogo";
 
-type AgendaView = "day" | "week" | "month";
+export type AgendaView = "day" | "week" | "month";
+
+export interface AgendaHeaderMember {
+  memberId: string;
+  name: string;
+  avatarInitial?: string;
+  avatarIconId?: number | null;
+  avatarColorId?: number | null;
+}
 
 interface AgendaHeaderProps {
-  /** Display label for the agenda subject (member name or "Compartido"). */
-  subjectLabel: string;
+  /**
+   * "household" for the household scope, or a memberId string for member scope.
+   */
+  scope: "household" | string;
+  members: AgendaHeaderMember[];
+  householdLabel: string;
   selectedDate: string; // ISO YYYY-MM-DD
   view: AgendaView;
+  firstDayOfWeek: string | null;
+  onScopeChange: (scope: "household" | string) => void;
   onViewChange: (view: AgendaView) => void;
   onPrev: () => void;
   onNext: () => void;
@@ -16,98 +32,152 @@ interface AgendaHeaderProps {
 }
 
 /**
- * Compact, responsive header for the agenda surface.
+ * Unified compact header for the Agenda surface.
  *
- * Three distinct rows (never collapse on narrow widths):
- *   Row 1 — back button + subject label (member name or shared label)
- *   Row 2 — ‹  date  today?  ›
+ * Three rows:
+ *   Row 1 — Household | member scope selector pills
+ *   Row 2 — ‹  date range  today?  ›
  *   Row 3 — Day / Week / Month tab strip
  */
 export function AgendaHeader({
-  subjectLabel,
+  scope,
+  members,
+  householdLabel,
   selectedDate,
   view,
+  firstDayOfWeek,
+  onScopeChange,
   onViewChange,
   onPrev,
   onNext,
   onToday,
 }: AgendaHeaderProps) {
   const { t, i18n } = useTranslation("agenda");
-  const navigate = useNavigate();
 
   const todayIso = toIsoDate(new Date());
   const isToday = selectedDate === todayIso;
 
-  const dateLabel = new Date(selectedDate + "T00:00:00").toLocaleDateString(
-    i18n.language,
-    { weekday: "short", day: "numeric", month: "short", year: "numeric" },
-  );
+  function getDateRangeLabel(): string {
+    const locale = i18n.language;
+    if (view === "week") {
+      const { weekStart, weekEnd } = weekRangeFor(selectedDate, firstDayOfWeek);
+      const start = new Date(weekStart + "T00:00:00").toLocaleDateString(locale, {
+        day: "numeric",
+        month: "short",
+      });
+      const end = new Date(weekEnd + "T00:00:00").toLocaleDateString(locale, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+      return `${start} – ${end}`;
+    }
+    if (view === "day") {
+      return new Date(selectedDate + "T00:00:00").toLocaleDateString(locale, {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    }
+    // month
+    return new Date(selectedDate + "T00:00:00").toLocaleDateString(locale, {
+      month: "long",
+      year: "numeric",
+    });
+  }
+
+  function getPrevAriaLabel(): string {
+    if (view === "week") return t("nav.prevWeek");
+    if (view === "day") return t("nav.prevDay");
+    return t("nav.prevMonth");
+  }
+
+  function getNextAriaLabel(): string {
+    if (view === "week") return t("nav.nextWeek");
+    if (view === "day") return t("nav.nextDay");
+    return t("nav.nextMonth");
+  }
 
   return (
-    <div className="agenda-header">
-      {/* Row 1: back + member name */}
-      <div className="agenda-identity">
+    <header className="agenda-header">
+      {/* Row 1: scope selector */}
+      <div className="agenda-scope-row" role="group" aria-label="Scope">
         <button
-          className="btn btn-ghost btn-sm agenda-back-btn"
-          onClick={() => navigate(-1)}
           type="button"
-          aria-label={t("nav.back")}
+          className={`agenda-scope-pill${scope === "household" ? " agenda-scope-pill--active" : ""}`}
+          aria-pressed={scope === "household"}
+          onClick={() => onScopeChange("household")}
         >
-          ‹ {t("nav.back")}
+          <HouseholdLogo className="agenda-scope-pill-icon" />
+          <span>{householdLabel}</span>
         </button>
-        <span className="agenda-member-name">{subjectLabel}</span>
+        {members.map((m) => (
+          <button
+            key={m.memberId}
+            type="button"
+            className={`agenda-scope-pill${scope === m.memberId ? " agenda-scope-pill--active" : ""}`}
+            aria-pressed={scope === m.memberId}
+            onClick={() => onScopeChange(m.memberId)}
+          >
+            <MemberAvatar
+              initial={m.avatarInitial ?? m.name[0]?.toUpperCase() ?? "?"}
+              avatarIconId={m.avatarIconId}
+              avatarColorId={m.avatarColorId}
+              size={18}
+            />
+            <span>{m.name}</span>
+          </button>
+        ))}
       </div>
 
       {/* Row 2: date navigation */}
       <div className="agenda-date-nav">
         <button
+          type="button"
           className="btn btn-ghost btn-sm"
           onClick={onPrev}
-          type="button"
-          aria-label={t(`nav.prev${view.charAt(0).toUpperCase() + view.slice(1)}`)}
+          aria-label={getPrevAriaLabel()}
         >
           ‹
         </button>
         <div className="agenda-date-center">
-          <span className="agenda-date-text">{dateLabel}</span>
+          <span className="agenda-date-text">{getDateRangeLabel()}</span>
           {!isToday && (
             <button
+              type="button"
               className="btn btn-ghost btn-sm agenda-today-btn"
               onClick={onToday}
-              type="button"
             >
               {t("nav.today")}
             </button>
           )}
         </div>
         <button
+          type="button"
           className="btn btn-ghost btn-sm"
           onClick={onNext}
-          type="button"
-          aria-label={t(`nav.next${view.charAt(0).toUpperCase() + view.slice(1)}`)}
+          aria-label={getNextAriaLabel()}
         >
           ›
         </button>
       </div>
 
       {/* Row 3: view tabs */}
-      <div className="agenda-view-tabs" role="tablist">
+      <div className="agenda-view-tabs" role="tablist" aria-label="View">
         {(["day", "week", "month"] as AgendaView[]).map((v) => (
           <button
             key={v}
+            type="button"
             role="tab"
             aria-selected={view === v}
             className={`agenda-view-tab${view === v ? " agenda-view-tab--active" : ""}`}
             onClick={() => onViewChange(v)}
-            type="button"
           >
             {t(`views.${v}`)}
           </button>
         ))}
       </div>
-    </div>
+    </header>
   );
 }
-
-// Re-export type for consumers
-export type { AgendaView };

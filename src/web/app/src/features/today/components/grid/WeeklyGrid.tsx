@@ -14,6 +14,7 @@ interface WeeklyGridProps {
 
 function SharedRow({
   cells,
+  label,
   today,
   onItemClick,
 }: {
@@ -25,8 +26,8 @@ function SharedRow({
   return (
     <div className="wg-row wg-row--shared">
       <div className="wg-member-label">
-        <HouseholdLogo size={24}  />
-        {/* <span className="wg-member-name">{label}</span> */}
+        <HouseholdLogo size={24} />
+        <span className="wg-member-name">{label}</span>
       </div>
       {cells.map((cell) => (
         <WGCell
@@ -52,12 +53,6 @@ export function WeeklyGrid({
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const members = grid.members ?? [];
   const sharedCells = grid.sharedCells ?? [];
-  const hasSharedContent = sharedCells.some(
-    (c) =>
-      (c.events?.length ?? 0) > 0 ||
-      (c.tasks?.length ?? 0) > 0 ||
-      (c.routines?.length ?? 0) > 0,
-  );
 
   const days: string[] =
     members.length > 0
@@ -101,14 +96,12 @@ export function WeeklyGrid({
           onDayClick={onDayClick}
           dayCounts={dayCounts}
         />
-        {hasSharedContent && (
-          <SharedRow
-            cells={sharedCells}
-            label={t("day.household")}
-            today={todayIso}
-            onItemClick={onItemClick}
-          />
-        )}
+        <SharedRow
+          cells={sharedCells}
+          label={t("day.household")}
+          today={todayIso}
+          onItemClick={onItemClick}
+        />
         {members.map((member) => (
           <WeeklyGridRow
             key={member.memberId}
