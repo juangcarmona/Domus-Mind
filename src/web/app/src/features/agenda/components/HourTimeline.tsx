@@ -63,6 +63,12 @@ interface HourTimelineProps {
   isToday?: boolean;
   /** Current time as total minutes from midnight. Used only when isToday is true. */
   nowMinutes?: number;
+  /**
+   * When true, renders only day-phase hours (06:00–21:30) and suppresses empty
+   * night slots. Reduces slot count from 48 to ~32 for sparse mobile schedules.
+   * Duration blocks that span into night hours are still rendered correctly.
+   */
+  compact?: boolean;
 }
 
 /**
@@ -75,7 +81,7 @@ interface HourTimelineProps {
  * - All other timed entries are bucketed to nearest :00/:30 slot
  * - Empty slots are optionally clickable for "create at time" action
  */
-export function HourTimeline({ timedEntries, onItemClick, onSlotClick, isToday, nowMinutes }: HourTimelineProps) {
+export function HourTimeline({ timedEntries, onItemClick, onSlotClick, isToday, nowMinutes, compact }: HourTimelineProps) {
   // Separate duration events (absolute blocks) from point-in-time items (slot-bucketed).
   const durationEvents: CalendarEntry[] = [];
   const pointItems: CalendarEntry[] = [];
@@ -102,13 +108,16 @@ export function HourTimeline({ timedEntries, onItemClick, onSlotClick, isToday, 
   }
 
   return (
-    <div className="hour-timeline" aria-label="Hourly schedule">
+    <div className={`hour-timeline${compact ? " hour-timeline--compact" : ""}`} aria-label="Hourly schedule">
       {/* Slot rail: provides the time grid background and point-in-time items */}
       {Array.from({ length: SLOT_COUNT }, (_, idx) => {
+        const night = isNightSlot(idx);
+        // In compact mode, skip empty night slots entirely to reduce scroll area.
+        if (compact && night && (bySlot.get(idx) ?? []).length === 0) return null;
+
         const isHalf = idx % 2 === 1;
         const entries = bySlot.get(idx) ?? [];
         const hasItems = entries.length > 0;
-        const night = isNightSlot(idx);
         const label = slotLabel(idx);
         const clickable = !hasItems && !!onSlotClick;
 

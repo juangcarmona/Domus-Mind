@@ -310,22 +310,30 @@ A marker:
 * is not persisted as an aggregate
 * exists only to improve visibility in read models
 
-### Today View
+### Agenda View
 
-The **Today View** is a product surface showing what matters today.
+The **Agenda View** is the household temporal read surface.
+
+It can show household or individual scope across day, week, and month time windows.
 
 It is not a bounded context.
-It is a projection over data owned by multiple contexts.
+It is a set of projections over data owned by Calendar, Tasks, and Family.
+
+### Day View
+
+The **Day View** is a single-day projection within the Agenda surface.
+
+In household scope it presents a compact per-member board.
+In member scope it presents an hour-positioned timeline for one person.
 
 ### Week View
 
-The **Week View** is a coordination surface showing the upcoming household week.
+The **Week View** is a 7-day coordination projection within the Agenda surface.
 
 It may combine information from:
 
 * Calendar
 * Tasks
-* Shared Lists
 * derived coordination cues where explicitly supported
 
 It is a read-model surface, not a domain model.

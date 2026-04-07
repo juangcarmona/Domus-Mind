@@ -30,7 +30,8 @@
 }
 .wg-member-label {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 0.4rem;
   padding: 0.5rem 0.6rem;
   background: var(--surface);
   border-right: 1px solid var(--border);
@@ -59,6 +60,21 @@
 }
 .wg-cell--empty {
   background: color-mix(in srgb, var(--bg) 60%, var(--surface));
+  position: relative;
+}
+
+.wg-cell--empty::after {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1.25rem;
+  height: 1px;
+  background: var(--border);
+  border-radius: 1px;
 }
 .wg-cell--routines {
   grid-column: 2 / -1;

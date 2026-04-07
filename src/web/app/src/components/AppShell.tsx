@@ -9,11 +9,37 @@ import { MemberAvatar } from "../features/settings/components/avatar/MemberAvata
 import { NavRail } from "./NavRail";
 import type { NavRailItem } from "./NavRail";
 
+const IconAgenda = (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="2" y="3" width="14" height="13" rx="2"/>
+    <path d="M6 1v4M12 1v4M2 7h14"/>
+  </svg>
+);
+
+const IconLists = (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+    <line x1="7" y1="5" x2="15" y2="5"/>
+    <line x1="7" y1="9" x2="15" y2="9"/>
+    <line x1="7" y1="13" x2="15" y2="13"/>
+    <circle cx="3.5" cy="5" r="1.2" fill="currentColor" stroke="none"/>
+    <circle cx="3.5" cy="9" r="1.2" fill="currentColor" stroke="none"/>
+    <circle cx="3.5" cy="13" r="1.2" fill="currentColor" stroke="none"/>
+  </svg>
+);
+
+const IconAreas = (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="2" y="2" width="6" height="6" rx="1"/>
+    <rect x="10" y="2" width="6" height="6" rx="1"/>
+    <rect x="2" y="10" width="6" height="6" rx="1"/>
+    <rect x="10" y="10" width="6" height="6" rx="1"/>
+  </svg>
+);
+
 const NAV_ITEMS: readonly NavRailItem[] = [
-  { to: "/", labelKey: "today" },
-  { to: "/planning", labelKey: "planning" },
-  { to: "/lists", labelKey: "lists" },
-  { to: "/areas", labelKey: "areas" },
+  { to: "/agenda", labelKey: "agenda", icon: IconAgenda },
+  { to: "/lists", labelKey: "lists", icon: IconLists },
+  { to: "/areas", labelKey: "areas", icon: IconAreas },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -160,15 +186,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </NavLink>
                 </li>
               ))}
-              <li>
-                <NavLink
-                  to="/settings"
-                  className={({ isActive }) => isActive ? "active" : undefined}
-                  onClick={() => setDrawerOpen(false)}
-                >
-                  {tNav("settings")}
-                </NavLink>
-              </li>
             </ul>
           </nav>
         </>

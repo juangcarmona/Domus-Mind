@@ -1,4 +1,8 @@
-# Surface Spec - Today
+> **Status: Retired** — This spec has been superseded by `specs/surfaces/agenda.md`.
+> Today is now the default entry state of the unified Agenda surface (Household scope, Day mode, current date).
+> Do not update this file. Update `specs/surfaces/agenda.md` instead.
+
+# Surface Spec - Today (Retired)
 
 ## Purpose
 

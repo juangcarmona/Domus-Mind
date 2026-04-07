@@ -39,7 +39,7 @@ They are not:
 ## Entry Points
 
 - main navigation → `Lists`
-- contextual link from Today or Planning when a list is relevant
+- contextual link from Agenda when a list is relevant
 - deep link to a specific list
 
 ---

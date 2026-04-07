@@ -34,7 +34,7 @@
 
   /* ---- Structural layout tokens ---- */
   --rail-width: 14rem;
-  --rail-width-collapsed: 3rem;
+  --rail-width-collapsed: 4rem;
   --inspector-width: 20rem;
   --toolbar-height: 2.75rem;
   --list-switcher-width: 16rem;

@@ -26,7 +26,7 @@ This is an ownership surface, not a task board and not an admin console.
 ## Entry Points
 
 - main navigation → `Areas`
-- contextual links from Today, Planning, Lists, or item detail
+- contextual links from Agenda, Lists, or item detail
 - onboarding follow-up flow
 
 ---

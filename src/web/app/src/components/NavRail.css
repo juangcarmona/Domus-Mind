@@ -11,6 +11,13 @@
   position: sticky;
   top: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.22s ease;
+}
+
+/* Collapsed state */
+.nav-rail--collapsed {
+  width: var(--rail-width-collapsed);
 }
 
 /* Hidden on mobile — mobile drawer takes over */
@@ -22,9 +29,13 @@
 
 /* ---- Brand ---- */
 .nav-rail-brand {
-  padding: 1rem 0.75rem;
+  padding: 0.75rem 0.55rem 0.75rem 0.75rem;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  position: relative;
 }
 
 .nav-rail-brand-link {
@@ -36,6 +47,9 @@
   font-weight: 700;
   font-size: 0.95rem;
   border-radius: var(--radius-sm);
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
 .nav-rail-brand-mark {
@@ -43,6 +57,7 @@
   height: 1.5rem;
   color: var(--primary);
   flex-shrink: 0;
+  transition: opacity 0.15s ease;
 }
 
 .nav-rail-brand-name {
@@ -50,6 +65,80 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  opacity: 1;
+  max-width: 200px;
+  transition: opacity 0.15s ease, max-width 0.22s ease;
+}
+
+.nav-rail--collapsed .nav-rail-brand-name {
+  opacity: 0;
+  max-width: 0;
+}
+
+/* ---- Collapse toggle button ---- */
+.nav-rail-collapse-btn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ew-resize;
+  color: var(--muted);
+  line-height: 1;
+  transition: color 0.12s, border-color 0.12s, background 0.12s, opacity 0.15s ease;
+  font-family: inherit;
+  padding: 0;
+}
+
+.nav-rail-collapse-btn:hover {
+  color: var(--primary);
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.nav-rail-collapse-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+/*
+ * Collapsed state: button hides and becomes an absolute overlay covering
+ * the logo slot. On hover of the brand area it fades in while the logo fades out.
+ */
+.nav-rail--collapsed .nav-rail-collapse-btn {
+  position: absolute;
+  top: 50%;
+  left: 0.6rem;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+  border-radius: var(--radius-sm);
+  z-index: 1;
+}
+
+.nav-rail--collapsed .nav-rail-brand:hover .nav-rail-collapse-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nav-rail--collapsed .nav-rail-brand:hover .nav-rail-brand-mark {
+  opacity: 0;
+}
+
+/* The icon wrapper: handles the horizontal flip */
+.nav-rail-collapse-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.22s ease;
+}
+
+.nav-rail-collapse-icon--flipped {
+  transform: scaleX(-1);
 }
 
 /* ---- Nav items ---- */
@@ -69,20 +158,19 @@
 }
 
 .nav-rail-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   padding: 0.55rem 0.75rem;
   border-radius: var(--radius-sm);
   text-decoration: none;
   color: var(--muted);
   font-size: var(--font-size-base);
   font-weight: 500;
-  transition:
-    color 0.12s,
-    background 0.12s;
+  transition: color 0.12s, background 0.12s;
   margin: 0 0.4rem;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .nav-rail-item:hover {
@@ -96,7 +184,34 @@
   background: color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
-/* ---- Footer: avatar + theme toggle ---- */
+/* In collapsed mode: center the icon, hide the label */
+.nav-rail--collapsed .nav-rail-item {
+  justify-content: center;
+  padding: 0.7rem 0;
+  margin: 0 0.3rem;
+}
+
+.nav-rail-item-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.nav-rail-item-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 1;
+  max-width: 200px;
+  transition: opacity 0.15s ease, max-width 0.22s ease;
+}
+
+.nav-rail--collapsed .nav-rail-item-label {
+  opacity: 0;
+  max-width: 0;
+}
+
+/* ---- Footer: account trigger (no standalone theme toggle) ---- */
 .nav-rail-footer {
   padding: 0.75rem;
   border-top: 1px solid var(--border);
@@ -107,23 +222,40 @@
   gap: 0.35rem;
 }
 
+.nav-rail--collapsed .nav-rail-footer {
+  padding: 0.5rem 0.3rem;
+  align-items: center;
+}
+
 .nav-rail-avatar-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   background: none;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
-  padding: 0.3rem 0.25rem;
+  padding: 0.35rem 0.4rem;
   border-radius: var(--radius-sm);
   width: 100%;
   text-align: left;
   font-family: inherit;
-  transition: background 0.12s;
+  transition: background 0.12s, border-color 0.12s;
 }
 
 .nav-rail-avatar-btn:hover {
   background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border-color: var(--border);
+}
+
+.nav-rail-avatar-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.nav-rail--collapsed .nav-rail-avatar-btn {
+  justify-content: center;
+  width: auto;
+  padding: 0.35rem;
 }
 
 .nav-rail-user-name {
@@ -134,17 +266,115 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
+  opacity: 1;
+  max-width: 200px;
+  transition: opacity 0.15s ease, max-width 0.22s ease;
 }
 
-.nav-rail-avatar-menu {
+.nav-rail--collapsed .nav-rail-user-name {
+  opacity: 0;
+  max-width: 0;
+}
+
+/* ---- Account menu popover ---- */
+.nav-rail-account-menu {
   position: absolute;
-  bottom: calc(100% + 0.25rem);
+  bottom: calc(100% + 0.35rem);
   left: 0.5rem;
   right: 0.5rem;
+  min-width: 200px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   z-index: var(--z-menu);
   overflow: hidden;
   box-shadow: var(--shadow-md);
+}
+
+/* collapsed: anchor to left edge so menu doesn't clip off screen */
+.nav-rail--collapsed .nav-rail-account-menu {
+  left: calc(var(--rail-width-collapsed) + 0.35rem);
+  right: auto;
+  bottom: 0.5rem;
+  min-width: 220px;
+}
+
+/* Header block: avatar + name */
+.account-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.85rem;
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+}
+
+.account-menu-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+  min-width: 0;
+}
+
+.account-menu-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-menu-household {
+  font-size: var(--font-size-xs);
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Menu items */
+.account-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.5rem 0.85rem;
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  color: var(--text);
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s;
+}
+
+.account-menu-item:hover {
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+}
+
+.account-menu-item--danger {
+  color: var(--danger);
+}
+
+.account-menu-item--danger:hover {
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+}
+
+.account-menu-item-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.account-menu-item--danger .account-menu-item-icon {
+  color: var(--danger);
+}
+
+.account-menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.15rem 0;
 }

@@ -7,8 +7,11 @@ export default {
   planning: "Pianificazione",
   week: "Settimana",
   today: "Oggi",
+  agenda: "Agenda",
   members: "Membri",
   lists: "Liste",
   signOut: "Esci",
   settings: "Impostazioni",
+  switchToLight: "Passa alla modalità chiara",
+  switchToDark: "Passa alla modalità scura",
 } as const;

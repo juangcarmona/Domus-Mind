@@ -181,6 +181,11 @@ export function TodayBoard({
         </div>
       )}
 
+      {/* ---- Household section divider ---- */}
+      <div className="tp-section-divider" aria-hidden="true">
+        <span className="tp-section-label">{t("day.household")}</span>
+      </div>
+
       {/* ---- Household row (shared / unassigned items) ---- */}
       <div className="tp-cell tp-cell--household">
         {/* Left zone: logo → navigates to shared agenda */}

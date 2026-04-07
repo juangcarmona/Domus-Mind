@@ -1,84 +1,148 @@
 import { useTranslation } from "react-i18next";
 import type { WeeklyGridMember } from "../../today/types";
 import type { CalendarEntry } from "../../today/utils/calendarEntry";
-import { buildMemberEntries } from "../../today/utils/todayPanelHelpers";
-import { CalendarEntryItem } from "../../today/components/shared/CalendarEntryItem";
+import { buildMemberEntries, sortEntries } from "../../today/utils/todayPanelHelpers";
+import { toIsoDate } from "../../today/utils/dateUtils";
+import { MemberSelectedDaySummary } from "./MemberSelectedDaySummary";
+import { MemberSelectedDayUntimedSection } from "./MemberSelectedDayUntimedSection";
+import { MemberSelectedDayTimedSection } from "./MemberSelectedDayTimedSection";
 
 interface MemberWeekViewProps {
   member: WeeklyGridMember;
-  /** ISO YYYY-MM-DD — any day in the target week. */
+  /** ISO YYYY-MM-DD — the currently selected day (must be within the loaded week). */
   selectedDate: string;
   onItemClick: (type: "event" | "task" | "routine", id: string) => void;
-  /** Called when the user taps a day header to drill into the Day view. */
+  /** Called when the user taps a day in the strip — stays in week view. */
+  onDaySelect?: (date: string) => void;
+  /** Called when the user explicitly drills into a day (tapping the detail header). */
   onDayClick?: (date: string) => void;
+  /** Called when an empty timeline slot is clicked. */
+  onSlotClick?: (time: string) => void;
 }
 
 /**
  * Week-level member agenda view.
  *
- * Renders a compact day-per-row list. Each day header is clickable (onDayClick)
- * to navigate into the Day view for that day.
+ * Top row: compact 7-day strip. Tapping a day selects it.
+ * Bottom panel: the selected day's entries in a scannable list.
+ *
+ * This replaces the old flat "all 7 days stacked" layout with a more
+ * focused strip-then-detail model matching the household week view grammar.
  */
-export function MemberWeekView({ member, selectedDate, onItemClick, onDayClick }: MemberWeekViewProps) {
+export function MemberWeekView({
+  member,
+  selectedDate,
+  onItemClick,
+  onDaySelect,
+  onDayClick,
+  onSlotClick,
+}: MemberWeekViewProps) {
   const { t, i18n } = useTranslation("agenda");
+  const today = toIsoDate(new Date());
 
-  // The member cells already cover the full week from the loaded grid.
   const days = member.cells.map((cell) => cell.date.slice(0, 10));
 
   if (days.length === 0) {
     return (
-      <div className="member-week-view">
+      <div className="mweek-view">
         <span className="mday-empty">{t("week.empty")}</span>
       </div>
     );
   }
 
-  return (
-    <div className="member-week-view">
-      {days.map((day) => {
-        const entries: CalendarEntry[] = buildMemberEntries(member, day);
-        const label = new Date(day + "T00:00:00").toLocaleDateString(i18n.language, {
-          weekday: "short",
-          day: "numeric",
-          month: "short",
-        });
-        const isSelected = day === selectedDate;
-        const hasItems = entries.length > 0;
+  // Per-day entry counts for load dots in the strip.
+  const countByDay: Record<string, number> = {};
+  for (const day of days) {
+    countByDay[day] = buildMemberEntries(member, day).length;
+  }
 
-        return (
-          <div
-            key={day}
-            className={`mweek-day${isSelected ? " mweek-day--selected" : ""}${!hasItems ? " mweek-day--empty" : ""}`}
-          >
+  const activeDate = days.includes(selectedDate) ? selectedDate : days[0];
+  const allEntries: CalendarEntry[] = sortEntries(buildMemberEntries(member, activeDate));
+  const untimedEntries = allEntries.filter((e) => e.time === null);
+  const timedEntries   = allEntries.filter((e) => e.time !== null);
+
+  const activeDateLabel = new Date(activeDate + "T00:00:00").toLocaleDateString(i18n.language, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+
+  return (
+    <div className="mweek-view">
+      {/* ── Day strip ── */}
+      <div className="mweek-strip" role="group" aria-label={t("week.dayStrip", "Week days")}>
+        {days.map((day) => {
+          const d = new Date(day + "T00:00:00");
+          const isSelected = day === activeDate;
+          const isToday = day === today;
+          const count = countByDay[day] ?? 0;
+          const dayName = d.toLocaleDateString(i18n.language, { weekday: "narrow" });
+          const dayNum = d.getDate();
+          const loadTier = count === 0 ? null : count <= 2 ? "low" : count <= 5 ? "medium" : "high";
+
+          return (
             <button
-              className="mweek-day-header"
+              key={day}
               type="button"
-              onClick={() => onDayClick?.(day)}
-              aria-label={label}
-              aria-pressed={isSelected}
+              className={[
+                "mweek-strip-day",
+                isSelected ? "mweek-strip-day--selected" : "",
+                isToday ? "mweek-strip-day--today" : "",
+              ].filter(Boolean).join(" ")}
+              aria-current={isSelected ? "date" : undefined}
+              aria-label={d.toLocaleDateString(i18n.language, {
+                weekday: "long",
+                day: "numeric",
+                month: "short",
+              })}
+              onClick={() => onDaySelect?.(day)}
             >
-              <span className="mweek-day-label">{label}</span>
-              {hasItems && (
-                <span className="mweek-day-count">{entries.length}</span>
+              <span className="mweek-strip-name">{dayName}</span>
+              <span className="mweek-strip-num">{dayNum}</span>
+              {loadTier && (
+                <span className={`mweek-strip-load mweek-strip-load--${loadTier}`} aria-hidden="true" />
               )}
             </button>
-            {hasItems ? (
-              <div className="mday-entry-list mweek-entry-list">
-                {entries.map((entry) => (
-                  <CalendarEntryItem
-                    key={entry.id}
-                    entry={entry}
-                    onClick={() => onItemClick(entry.sourceType, entry.id)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <span className="mday-empty mweek-empty">{t("day.nothingScheduled")}</span>
-            )}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
+
+      {/* ── Selected-day detail ── */}
+      <div className="mweek-detail">
+        <div className="mweek-detail-header">
+          <button
+            type="button"
+            className="mweek-detail-date-btn btn btn-ghost btn-sm"
+            onClick={() => onDayClick?.(activeDate)}
+            title={t("day.drillIn", "Open day view")}
+          >
+            {activeDateLabel}
+          </button>
+        </div>
+
+        <div className="mday-sections">
+          <MemberSelectedDaySummary entries={allEntries} />
+
+          <MemberSelectedDayUntimedSection
+            entries={untimedEntries}
+            onItemClick={onItemClick}
+          />
+
+          <MemberSelectedDayTimedSection
+            timedEntries={timedEntries}
+            selectedDate={activeDate}
+            onItemClick={onItemClick}
+            onSlotClick={onSlotClick}
+            embedded
+          />
+
+          {allEntries.length === 0 && (
+            <span className="mday-empty">{t("day.nothingScheduled")}</span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
+
 
