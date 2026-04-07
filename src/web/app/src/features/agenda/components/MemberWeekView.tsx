@@ -2,8 +2,10 @@ import { useTranslation } from "react-i18next";
 import type { WeeklyGridMember } from "../../today/types";
 import type { CalendarEntry } from "../../today/utils/calendarEntry";
 import { buildMemberEntries, sortEntries } from "../../today/utils/todayPanelHelpers";
-import { CalendarEntryItem } from "../../today/components/shared/CalendarEntryItem";
 import { toIsoDate } from "../../today/utils/dateUtils";
+import { MemberSelectedDaySummary } from "./MemberSelectedDaySummary";
+import { MemberSelectedDayUntimedSection } from "./MemberSelectedDayUntimedSection";
+import { MemberSelectedDayTimedSection } from "./MemberSelectedDayTimedSection";
 
 interface MemberWeekViewProps {
   member: WeeklyGridMember;
@@ -14,6 +16,8 @@ interface MemberWeekViewProps {
   onDaySelect?: (date: string) => void;
   /** Called when the user explicitly drills into a day (tapping the detail header). */
   onDayClick?: (date: string) => void;
+  /** Called when an empty timeline slot is clicked. */
+  onSlotClick?: (time: string) => void;
 }
 
 /**
@@ -31,6 +35,7 @@ export function MemberWeekView({
   onItemClick,
   onDaySelect,
   onDayClick,
+  onSlotClick,
 }: MemberWeekViewProps) {
   const { t, i18n } = useTranslation("agenda");
   const today = toIsoDate(new Date());
@@ -52,7 +57,9 @@ export function MemberWeekView({
   }
 
   const activeDate = days.includes(selectedDate) ? selectedDate : days[0];
-  const selectedEntries: CalendarEntry[] = sortEntries(buildMemberEntries(member, activeDate));
+  const allEntries: CalendarEntry[] = sortEntries(buildMemberEntries(member, activeDate));
+  const untimedEntries = allEntries.filter((e) => e.time === null);
+  const timedEntries   = allEntries.filter((e) => e.time !== null);
 
   const activeDateLabel = new Date(activeDate + "T00:00:00").toLocaleDateString(i18n.language, {
     weekday: "short",
@@ -113,19 +120,26 @@ export function MemberWeekView({
           </button>
         </div>
 
-        {selectedEntries.length === 0 ? (
-          <span className="mday-empty">{t("day.nothingScheduled")}</span>
-        ) : (
-          <div className="mday-entry-list">
-            {selectedEntries.map((entry) => (
-              <CalendarEntryItem
-                key={entry.id}
-                entry={entry}
-                onClick={() => onItemClick(entry.sourceType, entry.id)}
-              />
-            ))}
-          </div>
-        )}
+        <div className="mday-sections">
+          <MemberSelectedDaySummary entries={allEntries} />
+
+          <MemberSelectedDayUntimedSection
+            entries={untimedEntries}
+            onItemClick={onItemClick}
+          />
+
+          <MemberSelectedDayTimedSection
+            timedEntries={timedEntries}
+            selectedDate={activeDate}
+            onItemClick={onItemClick}
+            onSlotClick={onSlotClick}
+            embedded
+          />
+
+          {allEntries.length === 0 && (
+            <span className="mday-empty">{t("day.nothingScheduled")}</span>
+          )}
+        </div>
       </div>
     </div>
   );

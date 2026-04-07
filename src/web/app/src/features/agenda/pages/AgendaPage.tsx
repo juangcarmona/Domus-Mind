@@ -115,11 +115,13 @@ export function AgendaPage() {
   const initialDate = searchParams.get("date") ?? todayIso;
   const [selectedDate, setSelectedDate] = useState<string>(initialDate);
 
-  // ---- View mode (from URL param, default "day") ----
+  // ---- View mode (from URL param) ----
+  // Member scope defaults to "week" (week-first model).
+  // Household scope keeps "day" as the legacy default.
   const modeParam = searchParams.get("mode");
   const view: AgendaView = VALID_MODES.includes(modeParam as AgendaView)
     ? (modeParam as AgendaView)
-    : "day";
+    : isHousehold ? "day" : "week";
 
   // ---- Grid state ----
   const [grid, setGrid] = useState<WeeklyGridResponse | null>(null);
@@ -214,10 +216,9 @@ export function AgendaPage() {
   }
 
   function handleScopeChange(newScope: "household" | string) {
-    // When switching to a member on mobile, default to week — more useful than the hourly timeline.
-    const targetView = (!isHousehold || newScope !== "household") && newScope !== "household" && isMobile
-      ? "week"
-      : view;
+    // When switching to a member scope, default to week — week-first model.
+    // When switching back to household, keep the current view.
+    const targetView = newScope !== "household" ? "week" : view;
     const params = new URLSearchParams();
     if (targetView !== "day") params.set("mode", targetView);
     params.set("date", selectedDate);
@@ -437,6 +438,7 @@ export function AgendaPage() {
                   onItemClick={handleItemClick}
                   onDaySelect={setSelectedDate}
                   onDayClick={handleDayDrill}
+                  onSlotClick={(time) => handleAddEntry(time)}
                 />
               )}
               {!isHousehold && view === "month" && (
