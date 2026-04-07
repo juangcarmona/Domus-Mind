@@ -149,6 +149,24 @@ They answer:
 
 They should make ownership visible without becoming administrative.
 
+## Settings
+
+Settings is the low-frequency configuration surface.
+
+It answers:
+
+> How do we manage people details, household preferences, and personal integrations without polluting operational surfaces?
+
+It should feel:
+
+- compact
+- calm
+- explicit
+- secondary to operational surfaces
+
+Settings is where member-scoped external calendar connections are managed in phase 1.
+Agenda consumes the resulting read-only projections, but does not own connection setup.
+
 ---
 
 # Agenda and the Household Timeline

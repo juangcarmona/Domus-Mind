@@ -4,7 +4,7 @@
 
 Provide a unified chronological view of household activity.
 
-The timeline aggregates **events** and **tasks** for a family. 
+The timeline aggregates **events** and **tasks** for a family.
 
 ## Context
 
@@ -38,6 +38,9 @@ The timeline read model may include:
 * upcoming tasks
 * recently completed tasks
 * routine-generated tasks
+
+The phase 1 timeline does **not** include imported external calendar entries.
+Those entries are projected only into the member-scoped Agenda read model.
 
 ## Query Behavior
 
@@ -85,3 +88,5 @@ This query represents the primary operational overview of household activity in 
 Coordination **cues** are reserved for read models such as the weekly grid.
 
 They are projection-only artifacts and are **not part of the timeline contract yet**.
+
+Imported Outlook calendar entries are intentionally excluded so the household-native timeline does not blur external personal commitments with native household planning state.

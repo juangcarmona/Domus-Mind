@@ -45,6 +45,7 @@ V1 supports the following capability groups:
 - family structure management
 - responsibility ownership
 - event scheduling
+- external calendar ingestion for member-scoped read-only agenda projection
 - task execution
 - routine management
 - persistent shared checklist management
@@ -117,6 +118,11 @@ Shared Lists remains behaviorally independent from Tasks and Calendar.
 - add-reminder
 - remove-reminder
 - view-family-timeline
+- connect-outlook-account
+- configure-external-calendar-connection
+- sync-external-calendar-connection
+- refresh-external-calendar-feeds
+- disconnect-external-calendar-connection
 
 ### Tasks
 - create-task
@@ -167,19 +173,52 @@ The following are explicitly outside V1:
 - pets as separate operational context
 - finance
 - AI automation
-- external integrations
+- external integrations beyond phase 1 Outlook calendar ingestion
+
+---
+
+## External Calendar Ingestion - Phase 1
+
+DomusMind V1 includes a bounded external calendar ingestion capability under the Calendar module.
+
+Phase 1 shape:
+
+- provider: Microsoft Outlook only
+- access model: Microsoft Graph delegated auth
+- scopes: `Calendars.Read` and `offline_access`
+- connection model: one member may own zero to many Outlook connections
+- feed model: each connection may select zero to many provider calendars
+- default horizon: now - 1 day to now + 90 days
+- allowed forward horizons: 30, 90, 180, 365 days
+- ingestion pattern: bounded `calendarView` load plus incremental `delta` refresh
+- sync modes: manual sync and hourly scheduled refresh
+- storage model: external connection, feed, and entry records separate from native `Event` aggregates
+- surface rule: imported entries project into Agenda member scope only in phase 1
+- behavior rule: imported entries remain read-only and keep an `Open in Outlook` action
+
+Phase 1 does not include:
+
+- bidirectional sync
+- Outlook write-back
+- attendee mutation
+- reminder write-back into DomusMind reminder behavior
+- unbounded history import
+- conversion of imported entries into native household plans
+- webhook subscriptions
 
 ---
 
 ## Implementation Rule
 
-Every feature spec must map to:
+Every aggregate-changing feature spec must map to:
 
 - one bounded context
 - one aggregate
 - one vertical slice
 
 No feature may bypass aggregate boundaries.
+
+Background workflows may orchestrate repeated execution of aggregate-scoped capabilities, but they must not collapse multiple aggregate mutations into one implicit command.
 
 ---
 
@@ -191,9 +230,12 @@ DomusMind V1 is complete when:
 - members can be managed
 - responsibilities can be assigned
 - events can be scheduled
+- Outlook accounts can be connected for read-only member-scoped calendar ingestion
+- imported external calendar entries can be refreshed manually and on schedule
 - tasks can be executed
 - routines can be maintained
 - shared lists can be created and reused
 - list items can be added, updated, reordered, and toggled
 - timeline can be queried
+- Member Agenda can show imported external calendar entries without converting them into native plans
 - shared lists do not introduce confusion with tasks, routines, or events
