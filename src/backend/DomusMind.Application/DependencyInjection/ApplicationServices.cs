@@ -8,15 +8,23 @@ using DomusMind.Application.Features.Auth.RegisterUser;
 using DomusMind.Application.Features.Calendar.AddEventParticipant;
 using DomusMind.Application.Features.Calendar.AddReminder;
 using DomusMind.Application.Features.Calendar.CancelEvent;
+using DomusMind.Application.Features.Calendar.ConfigureExternalCalendarConnection;
+using DomusMind.Application.Features.Calendar.ConnectOutlookAccount;
 using DomusMind.Application.Features.Calendar.DetectCalendarConflicts;
+using DomusMind.Application.Features.Calendar.DisconnectExternalCalendarConnection;
+using DomusMind.Application.Features.Calendar.GetExternalCalendarConnectionDetail;
 using DomusMind.Application.Features.Calendar.GetFamilyPlans;
 using DomusMind.Application.Features.Calendar.GetFamilyTimeline;
+using DomusMind.Application.Features.Calendar.GetMemberAgenda;
+using DomusMind.Application.Features.Calendar.GetMemberExternalCalendarConnections;
 using DomusMind.Application.Features.Calendar.ProposeAlternativeTimes;
 using DomusMind.Application.Features.Calendar.RemoveEventParticipant;
 using DomusMind.Application.Features.Calendar.RemoveReminder;
 using DomusMind.Application.Features.Calendar.RescheduleEvent;
 using DomusMind.Application.Features.Calendar.ScheduleEvent;
 using DomusMind.Application.Features.Calendar.SuggestEventParticipants;
+using DomusMind.Application.Features.Calendar.SyncExternalCalendarConnection;
+using DomusMind.Application.Features.Calendar.SyncMemberExternalCalendarConnections;
 using DomusMind.Application.Features.Family.AddMember;
 using DomusMind.Application.Features.Family.CompleteOnboarding;
 using DomusMind.Application.Features.Family.CreateFamily;
@@ -139,6 +147,16 @@ public static class ApplicationServices
         services.AddScoped<ICommandHandler<AddReminderCommand, AddReminderResponse>, AddReminderCommandHandler>();
         services.AddScoped<ICommandHandler<RemoveReminderCommand, RemoveReminderResponse>, RemoveReminderCommandHandler>();
         services.AddScoped<IQueryHandler<GetFamilyTimelineQuery, FamilyTimelineResponse>, GetFamilyTimelineQueryHandler>();
+
+        // External calendar connection slices
+        services.AddScoped<ICommandHandler<ConnectOutlookAccountCommand, ExternalCalendarConnectionDetailResponse>, ConnectOutlookAccountCommandHandler>();
+        services.AddScoped<ICommandHandler<ConfigureExternalCalendarConnectionCommand, ConfigureExternalCalendarConnectionResponse>, ConfigureExternalCalendarConnectionCommandHandler>();
+        services.AddScoped<ICommandHandler<SyncExternalCalendarConnectionCommand, SyncExternalCalendarConnectionResponse>, SyncExternalCalendarConnectionCommandHandler>();
+        services.AddScoped<ICommandHandler<SyncMemberExternalCalendarConnectionsCommand, SyncMemberExternalCalendarConnectionsResponse>, SyncMemberExternalCalendarConnectionsCommandHandler>();
+        services.AddScoped<ICommandHandler<DisconnectExternalCalendarConnectionCommand, bool>, DisconnectExternalCalendarConnectionCommandHandler>();
+        services.AddScoped<IQueryHandler<GetMemberExternalCalendarConnectionsQuery, IReadOnlyCollection<ExternalCalendarConnectionSummaryResponse>>, GetMemberExternalCalendarConnectionsQueryHandler>();
+        services.AddScoped<IQueryHandler<GetExternalCalendarConnectionDetailQuery, ExternalCalendarConnectionDetailResponse>, GetExternalCalendarConnectionDetailQueryHandler>();
+        services.AddScoped<IQueryHandler<GetMemberAgendaQuery, MemberAgendaResponse>, GetMemberAgendaQueryHandler>();
 
         // Tasks slices
         services.AddScoped<ICommandHandler<CreateTaskCommand, CreateTaskResponse>, CreateTaskCommandHandler>();

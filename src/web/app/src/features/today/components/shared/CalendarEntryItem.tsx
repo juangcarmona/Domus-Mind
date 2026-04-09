@@ -56,6 +56,7 @@ export function CalendarEntryItem({ entry, onClick }: CalendarEntryItemProps) {
 
   const tooltipParts = [
     `${glyph} ${entry.title}`,
+    entry.isReadOnly ? `Read-only${entry.sourceLabel ? ` (${entry.sourceLabel})` : ""}` : null,
     detailLabel,
   ].filter(Boolean);
 
@@ -69,6 +70,7 @@ export function CalendarEntryItem({ entry, onClick }: CalendarEntryItemProps) {
   const classes = [
     "wg-item",
     typeClass,
+    entry.isReadOnly ? "wg-item--readonly" : "",
     entry.isCompleted ? "wg-item--completed" : "",
   ]
     .filter(Boolean)
@@ -96,6 +98,9 @@ export function CalendarEntryItem({ entry, onClick }: CalendarEntryItemProps) {
         {glyph}
       </span>
       <span className="wg-item-title">{entry.title}</span>
+      {entry.isReadOnly && (
+        <span className="wg-item-readonly-cue">{entry.sourceLabel ?? "External"}</span>
+      )}
     </div>
   );
 }

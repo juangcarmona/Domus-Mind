@@ -1,6 +1,7 @@
 using DomusMind.Application.Features.Family;
 using DomusMind.Application.Features.Family.GetWeeklyGrid;
 using DomusMind.Domain.Calendar;
+using DomusMind.Domain.Calendar.ExternalConnections;
 using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Family.ValueObjects;
@@ -204,6 +205,215 @@ public sealed class GetWeeklyGridQueryHandlerTests
 
         var wednesdayCell = result.Members.First().Cells.Single(c => c.Date == eventDate.ToString("yyyy-MM-dd"));
         wednesdayCell.Events.Should().ContainSingle(e => e.Title == "School Run");
+    }
+
+    [Fact]
+    public async Task Handle_ImportedExternalEvent_AppearsInCorrectMemberCellAsReadOnly()
+    {
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Bob")));
+
+        var now = DateTime.UtcNow;
+        var connectionId = ExternalCalendarConnectionId.New();
+        var connection = ExternalCalendarConnection.Connect(
+            connectionId,
+            familyId,
+            memberId,
+            ExternalCalendarProvider.Microsoft,
+            "provider-account",
+            "bob@outlook.com",
+            "Bob Outlook",
+            "common",
+            now);
+
+        var feed = ExternalCalendarFeed.Create(
+            connectionId,
+            "cal-1",
+            "Calendar",
+            true,
+            true,
+            now);
+
+        db.Set<ExternalCalendarConnection>().Add(connection);
+        db.Set<ExternalCalendarFeed>().Add(feed);
+
+        var weekStart = new DateOnly(2026, 3, 16);
+        var externalDate = weekStart.AddDays(2);
+        db.Set<ExternalCalendarEntry>().Add(new ExternalCalendarEntry
+        {
+            Id = Guid.NewGuid(),
+            ConnectionId = connectionId.Value,
+            FeedId = feed.Id,
+            Provider = "microsoft",
+            ExternalEventId = "evt-1",
+            Title = "Math Class",
+            StartsAtUtc = externalDate.ToDateTime(new TimeOnly(14, 0), DateTimeKind.Utc),
+            EndsAtUtc = externalDate.ToDateTime(new TimeOnly(15, 0), DateTimeKind.Utc),
+            IsAllDay = false,
+            Status = "confirmed",
+            OpenInProviderUrl = "https://outlook.office.com/calendar/item/1",
+            IsDeleted = false,
+            LastSeenAtUtc = now,
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now,
+        });
+
+        await db.SaveChangesAsync();
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var wednesdayCell = result.Members.First().Cells.Single(c => c.Date == externalDate.ToString("yyyy-MM-dd"));
+        var external = wednesdayCell.Events.Should().ContainSingle(e => e.Title == "Math Class").Which;
+
+        external.IsReadOnly.Should().BeTrue();
+        external.Source.Should().Be("external_calendar");
+        external.ProviderLabel.Should().Be("Outlook");
+        external.OpenInProviderUrl.Should().Be("https://outlook.office.com/calendar/item/1");
+    }
+
+    /// <summary>
+    /// Regression test for the "wrong imported time" bug.
+    ///
+    /// StartsAtUtc is stored in UTC. OriginalTimezone carries the event's authored
+    /// zone (e.g. "Eastern Standard Time"). GetWeeklyGridQueryHandler.FormatLocalTime
+    /// must convert the UTC back to that zone for display — it must NOT return raw UTC
+    /// hours when the household is not in UTC.
+    ///
+    /// Before the fix: OriginalTimezone was always "UTC" (set from Graph's response
+    /// timeZone), so FormatLocalTime returned UTC HH:mm for every event.
+    /// After the fix: OriginalTimezone stores the authored zone from
+    /// originalStartTimeZone, and FormatLocalTime converts correctly.
+    /// </summary>
+    [Fact]
+    public async Task Handle_ImportedExternalEvent_WithNonUtcOriginalTimezone_FormatsTimeInLocalZone()
+    {
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Grace")));
+
+        var now = DateTime.UtcNow;
+        var connectionId = ExternalCalendarConnectionId.New();
+        var connection = ExternalCalendarConnection.Connect(
+            connectionId, familyId, memberId,
+            ExternalCalendarProvider.Microsoft,
+            "provider-account", "grace@outlook.com", "Grace Outlook", "common", now);
+        var feed = ExternalCalendarFeed.Create(connectionId, "cal-et", "Eastern Calendar", true, true, now);
+
+        db.Set<ExternalCalendarConnection>().Add(connection);
+        db.Set<ExternalCalendarFeed>().Add(feed);
+
+        var weekStart = new DateOnly(2026, 4, 6);
+        var eventDay = weekStart.AddDays(2); // Wednesday 8 April
+
+        // The event was at 09:30 Eastern Daylight Time (UTC-4).
+        // Stored correctly as UTC: 13:30 UTC.
+        // OriginalTimezone = "Eastern Standard Time" (what the Graph client now stores).
+        db.Set<ExternalCalendarEntry>().Add(new ExternalCalendarEntry
+        {
+            Id = Guid.NewGuid(),
+            ConnectionId = connectionId.Value,
+            FeedId = feed.Id,
+            Provider = "microsoft",
+            ExternalEventId = "evt-tz-local",
+            Title = "Morning Stand-up",
+            StartsAtUtc = eventDay.ToDateTime(new TimeOnly(13, 30), DateTimeKind.Utc),
+            EndsAtUtc  = eventDay.ToDateTime(new TimeOnly(14,  0), DateTimeKind.Utc),
+            OriginalTimezone = "Eastern Standard Time",
+            IsAllDay = false,
+            Status = "confirmed",
+            IsDeleted = false,
+            LastSeenAtUtc = now,
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now,
+        });
+
+        await db.SaveChangesAsync();
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var cell = result.Members.First().Cells.Single(c => c.Date == eventDay.ToString("yyyy-MM-dd"));
+        var item = cell.Events.Should().ContainSingle(e => e.Title == "Morning Stand-up").Which;
+
+        // FormatLocalTime must convert 13:30 UTC → 09:30 ET (UTC-4 during DST in April).
+        // Before the fix this returned "13:30" (raw UTC) because OriginalTimezone was "UTC".
+        item.Time.Should().Be("09:30",
+            "FormatLocalTime must convert StartsAtUtc to Eastern local time, not return raw UTC");
+        item.EndTime.Should().Be("10:00",
+            "FormatLocalTime must also convert EndsAtUtc to Eastern local time");
+    }
+
+    /// <summary>
+    /// Day-bucketing test: an event at 23:30 UTC that falls on the NEXT local day
+    /// in a UTC+2 household must appear in the next day's cell, not the UTC day.
+    /// </summary>
+    [Fact]
+    public async Task Handle_ImportedExternalEvent_BucketedIntoLocalDay_NotUtcDay()
+    {
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Hana")));
+
+        var now = DateTime.UtcNow;
+        var connectionId = ExternalCalendarConnectionId.New();
+        var connection = ExternalCalendarConnection.Connect(
+            connectionId, familyId, memberId,
+            ExternalCalendarProvider.Microsoft,
+            "provider-account", "hana@outlook.com", "Hana Outlook", "common", now);
+        var feed = ExternalCalendarFeed.Create(connectionId, "cal-il", "Israel Calendar", true, true, now);
+        db.Set<ExternalCalendarConnection>().Add(connection);
+        db.Set<ExternalCalendarFeed>().Add(feed);
+
+        var weekStart = new DateOnly(2026, 4, 6);
+        // UTC day is Tuesday 7 April at 23:30 UTC.
+        // In "Israel Standard Time" (UTC+3 in April after DST) = Wednesday 8 April at 02:30.
+        // The event must appear in Wednesday's cell, not Tuesday's.
+        var utcMoment = new DateTime(2026, 4, 7, 23, 30, 0, DateTimeKind.Utc);
+
+        db.Set<ExternalCalendarEntry>().Add(new ExternalCalendarEntry
+        {
+            Id = Guid.NewGuid(),
+            ConnectionId = connectionId.Value,
+            FeedId = feed.Id,
+            Provider = "microsoft",
+            ExternalEventId = "evt-local-day",
+            Title = "Late Night Call",
+            StartsAtUtc = utcMoment,
+            EndsAtUtc  = utcMoment.AddHours(1),
+            OriginalTimezone = "Israel Standard Time",
+            IsAllDay = false,
+            Status = "confirmed",
+            IsDeleted = false,
+            LastSeenAtUtc = now,
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now,
+        });
+
+        await db.SaveChangesAsync();
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var cells = result.Members.First().Cells;
+
+        // Must appear in Wednesday (local day in Israel Standard Time)
+        var wed = cells.Single(c => c.Date == "2026-04-08");
+        wed.Events.Should().ContainSingle(e => e.Title == "Late Night Call");
+
+        // Must NOT appear in Tuesday (the UTC day)
+        var tue = cells.Single(c => c.Date == "2026-04-07");
+        tue.Events.Should().NotContain(e => e.Title == "Late Night Call");
     }
 
     [Fact]

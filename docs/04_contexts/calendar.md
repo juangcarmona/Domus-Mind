@@ -7,6 +7,9 @@ The Calendar context defines the **temporal structure of family life**.
 It is responsible for representing:
 
 * events
+* external calendar connections
+* external calendar feeds
+* external calendar entries used for read-only projection
 * schedules
 * participants
 * reminders
@@ -30,11 +33,15 @@ The Calendar context is responsible for:
 * updating event schedules
 * managing event participation
 * generating reminders
+* ingesting selected external calendar data for member-scoped projections
 * maintaining the unified family timeline
 
 It is the source of truth for **time-based planning** in the household.
 
 User interfaces may present events as **Plans**, but the domain model remains centered on the **Event aggregate**.
+
+Imported external calendar data must remain **read-only integration state**.
+It must not be treated as native household planning state.
 
 ---
 
@@ -64,6 +71,30 @@ Examples of events:
 * trip
 * maintenance appointment
 * family gathering
+
+## ExternalCalendarConnection
+
+The `ExternalCalendarConnection` aggregate is the member-scoped aggregate root for third-party calendar ingestion.
+
+It owns:
+
+* connection identity
+* member association
+* provider identity
+* delegated auth metadata
+* selected feed configuration
+* sync settings
+* sync status
+
+The aggregate does not own native household scheduling semantics.
+
+It exists to manage read-only ingestion from external providers while preserving the boundary between imported entries and native `Event` aggregates.
+
+Phase 1 provider support:
+
+* Microsoft Outlook via Microsoft Graph delegated access
+
+Future providers may be added later without changing the native `Event` model.
 
 ---
 
@@ -127,6 +158,44 @@ Reminder scheduling belongs to the Event aggregate.
 
 Notification delivery belongs to infrastructure.
 
+## ExternalCalendarFeed
+
+Represents one selected provider calendar under an `ExternalCalendarConnection`.
+
+An external calendar feed tracks:
+
+* provider calendar identity
+* calendar display name
+* whether the calendar is selected
+* sync horizon configuration
+* last successful sync time
+* delta cursor for the active view
+
+Delta cursor validity is tied to the active sync horizon.
+If the horizon changes, the stored cursor must be discarded and the feed must perform a fresh bounded sync.
+
+## ExternalCalendarEntry
+
+Represents a read-only imported occurrence stored for projection into Agenda read models.
+
+An external calendar entry may include:
+
+* provider event identity
+* iCal UID
+* series master reference
+* title
+* start and end time
+* all-day flag
+* original timezone
+* location
+* participant summary
+* provider status
+* provider payload version or hash
+* provider last-modified timestamp
+* deletion tombstone state
+
+An external calendar entry is not an `Event` aggregate and must not emit native Calendar domain events such as `EventScheduled`.
+
 ---
 
 # Value Objects
@@ -134,11 +203,15 @@ Notification delivery belongs to infrastructure.
 Suggested value objects:
 
 * `EventId`
+* `ExternalCalendarConnectionId`
 * `FamilyId`
 * `EventTitle`
 * `EventDescription`
 * `EventType`
 * `EventSchedule`
+* `ExternalCalendarProvider`
+* `SyncHorizon`
+* `ExternalCalendarCursor`
 * `ReminderOffset`
 * `ParticipantId`
 * `ParticipantType`
@@ -201,6 +274,24 @@ The Event aggregate must enforce the following invariants.
 * participant identity must be validated against Family
 * responsibility routing must remain external to the calendar
 
+## External Calendar Connection Integrity
+
+* one member may own zero to many external calendar connections
+* each connection points to exactly one provider account
+* duplicate active connections for the same member and provider account are not allowed
+* selected feed identities must be unique within a connection
+* sync horizon options are bounded to supported values
+* changing the sync horizon invalidates existing delta state for affected feeds
+* only selected feeds may ingest external entries
+
+## External Calendar Entry Boundary
+
+* imported external entries are read-only inside DomusMind
+* imported external entries must not be converted automatically into native `Event` aggregates
+* imported external entries may be projected into Agenda member views when relevant
+* imported external entries do not appear in household-native event write flows
+* deletion from the provider must be reflected through tombstoning or removal in local integration storage
+
 ---
 
 # Commands
@@ -215,6 +306,10 @@ Core commands owned by this context:
 * `AddReminder`
 * `RemoveReminder`
 * `RenameEvent`
+* `ConnectOutlookAccount`
+* `ConfigureExternalCalendarConnection`
+* `SyncExternalCalendarConnection`
+* `DisconnectExternalCalendarConnection`
 
 Suggested future commands:
 
@@ -234,6 +329,8 @@ Core queries supported by this context:
 * `GetEventsByParticipant`
 * `GetEventsInTimeRange`
 * `GetUpcomingEvents`
+* `GetMemberExternalCalendarConnections`
+* `GetMemberAgenda`
 
 Suggested future queries:
 
@@ -248,6 +345,72 @@ Suggested future queries:
 The Calendar context emits:
 
 * `EventScheduled`
+
+External calendar ingestion may emit integration-specific events for internal orchestration, such as connection configured or connection synchronized, but these must remain distinct from native household event lifecycle events.
+
+---
+
+# External Calendar Integration Boundary
+
+Phase 1 external calendar ingestion follows these rules.
+
+## Provider and Access Model
+
+Phase 1 supports:
+
+* Microsoft Outlook only
+* Microsoft Graph delegated access
+* scopes: `Calendars.Read` and `offline_access`
+
+The delegated account is the provider account being read.
+
+## Projection Rule
+
+Imported external calendar entries:
+
+* remain stored as external integration records
+* are projected into Agenda member scope only in phase 1
+* do not become native household Plans
+* are read-only in DomusMind
+
+## Horizon Rule
+
+The recommended default sync horizon is:
+
+* from now - 1 day
+* to now + 90 days
+
+Supported phase 1 forward horizon options:
+
+* 30 days
+* 90 days
+* 180 days
+* 365 days
+
+The active sync horizon is part of sync identity for delta tracking.
+
+## Sync Rule
+
+Phase 1 supports both:
+
+* manual sync on one connection
+* scheduled refresh of stale connections
+
+Scheduled refresh runs hourly by default, with support for:
+
+* configurable interval in user settings
+* login catch-up when stale
+* Agenda-open catch-up when stale
+
+The periodic refresher must run in a dedicated background worker.
+
+## Recovery Rule
+
+If delta state becomes invalid, corrupted, or misaligned with the current horizon:
+
+* discard the feed cursor
+* clear local entries for the affected feed and window
+* run a fresh bounded load
 * `EventRescheduled`
 * `EventCancelled`
 * `EventCompleted`

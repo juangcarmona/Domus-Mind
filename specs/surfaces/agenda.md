@@ -136,6 +136,7 @@ Contains:
 - that person's tasks, plans, and routines
 - household plans the person participates in
 - household routines the person is responsible for
+- imported external calendar entries owned by that member's selected calendar connections when relevant to the active date window
 
 Member scope is individual-clarity-oriented:
 
@@ -260,8 +261,19 @@ Month is a navigation and awareness surface, not a primary editing surface.
 - plans (Events in domain language): timed and untimed
 - tasks: due on the selected date, overdue, or assigned to a member
 - routines: projected occurrences for the selected date or range
+- imported external calendar entries in Member scope only when they fall inside the selected date window and an active sync horizon
 - completed items: present but de-emphasized
 - unavailability blocks: where relevant and available
+
+### External calendar entry rules
+
+- phase 1 external entries appear in Member scope only
+- external entries never become editable household plans in Agenda
+- external entries must show a subtle source cue such as `Outlook`
+- selecting an external entry opens read-only detail
+- read-only detail may offer `Open in Outlook`
+- external entries should be omitted when they fall outside the selected date or mode window, even if stored locally
+- stale connections may trigger a lightweight catch-up sync when Agenda opens
 
 ### What Agenda does not own
 
@@ -306,7 +318,8 @@ Shows:
 - assignment (for tasks)
 - status (for tasks)
 - notes where available
-- actions: edit, complete, delete
+- actions for native items: edit, complete, delete as appropriate
+- actions for imported external entries: read-only metadata and `Open in Outlook`
 
 ### Editing
 

@@ -72,6 +72,335 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                     b.ToTable("calendar_events", (string)null);
                 });
 
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarConnection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("AccessTokenExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("access_token_expires_at_utc");
+
+                    b.Property<string>("AccountDisplayLabel")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("account_display_label");
+
+                    b.Property<string>("AccountEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("account_email");
+
+                    b.Property<string>("CachedAccessToken")
+                        .HasColumnType("text")
+                        .HasColumnName("cached_access_token");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("EncryptedRefreshToken")
+                        .HasColumnType("text")
+                        .HasColumnName("encrypted_refresh_token");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("family_id");
+
+                    b.Property<string>("GrantedScopes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("granted_scopes");
+
+                    b.Property<string>("LastErrorCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("last_error_code");
+
+                    b.Property<string>("LastErrorMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("last_error_message");
+
+                    b.Property<DateTime?>("LastSuccessfulSyncUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_successful_sync_utc");
+
+                    b.Property<DateTime?>("LastSyncAttemptUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_sync_attempt_utc");
+
+                    b.Property<DateTime?>("LastSyncFailureUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_sync_failure_utc");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("member_id");
+
+                    b.Property<DateTime?>("NextScheduledSyncUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_scheduled_sync_utc");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("ProviderAccountId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("provider_account_id");
+
+                    b.Property<bool>("ScheduledRefreshEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("scheduled_refresh_enabled");
+
+                    b.Property<int>("ScheduledRefreshIntervalMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("scheduled_refresh_interval_minutes");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("SyncLeaseExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sync_lease_expires_at_utc");
+
+                    b.Property<Guid?>("SyncLeaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sync_lease_id");
+
+                    b.Property<string>("TenantId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NextScheduledSyncUtc")
+                        .HasDatabaseName("ix_external_calendar_connections_next_sync");
+
+                    b.HasIndex("SyncLeaseExpiresAtUtc")
+                        .HasDatabaseName("ix_external_calendar_connections_lease_expires");
+
+                    b.HasIndex("MemberId", "Provider")
+                        .HasDatabaseName("ix_external_calendar_connections_member_provider");
+
+                    b.ToTable("external_calendar_connections", (string)null);
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ConnectionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("connection_id");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<DateTime?>("EndsAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ends_at_utc");
+
+                    b.Property<string>("ExternalEventId")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("external_event_id");
+
+                    b.Property<Guid>("FeedId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("feed_id");
+
+                    b.Property<string>("ICalUId")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("ical_uid");
+
+                    b.Property<bool>("IsAllDay")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_all_day");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime>("LastSeenAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_seen_at_utc");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("location");
+
+                    b.Property<string>("OpenInProviderUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("open_in_provider_url");
+
+                    b.Property<string>("OriginalTimezone")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("original_timezone");
+
+                    b.Property<string>("ParticipantSummaryJson")
+                        .HasColumnType("text")
+                        .HasColumnName("participant_summary_json");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("provider");
+
+                    b.Property<DateTime?>("ProviderModifiedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("provider_modified_at_utc");
+
+                    b.Property<string>("RawPayloadHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("raw_payload_hash");
+
+                    b.Property<string>("SeriesMasterId")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("series_master_id");
+
+                    b.Property<DateTime>("StartsAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("starts_at_utc");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConnectionId", "StartsAtUtc")
+                        .HasDatabaseName("ix_external_calendar_entries_connection_starts");
+
+                    b.HasIndex("FeedId", "ExternalEventId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_external_calendar_entries_feed_event_unique");
+
+                    b.HasIndex("FeedId", "ICalUId")
+                        .HasDatabaseName("ix_external_calendar_entries_feed_ical_uid");
+
+                    b.HasIndex("FeedId", "StartsAtUtc", "EndsAtUtc")
+                        .HasDatabaseName("ix_external_calendar_entries_feed_window");
+
+                    b.ToTable("external_calendar_entries", (string)null);
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarFeed", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CalendarName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("calendar_name");
+
+                    b.Property<string>("ColorHex")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)")
+                        .HasColumnName("color_hex");
+
+                    b.Property<Guid>("ConnectionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("connection_id");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_default");
+
+                    b.Property<bool>("IsSelected")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_selected");
+
+                    b.Property<string>("LastDeltaToken")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("last_delta_token");
+
+                    b.Property<DateTime?>("LastSuccessfulSyncUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_successful_sync_utc");
+
+                    b.Property<string>("ProviderCalendarId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("provider_calendar_id");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<DateTime?>("WindowEndUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("window_end_utc");
+
+                    b.Property<DateTime?>("WindowStartUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("window_start_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConnectionId", "IsSelected")
+                        .HasDatabaseName("ix_external_calendar_feeds_connection_selected");
+
+                    b.HasIndex("ConnectionId", "ProviderCalendarId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_external_calendar_feeds_connection_calendar_unique");
+
+                    b.ToTable("external_calendar_feeds", (string)null);
+                });
+
             modelBuilder.Entity("DomusMind.Domain.Family.Family", b =>
                 {
                     b.Property<Guid>("Id")
@@ -681,6 +1010,38 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarConnection", b =>
+                {
+                    b.OwnsOne("DomusMind.Domain.Calendar.ExternalConnections.SyncHorizon", "Horizon", b1 =>
+                        {
+                            b1.Property<Guid>("ExternalCalendarConnectionId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("ForwardHorizonDays")
+                                .HasColumnType("integer")
+                                .HasColumnName("forward_horizon_days");
+
+                            b1.HasKey("ExternalCalendarConnectionId");
+
+                            b1.ToTable("external_calendar_connections");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ExternalCalendarConnectionId");
+                        });
+
+                    b.Navigation("Horizon")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarFeed", b =>
+                {
+                    b.HasOne("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarConnection", null)
+                        .WithMany("Feeds")
+                        .HasForeignKey("ConnectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("DomusMind.Domain.Family.FamilyMember", b =>
                 {
                     b.HasOne("DomusMind.Domain.Family.Family", null)
@@ -893,6 +1254,11 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("_targetMembers");
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarConnection", b =>
+                {
+                    b.Navigation("Feeds");
                 });
 
             modelBuilder.Entity("DomusMind.Domain.Family.Family", b =>

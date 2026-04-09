@@ -59,8 +59,8 @@ Projection-only terms used to explain derived views.
 Examples:
 
 - Timeline
-- Today view
-- Week view
+- Agenda day view
+- Agenda week view
 - Marker
 
 Read-model terms are not aggregates unless explicitly modeled as such.
@@ -189,6 +189,74 @@ A **Reminder** is a scheduled prompt associated with a time-bound commitment.
 In V1, reminders belong to Calendar semantics around Events.
 
 A reminder is not a task.
+
+### External Calendar Connection
+
+An **External Calendar Connection** is a member-scoped delegated connection to a third-party calendar provider account.
+
+Examples:
+
+- Microsoft Outlook account
+
+An external calendar connection answers:
+
+- which member owns the connection
+- which provider account is connected
+- which provider calendars are selected for ingestion
+- how synchronization is configured
+
+An external calendar connection is not a native household plan source.
+It is an integration boundary for importing read-only time data.
+
+### External Calendar Feed
+
+An **External Calendar Feed** is one selected provider calendar under an external calendar connection.
+
+Examples:
+
+- Outlook default calendar
+- Outlook work calendar
+- Outlook school calendar
+
+An external calendar feed answers:
+
+- which provider calendar is selected
+- which sync horizon is active
+- which incremental sync cursor applies to that view
+
+### External Calendar Entry
+
+An **External Calendar Entry** is a read-only imported calendar occurrence from an external provider.
+
+Examples:
+
+- work meeting from Outlook
+- school pickup reminder from Outlook
+- dentist appointment from Outlook
+
+An external calendar entry:
+
+- belongs to an external calendar feed
+- is not a Calendar `Event` aggregate
+- must not be converted automatically into a native household Plan
+- may appear in Agenda projections when relevant
+
+### Sync Horizon
+
+The **Sync Horizon** is the bounded time window used for external calendar ingestion.
+
+Examples:
+
+- now - 1 day to now + 30 days
+- now - 1 day to now + 90 days
+- now - 1 day to now + 365 days
+
+The sync horizon answers:
+
+- which external occurrences are stored locally
+- which delta cursor remains valid for incremental synchronization
+
+The sync horizon is part of the identity of external calendar synchronization state.
 
 ---
 

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-export type SettingsTab = "household" | "people" | "areas" | "account" | "about";
+export type SettingsTab = "household" | "people" | "areas" | "account" | "connectedCalendars" | "about";
 
 interface SettingsTabsProps {
   active: SettingsTab;
@@ -46,6 +46,15 @@ export function SettingsTabs({ active, onChange }: SettingsTabsProps) {
         type="button"
       >
         {t("account.title")}
+      </button>
+      <button
+        role="tab"
+        aria-selected={active === "connectedCalendars"}
+        className={`settings-tab${active === "connectedCalendars" ? " active" : ""}`}
+        onClick={() => onChange("connectedCalendars")}
+        type="button"
+      >
+        {t("connectedCalendars.tabTitle")}
       </button>
       <button
         role="tab"

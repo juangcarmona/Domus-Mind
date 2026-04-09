@@ -176,7 +176,7 @@ Creation and quick-add actions should stay close to the current surface.
 Examples:
 
 - add item from within a list
-- add plan from planning
+- add plan from Agenda
 - add task from the current operational context
 
 ## Counts should be visible

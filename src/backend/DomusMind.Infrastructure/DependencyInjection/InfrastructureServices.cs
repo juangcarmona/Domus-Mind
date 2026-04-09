@@ -1,7 +1,10 @@
 using DomusMind.Application.Abstractions.Languages;
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
+using DomusMind.Application.Abstractions.Integrations.Calendar;
+using DomusMind.Infrastructure.BackgroundJobs.Calendar;
 using DomusMind.Infrastructure.Events;
+using DomusMind.Infrastructure.Integrations.Calendar.Microsoft;
 using DomusMind.Infrastructure.Languages;
 using DomusMind.Infrastructure.Messaging;
 using DomusMind.Infrastructure.Persistence;
@@ -29,6 +32,18 @@ public static class InfrastructureServices
         services.AddScoped<IEventLogWriter, EventLogWriter>();
 
         services.AddScoped<ISupportedLanguageReader, SupportedLanguageReader>();
+
+        // External calendar integrations
+        services.AddScoped<IExternalCalendarAuthService, MicrosoftGraphCalendarAuthService>();
+        services.AddScoped<IExternalCalendarProviderClient, MicrosoftGraphCalendarClient>();
+        services.AddScoped<IExternalCalendarSyncLeaseService, ExternalCalendarConnectionLeaseService>();
+        services.AddHttpClient("MicrosoftGraph")
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://graph.microsoft.com/"));
+
+        // Background worker
+        services.Configure<ExternalCalendarRefreshOptions>(
+            configuration.GetSection(ExternalCalendarRefreshOptions.SectionName));
+        services.AddHostedService<ExternalCalendarRefreshWorker>();
 
         return services;
     }

@@ -141,6 +141,18 @@
   flex: 1;
 }
 
+.wg-item--readonly {
+  border-left-style: dashed;
+}
+
+.wg-item-readonly-cue {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
 /* Type glyph - tiny, inherits item color, aria-hidden in markup */
 .wg-item-glyph {
   flex-shrink: 0;

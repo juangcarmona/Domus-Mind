@@ -59,6 +59,7 @@ export function AuthedRoutes() {
         <Route path="/areas" element={<AreasPage />} />
         <Route path="/areas/:areaId" element={<AreaDetailPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/settings/oauth/outlook/callback" element={<SettingsPage defaultTab="connectedCalendars" />} />
 
         {/* Default redirect */}
         <Route path="/" element={<Navigate to="/agenda" replace />} />

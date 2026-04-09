@@ -7,13 +7,14 @@ import { AccountSettingsSection } from "../components/AccountSettingsSection";
 import { HouseholdSettingsSection } from "../components/HouseholdSettingsSection";
 import { MembersSettingsSection } from "../components/MembersSettingsSection";
 import { AboutSection } from "../components/AboutSection";
+import { ConnectedCalendarsSection } from "../components/ConnectedCalendarsSection";
 import { AreasPage } from "../../areas/pages/AreasPage";
 
-export function SettingsPage() {
+export function SettingsPage({ defaultTab = "household" }: { defaultTab?: SettingsTab }) {
   const { t } = useTranslation("settings");
   const dispatch = useAppDispatch();
   const languagesStatus = useAppSelector((s) => s.languages.status);
-  const [activeTab, setActiveTab] = useState<SettingsTab>("household");
+  const [activeTab, setActiveTab] = useState<SettingsTab>(defaultTab);
 
   useEffect(() => {
     if (languagesStatus === "idle") {
@@ -30,6 +31,7 @@ export function SettingsPage() {
         {activeTab === "people" && <MembersSettingsSection />}
         {activeTab === "areas" && <AreasPage />}
         {activeTab === "account" && <AccountSettingsSection />}
+        {activeTab === "connectedCalendars" && <ConnectedCalendarsSection />}
         {activeTab === "about" && <AboutSection />}
       </div>
     </div>

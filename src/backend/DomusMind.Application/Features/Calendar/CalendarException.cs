@@ -10,6 +10,12 @@ public enum CalendarErrorCode
     ParticipantNotFound,
     DuplicateReminderOffset,
     ReminderOffsetNotFound,
+    ConnectionNotFound,
+    ConnectionAlreadyExists,
+    ConnectionSyncInProgress,
+    ConnectionAuthExpired,
+    ProviderAuthFailed,
+    ProviderApiError,
 }
 
 public sealed class CalendarException : Exception

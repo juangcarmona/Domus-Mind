@@ -8,6 +8,7 @@ import routinesReducer from "./routinesSlice";
 import languagesReducer from "./languagesSlice";
 import uiReducer from "./uiSlice";
 import sharedListsReducer from "./sharedListsSlice";
+import externalCalendarReducer from "./externalCalendarSlice";
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
     languages: languagesReducer,
     ui: uiReducer,
     sharedLists: sharedListsReducer,
+    externalCalendar: externalCalendarReducer,
   },
 });
 

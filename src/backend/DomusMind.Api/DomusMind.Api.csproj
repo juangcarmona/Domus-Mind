@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <FrontendDistDir>$(MSBuildProjectDirectory)/../../web/app/dist</FrontendDistDir>
+    <UserSecretsId>4496690f-739e-44ef-ae1a-781c1d530cf8</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

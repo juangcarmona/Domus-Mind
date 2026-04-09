@@ -53,6 +53,12 @@ Rules:
 - commands use `POST`, `PUT`, `PATCH`, or `DELETE` as appropriate
 - queries use `GET`
 
+External calendar integration follows the same rule:
+
+- nested under family and member when the owner is explicit
+- connection commands target one `ExternalCalendarConnection`
+- orchestration endpoints may exist for multi-connection actions such as `Sync calendars`, but they must dispatch aggregate-scoped commands internally
+
 ---
 
 ## Current Authentication Surface
@@ -234,6 +240,26 @@ Conventions:
 - `409 Conflict` for invariant or concurrency violations
 - `401 Unauthorized` when authentication is missing
 - `403 Forbidden` when access is denied
+
+---
+
+## External Calendar API Surface
+
+Phase 1 Outlook ingestion uses a dedicated member-scoped API surface.
+
+Primary endpoints:
+
+- `GET /api/families/{familyId}/members/{memberId}/external-calendar-connections`
+- `GET /api/families/{familyId}/members/{memberId}/external-calendar-connections/{connectionId}`
+- `POST /api/families/{familyId}/members/{memberId}/external-calendar-connections/outlook`
+- `PUT /api/families/{familyId}/members/{memberId}/external-calendar-connections/{connectionId}`
+- `POST /api/families/{familyId}/members/{memberId}/external-calendar-connections/{connectionId}/sync`
+- `POST /api/families/{familyId}/members/{memberId}/external-calendar-connections/sync`
+- `DELETE /api/families/{familyId}/members/{memberId}/external-calendar-connections/{connectionId}`
+- `GET /api/families/{familyId}/members/{memberId}/agenda`
+
+Detailed contract, request models, response models, and error codes are defined in `docs/06_interfaces/external-calendar-api.md`.
+The exact Contracts model catalog is defined in `docs/06_interfaces/external-calendar-contract-model-catalog.md`.
 
 ---
 
