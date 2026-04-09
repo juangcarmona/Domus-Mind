@@ -86,10 +86,13 @@ public sealed class ExternalCalendarRefreshWorker : BackgroundService
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Apply jitter: stagger processing so connections don't all sync simultaneously
-            var jitter = _rng.Next(0, _options.JitterMaxSeconds);
-            if (jitter > 5)
-                await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+            // Small random inter-connection delay (0–5 s) to stagger DB and network I/O
+            // within a batch and avoid thundering-herd when multiple connections are due.
+            // JitterMaxSeconds governs the full connection-schedule jitter; this is
+            // intentionally capped at 5 s to keep batch processing responsive.
+            var batchJitterMs = _rng.Next(0, 5_001);
+            if (batchJitterMs > 0)
+                await Task.Delay(batchJitterMs, cancellationToken);
 
             try
             {

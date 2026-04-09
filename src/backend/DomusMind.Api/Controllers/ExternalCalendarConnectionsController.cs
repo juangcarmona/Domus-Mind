@@ -165,7 +165,7 @@ public sealed class ExternalCalendarConnectionsController : ControllerBase
         try
         {
             var selections = request.SelectedCalendars
-                .Select(c => (c.CalendarId, c.CalendarName, c.IsSelected))
+                .Select(c => (c.CalendarId, c.CalendarName, c.IsSelected, c.ColorHex))
                 .ToList()
                 .AsReadOnly();
 

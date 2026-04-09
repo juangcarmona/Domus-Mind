@@ -41,6 +41,103 @@ public sealed class MicrosoftGraphCalendarClientTests
     }
 
     // -----------------------------------------------------------------------
+    // Tests: DateTime UTC boundary — the Npgsql timestamptz requirement
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void ParseGraphDateTimeAsUtc_WhenTimeZoneIsUTC_ReturnsUtcKind()
+    {
+        var result = MicrosoftGraphCalendarClient.ParseGraphDateTimeAsUtc(
+            "2026-04-10T09:30:00.0000000", "UTC");
+
+        result.Kind.Should().Be(DateTimeKind.Utc);
+        result.Should().Be(new DateTime(2026, 4, 10, 9, 30, 0, DateTimeKind.Utc));
+    }
+
+    [Fact]
+    public void ParseGraphDateTimeAsUtc_WhenTimeZoneIsNull_ReturnsUtcKind()
+    {
+        var result = MicrosoftGraphCalendarClient.ParseGraphDateTimeAsUtc(
+            "2026-04-10T09:30:00.0000000", null);
+
+        result.Kind.Should().Be(DateTimeKind.Utc);
+    }
+
+    [Fact]
+    public void ParseGraphDateTimeAsUtc_WhenTimeZoneIsEmpty_ReturnsUtcKind()
+    {
+        var result = MicrosoftGraphCalendarClient.ParseGraphDateTimeAsUtc(
+            "2026-04-10T09:30:00.0000000", "");
+
+        result.Kind.Should().Be(DateTimeKind.Utc);
+    }
+
+    [Fact]
+    public void ParseGraphDateTimeAsUtc_WhenTimeZoneIsKnownIana_ConvertsToUtc()
+    {
+        // America/New_York is UTC-4 during EDT (April).
+        var result = MicrosoftGraphCalendarClient.ParseGraphDateTimeAsUtc(
+            "2026-04-10T09:30:00.0000000", "America/New_York");
+
+        result.Kind.Should().Be(DateTimeKind.Utc);
+        // 09:30 EDT (UTC-4) = 13:30 UTC
+        result.Should().Be(new DateTime(2026, 4, 10, 13, 30, 0, DateTimeKind.Utc));
+    }
+
+    [Fact]
+    public void ParseGraphDateTimeAsUtc_WhenTimeZoneIsUnknown_FallsBackToUtcKind()
+    {
+        // Unknown zone IDs must not throw; fall back to UTC treatment.
+        var act = () => MicrosoftGraphCalendarClient.ParseGraphDateTimeAsUtc(
+            "2026-04-10T09:30:00.0000000", "Unknown/Zone");
+
+        var result = act.Should().NotThrow().Which;
+        result.Kind.Should().Be(DateTimeKind.Utc);
+    }
+
+    [Fact]
+    public async Task GetInitialEventsAsync_GraphEventTimes_AreReturnedAsUtcKind()
+    {
+        // Build a response containing a Graph event with UTC start/end (no Z suffix,
+        // timeZone = "UTC"), matching what Graph returns by default.
+        var json = """
+            {
+                "value": [
+                    {
+                        "id": "evt-1",
+                        "subject": "Stand-up",
+                        "start": { "dateTime": "2026-04-10T09:30:00.0000000", "timeZone": "UTC" },
+                        "end":   { "dateTime": "2026-04-10T09:45:00.0000000", "timeZone": "UTC" },
+                        "lastModifiedDateTime": "2026-04-09T08:00:00Z"
+                    }
+                ],
+                "@odata.deltaLink": "https://graph.microsoft.com/v1.0/me/calendars/cal-1/calendarView/delta?$deltatoken=tok"
+            }
+            """;
+
+        var handler = new FakeHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+        });
+        var client = BuildClient(handler);
+
+        var pages = new List<DomusMind.Application.Abstractions.Integrations.Calendar.ExternalCalendarProviderDeltaPage>();
+        await foreach (var page in client.GetInitialEventsAsync(
+            "tok", "cal-1",
+            new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 4, 30, 0, 0, 0, DateTimeKind.Utc)))
+        {
+            pages.Add(page);
+        }
+
+        var evt = pages.SelectMany(p => p.Events).Should().ContainSingle().Which;
+        evt.StartsAtUtc.Kind.Should().Be(DateTimeKind.Utc,
+            "Npgsql timestamptz requires UTC Kind; Kind=Unspecified causes Npgsql to throw");
+        evt.EndsAtUtc.Should().NotBeNull();
+        evt.EndsAtUtc!.Value.Kind.Should().Be(DateTimeKind.Utc);
+    }
+
+    // -----------------------------------------------------------------------
     // Tests: Initial sync URL structure
     // -----------------------------------------------------------------------
 
@@ -212,6 +309,332 @@ public sealed class MicrosoftGraphCalendarClientTests
         };
 
         await act.Should().ThrowAsync<HttpRequestException>();
+    }
+
+    // -----------------------------------------------------------------------
+    // Tests: recurring event title mapping
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetInitialEventsAsync_WhenSubjectIsEmpty_UsesFallbackTitle()
+    {
+        var json = """
+            {
+                "value": [
+                    {
+                        "id": "evt-recurring",
+                        "subject": "",
+                        "seriesMasterId": "master-1",
+                        "start": { "dateTime": "2026-04-10T09:00:00.0000000", "timeZone": "UTC" },
+                        "end":   { "dateTime": "2026-04-10T09:30:00.0000000", "timeZone": "UTC" }
+                    }
+                ],
+                "@odata.deltaLink": "https://graph.microsoft.com/v1.0/delta?$deltatoken=tok"
+            }
+            """;
+
+        var handler = new FakeHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+        });
+        var client = BuildClient(handler);
+
+        var pages = new List<DomusMind.Application.Abstractions.Integrations.Calendar.ExternalCalendarProviderDeltaPage>();
+        await foreach (var page in client.GetInitialEventsAsync(
+            "tok", "cal-1",
+            new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 4, 30, 0, 0, 0, DateTimeKind.Utc)))
+        {
+            pages.Add(page);
+        }
+
+        var evt = pages.SelectMany(p => p.Events).Should().ContainSingle().Which;
+        evt.Title.Should().Be("(No title)",
+            "an empty string subject must produce the fallback title, not an empty display value");
+    }
+
+    [Fact]
+    public async Task GetInitialEventsAsync_WhenSubjectHasValue_PreservesTitle()
+    {
+        var json = """
+            {
+                "value": [
+                    {
+                        "id": "evt-recurring-2",
+                        "subject": "Weekly Sync",
+                        "seriesMasterId": "master-2",
+                        "start": { "dateTime": "2026-04-10T10:00:00.0000000", "timeZone": "UTC" },
+                        "end":   { "dateTime": "2026-04-10T10:30:00.0000000", "timeZone": "UTC" }
+                    }
+                ],
+                "@odata.deltaLink": "https://graph.microsoft.com/v1.0/delta?$deltatoken=tok2"
+            }
+            """;
+
+        var handler = new FakeHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+        });
+        var client = BuildClient(handler);
+
+        var pages = new List<DomusMind.Application.Abstractions.Integrations.Calendar.ExternalCalendarProviderDeltaPage>();
+        await foreach (var page in client.GetInitialEventsAsync(
+            "tok", "cal-1",
+            new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 4, 30, 0, 0, 0, DateTimeKind.Utc)))
+        {
+            pages.Add(page);
+        }
+
+        pages.SelectMany(p => p.Events).Should().ContainSingle()
+            .Which.Title.Should().Be("Weekly Sync");
+    }
+
+    // -----------------------------------------------------------------------
+    // Tests: OriginalTimezone population
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetInitialEventsAsync_PopulatesOriginalTimezone_FromGraphStartField()
+    {
+        var json = """
+            {
+                "value": [
+                    {
+                        "id": "evt-tz",
+                        "subject": "Standup",
+                        "start": { "dateTime": "2026-04-10T09:00:00.0000000", "timeZone": "Eastern Standard Time" },
+                        "end":   { "dateTime": "2026-04-10T09:30:00.0000000", "timeZone": "Eastern Standard Time" }
+                    }
+                ],
+                "@odata.deltaLink": "https://graph.microsoft.com/v1.0/delta?$deltatoken=tok"
+            }
+            """;
+
+        var handler = new FakeHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+        });
+        var client = BuildClient(handler);
+
+        var pages = new List<DomusMind.Application.Abstractions.Integrations.Calendar.ExternalCalendarProviderDeltaPage>();
+        await foreach (var page in client.GetInitialEventsAsync(
+            "tok", "cal-1",
+            new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 4, 30, 0, 0, 0, DateTimeKind.Utc)))
+        {
+            pages.Add(page);
+        }
+
+        var evt = pages.SelectMany(p => p.Events).Should().ContainSingle().Which;
+        evt.OriginalTimezone.Should().Be("Eastern Standard Time",
+            "OriginalTimezone must carry the source timezone for correct local-time display");
+        // 09:00 EST (UTC-4 in April) = 13:00 UTC
+        evt.StartsAtUtc.Should().Be(new DateTime(2026, 4, 10, 13, 0, 0, DateTimeKind.Utc));
+    }
+
+    [Fact]
+    public async Task GetInitialEventsAsync_WhenTimeZoneIsUTC_OriginalTimezoneIsUTC()
+    {
+        var json = """
+            {
+                "value": [
+                    {
+                        "id": "evt-utc",
+                        "subject": "Backlog Review",
+                        "start": { "dateTime": "2026-04-10T14:00:00.0000000", "timeZone": "UTC" },
+                        "end":   { "dateTime": "2026-04-10T14:30:00.0000000", "timeZone": "UTC" }
+                    }
+                ],
+                "@odata.deltaLink": "https://graph.microsoft.com/v1.0/delta?$deltatoken=tok"
+            }
+            """;
+
+        var handler = new FakeHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+        });
+        var client = BuildClient(handler);
+
+        var pages = new List<DomusMind.Application.Abstractions.Integrations.Calendar.ExternalCalendarProviderDeltaPage>();
+        await foreach (var page in client.GetInitialEventsAsync(
+            "tok", "cal-1",
+            new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 4, 30, 0, 0, 0, DateTimeKind.Utc)))
+        {
+            pages.Add(page);
+        }
+
+        var evt = pages.SelectMany(p => p.Events).Should().ContainSingle().Which;
+        evt.OriginalTimezone.Should().Be("UTC");
+        evt.StartsAtUtc.Should().Be(new DateTime(2026, 4, 10, 14, 0, 0, DateTimeKind.Utc));
+    }
+
+    /// <summary>
+    /// This is the primary regression test for the "wrong imported time" bug.
+    ///
+    /// When Graph responds without Prefer: outlook.timezone it normalises all
+    /// datetimes to UTC and sets start.timeZone = "UTC".  The event's authored
+    /// timezone is in the separate originalStartTimeZone property (always
+    /// returned, never affected by the response format).
+    ///
+    /// Before the fix, MapEvent used start.timeZone ("UTC") for OriginalTimezone.
+    /// FormatLocalTime(utc, "UTC") then returned raw UTC hours — wrong for any
+    /// household not in UTC.
+    ///
+    /// After the fix, MapEvent prefers originalStartTimeZone.  FormatLocalTime
+    /// correctly converts the stored UTC moment back to local household time.
+    /// </summary>
+    [Fact]
+    public async Task GetInitialEventsAsync_WhenOriginalStartTimezonePresent_PrefersItOverStartTimezone()
+    {
+        // Graph returns UTC-normalised datetimes (start.timeZone = "UTC") but
+        // also signals the authored zone via originalStartTimeZone.
+        var json = """
+            {
+                "value": [
+                    {
+                        "id": "evt-tz-split",
+                        "subject": "Morning Stand-up",
+                        "start": { "dateTime": "2026-04-10T13:30:00.0000000", "timeZone": "UTC" },
+                        "end":   { "dateTime": "2026-04-10T14:00:00.0000000", "timeZone": "UTC" },
+                        "originalStartTimeZone": "Eastern Standard Time",
+                        "originalEndTimeZone":   "Eastern Standard Time"
+                    }
+                ],
+                "@odata.deltaLink": "https://graph.microsoft.com/v1.0/delta?$deltatoken=tok"
+            }
+            """;
+
+        var handler = new FakeHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+        });
+        var client = BuildClient(handler);
+
+        var pages = new List<DomusMind.Application.Abstractions.Integrations.Calendar.ExternalCalendarProviderDeltaPage>();
+        await foreach (var page in client.GetInitialEventsAsync(
+            "tok", "cal-1",
+            new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 4, 30, 0, 0, 0, DateTimeKind.Utc)))
+        {
+            pages.Add(page);
+        }
+
+        var evt = pages.SelectMany(p => p.Events).Should().ContainSingle().Which;
+
+        // The authored timezone must be stored, not the response-format zone.
+        // GetWeeklyGridQueryHandler.FormatLocalTime will use this to convert
+        // StartsAtUtc back to 09:30 ET, not show "13:30" (raw UTC).
+        evt.OriginalTimezone.Should().Be("Eastern Standard Time",
+            "originalStartTimeZone must be preferred over start.timeZone when both are present; " +
+            "otherwise FormatLocalTime returns UTC hours for households not in UTC");
+
+        // The UTC moment itself must be correctly stored (start.dateTime + UTC = literal UTC).
+        evt.StartsAtUtc.Should().Be(new DateTime(2026, 4, 10, 13, 30, 0, DateTimeKind.Utc));
+        evt.StartsAtUtc.Kind.Should().Be(DateTimeKind.Utc);
+    }
+
+    [Fact]
+    public async Task GetInitialEventsAsync_WhenOriginalStartTimezoneAbsent_FallsBackToStartTimezone()
+    {
+        // Without originalStartTimeZone Graph behaves as before the split: use start.timeZone.
+        var json = """
+            {
+                "value": [
+                    {
+                        "id": "evt-no-original-tz",
+                        "subject": "Legacy Event",
+                        "start": { "dateTime": "2026-04-10T09:00:00.0000000", "timeZone": "Pacific Standard Time" },
+                        "end":   { "dateTime": "2026-04-10T09:30:00.0000000", "timeZone": "Pacific Standard Time" }
+                    }
+                ],
+                "@odata.deltaLink": "https://graph.microsoft.com/v1.0/delta?$deltatoken=tok"
+            }
+            """;
+
+        var handler = new FakeHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+        });
+        var client = BuildClient(handler);
+
+        var pages = new List<DomusMind.Application.Abstractions.Integrations.Calendar.ExternalCalendarProviderDeltaPage>();
+        await foreach (var page in client.GetInitialEventsAsync(
+            "tok", "cal-1",
+            new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 4, 30, 0, 0, 0, DateTimeKind.Utc)))
+        {
+            pages.Add(page);
+        }
+
+        var evt = pages.SelectMany(p => p.Events).Should().ContainSingle().Which;
+        evt.OriginalTimezone.Should().Be("Pacific Standard Time",
+            "when originalStartTimeZone is absent, start.timeZone is the correct fallback");
+        // 09:00 PDT (UTC-7 in April) = 16:00 UTC
+        evt.StartsAtUtc.Should().Be(new DateTime(2026, 4, 10, 16, 0, 0, DateTimeKind.Utc));
+    }
+
+    // -----------------------------------------------------------------------
+    // Tests: loop detection
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task FetchDeltaPages_WhenNextLinkRepeats_ThrowsInvalidOperationException()
+    {
+        // Graph returning the same @odata.nextLink twice means the cursor is stuck.
+        const string repeatingLink =
+            "https://graph.microsoft.com/v1.0/me/calendars/cal-loop/calendarView/delta?$skipToken=stuck";
+
+        var json = $$"""{"value":[],"@odata.nextLink":"{{repeatingLink}}"}""";
+
+        var handler = new FakeHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+        });
+        var client = BuildClient(handler);
+
+        Func<Task> act = async () =>
+        {
+            await foreach (var _ in client.GetInitialEventsAsync(
+                "tok", "cal-loop",
+                new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc)))
+            { }
+        };
+
+        (await act.Should().ThrowAsync<InvalidOperationException>())
+            .WithMessage("*repeated*@odata.nextLink*");
+    }
+
+    [Fact]
+    public async Task FetchDeltaPages_WhenPageCapExceeded_ThrowsInvalidOperationException()
+    {
+        // Each response returns a distinct nextLink so the repeated-link guard does not fire.
+        // The max-page cap (200) must trigger first.
+        var callCount = 0;
+        var handler = new FakeHttpHandler(_ =>
+        {
+            var token = callCount++;
+            var json = $$"""{"value":[],"@odata.nextLink":"https://graph.microsoft.com/v1.0/delta?$skipToken=t{{token}}"}""";
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            };
+        });
+        var client = BuildClient(handler);
+
+        Func<Task> act = async () =>
+        {
+            await foreach (var _ in client.GetInitialEventsAsync(
+                "tok", "cal-cap",
+                new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc)))
+            { }
+        };
+
+        (await act.Should().ThrowAsync<InvalidOperationException>())
+            .WithMessage("*exceeded*pages*");
     }
 
     // -----------------------------------------------------------------------

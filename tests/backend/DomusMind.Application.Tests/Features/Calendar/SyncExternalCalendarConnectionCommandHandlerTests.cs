@@ -30,9 +30,9 @@ public sealed class SyncExternalCalendarConnectionCommandHandlerTests
         new(db,
             new EventLogWriter(db),
             authz ?? new StubCalendarAuthorizationService(),
-            authService ?? new StubSyncAuthService("access-token"),
+            authService ?? new StubExternalCalendarAuthService("access-token"),
             providerClient ?? new StubSyncProviderClient(),
-            leaseService ?? new StubSyncLeaseService(),
+            leaseService ?? new StubExternalCalendarSyncLeaseService(),
             NullLogger<SyncExternalCalendarConnectionCommandHandler>.Instance);
 
     private static async Task<(DomusMindDbContext Db, ExternalCalendarConnection Connection, Guid FamilyId, Guid MemberId)>
@@ -237,23 +237,6 @@ public sealed class SyncExternalCalendarConnectionCommandHandlerTests
     // Stubs
     // -----------------------------------------------------------------------
 
-    private sealed class StubSyncAuthService : IExternalCalendarAuthService
-    {
-        private readonly string? _token;
-
-        public StubSyncAuthService(string? token) => _token = token;
-
-        public Task<ExternalCalendarProviderAccount> ExchangeAuthorizationCodeAsync(
-            string authorizationCode, string redirectUri, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
-
-        public Task<string?> GetAccessTokenAsync(Guid connectionId, CancellationToken cancellationToken = default)
-            => Task.FromResult(_token);
-
-        public Task RevokeAsync(Guid connectionId, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
-    }
-
     private sealed class ThrowingSyncAuthService : IExternalCalendarAuthService
     {
         public Task<ExternalCalendarProviderAccount> ExchangeAuthorizationCodeAsync(
@@ -305,15 +288,6 @@ public sealed class SyncExternalCalendarConnectionCommandHandlerTests
             yield return new ExternalCalendarProviderDeltaPage([], deltaToken, true);
             await Task.CompletedTask;
         }
-    }
-
-    private sealed class StubSyncLeaseService : IExternalCalendarSyncLeaseService
-    {
-        public Task<Guid?> TryAcquireAsync(Guid connectionId, CancellationToken cancellationToken = default)
-            => Task.FromResult<Guid?>(Guid.NewGuid());
-
-        public Task ReleaseAsync(Guid connectionId, Guid leaseId, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
     }
 
     private sealed class TrackingSyncLeaseService : IExternalCalendarSyncLeaseService

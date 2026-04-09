@@ -61,6 +61,10 @@ public sealed class ExternalCalendarFeedConfiguration
             .HasColumnName("updated_at_utc")
             .IsRequired();
 
+        builder.Property(f => f.ColorHex)
+            .HasColumnName("color_hex")
+            .HasMaxLength(7);
+
         builder.HasIndex(f => new { f.ConnectionId, f.IsSelected })
             .HasDatabaseName("ix_external_calendar_feeds_connection_selected");
 

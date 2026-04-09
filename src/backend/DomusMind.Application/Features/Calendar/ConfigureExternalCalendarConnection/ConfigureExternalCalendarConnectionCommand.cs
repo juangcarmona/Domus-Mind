@@ -7,7 +7,7 @@ public sealed record ConfigureExternalCalendarConnectionCommand(
     Guid FamilyId,
     Guid MemberId,
     Guid ConnectionId,
-    IReadOnlyCollection<(string CalendarId, string CalendarName, bool IsSelected)> SelectedCalendars,
+    IReadOnlyCollection<(string CalendarId, string CalendarName, bool IsSelected, string? ColorHex)> SelectedCalendars,
     int ForwardHorizonDays,
     bool ScheduledRefreshEnabled,
     int ScheduledRefreshIntervalMinutes,

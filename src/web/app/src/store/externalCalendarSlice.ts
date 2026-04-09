@@ -122,6 +122,9 @@ const externalCalendarSlice = createSlice({
       .addCase(fetchConnectionDetail.fulfilled, (state, action) => {
         state.detail = action.payload;
       })
+      .addCase(fetchConnectionDetail.rejected, (state, action) => {
+        state.error = action.error.message ?? "Failed to load connection detail";
+      })
       .addCase(connectOutlook.fulfilled, (state) => {
         state.status = "idle";
       })

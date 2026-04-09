@@ -96,6 +96,10 @@ public sealed class GetWeeklyGridQueryHandler
             .SelectMany(c => c.Feeds.Where(f => f.IsSelected).Select(f => f.Id))
             .ToHashSet();
 
+        var feedColorById = activeConnections
+            .SelectMany(c => c.Feeds.Where(f => f.IsSelected))
+            .ToDictionary(f => f.Id, f => f.ColorHex);
+
         var connectionById = activeConnections.ToDictionary(c => c.Id.Value);
 
         var weekStartUtc = weekStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
@@ -222,8 +226,11 @@ public sealed class GetWeeklyGridQueryHandler
                         var memberExternalEvents = memberExternalEntries
                             .Where(entry =>
                             {
-                                var startDate = DateOnly.FromDateTime(entry.StartsAtUtc);
-                                var endDate = DateOnly.FromDateTime(entry.EndsAtUtc ?? entry.StartsAtUtc);
+                                // Use the event's original timezone for local-date bucketing.
+                                // Without this, a late-evening event stored as UTC would fall
+                                // on the next calendar day for households in negative-offset zones.
+                                var startDate = LocalDateOf(entry.StartsAtUtc, entry.OriginalTimezone);
+                                var endDate = LocalDateOf(entry.EndsAtUtc ?? entry.StartsAtUtc, entry.OriginalTimezone);
                                 return startDate <= day && endDate >= day;
                             })
                             .OrderBy(entry => entry.StartsAtUtc)
@@ -232,13 +239,18 @@ public sealed class GetWeeklyGridQueryHandler
                                 connectionById.TryGetValue(entry.ConnectionId, out var conn);
 
                                 var date = day.ToString("yyyy-MM-dd");
-                                var time = entry.IsAllDay ? null : entry.StartsAtUtc.ToString("HH:mm");
+                                // Format start/end times in the event's original local timezone
+                                // so the household sees the same hour that was in the invitation.
+                                var time = entry.IsAllDay ? null : FormatLocalTime(entry.StartsAtUtc, entry.OriginalTimezone);
                                 var endDate = entry.EndsAtUtc.HasValue
-                                    ? DateOnly.FromDateTime(entry.EndsAtUtc.Value).ToString("yyyy-MM-dd")
+                                    ? LocalDateOf(entry.EndsAtUtc.Value, entry.OriginalTimezone).ToString("yyyy-MM-dd")
                                     : null;
                                 var endTime = entry.IsAllDay || !entry.EndsAtUtc.HasValue
                                     ? null
-                                    : entry.EndsAtUtc.Value.ToString("HH:mm");
+                                    : FormatLocalTime(entry.EndsAtUtc.Value, entry.OriginalTimezone);
+
+                                // Use provider-supplied feed color; fall back to a neutral slate.
+                                var color = feedColorById.GetValueOrDefault(entry.FeedId) ?? "#64748B";
 
                                 return new WeeklyGridEventItem(
                                     entry.Id,
@@ -248,12 +260,13 @@ public sealed class GetWeeklyGridQueryHandler
                                     endDate,
                                     endTime,
                                     entry.Status,
-                                    "#64748B",
+                                    color,
                                     [],
                                     true,
                                     "external_calendar",
                                     conn is null ? null : ExternalCalendarProviderNames.ToProviderLabel(conn.Provider),
-                                    entry.OpenInProviderUrl);
+                                    entry.OpenInProviderUrl,
+                                    entry.Location);
                             })
                             .ToList();
 
@@ -314,5 +327,68 @@ public sealed class GetWeeklyGridQueryHandler
             weekEnd.AddDays(-1).ToString("yyyy-MM-dd"),
             memberRows,
             sharedCells);
+    }
+
+    // -------------------------------------------------------------------------
+    // Local-time helpers for external calendar entry display
+    //
+    // ExternalCalendarEntry.StartsAtUtc/EndsAtUtc are UTC coordinates.
+    // DomusMind is a local household product — events must be shown in the
+    // household's local time. OriginalTimezone carries the IANA or Windows zone
+    // ID from the source invitation (e.g. "America/New_York").
+    //
+    // When OriginalTimezone is null or UTC the UTC value is used directly;
+    // this is correct because event times imported without a zone offset
+    // (or already in UTC) have no additional conversion required.
+    //
+    // Microsoft Graph returns Windows timezone IDs (e.g. "Eastern Standard Time")
+    // while Linux/macOS uses IANA IDs. ResolveTimeZone handles both platforms by
+    // attempting a direct lookup first, then cross-platform conversion via the
+    // built-in TimeZoneInfo conversion APIs added in .NET 6.
+    // -------------------------------------------------------------------------
+
+    private static TimeZoneInfo? ResolveTimeZone(string id)
+    {
+        if (TimeZoneInfo.TryFindSystemTimeZoneById(id, out var tz))
+            return tz;
+
+        // Direct lookup failed — the ID may be a Windows ID on a IANA platform, or vice versa.
+        if (TimeZoneInfo.TryConvertWindowsIdToIanaId(id, out var ianaId) &&
+            TimeZoneInfo.TryFindSystemTimeZoneById(ianaId, out var tzFromIana))
+            return tzFromIana;
+
+        if (TimeZoneInfo.TryConvertIanaIdToWindowsId(id, out var winId) &&
+            TimeZoneInfo.TryFindSystemTimeZoneById(winId, out var tzFromWin))
+            return tzFromWin;
+
+        return null;
+    }
+
+    private static string FormatLocalTime(DateTime utc, string? originalTimezone)
+    {
+        if (string.IsNullOrWhiteSpace(originalTimezone) ||
+            string.Equals(originalTimezone, "UTC", StringComparison.OrdinalIgnoreCase))
+        {
+            return utc.ToString("HH:mm");
+        }
+
+        var tz = ResolveTimeZone(originalTimezone);
+        return tz is not null
+            ? TimeZoneInfo.ConvertTimeFromUtc(utc, tz).ToString("HH:mm")
+            : utc.ToString("HH:mm");
+    }
+
+    private static DateOnly LocalDateOf(DateTime utc, string? originalTimezone)
+    {
+        if (string.IsNullOrWhiteSpace(originalTimezone) ||
+            string.Equals(originalTimezone, "UTC", StringComparison.OrdinalIgnoreCase))
+        {
+            return DateOnly.FromDateTime(utc);
+        }
+
+        var tz = ResolveTimeZone(originalTimezone);
+        return tz is not null
+            ? DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(utc, tz))
+            : DateOnly.FromDateTime(utc);
     }
 }

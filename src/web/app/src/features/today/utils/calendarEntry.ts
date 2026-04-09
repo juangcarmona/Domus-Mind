@@ -52,6 +52,8 @@ export interface CalendarEntry {
   isReadOnly?: boolean;
   sourceLabel?: string | null;
   openInProviderUrl?: string | null;
+  /** Physical location for the entry (populated for imported external events). */
+  location?: string | null;
 }
 
 // ----------------------------------------------------------------
@@ -124,6 +126,7 @@ export function normalizeEventItem(
     isReadOnly: e.isReadOnly ?? false,
     sourceLabel: e.providerLabel ?? null,
     openInProviderUrl: e.openInProviderUrl ?? null,
+    location: e.location ?? null,
   };
 }
 

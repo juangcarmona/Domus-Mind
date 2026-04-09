@@ -13,6 +13,11 @@ public sealed class ExternalCalendarFeed : Entity<Guid>
     public string CalendarName { get; private set; }
     public bool IsDefault { get; private set; }
     public bool IsSelected { get; private set; }
+    /// <summary>
+    /// Hex color supplied by the provider (e.g. "#A9BCF5").
+    /// Null when the provider did not supply a color or color was not fetched yet.
+    /// </summary>
+    public string? ColorHex { get; private set; }
     public DateTime? WindowStartUtc { get; private set; }
     public DateTime? WindowEndUtc { get; private set; }
     public string? LastDeltaToken { get; private set; }
@@ -27,6 +32,7 @@ public sealed class ExternalCalendarFeed : Entity<Guid>
         string calendarName,
         bool isDefault,
         bool isSelected,
+        string? colorHex,
         DateTime createdAtUtc)
         : base(id)
     {
@@ -35,6 +41,7 @@ public sealed class ExternalCalendarFeed : Entity<Guid>
         CalendarName = calendarName;
         IsDefault = isDefault;
         IsSelected = isSelected;
+        ColorHex = colorHex;
         CreatedAtUtc = createdAtUtc;
         UpdatedAtUtc = createdAtUtc;
     }
@@ -52,16 +59,19 @@ public sealed class ExternalCalendarFeed : Entity<Guid>
         string calendarName,
         bool isDefault,
         bool isSelected,
-        DateTime createdAtUtc)
+        DateTime createdAtUtc,
+        string? colorHex = null)
     {
         return new ExternalCalendarFeed(
-            Guid.NewGuid(), connectionId, providerCalendarId, calendarName, isDefault, isSelected, createdAtUtc);
+            Guid.NewGuid(), connectionId, providerCalendarId, calendarName, isDefault, isSelected, colorHex, createdAtUtc);
     }
 
-    public void UpdateSelection(string calendarName, bool isSelected, DateTime nowUtc)
+    public void UpdateSelection(string calendarName, bool isSelected, DateTime nowUtc, string? colorHex = null)
     {
         CalendarName = calendarName;
         IsSelected = isSelected;
+        if (colorHex is not null)
+            ColorHex = colorHex;
         UpdatedAtUtc = nowUtc;
 
         if (!isSelected)

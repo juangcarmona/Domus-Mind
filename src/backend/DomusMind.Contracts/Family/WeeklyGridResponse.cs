@@ -15,7 +15,8 @@ public sealed record WeeklyGridEventItem(
     bool IsReadOnly = false,
     string? Source = null,
     string? ProviderLabel = null,
-    string? OpenInProviderUrl = null);
+    string? OpenInProviderUrl = null,
+    string? Location = null);
 
 public sealed record WeeklyGridTaskItem(
     Guid TaskId,

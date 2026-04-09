@@ -79,7 +79,6 @@ public sealed class ConnectOutlookAccountCommandHandler
             throw new CalendarException(CalendarErrorCode.ConnectionAlreadyExists,
                 "An active connection for this provider account already exists.");
 
-        string? accessToken;
         try
         {
             var connectionId = ExternalCalendarConnectionId.New();
@@ -118,7 +117,7 @@ public sealed class ConnectOutlookAccountCommandHandler
             connection.ClearDomainEvents();
 
             // Discover available calendars using a fresh access token
-            accessToken = await _authService.GetAccessTokenAsync(connection.Id.Value, cancellationToken);
+            var accessToken = await _authService.GetAccessTokenAsync(connection.Id.Value, cancellationToken);
             IReadOnlyCollection<ExternalCalendarProviderCalendar> availableCalendars = [];
 
             if (accessToken is not null)
@@ -153,7 +152,7 @@ public sealed class ConnectOutlookAccountCommandHandler
                 f.LastSuccessfulSyncUtc, f.WindowStartUtc, f.WindowEndUtc)).ToList();
 
             var availableResponses = availableCalendars.Select(c => new AvailableExternalCalendarResponse(
-                c.CalendarId, c.CalendarName, c.IsDefault, false)).ToList();
+                c.CalendarId, c.CalendarName, c.IsDefault, false, c.ColorHex)).ToList();
 
             return new ExternalCalendarConnectionDetailResponse(
                 connection.Id.Value,

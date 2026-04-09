@@ -119,6 +119,7 @@ export function ConnectedCalendarsSection() {
               calendarId: c.calendarId,
               calendarName: c.calendarName,
               isSelected: selectedIds.has(c.calendarId),
+              colorHex: c.colorHex ?? null,
             })),
             forwardHorizonDays,
             scheduledRefreshEnabled: detail.scheduledRefreshEnabled,

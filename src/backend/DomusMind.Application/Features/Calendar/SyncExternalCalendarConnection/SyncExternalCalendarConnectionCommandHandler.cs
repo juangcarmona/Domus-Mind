@@ -78,7 +78,7 @@ public sealed class SyncExternalCalendarConnectionCommandHandler
         Exception? syncException = null;
         try
         {
-            return await ExecuteSyncAsync(connection, leaseId.Value, command, cancellationToken);
+            return await ExecuteSyncAsync(connection, command, cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -137,11 +137,9 @@ public sealed class SyncExternalCalendarConnectionCommandHandler
 
     private async Task<SyncExternalCalendarConnectionResponse> ExecuteSyncAsync(
         ExternalCalendarConnection connection,
-        Guid leaseId,
         SyncExternalCalendarConnectionCommand command,
         CancellationToken cancellationToken)
     {
-        _ = leaseId;
         var now = DateTime.UtcNow;
         connection.MarkSyncing(now);
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -352,6 +350,7 @@ public sealed class SyncExternalCalendarConnectionCommandHandler
                 Title = evt.Title,
                 StartsAtUtc = evt.StartsAtUtc,
                 EndsAtUtc = evt.EndsAtUtc,
+                OriginalTimezone = evt.OriginalTimezone,
                 IsAllDay = evt.IsAllDay,
                 Location = evt.Location,
                 ParticipantSummaryJson = evt.ParticipantSummaryJson,
@@ -371,6 +370,7 @@ public sealed class SyncExternalCalendarConnectionCommandHandler
         existing.Title = evt.Title;
         existing.StartsAtUtc = evt.StartsAtUtc;
         existing.EndsAtUtc = evt.EndsAtUtc;
+        existing.OriginalTimezone = evt.OriginalTimezone;
         existing.IsAllDay = evt.IsAllDay;
         existing.Location = evt.Location;
         existing.ParticipantSummaryJson = evt.ParticipantSummaryJson;

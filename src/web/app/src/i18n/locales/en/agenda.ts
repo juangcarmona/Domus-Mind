@@ -34,6 +34,12 @@ export default {
   },
   loading: "Loading…",
   error: "Failed to load agenda.",
+  item: {
+    edit: "Edit",
+    openInProvider: "Open in Outlook",
+    externalCalendar: "External Calendar",
+    importedReadOnly: "Imported · read only",
+  },
   shared: {
     label: "Shared",
   },

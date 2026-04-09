@@ -4,4 +4,5 @@ public sealed record AvailableExternalCalendarResponse(
     string CalendarId,
     string CalendarName,
     bool IsDefault,
-    bool IsSelected);
+    bool IsSelected,
+    string? ColorHex = null);

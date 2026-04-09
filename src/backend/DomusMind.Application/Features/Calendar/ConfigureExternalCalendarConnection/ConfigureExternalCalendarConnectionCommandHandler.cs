@@ -86,16 +86,16 @@ public sealed class ConfigureExternalCalendarConnectionCommandHandler
         int added = 0, updated = 0, deselected = 0;
 
         // Update in-place or add new.
-        foreach (var (calendarId, calendarName, isSelected) in command.SelectedCalendars)
+        foreach (var (calendarId, calendarName, isSelected, colorHex) in command.SelectedCalendars)
         {
             if (existingByCalendarId.TryGetValue(calendarId, out var existing))
             {
-                existing.UpdateSelection(calendarName, isSelected, now);
+                existing.UpdateSelection(calendarName, isSelected, now, colorHex);
                 updated++;
             }
             else
             {
-                var newFeed = ExternalCalendarFeed.Create(connection.Id, calendarId, calendarName, false, isSelected, now);
+                var newFeed = ExternalCalendarFeed.Create(connection.Id, calendarId, calendarName, false, isSelected, now, colorHex);
                 _dbContext.Set<ExternalCalendarFeed>().Add(newFeed);
                 added++;
             }

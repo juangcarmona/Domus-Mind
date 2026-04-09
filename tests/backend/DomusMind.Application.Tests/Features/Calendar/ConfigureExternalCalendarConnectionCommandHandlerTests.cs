@@ -84,7 +84,7 @@ public sealed class ConfigureExternalCalendarConnectionCommandHandlerTests
         int refreshInterval = 60)
     {
         var sel = selections
-            .Select(s => (s.CalendarId, s.Name, s.IsSelected))
+            .Select(s => (s.CalendarId, s.Name, s.IsSelected, (string?)null))
             .ToList()
             .AsReadOnly();
 

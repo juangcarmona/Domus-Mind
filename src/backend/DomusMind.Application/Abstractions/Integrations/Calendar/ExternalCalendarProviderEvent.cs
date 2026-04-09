@@ -16,4 +16,10 @@ public sealed record ExternalCalendarProviderEvent(
     string Status,
     string? OpenInProviderUrl,
     DateTime? ProviderModifiedAtUtc,
-    bool IsDeleted);
+    bool IsDeleted,
+    /// <summary>
+    /// IANA or Windows timezone ID from the source event (e.g. "America/New_York").
+    /// Used to render event times in the household's local time context.
+    /// Null when the source reported UTC or did not carry timezone metadata.
+    /// </summary>
+    string? OriginalTimezone = null);
