@@ -2,32 +2,36 @@
 
 ## Purpose
 
-Provide a fast, dense, reusable household list surface for grouped household memory.
+Provide a fast, dense, household execution surface for captured items.
 
 This surface answers:
 
 - what lists exist
 - which list matters now
-- what remains unchecked
-- what should be added, checked, or updated next
+- what needs to be done, bought, or remembered
+- which items have urgency or timing
+- what should be added, checked, updated, or scheduled next
 
-Lists represent persistent grouped household memory.
+Lists are household execution containers supporting a spectrum from memory to action.
 
 They are:
 
 - reusable
 - toggle-based
 - shared by default, optionally private
-- unscheduled
 - persistent across uses
+
+They may contain:
+
+- plain memory items (name only)
+- important items (starred)
+- time-aware items (due date, reminder, repeat)
 
 They are not:
 
-- a task manager
-- a calendar
-- a scheduling system
-- a per-item reminder system
-- an assignment or ownership model
+- a full task management system
+- a calendar view
+- an assignment and ownership model
 
 ---
 
@@ -51,18 +55,19 @@ They are not:
 
 ### What a List Is
 
-A list is a named household memory container for grouped items.
+A list is a named household execution container for grouped items.
 
-A list exists to answer: *"What should be remembered, bought, checked, or prepared next time?"*
+A list exists to answer: *"What should be remembered, bought, checked, prepared, or done next time?"*
 
 Lists are:
 
-- grouped by context or purpose, not by time
+- grouped by context or purpose, not only by time
 - independent objects — they can exist without any link to a plan or area
 - optionally contextual — they may be associated with a plan or area
-- usually untimed
 - persistent across uses
 - reusable by design
+
+Items within a list may range from simple memory entries to time-aware actionable entries.
 
 Common household examples:
 
@@ -71,6 +76,7 @@ Common household examples:
 - preparation for an event
 - restocking essentials
 - recurring situation checklists
+- school preparation items with due dates
 
 ### What a List Is Not
 
@@ -78,12 +84,12 @@ A list is not a task board.
 
 A list item is not a task by default.
 
-A list does not become part of Agenda just because it is linked to a plan.
+A list does not replace Agenda or Tasks.
+Lists own **capture and flexible execution**.
+Tasks own **structured execution lifecycle**.
+Calendar owns **time**.
 
 A list linked to a plan remains a list. Its items do not become scheduled tasks.
-
-Lists must not acquire scheduling, assignment, prioritization, or reminder semantics.
-These belong to Agenda and Tasks.
 
 ### Lifecycle
 
@@ -105,9 +111,9 @@ Reuse is more important than one-time completion.
 The four core axes of DomusMind are:
 
 - **Agenda** → owns TIME
-- **Tasks** → owns EXECUTION
+- **Tasks** → owns STRUCTURED EXECUTION LIFECYCLE
 - **Areas** → owns OWNERSHIP
-- **Lists** → owns GROUPED MEMORY
+- **Lists** → owns HOUSEHOLD EXECUTION CONTAINER (capture → action → time reference)
 
 No semantic collapse is permitted across these axes.
 
@@ -115,14 +121,14 @@ No semantic collapse is permitted across these axes.
 
 ## Role
 
-Lists is the household surface for reusable grouped memory.
+Lists is the household surface for reusable, flexible execution containers.
 
 It is optimized for:
 
 - scan speed
 - quick capture
 - quick toggle state
-- low-friction inspection
+- inspector-driven depth
 - low-friction switching between lists
 
 The active list is the working surface.
@@ -134,7 +140,7 @@ The active list is the working surface.
 - content over chrome
 - one row = one item
 - quick add always visible
-- detail is secondary
+- detail lives in the inspector
 - counts are visible before opening a list
 - completed items stay accessible but compressed
 - theming supports recognition, not decoration
@@ -143,6 +149,7 @@ The active list is the working surface.
 - grouping matters more than scheduling
 - reuse is more important than one-time usage
 - context enriches but does not define the list
+- temporal fields enrich items; they do not define the list
 
 ---
 
@@ -224,35 +231,89 @@ Typical inspector content:
 
 ---
 
-## Item Model
+## Item Capability Model
 
-An item in a list has a strict model.
+Items support a progressive capability set. Not every item uses every field.
 
-Required:
+### Base (always present)
 
 - name
+- checked state
 
-Optional:
+### Extended base (common, lightweight)
 
 - quantity
 - note
-- checked state
 
-The item model explicitly does not include:
+### Optional capabilities
 
-- due date
-- reminder
-- assignee
-- priority
-- recurrence per item
-- attachments
-- comments
-- status systems
+Each capability is independently optional:
 
-These fields do not belong to list items.
-If they appear in implementation, they must be rejected.
+| Capability  | Fields                              | Effect                                      |
+| ----------- | ----------------------------------- | ------------------------------------------- |
+| importance  | starred flag                        | item appears visually prioritized in the list |
+| temporal    | due date, reminder, repeat          | item is eligible for Agenda projection      |
 
-Items must not be converted to tasks.
+Items with temporal fields may appear in the Agenda surface as projected list items.
+
+Items do not require all capabilities.
+A plain item with only a name is fully valid.
+A starred item with a due date and reminder is also fully valid.
+
+### What items do not include
+
+- assignee — assignment belongs to Tasks
+- status system beyond checked/unchecked — lifecycle belongs to Tasks
+- comments — deferred
+- attachments — deferred
+- steps — deferred
+
+---
+
+## Inspector = Command Surface
+
+The item inspector is the primary command surface for item capabilities.
+
+It is not a modal.
+It is contextual panel (desktop) or bottom sheet (mobile) that opens on item selection.
+
+Inspector sections:
+
+### 1. Status
+
+- check / uncheck toggle
+- visual state reflects current checked status
+
+### 2. Title
+
+- editable inline
+- no confirmation required on change
+
+### 3. Importance
+
+- single star affordance
+- tap to toggle starred / not-starred
+- visually distinct when active
+
+### 4. Time
+
+Three sub-fields, each independently optional:
+
+- **Due date** — date picker; clearing removes temporal eligibility from Agenda if no reminder is set
+- **Reminder** — time-aware alert; clearing removes temporal eligibility from Agenda if no due date is set
+- **Repeat** — repeat rule; requires due date to be set
+
+Clearing all temporal fields removes the item from Agenda projection.
+
+### 5. Metadata
+
+- **Quantity** — numeric or text
+- **Note** — freeform, multi-line
+
+### 6. Actions
+
+- remove item
+- (future: move to list, duplicate)
 
 ---
 
@@ -279,19 +340,24 @@ Quick add must support sequential entry without interruption.
 
 ## Relationship with Agenda
 
-A plan in Agenda may reference a related list.
+Items with temporal fields (due date, reminder) project into the Agenda surface as list-origin entries.
 
-When a plan has a related list:
+Rules:
+
+- projected items appear alongside tasks and events in Agenda
+- projected items carry a visual list-origin cue (list name or icon)
+- projected items are distinguishable from Tasks and Calendar events in Agenda
+- projected items are not editable from Agenda — edits must go through the Lists surface
+- selecting a projected item in Agenda navigates to its list context
+- Agenda does not expand list content beyond projected temporal items
+- a list linked to a plan retains list semantics; the link does not cause all items to project
+
+When a plan in Agenda has a related list:
 
 - Agenda shows a compact reference cue — the list name and unchecked count
 - selecting the cue navigates to the full list in the Lists surface
 - Agenda does not expand list items inline as plan content
 - Agenda does not convert list items to tasks
-- Agenda does not display list items in the timeline
-
-A list linked to a plan remains a list.
-Its items remain list items.
-No temporal or execution semantics are inherited from the link.
 
 ---
 
@@ -414,13 +480,14 @@ Quick add should optimize for speed over metadata completeness.
 
 ## Detail Interaction
 
-Detail is secondary.
+Detail is accessed through the inspector.
 
 Desktop:
 
-- selecting an item opens it in the inline inspector
+- selecting an item opens it in the inline inspector panel
 - detail stays within the list context
 - editing is in place — no modal required for name or simple fields
+- inspector sections are contextually collapsed when empty (e.g. no temporal fields shown as empty, but accessible)
 
 Mobile:
 
@@ -428,10 +495,9 @@ Mobile:
 - bottom sheet stays compact
 - close returns focus to the list
 
-Detail panels must not expose fields that are not in the item model.
-No due date field.
-No assignee field.
-No priority.
+The inspector is the command surface for all item capabilities.
+All item fields (importance, temporal, quantity, note) are accessible through the inspector.
+Quick add does not require opening the inspector.
 
 ---
 
@@ -441,10 +507,10 @@ The following behaviors are explicitly rejected for the Lists surface.
 
 **Semantic drift:**
 
-- turning list items into tasks
-- adding due dates or reminders to list items
+- turning list items into tasks automatically
+- treating a temporal item as if it belongs to the Tasks context
 - treating a list linked to a plan as a task batch for that plan
-- displaying list items in the Agenda timeline
+- displaying all list items in the Agenda timeline (only temporally-enriched items project)
 
 **Layout drift:**
 
@@ -457,10 +523,12 @@ The following behaviors are explicitly rejected for the Lists surface.
 - requiring a modal to add a basic item
 - opening a full separate page to view a list item
 - requiring complex metadata before capture
+- hiding the inspector affordance
 
 **Model drift:**
 
 - making lists person-centric instead of household-centric
 - treating lists as disposable task batches
 - forcing context linkage as a required step
-- importing priority or assignment systems from Tasks
+- importing full assignment and status lifecycle from Tasks
+- exposing steps, comments, or attachments (deferred)

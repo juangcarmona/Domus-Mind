@@ -7,6 +7,7 @@ Depends on:
   - docs/00_product/surface-system.md
   - docs/04_contexts/calendar.md
   - docs/04_contexts/tasks.md
+  - docs/04_contexts/shared-lists.md
 Replaces:
   - specs/surfaces/today.md
   - specs/surfaces/planning.md
@@ -178,6 +179,8 @@ Item grammar:
 □   task
 ●   hh:mm plan
 ⟳   routine
+☆   projected list item (with importance)
+◇   projected list item (without importance)
 ✓   completed
 ```
 
@@ -262,8 +265,24 @@ Month is a navigation and awareness surface, not a primary editing surface.
 - tasks: due on the selected date, overdue, or assigned to a member
 - routines: projected occurrences for the selected date or range
 - imported external calendar entries in Member scope only when they fall inside the selected date window and an active sync horizon
+- **projected list items**: list items with temporal fields (due date or reminder) that fall within the selected date window
 - completed items: present but de-emphasized
 - unavailability blocks: where relevant and available
+
+### Projected List Items
+
+Shared List items carrying temporal fields (due date, reminder, repeat) project into Agenda as a distinct entry type.
+
+Rules:
+
+- projected list items appear alongside tasks and events
+- projected list items carry a visual list-origin cue (e.g. list name or list icon)
+- projected list items are distinguishable from Task entries and Calendar Events in all Agenda views
+- projected list items are not editable from Agenda — edit navigates to the item's list
+- selecting a projected list item opens read-detail inline (inspector/bottom sheet) with a `Open in Lists` action
+- projected list items appear in both Household and Member scope (scoping follows the list's family scope)
+- projected list items follow the same priority ordering as tasks for unchecked state
+- checked list items that still have a due date in the window appear de-emphasized (same as completed tasks)
 
 ### External calendar entry rules
 
@@ -283,13 +302,13 @@ When it does, Agenda may surface a compact reference cue on the plan — showing
 
 Rules:
 
-- Agenda shows the list as a reference only, never as expanded content
-- Agenda does not render list items in the timeline or board
+- the reference cue links to the full list in Lists surface
+- the cue reflects the plan-linked list, not temporally projected items
+- Agenda does not render list items inline as plan content
 - Agenda does not convert list items to tasks
 - selecting the list cue navigates to the Lists surface
-- the list retains list semantics regardless of the link
 
-A list linked to a plan is still a list. Agenda does not own it and does not alter it.
+Temporal list items that happen to be linked to the same event via their parent list appear independently via the projection mechanism above, not as a consequence of the plan link.
 
 ### What Agenda does not own
 
@@ -305,9 +324,11 @@ Always show items in this order within a day or cell:
 
 1. overdue
 2. tasks due on this date
-3. plans (by start time ascending, untimed after timed)
-4. routines
-5. completed
+3. projected list items due on this date (unchecked, importance first)
+4. plans (by start time ascending, untimed after timed)
+5. routines
+6. projected list items due on this date (unchecked, no importance)
+7. completed / checked
 
 ---
 
@@ -344,14 +365,15 @@ The following rules apply consistently across Household and Member scopes:
 The inspector panel shows a structured summary of the selected item without requiring Edit to understand it.
 
 Panel structure:
-1. Type / source cue (e.g. `Routine`, `Task`, `Plan`, or provider name for imported entries)
+1. Type / source cue (e.g. `Routine`, `Task`, `Plan`, `List Item`, or provider name for imported entries)
 2. Time range (if timed)
 3. Type-specific metadata:
    - **Plan**: participants, recurrence/reminder if applicable
    - **Task**: status, due date
    - **Routine**: recurrence summary, scope
+   - **Projected list item**: list name, checked state, note if present, `Open in Lists` action
    - **Imported external entry**: source label, read-only state, `Open in Outlook` link
-4. Edit action (native entries only)
+4. Edit action (native entries only; not available for projected list items or imported external entries)
 
 The inspector does not include a second close button. The panel header owns the single close affordance.
 

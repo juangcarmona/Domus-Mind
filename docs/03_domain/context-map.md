@@ -22,7 +22,7 @@ Calendar defines time structure using Family participants.
 
 Tasks defines execution using Family members and references to responsibilities and events.
 
-Shared Lists defines household list-based coordination, shared capture, and lightweight shared state.
+Shared Lists defines the household execution container for captured items — supporting a spectrum from lightweight memory to actionable, temporally-enriched entries that project into the Agenda surface.
 
 ---
 
@@ -30,16 +30,16 @@ Shared Lists defines household list-based coordination, shared capture, and ligh
 
 The dependency structure is **not a linear chain**.
 
-Responsibilities, Calendar, Tasks, and Shared Lists all depend on Family. Tasks may react to Calendar and Responsibilities. Shared Lists may reference Responsibilities and may optionally link to Calendar entities, but remains behaviorally independent.
+Responsibilities, Calendar, Tasks, and Shared Lists all depend on Family. Tasks may react to Calendar and Responsibilities. Shared Lists may reference Responsibilities and may optionally link to Calendar entities. Shared Lists may project temporally-enriched items into the Agenda surface without owning Calendar semantics.
 
 ```
                  Family
           /         |         |         \
          ↓          ↓         ↓          ↓
 Responsibilities Calendar    Tasks   Shared Lists
-         \          /
-          ↓        ↓
-             event reactions
+         \          /                      \
+          ↓        ↓                        ↓ (projection)
+             event reactions             Agenda (read surface)
 ```
 
 Dependency interpretation:
@@ -51,6 +51,8 @@ Dependency interpretation:
 * **Shared Lists** depends on Family for ownership and identity
 * Shared Lists may reference Responsibilities domains for grouping and soft ownership
 * Shared Lists may optionally link to Calendar entities for contextual use
+* Shared Lists may carry item-level temporal fields (due date, reminder, repeat)
+* Items with temporal fields project into the Agenda surface — Calendar remains the source of truth for time
 * Shared Lists does not depend on Tasks
 * Tasks does not depend on Shared Lists
 
@@ -58,9 +60,19 @@ Interpretation:
 
 * Family → identity
 * Responsibilities → accountability
-* Calendar → time
-* Tasks → execution
-* Shared Lists → shared capture and lightweight shared state
+* Calendar → time (source of truth)
+* Tasks → structured, explicit execution
+* Shared Lists → household execution container (lightweight to actionable)
+
+### Context Execution Boundary
+
+Lists own **capture and flexible execution**.
+Tasks own **structured execution lifecycle**.
+Calendar owns **time**.
+
+These roles are complementary and intentionally distinct.
+A list item is not a task.
+A temporal field on a list item is a reference into time, not ownership of time.
 ---
 
 ## Collaboration Model
@@ -73,23 +85,35 @@ Communication rules:
 
 * identity flows from Family
 * accountability flows from Responsibilities
-* time flows from Calendar
-* execution happens in Tasks
-* shared capture happens in Shared Lists
+* time flows from Calendar (Calendar is the source of truth for time)
+* structured execution happens in Tasks
+* household capture and flexible execution happen in Shared Lists
+* temporal item data in Shared Lists projects into Agenda — it does not flow back into Calendar
 
 Contexts react to events rather than forming direct structural dependencies.
 
 
 ## Shared Lists Interaction
 
-Shared Lists introduces a new coordination pattern:
+Shared Lists introduces a household execution container pattern:
 
 * persistent shared state
 * shared capture
-* reusable checklists
+* reusable execution containers
 * toggle-based semantics
+* item-level importance, temporal fields, and repeat rules
 
-Examples:
+### Temporal Item Projection
+
+When an item carries temporal fields (due date, reminder, repeat), it becomes eligible for projection into the Agenda surface.
+
+Projection rules:
+
+* projection is read-only from Calendar's perspective
+* projected items remain editable only through the Lists surface
+* projected items must be distinguishable from Calendar events and Tasks in Agenda
+* Calendar retains full ownership of time semantics
+* no cross-context event is required for read-only projection
 
 ### List Used During Event
 
@@ -210,14 +234,28 @@ Calendar owns:
 * events
 * schedules
 * reminders
+* time (source of truth)
 
 Tasks owns:
 
 * tasks
 * routines
-* completion state
+* structured execution lifecycle
+* completion state and assignment
+
+Shared Lists owns:
+
+* list containers
+* item identity and base state
+* item capability state (importance, temporal fields)
+* household capture and flexible execution
 
 Contexts must not leak responsibilities across boundaries.
+
+A list item with a due date does not become a Calendar event.
+A list item with a due date does not become a Task.
+Temporal enrichment on an item enables **projection** into the Agenda surface.
+Projection is a read concern, not an ownership transfer.
 
 ---
 
@@ -239,12 +277,12 @@ The DomusMind core model is built around five cooperating contexts:
 
 * **Family** → identity
 * **Responsibilities** → accountability
-* **Calendar** → time
-* **Tasks** → execution
-* **Shared Lists** → shared capture and lightweight shared state
+* **Calendar** → time (source of truth)
+* **Tasks** → structured execution lifecycle
+* **Shared Lists** → household execution container (capture to action, with optional time reference)
 
 Responsibilities, Calendar, Tasks, and Shared Lists all depend on Family.
 
-Tasks integrates signals from Family, Calendar, and Responsibilities to coordinate execution.
+Tasks integrates signals from Family, Calendar, and Responsibilities to coordinate structured execution.
 
-Shared Lists provides a parallel coordination layer focused on reusable, persistent checklist state, independent from execution and time semantics.
+Shared Lists provides a flexible execution layer from simple memory to temporally-enriched actionable items that project into the Agenda surface. It is not a duplicate of Tasks. It is not a clone of Calendar. It is the household's primary capture container.

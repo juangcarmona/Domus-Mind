@@ -264,7 +264,7 @@ The sync horizon is part of the identity of external calendar synchronization st
 
 ### Task
 
-A **Task** is a concrete action that must be completed.
+A **Task** is a concrete, explicitly managed structured execution entity.
 
 Examples:
 
@@ -285,9 +285,13 @@ There is no translation layer here.
 A task:
 
 * belongs to the Tasks context
-* may be assigned
+* may be assigned to a member
 * may have a due date
-* has a lifecycle state
+* has a defined lifecycle state (pending → in progress → completed / cancelled)
+
+A task is not a list item.
+A task carries structured execution semantics that a list item does not require.
+Do not confuse a list item that has a due date with a Task — they are different things in different contexts.
 
 ### Routine
 
@@ -314,7 +318,7 @@ A routine:
 
 ### Shared List
 
-A **Shared List** is a collaborative household list owned by the Shared Lists context.
+A **Shared List** is the household execution container owned by the Shared Lists context.
 
 Examples:
 
@@ -325,7 +329,9 @@ packing checklist
 school materials
 ```
 
-A shared list is used for lightweight shared capture and shared state.
+A shared list is used for household capture and flexible execution.
+
+It supports a spectrum from simple memory to actionable, temporally-enriched items.
 
 A shared list is not:
 
@@ -333,11 +339,11 @@ A shared list is not:
 * a calendar
 * a responsibility domain
 
-It is a list.
+It is a household execution container.
 
 ### Shared List Item
 
-A **Shared List Item** is an entry inside a shared list.
+A **Shared List Item** is a polymorphic execution unit inside a shared list.
 
 Examples:
 
@@ -348,13 +354,32 @@ passport
 notebook
 ```
 
-A shared list item supports simple shared coordination such as:
+A shared list item supports a range of execution semantics:
 
-* capture
-* visibility
-* checked / unchecked state
+* base: name, checked/unchecked state, note, quantity
+* optional: importance flag
+* optional: temporal fields — due date, reminder, repeat
 
-Do not call a shared list item a task unless it truly belongs to the Tasks context.
+Items with temporal fields may **project** into the Agenda surface.
+
+A shared list item is not a task.
+A shared list item does not become a task automatically, regardless of what capabilities it carries.
+
+### Projection
+
+**Projection** is the read-model operation by which temporally-enriched list items appear in the Agenda surface.
+
+A list item with a due date, reminder, or repeat rule is eligible for projection.
+
+Projection rules:
+
+* the item remains owned by Shared Lists
+* the item appears in Agenda with a list-origin distinguishing cue
+* the item cannot be edited from Agenda — edits go through Lists
+* Calendar is not involved in the projection — it is a read surface concern
+* no cross-context command is issued to produce the projection
+
+Projection is a read concern, not an ownership transfer.
 
 ---
 
@@ -385,7 +410,15 @@ The **Agenda View** is the household temporal read surface.
 It can show household or individual scope across day, week, and month time windows.
 
 It is not a bounded context.
-It is a set of projections over data owned by Calendar, Tasks, and Family.
+It is a set of projections over data owned by Calendar, Tasks, Family, and Shared Lists.
+
+Projected sources include:
+
+* Calendar events (Plans)
+* Tasks (due date-bearing)
+* Routines (on-the-fly projection)
+* Imported external calendar entries (in Member scope)
+* Shared List Items carrying temporal fields (due date or reminder)
 
 ### Day View
 

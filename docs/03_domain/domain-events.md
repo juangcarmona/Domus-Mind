@@ -245,28 +245,40 @@ Typical downstream uses:
 
 ## Shared List Events
 
-Shared Lists owns collaborative list-based capture and shared list state.
+Shared Lists owns collaborative household execution containers and their items.
 
-Current stable events should map only to implemented list behavior.
-
-Recommended V1 event set:
+Stable events:
 
 ```text
 SharedListCreated
 SharedListRenamed
 SharedListArchived
 SharedListItemAdded
+SharedListItemUpdated
 SharedListItemToggled
 SharedListItemRemoved
+SharedListItemImportanceSet
+SharedListItemScheduled
 ```
+
+Event notes:
+
+* `SharedListItemUpdated` — emitted when item base fields change (name, note, quantity)
+* `SharedListItemImportanceSet` — emitted when the importance flag is set or cleared
+* `SharedListItemScheduled` — emitted when an item receives its first temporal field (due date, reminder, or repeat); also emitted when those fields are cleared (to support Agenda projection invalidation)
 
 Typical downstream uses:
 
 * update list read models
 * surface household shopping / supply / checklist state
-* support timeline or coordination projections only where explicitly designed
+* update Agenda projection source when an item becomes or ceases to be temporally enriched
 
-If the implementation does not yet support one of these transitions, do not emit the event until the behavior exists in the domain.
+Cross-context projection note:
+
+Items with temporal fields project into the Agenda read surface.
+This projection is handled as a query concern.
+No cross-context domain event is emitted to Calendar or Tasks to enable projection.
+Downstream consumers of `SharedListItemScheduled` may update projection read models independently.
 
 ---
 
