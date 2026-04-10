@@ -78,13 +78,14 @@ Default view is a dense list of area summaries.
 
 Each area row should show:
 
+- area color cue (dot)
 - area name
-- primary owner
+- primary owner or ownership gap cue
 - support members if present
-- optional linked counts:
-  - plans
-  - tasks
-  - lists
+- compact linked work cues when available:
+  - open tasks count
+  - plans count
+  - routines count
 - status cue if ownership is missing or partial
 
 Participant detail does not belong in the default row.
@@ -132,20 +133,27 @@ This keeps gaps visible first.
 
 The inspector is the default desktop detail pattern.
 
-It may show:
+The inspector is the primary desktop detail experience.
 
-- area name
-- primary owner
-- support members
-- participants if relevant
-- linked plans
-- linked tasks
-- linked lists
-- rename action
-- assign or transfer actions
-- archive action
+No separate full-detail page exists. `AreaDetailPage` (/areas/:areaId) is a thin redirect to `/areas` with area selection restored.
+
+The inspector shows:
+
+- area identity: color dot (click to change color) + name (click to rename inline)
+- owner — read-first navigable identity with inline change affordance
+- support members — read-first navigable identities with add/remove
+- related work:
+  - linked tasks (open, pending)
+  - linked plans
+  - linked routines
+- explicit creation actions:
+  - New task (pre-filled: area + owner as assignee)
+  - New routine (pre-filled: area)
+  - New plan (pre-filled: area + owner as participant)
 
 The inspector should support quick edits without breaking context.
+
+Identity links (owner name, supporter name) navigate to that person’s Agenda context.
 
 ---
 
@@ -189,11 +197,18 @@ Counts are cues, not the main content.
 Supported interactions:
 
 - add area
-- rename area
-- assign primary owner
-- add or remove support
-- open linked items
+- rename area (inline in inspector)
+- change area color (inline compact palette in inspector)
+- assign primary owner (inline in inspector)
+- add or remove support (inline in inspector)
+- open linked items (click to edit in modal)
 - archive area
+- create from area context:
+  - explicit “New task” entry point (pre-filled with area + owner)
+  - explicit “New routine” entry point (pre-filled with area)
+  - explicit “New plan” entry point (pre-filled with area + owner)
+
+No generic chooser modal is shown from Areas. Each creation entry point is explicit and directly opens the relevant form pre-filled with the current area context.
 
 Adding an area should stay lightweight.
 
@@ -208,8 +223,9 @@ Optional fields:
 
 Ownership editing rules:
 
-- one clear primary owner field
-- support handled separately
+- owner and supporters are shown as read-first navigable identities
+- clicking owner or supporter name navigates to that person's Agenda context
+- a clear affordance (e.g. "Change") triggers owner editing inline
 - no role jargon in the UI
 - no permissions language
 - no dense form walls
@@ -222,12 +238,29 @@ Use household language:
 Desktop:
 
 - selecting an area opens the inspector
+- the inspector is the primary detail experience on desktop
+- no separate full-detail page navigation is required from the inspector
 
 Mobile:
 
 - selecting an area opens a bottom sheet or pushed detail section
 
-Do not navigate to a separate full page by default.
+### Area Inspector
+
+The inspector is the primary desktop detail surface for a selected area.
+
+It shows:
+
+- area identity (color dot + name) — dot click changes color; name click renames inline
+- owner — navigable identity + inline change affordance
+- support members — navigable identities + add/remove
+- related work (tasks, plans, routines linked to this area)
+- explicit create actions: New task / New routine / New plan
+
+Owner and supporter names navigate to that person's Agenda context when clicked.
+
+Do not use a separate full-detail page for normal area inspection on desktop.
+The inspector is the detail.
 
 ---
 
@@ -268,14 +301,10 @@ Expected behavior:
 
 ## Relationship with Other Surfaces
 
-### Today
+### Agenda
 
-- Today may show area-linked cues
+- Agenda may show area-linked cues in task and plan context
 - Areas owns the ownership overview
-
-### Planning
-
-- Planning may reference areas
 - Areas does not become a calendar
 
 ### Lists

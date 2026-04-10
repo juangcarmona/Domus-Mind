@@ -52,8 +52,12 @@ export interface CalendarEntry {
   isReadOnly?: boolean;
   sourceLabel?: string | null;
   openInProviderUrl?: string | null;
-  /** Physical location for the entry (populated for imported external events). */
-  location?: string | null;
+  /** For routines: human-readable frequency/recurrence summary. */
+  recurrenceSummary?: string | null;
+  /** For routines: household or member scope. */
+  scope?: string | null;
+  /** For tasks: ISO due date or null when not set. */
+  dueDate?: string | null;
 }
 
 // ----------------------------------------------------------------
@@ -126,7 +130,6 @@ export function normalizeEventItem(
     isReadOnly: e.isReadOnly ?? false,
     sourceLabel: e.providerLabel ?? null,
     openInProviderUrl: e.openInProviderUrl ?? null,
-    location: e.location ?? null,
   };
 }
 
@@ -149,6 +152,7 @@ export function normalizeTaskItem(t: WeeklyGridTaskItem): CalendarEntry {
     color: t.color ?? null,
     isCompleted: terminal,
     isOverdue: false,
+    dueDate: t.dueDate ?? null,
   };
 }
 
@@ -171,6 +175,8 @@ export function normalizeRoutineItem(
     color: r.color ?? null,
     isCompleted: false,
     isOverdue: false,
+    recurrenceSummary: r.frequency ?? null,
+    scope: r.scope ?? null,
   };
 }
 

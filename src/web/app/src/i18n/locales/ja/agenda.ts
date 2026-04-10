@@ -42,4 +42,23 @@ export default {
   dateCard: {
     today: "今日",
   },
+  item: {
+    edit: "編集",
+    openInProvider: "Outlook で開く",
+    externalCalendar: "外部カレンダー",
+    importedReadOnly: "インポート済み · 読み取り専用",
+    readOnly: "読み取り専用",
+    typeRoutine: "ルーティン",
+    typeTask: "タスク",
+    typePlan: "プラン",
+    participants: "参加者",
+    status: "ステータス",
+    dueDate: "期限",
+    noDueDate: "期限なし",
+    recurrence: "繰り返し",
+    scope: "スコープ",
+  },
+  inspector: {
+    idleHint: "アイテムを選択して詳細を確認。",
+  },
 } as const;

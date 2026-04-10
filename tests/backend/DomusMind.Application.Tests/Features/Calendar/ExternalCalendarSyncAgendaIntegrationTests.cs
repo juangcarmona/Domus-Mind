@@ -56,9 +56,9 @@ public sealed class ExternalCalendarSyncAgendaIntegrationTests
             db,
             new EventLogWriter(db),
             new StubCalendarAuthorizationService(),
-            new StubExternalCalendarAuthService("access-token"),
+            new TestAuthService("access-token"),
             new TestProviderClient(now.AddHours(2)),
-            new StubExternalCalendarSyncLeaseService(),
+            new TestLeaseService(),
             NullLogger<SyncExternalCalendarConnectionCommandHandler>.Instance);
 
         await syncHandler.Handle(
@@ -88,6 +88,28 @@ public sealed class ExternalCalendarSyncAgendaIntegrationTests
         imported.IsReadOnly.Should().BeTrue();
         imported.ProviderLabel.Should().Be("Outlook");
         imported.OpenInProviderUrl.Should().NotBeNullOrWhiteSpace();
+    }
+
+    private sealed class TestAuthService : IExternalCalendarAuthService
+    {
+        private readonly string? _accessToken;
+
+        public TestAuthService(string? accessToken)
+        {
+            _accessToken = accessToken;
+        }
+
+        public Task<ExternalCalendarProviderAccount> ExchangeAuthorizationCodeAsync(
+            string authorizationCode,
+            string redirectUri,
+            CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public Task<string?> GetAccessTokenAsync(Guid connectionId, CancellationToken cancellationToken = default)
+            => Task.FromResult(_accessToken);
+
+        public Task RevokeAsync(Guid connectionId, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 
     private sealed class TestProviderClient : IExternalCalendarProviderClient
@@ -143,5 +165,14 @@ public sealed class ExternalCalendarSyncAgendaIntegrationTests
             yield return new ExternalCalendarProviderDeltaPage([], deltaToken, true);
             await Task.CompletedTask;
         }
+    }
+
+    private sealed class TestLeaseService : IExternalCalendarSyncLeaseService
+    {
+        public Task<Guid?> TryAcquireAsync(Guid connectionId, CancellationToken cancellationToken = default)
+            => Task.FromResult<Guid?>(Guid.NewGuid());
+
+        public Task ReleaseAsync(Guid connectionId, Guid leaseId, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 }

@@ -74,7 +74,7 @@ public sealed class GetExternalCalendarConnectionDetailQueryHandler
                 var providerCalendars = await _providerClient.GetCalendarsAsync(accessToken, cancellationToken);
                 var selectedIds = connection.Feeds.Where(f => f.IsSelected).Select(f => f.ProviderCalendarId).ToHashSet();
                 availableCalendars = providerCalendars.Select(c => new AvailableExternalCalendarResponse(
-                    c.CalendarId, c.CalendarName, c.IsDefault, selectedIds.Contains(c.CalendarId), c.ColorHex)).ToList();
+                    c.CalendarId, c.CalendarName, c.IsDefault, selectedIds.Contains(c.CalendarId))).ToList();
             }
             catch (Exception ex)
             {

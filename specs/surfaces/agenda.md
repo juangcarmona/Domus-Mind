@@ -306,20 +306,38 @@ Tapping or clicking any item selects it.
 
 Deselecting closes the inspector/sheet without navigation.
 
+### Click Semantics
+
+The following rules apply consistently across Household and Member scopes:
+
+**Navigate:**
+- clicking a member identity (avatar/name) in the household board or header switches to that member's scope, preserving current date and mode
+- clicking an owner or supporter identity in the Areas inspector navigates to that person's Agenda context
+
+**Inspect:**
+- clicking an item/entry/card opens the right inspector (desktop) or bottom sheet (mobile)
+- selection is reflected visually on the item
+- this applies to Day and Week views; clicking any item in any day of the week grid opens the inspector
+
+**Create:**
+- clicking an empty time slot in the Timeline (Member + Day) or the Week grid opens the add modal pre-filled with the clicked date and time
+- the primary `+ Add` action always opens the creation chooser modal
+
 ### Inspector / Bottom Sheet
 
-Shows:
+The inspector panel shows a structured summary of the selected item without requiring Edit to understand it.
 
-- item title
-- type and date context
-- participants (for plans)
-- recurrence summary (for plans and routines)
-- reminder summary (for plans)
-- assignment (for tasks)
-- status (for tasks)
-- notes where available
-- actions for native items: edit, complete, delete as appropriate
-- actions for imported external entries: read-only metadata and `Open in Outlook`
+Panel structure:
+1. Type / source cue (e.g. `Routine`, `Task`, `Plan`, or provider name for imported entries)
+2. Time range (if timed)
+3. Type-specific metadata:
+   - **Plan**: participants, recurrence/reminder if applicable
+   - **Task**: status, due date
+   - **Routine**: recurrence summary, scope
+   - **Imported external entry**: source label, read-only state, `Open in Outlook` link
+4. Edit action (native entries only)
+
+The inspector does not include a second close button. The panel header owns the single close affordance.
 
 ### Editing
 

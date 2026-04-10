@@ -20,7 +20,8 @@ import { WeeklyHouseholdGrid } from "../../today/components/grid/WeeklyHousehold
 import { PlanningMobileWeekStrip } from "../../planning/components/PlanningMobileWeekStrip";
 import { MonthView } from "../../today/components/MonthView";
 import { useMonthGridCache } from "../../today/hooks/useMonthGridCache";
-import { normalizeCellItems, type CalendarEntry } from "../../today/utils/calendarEntry";
+import type { CalendarEntry } from "../../today/utils/calendarEntry";
+import { normalizeCellItems } from "../../today/utils/calendarEntry";
 import {
   toIsoDate,
   addDays,
@@ -32,117 +33,124 @@ import "../agenda.css";
 const VALID_MODES: AgendaView[] = ["day", "week", "month"];
 
 // ----------------------------------------------------------------
-// Inspector item display — read-only imported event
+// Inspector item display
 // ----------------------------------------------------------------
 
-function ImportedEventDetail({
-  entry,
-  onClose,
-}: {
-  entry: CalendarEntry;
-  onClose: () => void;
-}) {
-  const { t } = useTranslation("agenda");
-
-  return (
-    <div className="agenda-inspector-item agenda-inspector-item--imported">
-      <div className="agenda-inspector-item-provider-badge">
-        {entry.sourceLabel ?? t("item.externalCalendar", "External Calendar")}
-      </div>
-      <p className="agenda-inspector-item-title">{entry.title}</p>
-      {entry.time && (
-        <p className="agenda-inspector-item-meta">
-          {entry.time}
-          {entry.endTime ? ` – ${entry.endTime}` : ""}
-        </p>
-      )}
-      {!entry.time && (
-        <p className="agenda-inspector-item-meta">
-          {t("day.allDay", "All day")}
-        </p>
-      )}
-      {entry.location && (
-        <p className="agenda-inspector-item-meta agenda-inspector-item-location">
-          {entry.location}
-        </p>
-      )}
-      {entry.subtitle && (
-        <p className="agenda-inspector-item-meta">{entry.subtitle}</p>
-      )}
-      {entry.status && entry.status !== "confirmed" && (
-        <p className="agenda-inspector-item-status">{entry.status}</p>
-      )}
-      <p className="agenda-inspector-item-readonly-note">
-        {t("item.importedReadOnly", "Imported · read only")}
-      </p>
-      <div className="agenda-inspector-item-actions">
-        {entry.openInProviderUrl && (
-          <a
-            className="btn btn-ghost btn-sm"
-            href={entry.openInProviderUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t("item.openInProvider", "Open in Outlook")}
-          </a>
-        )}
-        <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
-          ✕
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ----------------------------------------------------------------
-// Inspector item display — editable / local entry
-// ----------------------------------------------------------------
-
+/**
+ * Enriched inspector body for a selected calendar entry.
+ *
+ * Structured in consistent sections:
+ *   1. Type / source cue
+ *   2. Time range (if timed)
+ *   3. Type-specific metadata (participants, status, due date, recurrence, scope)
+ *   4. External action (read-only imported entries)
+ *   5. Edit action (native entries only)
+ *
+ * No close button — InspectorPanel header owns the close affordance.
+ */
 function AgendaItemDetail({
   entry,
   onEdit,
-  onClose,
 }: {
   entry: CalendarEntry;
   onEdit: (type: EditableEntityType, id: string) => void;
-  onClose: () => void;
 }) {
   const { t } = useTranslation("agenda");
+  const canEdit = !entry.isReadOnly;
 
-  if (entry.isReadOnly) {
-    return <ImportedEventDetail entry={entry} onClose={onClose} />;
-  }
+  const typeLabel =
+    entry.isReadOnly && entry.sourceLabel
+      ? entry.sourceLabel
+      : entry.sourceType === "routine"
+      ? t("item.typeRoutine")
+      : entry.sourceType === "task"
+      ? t("item.typeTask")
+      : t("item.typePlan");
 
   return (
     <div className="agenda-inspector-item">
-      <p className="agenda-inspector-item-title">{entry.title}</p>
+      {/* Type / source cue */}
+      <p className="agenda-inspector-item-type-cue">
+        {typeLabel}
+        {entry.isReadOnly && (
+          <span className="agenda-inspector-item-readonly-badge">
+            {" · "}{t("item.readOnly")}
+          </span>
+        )}
+      </p>
+
+      {/* Time range */}
       {entry.time && (
         <p className="agenda-inspector-item-meta">
           {entry.time}
           {entry.endTime ? ` – ${entry.endTime}` : ""}
         </p>
       )}
+
+      {/* Participants (events / plans) */}
       {entry.subtitle && (
-        <p className="agenda-inspector-item-meta">{entry.subtitle}</p>
+        <p className="agenda-inspector-item-meta">
+          <span className="agenda-inspector-item-label">{t("item.participants")}</span>
+          {" "}{entry.subtitle}
+        </p>
       )}
-      {entry.status && (
-        <p className="agenda-inspector-item-status">{entry.status}</p>
+
+      {/* Status (tasks) */}
+      {entry.sourceType === "task" && (
+        <p className="agenda-inspector-item-meta">
+          <span className="agenda-inspector-item-label">{t("item.status")}</span>
+          {" "}{entry.status}
+        </p>
       )}
-      <div className="agenda-inspector-item-actions">
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          onClick={() => {
-            onEdit(entry.sourceType, entry.id);
-            onClose();
-          }}
+
+      {/* Due date (tasks) */}
+      {entry.sourceType === "task" && (
+        <p className="agenda-inspector-item-meta">
+          <span className="agenda-inspector-item-label">{t("item.dueDate")}</span>
+          {" "}{entry.dueDate ?? t("item.noDueDate")}
+        </p>
+      )}
+
+      {/* Recurrence summary (routines) */}
+      {entry.sourceType === "routine" && entry.recurrenceSummary && (
+        <p className="agenda-inspector-item-meta">
+          <span className="agenda-inspector-item-label">{t("item.recurrence")}</span>
+          {" "}{entry.recurrenceSummary}
+        </p>
+      )}
+
+      {/* Scope (routines) */}
+      {entry.sourceType === "routine" && entry.scope && (
+        <p className="agenda-inspector-item-meta">
+          <span className="agenda-inspector-item-label">{t("item.scope")}</span>
+          {" "}{entry.scope}
+        </p>
+      )}
+
+      {/* External open link (imported read-only entries) */}
+      {entry.isReadOnly && entry.openInProviderUrl && (
+        <a
+          href={entry.openInProviderUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="agenda-inspector-external-link"
         >
-          {t("item.edit", "Edit")}
-        </button>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
-          ✕
-        </button>
-      </div>
+          {t("item.openInProvider")}
+        </a>
+      )}
+
+      {/* Edit action (native entries only) */}
+      {canEdit && (
+        <div className="agenda-inspector-item-actions">
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => onEdit(entry.sourceType, entry.id)}
+          >
+            {t("item.edit")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -315,47 +323,36 @@ export function AgendaPage() {
 
   // ---- Item interaction ----
 
+  /**
+   * Find a calendar entry by type + id across all cells of the currently loaded grid.
+   *
+   * Searches the raw cell data so it works for any day in the loaded week,
+   * not only the currently selected date. Used by handleItemClick.
+   */
+  function findEntryAcrossGrid(
+    type: "event" | "task" | "routine",
+    id: string,
+  ): CalendarEntry | null {
+    if (!grid) return null;
+    const cells = isHousehold
+      ? grid.sharedCells
+      : (grid.members.find((m) => m.memberId === memberId)?.cells ?? []);
+    for (const cell of cells) {
+      const entries = normalizeCellItems(cell);
+      const found = entries.find((e) => e.id === id && e.sourceType === type);
+      if (found) return found;
+    }
+    return null;
+  }
+
   function handleItemClick(type: "event" | "task" | "routine", id: string) {
-    if (!grid) return;
-
-    // Build a flat search corpus over ALL cells in the loaded grid —
-    // shared cells AND every member cell across all days.
-    //
-    // Why this matters for household scope: the TodayBoard renders member rows
-    // (which include imported external events). Those events live in member cells,
-    // NOT shared cells. The previous implementation only searched shared cells
-    // for household scope, so imported events were never found and fell through
-    // to setEditTarget, opening the edit modal on a read-only entry.
-    //
-    // Why this matters for member scope: week-view clicks may be on a day other
-    // than selectedDate; we must search all seven cells, not just the current day.
-    const allCells = [
-      ...(grid.sharedCells ?? []),
-      ...(grid.members ?? []).flatMap((m) => m.cells),
-    ];
-
-    for (const cell of allCells) {
-      const found = normalizeCellItems(cell).find(
-        (e) => e.id === id && e.sourceType === type,
-      );
-      if (found) {
-        setSelectedEntry(found);
-        return;
-      }
+    const found = findEntryAcrossGrid(type, id);
+    if (found) {
+      setSelectedEntry(found);
+    } else {
+      // Entry not in the currently loaded grid (e.g., stale data) — fall back to edit.
+      setEditTarget({ type, id });
     }
-
-    // Fallthrough: entry is not in the currently loaded grid window
-    // (e.g. month-view click on a day outside the fetched week, or a stale ID).
-    //
-    // Guard: never open the edit path for a read-only (imported) event.
-    // Check the raw event items by ID before opening any write surface.
-    if (type === "event") {
-      for (const cell of allCells) {
-        if (cell.events?.some((e) => e.eventId === id && e.isReadOnly)) return;
-      }
-    }
-
-    setEditTarget({ type, id });
   }
 
   function handleDayDrill(date: string) {
@@ -392,7 +389,6 @@ export function AgendaPage() {
       <AgendaItemDetail
         entry={selectedEntry}
         onEdit={(type, id) => setEditTarget({ type, id })}
-        onClose={() => setSelectedEntry(null)}
       />
     );
   }

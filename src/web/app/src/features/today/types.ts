@@ -4,7 +4,7 @@ export interface WeeklyGridEventItem {
   eventId: string;
   title: string;
   date: string;        // YYYY-MM-DD
-  time: string | null; // HH:mm — already in local household time for external events
+  time: string | null; // HH:mm
   endDate: string | null;
   endTime: string | null;
   status: string;
@@ -14,14 +14,12 @@ export interface WeeklyGridEventItem {
   source?: string | null;
   providerLabel?: string | null;
   openInProviderUrl?: string | null;
-  location?: string | null;
 }
 
 export interface WeeklyGridTaskItem {
   taskId: string;
   title: string;
   dueDate: string | null;
-  dueTime?: string | null;
   status: string;
   color: string;
 }

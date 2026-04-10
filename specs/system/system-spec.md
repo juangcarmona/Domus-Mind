@@ -237,5 +237,5 @@ DomusMind V1 is complete when:
 - shared lists can be created and reused
 - list items can be added, updated, reordered, and toggled
 - timeline can be queried
-- Member Agenda can show imported external calendar entries without converting them into native plans
+- Agenda in Member scope can show imported external calendar entries without converting them into native plans
 - shared lists do not introduce confusion with tasks, routines, or events

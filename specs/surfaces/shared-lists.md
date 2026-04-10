@@ -311,24 +311,18 @@ Rules:
 
 ## Relationship With Other Surfaces
 
-### Today
+### Agenda
 
-Today may surface list relevance when explicitly connected to current household reality.
+Agenda may surface list relevance when a list is explicitly connected to current household reality.
 
 Examples:
 
 - a list linked to something happening today
 - a list recently active and still incomplete
+- a plan that references a list for preparation or shared memory
 
-Today should not turn list items into tasks.
-
-### Planning
-
-Planning may link to lists.
-
-A plan may reference a list for preparation or shared memory.
-
-That linkage does not make the list a schedule.
+Agenda must not turn list items into tasks.
+The linkage does not make the list a schedule.
 
 ### Areas
 

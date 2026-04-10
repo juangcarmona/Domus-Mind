@@ -84,7 +84,7 @@ public sealed class ConfigureExternalCalendarConnectionCommandHandlerTests
         int refreshInterval = 60)
     {
         var sel = selections
-            .Select(s => (s.CalendarId, s.Name, s.IsSelected, (string?)null))
+            .Select(s => (s.CalendarId, CalendarName: s.Name, s.IsSelected, (string?)null))
             .ToList()
             .AsReadOnly();
 
@@ -142,8 +142,8 @@ public sealed class ConfigureExternalCalendarConnectionCommandHandlerTests
         await handler.Handle(
             BuildCommand(familyId, memberId, connection.Id.Value,
             [
-                ("cal-1", "Work",     false),
-                ("cal-2", "Personal", true)
+                ("cal-1", "Work",     isSelected: false),
+                ("cal-2", "Personal", isSelected: true)
             ]),
             CancellationToken.None);
 
@@ -168,8 +168,8 @@ public sealed class ConfigureExternalCalendarConnectionCommandHandlerTests
         var result = await handler.Handle(
             BuildCommand(familyId, memberId, connection.Id.Value,
             [
-                ("cal-1", "Work",     true),
-                ("cal-2", "Personal", true) // new calendar
+                ("cal-1", "Work",    isSelected: true),
+                ("cal-2", "Personal", isSelected: true) // new calendar
             ]),
             CancellationToken.None);
 
@@ -201,7 +201,7 @@ public sealed class ConfigureExternalCalendarConnectionCommandHandlerTests
         // Only cal-1 is mentioned; cal-2 is absent from the selection list.
         await handler.Handle(
             BuildCommand(familyId, memberId, connection.Id.Value,
-                [("cal-1", "Work", true)]),
+                [("cal-1", "Work", isSelected: true)]),
             CancellationToken.None);
 
         db.ChangeTracker.Clear();
@@ -233,7 +233,7 @@ public sealed class ConfigureExternalCalendarConnectionCommandHandlerTests
 
         var configure = () => handler.Handle(
             BuildCommand(familyId, memberId, freshConn.Id.Value,
-                [("cal-1", "Work", true)],
+                [("cal-1", "Work", isSelected: true)],
                 horizonDays: 180), // changed from default 90
             CancellationToken.None);
 
@@ -273,10 +273,10 @@ public sealed class ConfigureExternalCalendarConnectionCommandHandlerTests
         var configure = () => handler.Handle(
             BuildCommand(familyId, memberId, freshConn.Id.Value,
             [
-                ("cal-1", "Work",     false),  // deselect
-                ("cal-2", "Personal", true),   // select
-                ("cal-3", "Shared",   true),   // keep selected
-                ("cal-4", "New Cal",  true)    // add new
+                ("cal-1", "Work",     isSelected: false),  // deselect
+                ("cal-2", "Personal", isSelected: true),   // select
+                ("cal-3", "Shared",   isSelected: true),   // keep selected
+                ("cal-4", "New Cal",  isSelected: true)    // add new
             ]),
             CancellationToken.None);
 
@@ -302,7 +302,7 @@ public sealed class ConfigureExternalCalendarConnectionCommandHandlerTests
 
         var configure = () => handler.Handle(
             BuildCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
-                [("cal-1", "Work", true)]),
+                [("cal-1", "Work", isSelected: true)]),
             CancellationToken.None);
 
         await configure.Should().ThrowAsync<CalendarException>()

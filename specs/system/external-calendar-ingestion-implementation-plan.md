@@ -346,7 +346,7 @@ After successful local login:
 
 Login itself should not wait for remote provider sync to complete.
 
-## Member Agenda open
+## Agenda open (Member scope)
 
 When `GetMemberAgenda` detects stale connections:
 

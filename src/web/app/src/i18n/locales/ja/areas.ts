@@ -39,4 +39,6 @@ export default {
   filterEmpty: "このフィルターに一致するエリアはありません。",
   selectAreaHint: "エリアを選択して詳細を確認し、担当者を管理してください。",
   viewDetail: "詳細を表示",
+  ownerAgenda: "予定を見る",
+  createFromArea: "作成…",
 } as const;

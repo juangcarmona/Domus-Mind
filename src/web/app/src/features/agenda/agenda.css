@@ -227,8 +227,24 @@
 .agenda-inspector-item {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.5rem 0.1rem;
+  gap: 0.45rem;
+  padding: 0.25rem 0.1rem;
+}
+
+/* Type / source cue line — sits above the title */
+.agenda-inspector-item-type-cue {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.agenda-inspector-item-readonly-badge {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .agenda-inspector-item-title {
@@ -238,10 +254,16 @@
   line-height: 1.3;
 }
 
+/* Metadata rows: label + value on one line */
 .agenda-inspector-item-meta {
   font-size: 0.78rem;
   color: var(--muted);
   line-height: 1.4;
+}
+
+.agenda-inspector-item-label {
+  font-weight: 600;
+  color: var(--text);
 }
 
 .agenda-inspector-item-status {
@@ -252,39 +274,29 @@
   letter-spacing: 0.05em;
 }
 
+/* External open link */
+.agenda-inspector-external-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--primary);
+  text-decoration: none;
+  margin-top: 0.1rem;
+}
+
+.agenda-inspector-external-link:hover {
+  text-decoration: underline;
+}
+
 .agenda-inspector-item-actions {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  margin-top: 0.25rem;
+  margin-top: 0.1rem;
 }
 
-/* Imported / read-only imported event detail variant */
-.agenda-inspector-item--imported {
-  border-left: 3px solid var(--accent, #64748b);
-  padding-left: 0.65rem;
-}
-
-.agenda-inspector-item-provider-badge {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--accent, #64748b);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.1rem;
-}
-
-.agenda-inspector-item-readonly-note {
-  font-size: 0.72rem;
-  color: var(--muted);
-  font-style: italic;
-  margin-top: 0.15rem;
-}
-
-.agenda-inspector-item-location::before {
-  content: "📍 ";
-}
-
+/* Idle state hint when no item is selected */
 .agenda-inspector-idle-hint {
   font-size: 0.8rem;
   color: var(--muted);

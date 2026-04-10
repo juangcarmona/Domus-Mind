@@ -294,32 +294,115 @@
   margin: 0.3rem 0 0;
 }
 
-/* Full detail link */
+/* Read-first owner display: name link + edit affordance side by side */
+.area-inspector-owner-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Navigable member identity (owner name or supporter name) */
+.area-inspector-member-link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.12s, border-color 0.12s;
+  cursor: pointer;
+}
+
+.area-inspector-member-link:hover {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* Compact edit affordance button next to owner name */
+.area-inspector-edit-btn {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  flex-shrink: 0;
+}
+
+.area-inspector-edit-btn:hover {
+  color: var(--text);
+  border-color: var(--text);
+}
+
+/* Ownership gap cue inside inspector */
+.area-inspector-gap-cue {
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--accent) 80%, var(--text));
+  font-weight: 600;
+}
+
+/* Quick actions row at bottom of inspector */
 .area-inspector-actions {
   margin-top: 0.25rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border);
 }
 
-.area-inspector-detail-link {
-  font-size: 0.8rem;
-  color: var(--primary);
-  text-decoration: none;
-  font-weight: 500;
-  display: inline-block;
+/* Explicit create actions: three side-by-side buttons */
+.area-inspector-create-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
-.area-inspector-detail-link:hover {
-  text-decoration: underline;
+/* Compact inline color palette — toggled by clicking the dot */
+.area-inspector-palette {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding: 0.4rem 0 0.4rem 1.2rem;
+  margin-bottom: 0.5rem;
 }
 
-/* Legacy: area-row--unowned kept for any remaining usages (AreaDetailPage etc.) */
-.area-row--unowned {
-  background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+/* Interactive color dot in inspector — acts as color change trigger */
+.area-inspector-dot--btn {
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  border-radius: 50%;
+  transition: transform 0.1s, box-shadow 0.1s;
+  flex-shrink: 0;
+  width: 0.7rem;
+  height: 0.7rem;
 }
-.area-group-title--unowned {
-  color: color-mix(in srgb, var(--accent) 80%, var(--text));
+
+.area-inspector-dot--btn:hover {
+  transform: scale(1.25);
+  box-shadow: 0 0 0 2px var(--border);
 }
+
+/* ---- Row work count cues ---- */
+
+.area-row-counts {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 0.4rem;
+}
+
+.area-row-count-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--border) 70%, transparent);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+}
+
 .area-row-select {
   width: auto;
   min-width: 9rem;
@@ -328,7 +411,7 @@
   padding: 0.3rem 0.5rem;
 }
 
-/* ---- Area color picker (create modal + detail page) ---- */
+/* ---- Area color picker (create modal + inspector palette row) ---- */
 .area-color-picker {
   display: flex;
   align-items: center;
@@ -336,8 +419,8 @@
   flex-wrap: wrap;
 }
 .area-color-swatch {
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 1.25rem;
+  height: 1.25rem;
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
@@ -408,96 +491,22 @@
   padding: 0;
 }
 
-/* ---- Area detail page ---- */
-.area-detail-page {
-  max-width: 640px;
-  margin: 0 auto;
-}
-.area-detail-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem 1.25rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--primary);
-  border-radius: var(--radius-md);
-}
-.area-detail-color-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  flex-shrink: 0;
-  padding-top: 0.2rem;
-}
-.area-detail-color-input {
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: var(--radius-md);
-  border: 2px solid var(--border);
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-  background: none;
-}
-.area-detail-color-input::-webkit-color-swatch-wrapper { padding: 0; }
-.area-detail-color-input::-webkit-color-swatch { border: none; border-radius: calc(var(--radius-md) - 2px); }
-.area-detail-identity {
-  flex: 1;
-  min-width: 0;
-}
-.area-detail-name {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin: 0 0 0.25rem;
-}
-.area-detail-name-input {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin: 0 0 0.25rem;
-  border: none;
-  border-bottom: 2px solid var(--accent);
-  background: transparent;
-  color: inherit;
-  outline: none;
-  width: 100%;
-  padding: 0;
-  line-height: 1.3;
-}
-.area-color-hex {
-  font-size: 0.7rem;
-  font-family: var(--font-mono, monospace);
-  color: var(--muted);
-  letter-spacing: 0.05em;
-  margin-top: 0.3rem;
-  user-select: all;
-}
-.area-detail-subtitle {
-  font-size: 0.78rem;
-  color: var(--muted);
-  margin: 0;
-}
+/* ---- Related work section (shared by inspector) ---- */
 .area-detail-section {
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
 }
 .area-detail-section-header {
   display: flex;
   align-items: center;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
   border-bottom: 1px solid var(--border);
 }
 .area-detail-section-title {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  color: var(--muted);
-}
-.area-detail-hint {
-  margin-top: 0.4rem;
-  font-size: 0.8rem;
   color: var(--muted);
 }
 .area-supporters-list {
@@ -554,7 +563,7 @@
   padding: 0.25rem 0;
 }
 .area-related-empty {
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1rem;
   background: color-mix(in srgb, var(--muted) 8%, transparent);
   border: 1px dashed var(--border);
   border-radius: var(--radius-md);
@@ -564,5 +573,3 @@
   font-size: 0.8rem;
   margin: 0;
 }
-
-

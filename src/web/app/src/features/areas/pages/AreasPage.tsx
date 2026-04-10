@@ -1,7 +1,7 @@
-// Phase 6: Areas surface — ownership-first dense list with contextual inspector.
-import { useEffect, useRef, useState } from "react";
+// Areas surface — ownership-first dense list with contextual inspector.
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import {
   fetchAreas,
@@ -10,12 +10,26 @@ import {
   removeSecondaryOwner,
   transferArea,
   renameArea,
+  updateAreaColor,
 } from "../../../store/areasSlice";
+import { fetchPlans } from "../../../store/plansSlice";
+import { fetchRoutines, pauseRoutine, resumeRoutine } from "../../../store/routinesSlice";
+import { fetchTimeline } from "../../../store/timelineSlice";
+import { completeTask, cancelTask } from "../../../store/tasksSlice";
 import type { HouseholdAreaItem, FamilyMemberResponse } from "../../../api/domusmindApi";
 import { InspectorPanel } from "../../../components/InspectorPanel";
 import { BottomSheetDetail } from "../../../components/BottomSheetDetail";
+import { EditEntityModal } from "../../editors/components/EditEntityModal";
 import { useIsMobile } from "../../../hooks/useIsMobile";
 import { CreateAreaModal } from "../components/CreateAreaModal";
+import { PlanningAddModal } from "../../planning/components/modals/PlanningAddModal";
+import { AreaRelatedWorkSection } from "../components/AreaRelatedWorkSection";
+import { AREA_PALETTE } from "../utils/areaColors";
+
+function todayIso(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 // ── Dense area list row ───────────────────────────────────────────────────────
 
@@ -24,11 +38,17 @@ function AreaListRow({
   members,
   selected,
   onClick,
+  taskCount = 0,
+  planCount = 0,
+  routineCount = 0,
 }: {
   area: HouseholdAreaItem;
   members: FamilyMemberResponse[];
   selected: boolean;
   onClick: () => void;
+  taskCount?: number;
+  planCount?: number;
+  routineCount?: number;
 }) {
   const { t } = useTranslation("areas");
   const hasOwner = !!area.primaryOwnerId;
@@ -37,6 +57,8 @@ function AreaListRow({
     .map((id) => members.find((m) => m.memberId === id))
     .filter(Boolean)
     .map((m) => m!.preferredName || m!.name);
+
+  const hasCounts = taskCount > 0 || planCount > 0 || routineCount > 0;
 
   return (
     <button
@@ -64,12 +86,39 @@ function AreaListRow({
           )}
         </span>
       </span>
+      {hasCounts && (
+        <span className="area-row-counts" aria-hidden="true">
+          {taskCount > 0 && (
+            <span className="area-row-count-badge area-row-count-badge--task" title={`${taskCount} open tasks`}>
+              {taskCount}T
+            </span>
+          )}
+          {planCount > 0 && (
+            <span className="area-row-count-badge area-row-count-badge--plan" title={`${planCount} plans`}>
+              {planCount}P
+            </span>
+          )}
+          {routineCount > 0 && (
+            <span className="area-row-count-badge area-row-count-badge--routine" title={`${routineCount} routines`}>
+              {routineCount}R
+            </span>
+          )}
+        </span>
+      )}
     </button>
   );
 }
 
 // ── Inspector content ─────────────────────────────────────────────────────────
 
+/**
+ * Area inspector — primary desktop detail.
+ *
+ * - Read-first: owner and supporters are navigable identities.
+ * - Inline rename and inline color change via compact swatch row.
+ * - Related work (tasks, plans, routines) shown in scrollable section.
+ * - Explicit create buttons (Task / Routine / Plan) replace the generic chooser.
+ */
 function AreaInspectorContent({
   area,
   members,
@@ -80,13 +129,31 @@ function AreaInspectorContent({
   nameInput,
   renaming,
   renameError,
+  isEditingOwner,
+  showPalette,
+  tasksLoading,
+  linkedTasks,
+  linkedPlans,
+  linkedRoutines,
+  memberMap,
   onOwnerChange,
+  onStartEditOwner,
   onAddSupporter,
   onRemoveSupporter,
   onStartRename,
   onNameInputChange,
   onNameSave,
   onNameKeyDown,
+  onColorChange,
+  onTogglePalette,
+  onCreateTask,
+  onCreateRoutine,
+  onCreatePlan,
+  onEdit,
+  onCompleteTask,
+  onCancelTask,
+  onPauseRoutine,
+  onResumeRoutine,
 }: {
   area: HouseholdAreaItem | null;
   members: FamilyMemberResponse[];
@@ -97,13 +164,31 @@ function AreaInspectorContent({
   nameInput: string;
   renaming: boolean;
   renameError: string | null;
+  isEditingOwner: boolean;
+  showPalette: boolean;
+  tasksLoading: boolean;
+  linkedTasks: import("../../../api/domusmindApi").EnrichedTimelineEntry[];
+  linkedPlans: import("../../../api/domusmindApi").FamilyTimelineEventItem[];
+  linkedRoutines: import("../../../api/domusmindApi").RoutineListItem[];
+  memberMap: Record<string, string>;
   onOwnerChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  onStartEditOwner: () => void;
   onAddSupporter: (id: string) => void;
   onRemoveSupporter: (id: string) => void;
   onStartRename: () => void;
   onNameInputChange: (v: string) => void;
   onNameSave: () => void;
   onNameKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onColorChange: (color: string) => void;
+  onTogglePalette: () => void;
+  onCreateTask: () => void;
+  onCreateRoutine: () => void;
+  onCreatePlan: () => void;
+  onEdit: (target: { type: "task" | "routine" | "event"; id: string }) => void;
+  onCompleteTask: (id: string) => void;
+  onCancelTask: (id: string) => void;
+  onPauseRoutine: (id: string) => void;
+  onResumeRoutine: (id: string) => void;
 }) {
   const { t } = useTranslation("areas");
   const nameRef = useRef<HTMLInputElement>(null);
@@ -132,12 +217,15 @@ function AreaInspectorContent({
 
   return (
     <div className="area-inspector-content">
-      {/* Name — click to rename */}
+      {/* Identity: color dot (click to change) + name (click to rename) */}
       <div className="area-inspector-name-row">
-        <span
-          className="area-inspector-dot"
+        <button
+          type="button"
+          className="area-inspector-dot area-inspector-dot--btn"
           style={{ background: area.color }}
-          aria-hidden="true"
+          onClick={onTogglePalette}
+          title={t("colorHint")}
+          aria-label={t("colorHint")}
         />
         {isEditingName ? (
           <input
@@ -161,32 +249,75 @@ function AreaInspectorContent({
           </button>
         )}
       </div>
+
+      {/* Compact inline color palette — visible when toggled */}
+      {showPalette && (
+        <div className="area-inspector-palette">
+          {AREA_PALETTE.map((c) => (
+            <button
+              key={c}
+              type="button"
+              className={`area-color-swatch${area.color === c ? " area-color-swatch--active" : ""}`}
+              style={{ background: c }}
+              onClick={() => onColorChange(c)}
+              aria-label={c}
+            />
+          ))}
+        </div>
+      )}
+
       {renameError && <p className="error-msg area-inspector-error">{renameError}</p>}
 
-      {/* Owner */}
+      {/* Owner — read-first with edit affordance */}
       <div className="area-inspector-section">
         <p className="area-inspector-section-label">{t("ownerLabel")}</p>
-        <select
-          className="form-control area-row-select"
-          value={area.primaryOwnerId ?? ""}
-          disabled={saving}
-          onChange={onOwnerChange}
-          aria-label={t("ownerLabel")}
-        >
-          {!hasOwner && <option value="">{t("noOwner")}</option>}
-          {hasOwner &&
-            !members.some((m) => m.memberId === area.primaryOwnerId) && (
-              <option value={area.primaryOwnerId!}>
-                {area.primaryOwnerName ?? area.primaryOwnerId}
+        {isEditingOwner ? (
+          <select
+            className="form-control area-row-select"
+            value={area.primaryOwnerId ?? ""}
+            disabled={saving}
+            onChange={onOwnerChange}
+            aria-label={t("ownerLabel")}
+            // eslint-disable-next-line jsx-a11y/no-autofocus
+            autoFocus
+          >
+            {!hasOwner && <option value="">{t("noOwner")}</option>}
+            {hasOwner &&
+              !members.some((m) => m.memberId === area.primaryOwnerId) && (
+                <option value={area.primaryOwnerId!}>
+                  {area.primaryOwnerName ?? area.primaryOwnerId}
+                </option>
+              )}
+            {members.map((m) => (
+              <option key={m.memberId} value={m.memberId}>
+                {m.preferredName || m.name}
               </option>
+            ))}
+          </select>
+        ) : (
+          <div className="area-inspector-owner-display">
+            {hasOwner ? (
+              <Link
+                to={`/agenda/members/${area.primaryOwnerId}`}
+                className="area-inspector-member-link"
+                title={t("ownerAgenda")}
+              >
+                {area.primaryOwnerName}
+              </Link>
+            ) : (
+              <span className="area-inspector-gap-cue">{t("needsOwner")}</span>
             )}
-          {members.map((m) => (
-            <option key={m.memberId} value={m.memberId}>
-              {m.preferredName || m.name}
-            </option>
-          ))}
-        </select>
-        {!hasOwner && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-xs area-inspector-edit-btn"
+              disabled={saving}
+              onClick={onStartEditOwner}
+            >
+              {hasOwner ? t("changeOwner") : t("setOwner")}
+            </button>
+          </div>
+        )}
+        {!hasOwner && !isEditingOwner && (
           <p className="area-inspector-hint">{t("noOwnerInstruction")}</p>
         )}
         {ownerError && (
@@ -194,14 +325,20 @@ function AreaInspectorContent({
         )}
       </div>
 
-      {/* Support */}
+      {/* Support members — navigable identities + add/remove */}
       <div className="area-inspector-section">
         <p className="area-inspector-section-label">{t("supportersLabel")}</p>
         {existingSupporters.length > 0 && (
           <ul className="area-supporters-list">
             {existingSupporters.map((m) => (
               <li key={m.memberId} className="area-supporter-tag">
-                <span>{m.preferredName || m.name}</span>
+                <Link
+                  to={`/agenda/members/${m.memberId}`}
+                  className="area-inspector-member-link"
+                  title={t("ownerAgenda")}
+                >
+                  {m.preferredName || m.name}
+                </Link>
                 <button
                   type="button"
                   className="area-supporter-remove"
@@ -238,11 +375,36 @@ function AreaInspectorContent({
         )}
       </div>
 
-      {/* Full detail link */}
+      {/* Related work — linked tasks, plans, routines */}
+      <AreaRelatedWorkSection
+        tasksLoading={tasksLoading}
+        linkedTasks={linkedTasks}
+        linkedPlans={linkedPlans}
+        linkedRoutines={linkedRoutines}
+        memberMap={memberMap}
+        onEdit={onEdit}
+        onCompleteTask={onCompleteTask}
+        onCancelTask={onCancelTask}
+        onPauseRoutine={onPauseRoutine}
+        onResumeRoutine={onResumeRoutine}
+      />
+
+      {/* Explicit area-context creation actions */}
       <div className="area-inspector-actions">
-        <Link to={`/areas/${area.areaId}`} className="area-inspector-detail-link">
-          {t("viewDetail")} →
-        </Link>
+        <p className="area-inspector-section-label" style={{ marginBottom: "0.5rem" }}>
+          {t("createFromArea")}
+        </p>
+        <div className="area-inspector-create-row">
+          <button type="button" className="btn btn-sm" onClick={onCreateTask}>
+            + {t("createTask")}
+          </button>
+          <button type="button" className="btn btn-sm" onClick={onCreateRoutine}>
+            + {t("createRoutine")}
+          </button>
+          <button type="button" className="btn btn-sm" onClick={onCreatePlan}>
+            + {t("createPlan")}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -254,8 +416,12 @@ export function AreasPage() {
   const { t } = useTranslation("areas");
   const { t: tCommon } = useTranslation("common");
   const dispatch = useAppDispatch();
+  const location = useLocation();
   const { family, members } = useAppSelector((s) => s.household);
   const { items: areas, status, error } = useAppSelector((s) => s.areas);
+  const { items: planItems, status: plansStatus } = useAppSelector((s) => s.plans);
+  const { items: routineItems, status: routinesStatus } = useAppSelector((s) => s.routines);
+  const timeline = useAppSelector((s) => s.timeline);
   const familyId = family?.familyId;
   const isMobile = useIsMobile();
   const currentMemberId = members.find((m) => m.isCurrentUser)?.memberId;
@@ -273,10 +439,39 @@ export function AreasPage() {
   const [nameInput, setNameInput] = useState("");
   const [renaming, setRenaming] = useState(false);
   const [renameError, setRenameError] = useState<string | null>(null);
+  const [isEditingOwner, setIsEditingOwner] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
+
+  // Create-from-area: explicit entry points per concept
+  const [showCreateTask, setShowCreateTask] = useState(false);
+  const [showCreateRoutine, setShowCreateRoutine] = useState(false);
+  const [showCreatePlan, setShowCreatePlan] = useState(false);
+
+  // Edit target for inline item editing
+  const [editTarget, setEditTarget] = useState<{ type: "task" | "routine" | "event"; id: string } | null>(null);
+
+  // Restore deep-link selection from location state (set by AreaDetailPage redirect)
+  useEffect(() => {
+    const state = location.state as { selectAreaId?: string } | null;
+    if (state?.selectAreaId) {
+      setSelectedAreaId(state.selectAreaId);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (familyId) dispatch(fetchAreas(familyId));
   }, [familyId, dispatch]);
+
+  // Load linked work for count cues and inspector detail
+  useEffect(() => {
+    if (familyId && plansStatus === "idle") dispatch(fetchPlans({ familyId, from: todayIso() }));
+    if (familyId && routinesStatus === "idle") dispatch(fetchRoutines(familyId));
+  }, [familyId, plansStatus, routinesStatus, dispatch]);
+
+  useEffect(() => {
+    if (familyId) dispatch(fetchTimeline({ familyId, types: "Task" }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [familyId]);
 
   useEffect(() => {
     setIsEditingName(false);
@@ -285,6 +480,8 @@ export function AreasPage() {
     setSupporterError(null);
     setRenameError(null);
     setSaving(false);
+    setIsEditingOwner(false);
+    setShowPalette(false);
   }, [selectedAreaId]);
 
   if (!familyId) return null;
@@ -292,6 +489,68 @@ export function AreasPage() {
   const selectedArea = areas.find((a) => a.areaId === selectedAreaId) ?? null;
   const loading = status === "loading";
   const hasAreas = areas.length > 0;
+  const tasksLoading = timeline.status === "loading";
+
+  // Per-area work count cues derived from already-loaded slices
+  const taskCountByArea = useMemo<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    for (const entry of timeline.data?.groups.flatMap((g) => g.entries) ?? []) {
+      if (entry.entryType === "Task" && entry.areaId && entry.status === "Pending") {
+        counts[entry.areaId] = (counts[entry.areaId] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [timeline.data]);
+
+  const planCountByArea = useMemo<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    for (const plan of planItems) {
+      if (plan.areaId) counts[plan.areaId] = (counts[plan.areaId] ?? 0) + 1;
+    }
+    return counts;
+  }, [planItems]);
+
+  const routineCountByArea = useMemo<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    for (const routine of routineItems) {
+      if (routine.areaId) counts[routine.areaId] = (counts[routine.areaId] ?? 0) + 1;
+    }
+    return counts;
+  }, [routineItems]);
+
+  // Linked work for selected area (used by inspector)
+  const linkedTasks = useMemo(
+    () =>
+      (timeline.data?.groups.flatMap((g) => g.entries) ?? []).filter(
+        (e) => e.entryType === "Task" && e.areaId === selectedAreaId && e.status === "Pending",
+      ),
+    [timeline.data, selectedAreaId],
+  );
+  const linkedPlans = planItems.filter((p) => p.areaId === selectedAreaId);
+  const linkedRoutines = routineItems.filter((r) => r.areaId === selectedAreaId);
+  const memberMap = useMemo<Record<string, string>>(
+    () => Object.fromEntries(members.map((m) => [m.memberId, m.preferredName || m.name])),
+    [members],
+  );
+
+  // Creation defaults: pre-fill current area + area owner
+  const creationDefaults = useMemo(() => ({
+    areaId: selectedAreaId ?? undefined,
+    assigneeId: selectedArea?.primaryOwnerId ?? undefined,
+    participantMemberIds: selectedArea?.primaryOwnerId ? [selectedArea.primaryOwnerId] : undefined,
+  }), [selectedAreaId, selectedArea?.primaryOwnerId]);
+
+  const membersForModal = useMemo(
+    () => members.map((m) => ({ memberId: m.memberId, name: m.preferredName || m.name })),
+    [members],
+  );
+
+  function refreshLinkedWork() {
+    if (!familyId) return;
+    dispatch(fetchTimeline({ familyId, types: "Task" }));
+    dispatch(fetchPlans({ familyId, from: todayIso() }));
+    dispatch(fetchRoutines(familyId));
+  }
 
   const filteredAreas = areas.filter((a) => {
     if (filter === "unowned") return !a.primaryOwnerId;
@@ -330,6 +589,7 @@ export function AreasPage() {
         setOwnerError((result.payload as string) ?? tCommon("failed"));
     }
     setSaving(false);
+    setIsEditingOwner(false);
   }
 
   async function handleAddSupporter(memberId: string) {
@@ -375,6 +635,32 @@ export function AreasPage() {
     setRenameError((result.payload as string) ?? tCommon("failed"));
   }
 
+  function handleColorChange(color: string) {
+    if (!selectedAreaId) return;
+    void dispatch(updateAreaColor({ areaId: selectedAreaId, color }));
+    setShowPalette(false);
+  }
+
+  async function handleCompleteTask(taskId: string) {
+    await dispatch(completeTask(taskId));
+    refreshLinkedWork();
+  }
+
+  async function handleCancelTask(taskId: string) {
+    await dispatch(cancelTask(taskId));
+    refreshLinkedWork();
+  }
+
+  async function handlePauseRoutine(routineId: string) {
+    if (!familyId) return;
+    await dispatch(pauseRoutine({ routineId, familyId }));
+  }
+
+  async function handleResumeRoutine(routineId: string) {
+    if (!familyId) return;
+    await dispatch(resumeRoutine({ routineId, familyId }));
+  }
+
   const inspectorProps = {
     area: selectedArea,
     members,
@@ -385,7 +671,15 @@ export function AreasPage() {
     nameInput,
     renaming,
     renameError,
-    onOwnerChange: handleOwnerChange,
+    isEditingOwner,
+    showPalette,
+    tasksLoading,
+    linkedTasks,
+    linkedPlans,
+    linkedRoutines,
+    memberMap,
+    onOwnerChange: (e: React.ChangeEvent<HTMLSelectElement>) => { void handleOwnerChange(e); },
+    onStartEditOwner: () => setIsEditingOwner(true),
     onAddSupporter: (id: string) => { void handleAddSupporter(id); },
     onRemoveSupporter: (id: string) => { void handleRemoveSupporter(id); },
     onStartRename: () => {
@@ -401,6 +695,16 @@ export function AreasPage() {
         setRenameError(null);
       }
     },
+    onColorChange: handleColorChange,
+    onTogglePalette: () => setShowPalette((p) => !p),
+    onCreateTask: () => setShowCreateTask(true),
+    onCreateRoutine: () => setShowCreateRoutine(true),
+    onCreatePlan: () => setShowCreatePlan(true),
+    onEdit: setEditTarget,
+    onCompleteTask: (id: string) => { void handleCompleteTask(id); },
+    onCancelTask: (id: string) => { void handleCancelTask(id); },
+    onPauseRoutine: (id: string) => { void handlePauseRoutine(id); },
+    onResumeRoutine: (id: string) => { void handleResumeRoutine(id); },
   };
 
   return (
@@ -478,6 +782,9 @@ export function AreasPage() {
                   members={members}
                   selected={selectedAreaId === area.areaId}
                   onClick={() => handleSelectArea(area.areaId)}
+                  taskCount={taskCountByArea[area.areaId] ?? 0}
+                  planCount={planCountByArea[area.areaId] ?? 0}
+                  routineCount={routineCountByArea[area.areaId] ?? 0}
                 />
               ))}
             </div>
@@ -495,6 +802,9 @@ export function AreasPage() {
                   members={members}
                   selected={selectedAreaId === area.areaId}
                   onClick={() => handleSelectArea(area.areaId)}
+                  taskCount={taskCountByArea[area.areaId] ?? 0}
+                  planCount={planCountByArea[area.areaId] ?? 0}
+                  routineCount={routineCountByArea[area.areaId] ?? 0}
                 />
               ))}
             </div>
@@ -525,6 +835,50 @@ export function AreasPage() {
           onClose={() => setShowCreate(false)}
         />
       )}
+
+      {/* Explicit area-context create modals — skip the generic chooser step */}
+      {showCreateTask && familyId && selectedArea && (
+        <PlanningAddModal
+          familyId={familyId}
+          members={membersForModal}
+          initialStep="task"
+          defaults={creationDefaults}
+          onClose={() => setShowCreateTask(false)}
+          onSuccess={() => { setShowCreateTask(false); refreshLinkedWork(); }}
+        />
+      )}
+
+      {showCreateRoutine && familyId && selectedArea && (
+        <PlanningAddModal
+          familyId={familyId}
+          members={membersForModal}
+          initialStep="routine"
+          defaults={creationDefaults}
+          onClose={() => setShowCreateRoutine(false)}
+          onSuccess={() => { setShowCreateRoutine(false); refreshLinkedWork(); }}
+        />
+      )}
+
+      {showCreatePlan && familyId && selectedArea && (
+        <PlanningAddModal
+          familyId={familyId}
+          members={membersForModal}
+          initialStep="plan"
+          defaults={creationDefaults}
+          onClose={() => setShowCreatePlan(false)}
+          onSuccess={() => { setShowCreatePlan(false); refreshLinkedWork(); }}
+        />
+      )}
+
+      {editTarget && (
+        <EditEntityModal
+          type={editTarget.type}
+          id={editTarget.id}
+          onClose={() => setEditTarget(null)}
+          onEntitySaved={() => { setEditTarget(null); refreshLinkedWork(); }}
+        />
+      )}
     </div>
   );
 }
+

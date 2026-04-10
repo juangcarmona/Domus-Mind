@@ -42,4 +42,23 @@ export default {
   dateCard: {
     today: "Hoy",
   },
+  item: {
+    edit: "Editar",
+    openInProvider: "Abrir en Outlook",
+    externalCalendar: "Calendario externo",
+    importedReadOnly: "Importado · solo lectura",
+    readOnly: "Solo lectura",
+    typeRoutine: "Rutina",
+    typeTask: "Tarea",
+    typePlan: "Plan",
+    participants: "Participantes",
+    status: "Estado",
+    dueDate: "Fecha límite",
+    noDueDate: "Sin fecha límite",
+    recurrence: "Recurrencia",
+    scope: "Ámbito",
+  },
+  inspector: {
+    idleHint: "Selecciona un elemento para ver sus detalles.",
+  },
 } as const;

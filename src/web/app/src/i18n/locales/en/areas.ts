@@ -39,4 +39,10 @@ export default {
   filterEmpty: "No areas match this filter.",
   selectAreaHint: "Select an area to see its details and manage ownership.",
   viewDetail: "View full detail",
+  ownerAgenda: "View agenda",
+  createFromArea: "Create from this area",
+  createTask: "Task",
+  createRoutine: "Routine",
+  createPlan: "Plan",
+  colorHint: "Change color",
 } as const;
