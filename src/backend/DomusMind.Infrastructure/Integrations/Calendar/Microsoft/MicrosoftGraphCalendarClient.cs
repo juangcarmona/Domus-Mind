@@ -149,14 +149,34 @@ public sealed class MicrosoftGraphCalendarClient : IExternalCalendarProviderClie
         return client;
     }
 
+    public static DateTime ParseGraphDateTimeAsUtc(string dateTimeValue, string? timeZone)
+    {
+        var parsed = System.DateTime.Parse(
+            dateTimeValue, null, System.Globalization.DateTimeStyles.RoundtripKind);
+
+        if (string.IsNullOrEmpty(timeZone) || timeZone == "UTC")
+            return System.DateTime.SpecifyKind(parsed, DateTimeKind.Utc);
+
+        try
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
+            return TimeZoneInfo.ConvertTimeToUtc(
+                System.DateTime.SpecifyKind(parsed, DateTimeKind.Unspecified), tz);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return System.DateTime.SpecifyKind(parsed, DateTimeKind.Utc);
+        }
+    }
+
     private static ExternalCalendarProviderEvent MapEvent(GraphEvent evt)
     {
         DateTime startsAt = evt.Start?.DateTime is not null
-            ? DateTime.Parse(evt.Start.DateTime, null, System.Globalization.DateTimeStyles.RoundtripKind)
+            ? ParseGraphDateTimeAsUtc(evt.Start.DateTime, evt.Start.TimeZone)
             : DateTime.UtcNow;
 
         DateTime? endsAt = evt.End?.DateTime is not null
-            ? DateTime.Parse(evt.End.DateTime, null, System.Globalization.DateTimeStyles.RoundtripKind)
+            ? ParseGraphDateTimeAsUtc(evt.End.DateTime, evt.End.TimeZone)
             : null;
 
         var isDeleted = evt.Removed is not null;
@@ -166,7 +186,7 @@ public sealed class MicrosoftGraphCalendarClient : IExternalCalendarProviderClie
             evt.Id ?? string.Empty,
             evt.ICalUId,
             evt.SeriesMasterId,
-            evt.Subject ?? "(No title)",
+            string.IsNullOrWhiteSpace(evt.Subject) ? "(No title)" : evt.Subject,
             startsAt,
             endsAt,
             evt.IsAllDay == true,
@@ -175,7 +195,8 @@ public sealed class MicrosoftGraphCalendarClient : IExternalCalendarProviderClie
             status,
             evt.WebLink,
             evt.LastModifiedDateTime,
-            isDeleted);
+            isDeleted,
+            evt.Start?.TimeZone);
     }
 
     // --- Graph response models ---

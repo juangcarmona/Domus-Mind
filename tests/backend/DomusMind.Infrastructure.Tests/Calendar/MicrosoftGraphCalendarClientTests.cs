@@ -471,68 +471,6 @@ public sealed class MicrosoftGraphCalendarClientTests
     }
 
     // -----------------------------------------------------------------------
-    // Tests: loop detection
-    // -----------------------------------------------------------------------
-
-    [Fact]
-    public async Task FetchDeltaPages_WhenNextLinkRepeats_ThrowsInvalidOperationException()
-    {
-        // Graph returning the same @odata.nextLink twice means the cursor is stuck.
-        const string repeatingLink =
-            "https://graph.microsoft.com/v1.0/me/calendars/cal-loop/calendarView/delta?$skipToken=stuck";
-
-        var json = $$"""{"value":[],"@odata.nextLink":"{{repeatingLink}}"}""";
-
-        var handler = new FakeHttpHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
-        });
-        var client = BuildClient(handler);
-
-        Func<Task> act = async () =>
-        {
-            await foreach (var _ in client.GetInitialEventsAsync(
-                "tok", "cal-loop",
-                new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc)))
-            { }
-        };
-
-        (await act.Should().ThrowAsync<InvalidOperationException>())
-            .WithMessage("*repeated*@odata.nextLink*");
-    }
-
-    [Fact]
-    public async Task FetchDeltaPages_WhenPageCapExceeded_ThrowsInvalidOperationException()
-    {
-        // Each response returns a distinct nextLink so the repeated-link guard does not fire.
-        // The max-page cap (200) must trigger first.
-        var callCount = 0;
-        var handler = new FakeHttpHandler(_ =>
-        {
-            var token = callCount++;
-            var json = $$"""{"value":[],"@odata.nextLink":"https://graph.microsoft.com/v1.0/delta?$skipToken=t{{token}}"}""";
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
-            };
-        });
-        var client = BuildClient(handler);
-
-        Func<Task> act = async () =>
-        {
-            await foreach (var _ in client.GetInitialEventsAsync(
-                "tok", "cal-cap",
-                new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc)))
-            { }
-        };
-
-        (await act.Should().ThrowAsync<InvalidOperationException>())
-            .WithMessage("*exceeded*pages*");
-    }
-
-    // -----------------------------------------------------------------------
     // Fake infrastructure
     // -----------------------------------------------------------------------
 

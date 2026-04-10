@@ -42,8 +42,8 @@ public sealed class DomusMindDbContext : DbContext, IDomusMindDbContext
     public DbSet<SystemInitializationRecord> SystemInitialization
         => Set<SystemInitializationRecord>();
 
-    public DbSet<Domain.SharedLists.SharedList> SharedLists
-        => Set<Domain.SharedLists.SharedList>();
+    public DbSet<Domain.Lists.SharedList> Lists
+        => Set<Domain.Lists.SharedList>();
 
     public DbSet<ExternalCalendarConnection> ExternalCalendarConnections
         => Set<ExternalCalendarConnection>();
