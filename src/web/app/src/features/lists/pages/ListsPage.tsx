@@ -280,6 +280,19 @@ export function ListsPage() {
   // ---- Inspector content (editable) ----
   const inspectorContent = selectedInStore ? (
     <div className="lists-inspector-content">
+      {/* Status toggle — first, prominent */}
+      <button
+        type="button"
+        className={`lists-inspector-status-btn${selectedInStore.checked ? " lists-inspector-status-btn--checked" : ""}`}
+        onClick={() => handleItemToggle(selectedInStore)}
+      >
+        <span className="lists-inspector-status-icon" aria-hidden="true" />
+        <span className="lists-inspector-status-label">
+          {selectedInStore.checked ? t("markUnchecked") : t("markChecked")}
+        </span>
+      </button>
+
+      {/* Name — styled as a title field */}
       <input
         className="lists-inspector-name-input"
         value={inspectorNameDraft}
@@ -290,35 +303,35 @@ export function ListsPage() {
         }}
         aria-label={t("itemName")}
       />
-      <label className="lists-inspector-field-label">{t("quantityLabel")}</label>
-      <input
-        className="lists-inspector-field-input"
-        value={inspectorQtyDraft}
-        onChange={(e) => setInspectorQtyDraft(e.target.value)}
-        onBlur={commitInspectorChanges}
-        placeholder={t("quantityPlaceholder")}
-        aria-label={t("quantityLabel")}
-      />
-      <label className="lists-inspector-field-label">{t("noteLabel")}</label>
-      <textarea
-        className="lists-inspector-field-textarea"
-        value={inspectorNoteDraft}
-        onChange={(e) => setInspectorNoteDraft(e.target.value)}
-        onBlur={commitInspectorChanges}
-        placeholder={t("notePlaceholder")}
-        rows={2}
-        aria-label={t("noteLabel")}
-      />
-      {inspectorSaving && <span className="lists-inspector-saving">…</span>}
-      <div className="lists-inspector-actions">
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          onClick={() => handleItemToggle(selectedInStore)}
-        >
-          {selectedInStore.checked ? t("markUnchecked") : t("markChecked")}
-        </button>
+
+      {/* Quantity */}
+      <div className="lists-inspector-field-group">
+        <label className="lists-inspector-field-label">{t("quantityLabel")}</label>
+        <input
+          className="lists-inspector-field-input"
+          value={inspectorQtyDraft}
+          onChange={(e) => setInspectorQtyDraft(e.target.value)}
+          onBlur={commitInspectorChanges}
+          placeholder={t("quantityPlaceholder")}
+          aria-label={t("quantityLabel")}
+        />
       </div>
+
+      {/* Note */}
+      <div className="lists-inspector-field-group">
+        <label className="lists-inspector-field-label">{t("noteLabel")}</label>
+        <textarea
+          className="lists-inspector-field-textarea"
+          value={inspectorNoteDraft}
+          onChange={(e) => setInspectorNoteDraft(e.target.value)}
+          onBlur={commitInspectorChanges}
+          placeholder={t("notePlaceholder")}
+          rows={2}
+          aria-label={t("noteLabel")}
+        />
+      </div>
+
+      {inspectorSaving && <span className="lists-inspector-saving">…</span>}
     </div>
   ) : (
     <div className="lists-inspector-hint">
@@ -414,17 +427,25 @@ export function ListsPage() {
                             aria-label={t("renameList")}
                           />
                         ) : (
-                          <button
-                            type="button"
-                            className="lists-list-name-btn"
-                            onClick={() => !reorderMode && setRenameDraft(detail.name)}
-                            title={reorderMode ? undefined : t("renameList")}
-                          >
-                            {detail.name}
-                            {activeListSummary && activeListSummary.uncheckedCount > 0 && (
-                              <span className="lists-list-count">{activeListSummary.uncheckedCount}</span>
+                          <>
+                            <button
+                              type="button"
+                              className="lists-list-name-btn"
+                              onClick={() => !reorderMode && setRenameDraft(detail.name)}
+                              title={reorderMode ? undefined : t("renameList")}
+                            >
+                              {detail.name}
+                            </button>
+                            {activeListSummary && (
+                              <span className={`lists-list-subtitle${activeListSummary.uncheckedCount === 0 && activeListSummary.itemCount > 0 ? " lists-list-subtitle--done" : ""}`}>
+                                {activeListSummary.itemCount === 0
+                                  ? "No items"
+                                  : activeListSummary.uncheckedCount === 0
+                                  ? "All done"
+                                  : `${activeListSummary.uncheckedCount} remaining`}
+                              </span>
                             )}
-                          </button>
+                          </>
                         )}
                         {renameError && <p className="error-msg" style={{ margin: 0 }}>{renameError}</p>}
                       </div>
@@ -528,6 +549,7 @@ export function ListsPage() {
                   {/* Desktop: always-visible quick add bar */}
                   {!isMobile && !reorderMode && (
                     <div className="lists-quick-add-bar">
+                      <span className="lists-quick-add-prefix" aria-hidden="true">+</span>
                       <input
                         ref={desktopAddRef}
                         type="text"
@@ -597,7 +619,20 @@ export function ListsPage() {
           onClose={() => setSelectedItem(null)}
           title={selectedInStore?.name}
         >
-          <div className="lists-inspector-content">
+      <div className="lists-inspector-content">
+            {/* Status toggle */}
+            <button
+              type="button"
+              className={`lists-inspector-status-btn${selectedInStore?.checked ? " lists-inspector-status-btn--checked" : ""}`}
+              onClick={() => selectedInStore && handleItemToggle(selectedInStore)}
+            >
+              <span className="lists-inspector-status-icon" aria-hidden="true" />
+              <span className="lists-inspector-status-label">
+                {selectedInStore?.checked ? t("markUnchecked") : t("markChecked")}
+              </span>
+            </button>
+
+            {/* Name */}
             <input
               className="lists-inspector-name-input"
               value={inspectorNameDraft}
@@ -608,37 +643,35 @@ export function ListsPage() {
               }}
               aria-label={t("itemName")}
             />
-            <label className="lists-inspector-field-label">{t("quantityLabel")}</label>
-            <input
-              className="lists-inspector-field-input"
-              value={inspectorQtyDraft}
-              onChange={(e) => setInspectorQtyDraft(e.target.value)}
-              onBlur={commitInspectorChanges}
-              placeholder={t("quantityPlaceholder")}
-              aria-label={t("quantityLabel")}
-            />
-            <label className="lists-inspector-field-label">{t("noteLabel")}</label>
-            <textarea
-              className="lists-inspector-field-textarea"
-              value={inspectorNoteDraft}
-              onChange={(e) => setInspectorNoteDraft(e.target.value)}
-              onBlur={commitInspectorChanges}
-              placeholder={t("notePlaceholder")}
-              rows={2}
-              aria-label={t("noteLabel")}
-            />
-            {inspectorSaving && <span className="lists-inspector-saving">…</span>}
-            <div className="lists-inspector-actions">
-              {selectedInStore && (
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => handleItemToggle(selectedInStore)}
-                >
-                  {selectedInStore.checked ? t("markUnchecked") : t("markChecked")}
-                </button>
-              )}
+
+            {/* Quantity */}
+            <div className="lists-inspector-field-group">
+              <label className="lists-inspector-field-label">{t("quantityLabel")}</label>
+              <input
+                className="lists-inspector-field-input"
+                value={inspectorQtyDraft}
+                onChange={(e) => setInspectorQtyDraft(e.target.value)}
+                onBlur={commitInspectorChanges}
+                placeholder={t("quantityPlaceholder")}
+                aria-label={t("quantityLabel")}
+              />
             </div>
+
+            {/* Note */}
+            <div className="lists-inspector-field-group">
+              <label className="lists-inspector-field-label">{t("noteLabel")}</label>
+              <textarea
+                className="lists-inspector-field-textarea"
+                value={inspectorNoteDraft}
+                onChange={(e) => setInspectorNoteDraft(e.target.value)}
+                onBlur={commitInspectorChanges}
+                placeholder={t("notePlaceholder")}
+                rows={2}
+                aria-label={t("noteLabel")}
+              />
+            </div>
+
+            {inspectorSaving && <span className="lists-inspector-saving">…</span>}
           </div>
         </BottomSheetDetail>
       )}

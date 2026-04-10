@@ -81,15 +81,15 @@ export function ItemRow({
           />
         </button>
 
-        <span className="shared-list-item__name">
-          {item.name}
+        <div className="shared-list-item__body">
+          <span className="shared-list-item__name">{item.name}</span>
           {(item.quantity || item.note) && (
             <span className="shared-list-item__meta-hint">
               {item.quantity && <span className="shared-list-item__tag">{item.quantity}</span>}
               {item.note && <span className="shared-list-item__note-preview">{item.note}</span>}
             </span>
           )}
-        </span>
+        </div>
 
         <button
           type="button"

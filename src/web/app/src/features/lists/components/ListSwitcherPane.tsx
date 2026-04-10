@@ -43,27 +43,30 @@ export function ListSwitcherPane({
         <p className="list-switcher-empty">{t("emptyHeadline")}</p>
       ) : (
         <ul className="list-switcher-list" role="listbox" aria-label={t("title")}>
-          {lists.map((list) => (
-            <li key={list.id}>
-              <button
-                type="button"
-                role="option"
-                aria-selected={list.id === activeListId}
-                className={`list-switcher-row${list.id === activeListId ? " list-switcher-row--active" : ""}`}
-                onClick={() => onSelect(list.id)}
-              >
-                <span className="list-switcher-row-name">{list.name}</span>
-                {list.uncheckedCount > 0 && (
-                  <span className="list-switcher-row-count">
-                    {list.uncheckedCount}
-                  </span>
-                )}
-                {list.uncheckedCount === 0 && list.itemCount > 0 && (
-                  <span className="list-switcher-row-done" aria-label={t("allDone")}>✓</span>
-                )}
-              </button>
-            </li>
-          ))}
+          {lists.map((list) => {
+            const allDone = list.itemCount > 0 && list.uncheckedCount === 0;
+            const sub = list.itemCount === 0
+              ? null
+              : allDone
+              ? "all done"
+              : `${list.uncheckedCount} remaining`;
+            return (
+              <li key={list.id}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={list.id === activeListId}
+                  className={`list-switcher-row${list.id === activeListId ? " list-switcher-row--active" : ""}`}
+                  onClick={() => onSelect(list.id)}
+                >
+                  <span className="list-switcher-row-name">{list.name}</span>
+                  {sub && (
+                    <span className="list-switcher-row-sub">{sub}</span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </aside>
