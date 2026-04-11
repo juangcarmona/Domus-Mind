@@ -270,7 +270,8 @@ public sealed class SharedList : AggregateRoot<ListId>
 
     /// <summary>
     /// Sets temporal fields (dueDate, reminder, repeat) on an item.
-    /// At least one field must be provided. Repeat requires dueDate.
+    /// At least one field must be provided.
+    /// All three fields are independently optional — repeat does not require dueDate.
     /// </summary>
     public ListItem SetItemTemporal(
         ListItemId itemId,

@@ -42,7 +42,7 @@ The product should feel like one shared household system, not a collection of di
 
 - Household-first. The product reflects shared household reality, not one person's private productivity space.
 - Action first. The product should answer what matters now before asking for setup or interpretation.
-- Timeline-first. Plans, routines, tasks, and relevant shared state should become legible together.
+- **Unified temporal surface.** Plans, routines, tasks, temporal list items, and relevant external calendar entries should become legible together in a single surface (Agenda). The write model stays divided — each context owns its entities. The read model is unified — Agenda gathers all temporal entries into one surface.
 - Capture must stay easier than remembering. If adding or updating state becomes slow, adoption fails.
 - Simplicity at the surface. Product complexity belongs in the model, not in the interface.
 - One product, one language. All surfaces must feel like part of the same system.
@@ -134,7 +134,8 @@ They are not a full task management system and do not replace Calendar.
 
 A list item is not a task.
 A list item may carry importance and temporal fields (due date, reminder, repeat).
-Items with temporal fields project into the Agenda surface as a distinct entry type.
+Items with any temporal field project into the Agenda surface as a distinct entry type.
+Temporal fields are independently optional — repeat does not require a due date.
 A list linked to a plan remains a list. Linking does not cause all items to project.
 
 Lists must be:

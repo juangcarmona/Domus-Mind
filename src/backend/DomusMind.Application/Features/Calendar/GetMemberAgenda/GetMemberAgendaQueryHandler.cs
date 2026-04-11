@@ -83,7 +83,8 @@ public sealed class GetMemberAgendaQueryHandler
                 evt.Id.Value,
                 null, null, null, null, null, null, null, null,
                 null, null, null,
-                null, null));
+                null, null,
+                null, null, null, null));
         }
 
         // External calendar entries
@@ -142,7 +143,8 @@ public sealed class GetMemberAgendaQueryHandler
                     entry.Location,
                     entry.ParticipantSummaryJson,
                     entry.ProviderModifiedAtUtc,
-                    null, null));
+                    null, null,
+                    null, null, null, null));
             }
         }
 
@@ -164,7 +166,9 @@ public sealed class GetMemberAgendaQueryHandler
                 ItemName = i.Name.Value,
                 i.DueDate,
                 i.Reminder,
+                i.Importance,
                 i.Checked
+                // Repeat-only items (no dueDate, no reminder) are deferred pending recurrence expansion.
             })
             .Where(i =>
                 (i.DueDate.HasValue && i.DueDate >= windowStartDate && i.DueDate <= windowEndDate) ||
@@ -194,10 +198,12 @@ public sealed class GetMemberAgendaQueryHandler
                 null,
                 allDay,
                 status,
-                false,
+                // list-items are read-only from Agenda — edits go through the Lists surface
+                true,
                 null, null, null, null, null, null, null, null,
                 null, null, null, null,
-                td.ListId, td.ItemId));
+                td.ListId, td.ItemId,
+                td.ListName, td.Importance, td.DueDate, td.Reminder));
         }
 
         var sortedItems = items

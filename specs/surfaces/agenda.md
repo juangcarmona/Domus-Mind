@@ -261,17 +261,35 @@ Month is a navigation and awareness surface, not a primary editing surface.
 
 ### What Agenda may show
 
+Agenda is the unified temporal read surface. It gathers from five source categories:
+
+| Source | Entry type | Write owner |
+| ------ | ---------- | ----------- |
+| Calendar events (plans) | Plan | Calendar |
+| Tasks | Task | Tasks |
+| Routines | Routine (projected occurrence) | Tasks |
+| Temporal list items | List Item projection | Shared Lists |
+| External calendar entries | Imported entry (member scope only) | External integration |
+
+**The write model is divided. Agenda unifies only the read surface.**
+
 - plans (Events in domain language): timed and untimed
 - tasks: due on the selected date, overdue, or assigned to a member
 - routines: projected occurrences for the selected date or range
 - imported external calendar entries in Member scope only when they fall inside the selected date window and an active sync horizon
-- **projected list items**: list items with temporal fields (due date or reminder) that fall within the selected date window
+- **projected list items**: list items with temporal fields (due date, reminder, or repeat) that fall within the selected date window
 - completed items: present but de-emphasized
 - unavailability blocks: where relevant and available
 
 ### Projected List Items
 
 Shared List items carrying temporal fields (due date, reminder, repeat) project into Agenda as a distinct entry type.
+
+**Agenda does not own list items. Agenda projects them.**
+
+The write model is divided: Calendar owns Event, Tasks owns Task and Routine, Shared Lists owns SharedListItem.
+The read model is unified: Agenda shows all of them together in a single temporal surface.
+This is the intended architecture. No entity crosses a context boundary.
 
 Rules:
 
@@ -280,9 +298,32 @@ Rules:
 - projected list items are distinguishable from Task entries and Calendar Events in all Agenda views
 - projected list items are not editable from Agenda — edit navigates to the item's list
 - selecting a projected list item opens read-detail inline (inspector/bottom sheet) with a `Open in Lists` action
-- projected list items appear in both Household and Member scope (scoping follows the list's family scope)
+- projected list items appear in both Household and Member scope (scoping follows the list's family scope — see scope placement rules below)
 - projected list items follow the same priority ordering as tasks for unchecked state
 - checked list items that still have a due date in the window appear de-emphasized (same as completed tasks)
+
+### Projected List Item Scope Placement Rules
+
+These rules define where temporal list items appear across Agenda scopes and time modes.
+
+V1 list items are household-scoped. There is no per-member scoping for list items.
+
+**Household scope:**
+
+- Household + Day (Board): projected list items appear in the shared row (household section), not in individual member rows
+- Household + Week: appear in a household-level lane on relevant day columns
+- Household + Month: contribute to the day cell entry count on relevant days
+
+**Member scope:**
+
+- Member + Day (Timeline): projected list items appear in the non-timed section alongside tasks and routines, ordered by importance then due date
+- Member + Week: appear in the task/non-timed lane for the relevant day
+- A plan-linked temporal list item appears at the same position as any other temporal list item — independently of the linked plan's position
+
+**Plan-linked temporal list items** project based on their own temporal fields.
+They do not inherit the linked event's time slot.
+The plan shows a compact list reference cue (unchecked count), separately from the item's own projection.
+These are two independent appearance mechanisms.
 
 ### External calendar entry rules
 

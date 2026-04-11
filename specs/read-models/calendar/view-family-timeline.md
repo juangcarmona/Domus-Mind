@@ -37,11 +37,15 @@ The timeline read model may include:
 * scheduled events
 * upcoming tasks
 * recently completed tasks
-* routine-generated tasks
-* projected list items: SharedList items with temporal fields (dueDate or reminder) falling within the requested window
+* projected routine occurrences
+* projected list items: SharedList items with temporal fields (dueDate, reminder, or repeat) where at least one of those fields produces a date falling within the requested window
 
-The phase 1 timeline does **not** include imported external calendar entries.
-Those entries are projected only into the member-scoped Agenda read model.
+**Deliberately not included in the phase 1 household timeline:**
+
+* Imported external calendar entries: these are personal/member-scoped integration state. Mixing them into the household-native timeline would blur external personal commitments with native household planning state. They project into the member-scoped Agenda read model only.
+
+The query assembles a unified chronological view from Calendar, Tasks, and Shared Lists.
+No entity is merged. Each entry carries its own `type` discriminator.
 
 ## Query Behavior
 
@@ -55,7 +59,7 @@ Participant filtering may match any participant associated with an event or task
 
 Each timeline item includes:
 
-* `type` (`event | task | list-item`)
+* `type` where allowed values are `event | task | routine | list-item`
 * `title`
 * `time`
 * `participants`
@@ -63,6 +67,13 @@ Each timeline item includes:
 * `importance` (for list-item type only)
 * `listId` (for list-item type only)
 * `listName` (for list-item type only)
+
+The `type` field is the source discriminator. It must never be collapsed:
+
+- a list item is always `list-item` — not `task` or `event`
+- a routine occurrence is always `routine` — not `event`
+- a task is always `task`
+- an event is always `event`
 
 Participant display data should be richer than raw IDs.
 

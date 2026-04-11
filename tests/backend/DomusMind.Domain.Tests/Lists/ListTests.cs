@@ -695,5 +695,66 @@ public sealed class ListTests
         list.Items.Single(i => i.Id == id2).Order.Should().Be(2);
         list.Items.Single(i => i.Id == id1).Order.Should().Be(3);
     }
+
+    // ── SetItemTemporal — repeat invariant ─────────────────────────────────
+
+    [Fact]
+    public void SetItemTemporal_WithRepeatOnly_DoesNotThrow()
+    {
+        var list = BuildList();
+        var (id, name) = NewItem("Recurring task");
+        list.AddItem(id, name, null, null, DateTime.UtcNow);
+
+        // Repeat may be set independently — dueDate is not required
+        var act = () => list.SetItemTemporal(id, null, null, "weekly", DateTime.UtcNow);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void SetItemTemporal_WithRepeatOnly_SetsRepeatField()
+    {
+        var list = BuildList();
+        var (id, name) = NewItem("Recurring task");
+        list.AddItem(id, name, null, null, DateTime.UtcNow);
+
+        list.SetItemTemporal(id, null, null, "weekly", DateTime.UtcNow);
+
+        var item = list.Items.Single(i => i.Id == id);
+        item.Repeat.Should().Be("weekly");
+        item.DueDate.Should().BeNull();
+        item.Reminder.Should().BeNull();
+    }
+
+    [Fact]
+    public void SetItemTemporal_WithRepeatOnly_ItemHasTemporalData()
+    {
+        var list = BuildList();
+        var (id, name) = NewItem("Recurring task");
+        list.AddItem(id, name, null, null, DateTime.UtcNow);
+
+        list.SetItemTemporal(id, null, null, "weekly", DateTime.UtcNow);
+
+        list.Items.Single(i => i.Id == id).HasTemporalData.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SetItemTemporal_WithDueDateCleared_AndRepeatRemains_ItemIsStillTemporalEligible()
+    {
+        var list = BuildList();
+        var (id, name) = NewItem("Task with due date and repeat");
+        list.AddItem(id, name, null, null, DateTime.UtcNow);
+        list.SetItemTemporal(id, new DateOnly(2026, 4, 11), null, "weekly", DateTime.UtcNow);
+
+        // Now clear just the dueDate (simulate clearing it leaving repeat)
+        // SetTemporal is additive — use ClearTemporal then re-set repeat only
+        list.ClearItemTemporal(id, DateTime.UtcNow);
+        list.SetItemTemporal(id, null, null, "weekly", DateTime.UtcNow);
+
+        var item = list.Items.Single(i => i.Id == id);
+        item.DueDate.Should().BeNull();
+        item.Repeat.Should().Be("weekly");
+        item.HasTemporalData.Should().BeTrue();
+    }
 }
 

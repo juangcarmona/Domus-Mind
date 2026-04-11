@@ -13,7 +13,6 @@ It is responsible for representing:
 * schedules
 * participants
 * reminders
-* the family timeline
 
 This context answers:
 
@@ -21,7 +20,10 @@ This context answers:
 * when it happens
 * who is involved
 
-It does not own identity or responsibility structures. 
+It does not own identity or responsibility structures.
+It does not own the Agenda read model.
+It does not own the family timeline — the timeline is a cross-context read model that draws from Calendar, Tasks, and Shared Lists.
+Calendar is one source for those projections, not the owner.
 
 ---
 
@@ -34,9 +36,10 @@ The Calendar context is responsible for:
 * managing event participation
 * generating reminders
 * ingesting selected external calendar data for member-scoped projections
-* maintaining the unified family timeline
+* providing calendar events and external calendar entries as sources for the Agenda and family timeline read models
 
-It is the source of truth for **time-based planning** in the household.
+Calendar is the source of truth for **time-based planning** in the household.
+Calendar owns the Event aggregate. The Agenda and family timeline read models are not owned by Calendar — they are assembled from multiple contexts.
 
 User interfaces may present events as **Plans**, but the domain model remains centered on the **Event aggregate**.
 

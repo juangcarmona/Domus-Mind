@@ -119,8 +119,10 @@ No implicit task creation occurs.
 * must belong to exactly one list
 * name cannot be empty
 * order must be unique within a list
-* if repeat is set, due date must also be set
 * importance is a binary flag, not a scoring system
+* `repeat` may be set independently of `dueDate` — it defines a recurrence schedule that is itself a temporal anchor for Agenda projection
+* if `repeat` is set and `dueDate` is also set, the repeat rule governs projected occurrences; `dueDate` sets the anchor date for the first (or next) occurrence
+* if `dueDate` is cleared but `repeat` remains set, the item remains Agenda-eligible via `repeat`
 
 ---
 

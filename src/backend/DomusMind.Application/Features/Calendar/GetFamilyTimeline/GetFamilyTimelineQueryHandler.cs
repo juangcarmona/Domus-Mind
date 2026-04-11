@@ -87,7 +87,9 @@ public sealed class GetFamilyTimelineQueryHandler
             })
             .ToList();
 
-        // Temporal list items with a due date in the requested window
+        // Temporal list items: items with dueDate or reminder in the requested window.
+        // Reminder-based items: include when the reminder DateTimeOffset falls within the date window.
+        // Repeat-only items (no dueDate, no reminder) are deferred pending recurrence expansion.
         var listItemsQuery = _dbContext
             .Set<SharedList>()
             .AsNoTracking()
@@ -100,15 +102,28 @@ public sealed class GetFamilyTimelineQueryHandler
                 ItemName = i.Name.Value,
                 i.DueDate,
                 i.Reminder,
+                i.Importance,
                 i.Checked
             })
-            .Where(i => i.DueDate.HasValue);
+            .Where(i => i.DueDate.HasValue || i.Reminder.HasValue);
 
         if (query.From.HasValue)
-            listItemsQuery = listItemsQuery.Where(i => i.DueDate >= query.From.Value);
+        {
+            var fromDate = query.From.Value;
+            var fromUtc = new DateTimeOffset(fromDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+            listItemsQuery = listItemsQuery.Where(i =>
+                (i.DueDate.HasValue && i.DueDate >= fromDate) ||
+                (i.Reminder.HasValue && !i.DueDate.HasValue && i.Reminder >= fromUtc));
+        }
 
         if (query.To.HasValue)
-            listItemsQuery = listItemsQuery.Where(i => i.DueDate <= query.To.Value);
+        {
+            var toDate = query.To.Value;
+            var toUtc = new DateTimeOffset(toDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+            listItemsQuery = listItemsQuery.Where(i =>
+                (i.DueDate.HasValue && i.DueDate <= toDate) ||
+                (i.Reminder.HasValue && !i.DueDate.HasValue && i.Reminder <= toUtc));
+        }
 
         var listItems = await listItemsQuery
             .OrderBy(i => i.DueDate)
@@ -123,7 +138,8 @@ public sealed class GetFamilyTimelineQueryHandler
                 i.ItemName,
                 i.DueDate?.ToString("yyyy-MM-dd"),
                 i.Reminder?.ToString("o"),
-                i.Checked))
+                i.Checked,
+                i.Importance))
             .ToList();
 
         return new FamilyTimelineResponse(items, timelineListItems);

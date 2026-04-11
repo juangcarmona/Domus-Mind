@@ -22,7 +22,8 @@ public sealed record FamilyTimelineListItem(
     string ItemName,
     string? DueDate,
     string? Reminder,
-    bool Checked);
+    bool Checked,
+    bool Importance);
 
 public sealed record FamilyTimelineResponse(
     IReadOnlyCollection<FamilyTimelineEventItem> Events,

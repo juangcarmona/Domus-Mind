@@ -21,4 +21,9 @@ public sealed record MemberAgendaItem(
     string? ParticipantSummary,
     DateTime? SourceLastModifiedUtc,
     Guid? ListId,
-    Guid? ListItemId);
+    Guid? ListItemId,
+    // list-item specific fields — null for all other types
+    string? ListName,
+    bool? Importance,
+    DateOnly? DueDate,
+    DateTimeOffset? Reminder);

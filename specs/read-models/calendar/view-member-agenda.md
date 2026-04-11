@@ -38,7 +38,10 @@ The member-scoped Agenda read model may include:
 - tasks assigned to the member or relevant to the selected member scope
 - projected routine occurrences relevant to the member
 - imported external calendar entries from the member's selected external calendar feeds
-- projected list items: SharedList items with temporal fields (dueDate or reminder) falling within the requested window
+- projected list items: SharedList items with temporal fields (dueDate, reminder, or repeat) where at least one of those fields produces a date falling within the requested window
+
+This query assembles a unified view from multiple write-model sources.
+No entity is merged. Each entry carries its own `type` discriminator.
 
 ## Query Behavior
 
@@ -89,10 +92,13 @@ Projected list item fields include:
 
 Projected list item rules:
 
-- appear only when `dueDate` or `reminder` falls within the requested window
+- appear when `dueDate`, `reminder`, or `repeat` produces a date falling within the requested window
+- `repeat` is independently sufficient to trigger projection (dueDate is not required)
 - checked items appear de-emphasized but are not excluded from the result
-- the `type` field is always `list-item` — never `task` or `event`
-- scoped to the household; no per-member scoping unless the list has explicit member association
+- the `type` field is always `list-item` — never `task` or `event` — regardless of what temporal fields are set
+- list items are household-scoped: V1 does not support per-member scoping of list items
+- all household temporal list items appear in member scope (the member sees household items)
+- plan-linked temporal list items appear via this projection independently of the linked event; the event and item are separate entries
 
 Imported external entry fields include:
 

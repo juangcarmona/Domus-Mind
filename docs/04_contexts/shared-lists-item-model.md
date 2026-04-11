@@ -78,15 +78,15 @@ Importance does not interact with and is not required by any temporal field.
 | -------- | ---------------- | --------------------------------------- |
 | dueDate  | DateOnly?        | optional; if set, enables Agenda projection by date |
 | reminder | DateTimeOffset?  | optional; if set, enables Agenda projection by reminder time |
-| repeat   | RepeatRule?      | optional; **repeat requires dueDate to be set** |
+| repeat   | RepeatRule?      | optional; repeat may be set independently of dueDate; defines a recurrence schedule that is itself an Agenda projection anchor |
 
 ---
 
 ## Invariants
 
 1. `name` must be non-empty at all times.
-2. `repeat` cannot be set without `dueDate`.
-3. If `repeat` is set and `dueDate` is cleared, `repeat` must be automatically cleared.
+2. `repeat` may be set independently of `dueDate`. Repeat is itself a temporal anchor. When both are set, `dueDate` acts as the anchor date for the first (or current) recurrence.
+3. If `dueDate` is cleared while `repeat` is set, the item remains Agenda-eligible via the `repeat` rule alone.
 4. `reminder` may be set independently of `dueDate`, using an absolute datetime.
 5. `importance` is a binary flag. It is never a score or a ranking system.
 6. `checked` state does not affect validity of any capability field.
@@ -105,12 +105,16 @@ Importance does not interact with and is not required by any temporal field.
 ✓  name + importance
 ✓  name + dueDate
 ✓  name + reminder (standalone, absolute)
+✓  name + repeat (standalone; repeat defines its own recurrence schedule)
 ✓  name + dueDate + reminder
 ✓  name + dueDate + repeat
+✓  name + reminder + repeat
 ✓  name + dueDate + reminder + repeat
 ✓  name + importance + dueDate + reminder + repeat
-✗  name + repeat (no dueDate)  → INVALID — repeat requires dueDate
 ```
+
+All temporal fields are independently optional.
+No temporal field requires another as a prerequisite.
 
 ---
 
@@ -120,8 +124,7 @@ Importance does not interact with and is not required by any temporal field.
 
 ```
 SetSharedListItemTemporal(dueDate?, reminder?, repeat?)
-  → dueDate set OR reminder set → item becomes Agenda-eligible
-  → if repeat is provided without dueDate in request and no existing dueDate → reject
+  → dueDate set OR reminder set OR repeat set → item becomes Agenda-eligible
   → emits: SharedListItemScheduled (if item transitions from non-temporal to temporal)
   → emits: SharedListItemUpdated (if item was already temporal and fields change)
 ```
@@ -167,7 +170,8 @@ CONDITION A: dueDate is set AND dueDate falls within the requested date window
 OR
 CONDITION B: reminder is set AND reminder datetime falls within the requested date window
 OR
-CONDITION C: repeat is set AND repeat rule produces an occurrence within the requested date window
+CONDITION C: repeat is set AND the repeat rule produces an occurrence within the requested date window
+             (repeat is independently sufficient; dueDate is not required for C to fire)
 ```
 
 If none of A, B, or C is satisfied → item does not appear in Agenda.
@@ -245,6 +249,46 @@ No data migration is required beyond adding nullable columns with null defaults.
 No existing items gain temporal status without an explicit user action.
 No existing items project into Agenda until their temporal fields are set.
 This is a strictly additive change to the item model.
+
+---
+
+## Agenda Scope Placement Rules
+
+Temporal list items project into Agenda read models according to these rules.
+
+There is no member-level scoping for list items in V1.
+List items belong to the household, not to a specific member.
+
+### Household-scoped temporal list item
+
+A temporal list item from a list with no member association projects into:
+
+- **Household + Day**: shared row (household-level section)
+- **Household + Week**: appears in the household lane on the relevant day column(s)
+- **Household + Month**: contributes to the day cell count on relevant days
+
+It appears in **Member scope only** if a member navigates through the Household board entry, which shows all household items.
+
+### Member-scoped temporal list item
+
+V1 does not support member-scoped list items.
+`SharedListItem` does not carry a `memberId` or `assigneeId`.
+All temporal list items are household-scoped in V1.
+
+If a user wants to anchor a temporal item to a person, the correct model is a Task (Tasks context) with assignment.
+
+### Plan-linked temporal list item
+
+A temporal list item in a list that is linked to a Calendar Event (plan) projects independently from the plan link.
+
+- The item projects based on its own temporal fields, not the event's schedule.
+- The item projects when conditions A, B, or C are satisfied, regardless of whether the linked event is also visible.
+- The plan's presence in Agenda does not cause the item to appear.
+- The item's appearance in Agenda does not cause the plan's list to expand inline.
+
+These are two separate appearance mechanisms:
+1. The plan appears with a compact list reference cue (unchecked count of its linked list).
+2. The item appears independently via the projection mechanism.
 
 ---
 

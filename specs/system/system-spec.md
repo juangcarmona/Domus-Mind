@@ -41,6 +41,12 @@ Shared Lists items with temporal fields project into Agenda as a distinct entry 
 Shared Lists does not own time — Calendar remains the source of truth for time.
 Shared Lists items are never automatically converted to Tasks.
 
+**Agenda is the unified temporal read surface.**
+It gathers from five sources: Calendar Events, Tasks, Routines, temporal list items, and (member scope only) external calendar entries.
+The write model is divided — each context owns its aggregates.
+The read model is unified — Agenda projects all temporal entry types together.
+No entity crosses a context boundary.
+
 ---
 
 ## Core Capabilities
@@ -102,7 +108,8 @@ Shared Lists does not overlap with:
 - Shared Lists may optionally link to Calendar entities
 
 - Shared Lists remains behaviorally independent from Tasks.
-- Shared Lists may carry item-level temporal fields; these project into Agenda without creating Calendar or Task records.
+- Shared Lists may carry item-level temporal fields (due date, reminder, repeat); these project into Agenda without creating Calendar or Task records.
+- Repeat on a list item may be set independently of due date. Repeat is itself a temporal anchor sufficient for Agenda projection.
 
 ---
 
@@ -248,6 +255,9 @@ DomusMind V1 is complete when:
 - tasks can be executed
 - routines can be maintained
 - shared lists can be created and reused
+- temporal list items (with due date, reminder, or repeat) project into the Agenda surface as a distinct `list-item` entry type
+- the Agenda surface shows a unified view of plans, tasks, routines, temporal list items, and (member scope) external calendar entries
+- no projected entry type is ever collapsed into another type in the read model
 - list items can be added, updated, reordered, and toggled
 - list items may carry importance flags and temporal fields
 - temporally-enriched list items project into Agenda as a distinct entry type

@@ -252,7 +252,15 @@ Each capability is independently optional:
 | Capability  | Fields                              | Effect                                      |
 | ----------- | ----------------------------------- | ------------------------------------------- |
 | importance  | starred flag                        | item appears visually prioritized in the list |
-| temporal    | due date, reminder, repeat          | item is eligible for Agenda projection      |
+| temporal    | due date, reminder, repeat          | item is eligible for Agenda projection; each field is independently optional |
+
+Temporal field independence:
+
+- `due date` alone: Agenda projects the item on that date
+- `reminder` alone: Agenda projects the item at that datetime
+- `repeat` alone: Agenda projects the item on each recurrence occurrence
+- any combination of the three is valid
+- no temporal field requires another as a prerequisite
 
 Items with temporal fields may appear in the Agenda surface as projected list items.
 
@@ -340,7 +348,12 @@ Quick add must support sequential entry without interruption.
 
 ## Relationship with Agenda
 
-Items with temporal fields (due date, reminder) project into the Agenda surface as list-origin entries.
+**Temporal list items are first-class Agenda sources.**
+
+An item with any temporal field (due date, reminder, or repeat) projects into the Agenda surface as a distinct `list-item` entry. This is not incidental or secondary behavior — it is a defined cross-surface capability.
+
+The write model stays divided: Shared Lists owns the item. Agenda projects it.
+Agenda does not own, edit, or convert list items.
 
 Rules:
 
@@ -351,6 +364,12 @@ Rules:
 - selecting a projected item in Agenda navigates to its list context
 - Agenda does not expand list content beyond projected temporal items
 - a list linked to a plan retains list semantics; the link does not cause all items to project
+
+Repeat rule:
+
+- a repeat rule may be set on a list item without a due date
+- the repeat rule alone is sufficient to make the item Agenda-eligible
+- when both `repeat` and `dueDate` are set, `dueDate` acts as the anchor date for the current recurrence
 
 When a plan in Agenda has a related list:
 

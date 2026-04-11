@@ -168,27 +168,59 @@ In household language, they experience them as Plans.
 
 The **Household Timeline** is the chronological read model of things affecting the household.
 
-It may include:
+It includes:
 
-* plans
-* tasks
-* routines
-* reminders
-* other explicitly supported household entries
+* plans (Calendar Events)
+* tasks (Tasks context, due-date bearing)
+* routines (Tasks context, projected occurrences)
+* temporal list items (Shared Lists context, items with due date, reminder, or repeat)
 
-The timeline answers:
+The timeline is a read model, not a bounded context.
+It is assembled from multiple write-model sources.
+It does not collapse or merge the entities it projects.
 
-> What matters today for this household?
-
-The Timeline is a read model, not a bounded context.
+Phase 1 external calendar entries are **not** included in the household timeline.
+They project into the member-scoped Agenda read model only.
 
 ### Reminder
 
-A **Reminder** is a scheduled prompt associated with a time-bound commitment.
+A **Reminder** is a scheduled prompt associated with a time-bound commitment or a temporal list item.
 
-In V1, reminders belong to Calendar semantics around Events.
+Reminders may belong to Calendar semantics (on an Event) or to a list item's temporal fields.
+In the Event model, reminders are relative (e.g. 30 minutes before).
+On a list item, reminder is an absolute `DateTimeOffset` used for Agenda projection.
 
 A reminder is not a task.
+
+---
+
+## Agenda: Unified Temporal Read Surface
+
+The **Agenda** is the unified temporal read surface for the household.
+
+It gathers temporal entries from multiple write-model sources and projects them into a single surface:
+
+| Source | Entry type |
+| ------ | ---------- |
+| Calendar: Event | Plan |
+| Tasks: Task | Task |
+| Tasks: Routine | Routine (projected occurrence) |
+| Shared Lists: SharedListItem (with temporal fields) | List Item projection |
+| External integration: ExternalCalendarEntry | Imported external entry (member scope only) |
+
+**Architectural invariant: write model is divided; read model is unified.**
+
+- Calendar owns Event. Agenda does not.
+- Tasks owns Task and Routine. Agenda does not.
+- Shared Lists owns SharedListItem. Agenda does not.
+- External calendar entries are read-only. Agenda projects them, not owns them.
+
+Agenda is the only place where these entry types appear together.
+No entity crosses a context boundary in the write model.
+Projection is a read concern only.
+
+**Shared temporal vocabulary** — due date, reminder, repeat — is reused across contexts.
+This is intentional. Shared vocabulary does not imply shared entities.
 
 ### External Calendar Connection
 

@@ -96,12 +96,6 @@ public sealed class ListItem : Entity<ListItemId>
         string? repeat,
         DateTime updatedAtUtc)
     {
-        var effectiveDueDate = dueDate ?? DueDate;
-
-        if (repeat is not null && effectiveDueDate is null)
-            throw new InvalidOperationException(
-                "Repeat requires a due date. Provide a due date together with repeat.");
-
         var wasTemporalBefore = HasTemporalData;
 
         if (dueDate.HasValue) DueDate = dueDate;
