@@ -1,21 +1,20 @@
-﻿using DomusMind.Application.Abstractions.Messaging;
+using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Contracts.Lists;
 using DomusMind.Domain.Lists;
-using DomusMind.Domain.Lists.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
-namespace DomusMind.Application.Features.Lists.UpdateListItem;
+namespace DomusMind.Application.Features.Lists.SetItemTemporal;
 
-public sealed class UpdateListItemCommandHandler
-    : ICommandHandler<UpdateListItemCommand, UpdateListItemResponse>
+public sealed class SetItemTemporalCommandHandler
+    : ICommandHandler<SetItemTemporalCommand, SetItemTemporalResponse>
 {
     private readonly IDomusMindDbContext _dbContext;
     private readonly IEventLogWriter _eventLogWriter;
     private readonly IFamilyAuthorizationService _authorizationService;
 
-    public UpdateListItemCommandHandler(
+    public SetItemTemporalCommandHandler(
         IDomusMindDbContext dbContext,
         IEventLogWriter eventLogWriter,
         IFamilyAuthorizationService authorizationService)
@@ -25,12 +24,13 @@ public sealed class UpdateListItemCommandHandler
         _authorizationService = authorizationService;
     }
 
-    public async Task<UpdateListItemResponse> Handle(
-        UpdateListItemCommand command,
+    public async Task<SetItemTemporalResponse> Handle(
+        SetItemTemporalCommand command,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(command.Name))
-            throw new ListException(ListErrorCode.InvalidInput, "Item name is required.");
+        if (command.DueDate is null && command.Reminder is null && command.Repeat is null)
+            throw new ListException(ListErrorCode.InvalidInput,
+                "At least one temporal field (dueDate, reminder, repeat) must be provided.");
 
         var listId = ListId.From(command.ListId);
 
@@ -47,40 +47,32 @@ public sealed class UpdateListItemCommandHandler
         if (!canAccess)
             throw new ListException(ListErrorCode.AccessDenied, "Access to this family is denied.");
 
-        ListItemName itemName;
+        var itemId = ListItemId.From(command.ItemId);
+        var now = DateTime.UtcNow;
+
+        ListItem item;
         try
         {
-            itemName = ListItemName.Create(command.Name);
+            item = list.SetItemTemporal(itemId, command.DueDate, command.Reminder, command.Repeat, now);
+        }
+        catch (InvalidOperationException)
+        {
+            throw new ListException(ListErrorCode.ItemNotFound, "Item not found in this list.");
         }
         catch (ArgumentException ex)
         {
             throw new ListException(ListErrorCode.InvalidInput, ex.Message);
         }
 
-        var itemId = ListItemId.From(command.ItemId);
-        ListItem item;
-        try
-        {
-            item = list.UpdateItem(itemId, itemName, command.Quantity, command.Note, DateTime.UtcNow);
-        }
-        catch (InvalidOperationException)
-        {
-            throw new ListException(ListErrorCode.ItemNotFound, "Item not found in this list.");
-        }
-
         await _eventLogWriter.WriteAsync(list.DomainEvents, cancellationToken);
         list.ClearDomainEvents();
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new UpdateListItemResponse(
+        return new SetItemTemporalResponse(
             item.Id.Value,
-            item.Name.Value,
-            item.Quantity,
-            item.Note,
-            item.UpdatedAtUtc,
-            item.Importance,
             item.DueDate,
             item.Reminder,
-            item.Repeat);
+            item.Repeat,
+            item.UpdatedAtUtc);
     }
 }

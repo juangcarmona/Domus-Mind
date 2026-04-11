@@ -16,6 +16,9 @@ using DomusMind.Application.Features.Lists.GetListByLinkedEntity;
 using DomusMind.Application.Features.Lists.RenameList;
 using DomusMind.Application.Features.Lists.DeleteList;
 using DomusMind.Application.Features.Lists.ReorderListItems;
+using DomusMind.Application.Features.Lists.SetItemImportance;
+using DomusMind.Application.Features.Lists.SetItemTemporal;
+using DomusMind.Application.Features.Lists.ClearItemTemporal;
 using DomusMind.Application.Features.Lists.RestoreList;
 using DomusMind.Application.Features.Lists.UpdateList;
 using DomusMind.Contracts.Lists;
@@ -408,6 +411,73 @@ public sealed class ListsController : ControllerBase
                 new RestoreListCommand(listId, _currentUser.UserId!.Value),
                 cancellationToken);
             return NoContent();
+        }
+        catch (ListException ex) { return MapException(ex); }
+    }
+
+    /// <summary>Sets or clears the importance flag on a list item.</summary>
+    [HttpPatch("{listId:guid}/items/{itemId:guid}/importance")]
+    [ProducesResponseType(typeof(SetItemImportanceResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> SetItemImportance(
+        Guid listId,
+        Guid itemId,
+        [FromBody] SetItemImportanceRequest request,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new SetItemImportanceCommand(listId, itemId, request.Importance, _currentUser.UserId!.Value),
+                cancellationToken);
+            return Ok(response);
+        }
+        catch (ListException ex) { return MapException(ex); }
+    }
+
+    /// <summary>Sets temporal fields (due date, reminder, repeat) on a list item.</summary>
+    [HttpPatch("{listId:guid}/items/{itemId:guid}/temporal")]
+    [ProducesResponseType(typeof(SetItemTemporalResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> SetItemTemporal(
+        Guid listId,
+        Guid itemId,
+        [FromBody] SetItemTemporalRequest request,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new SetItemTemporalCommand(listId, itemId, request.DueDate, request.Reminder, request.Repeat, _currentUser.UserId!.Value),
+                cancellationToken);
+            return Ok(response);
+        }
+        catch (ListException ex) { return MapException(ex); }
+    }
+
+    /// <summary>Clears all temporal fields from a list item.</summary>
+    [HttpDelete("{listId:guid}/items/{itemId:guid}/temporal")]
+    [ProducesResponseType(typeof(ClearItemTemporalResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ClearItemTemporal(
+        Guid listId,
+        Guid itemId,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new ClearItemTemporalCommand(listId, itemId, _currentUser.UserId!.Value),
+                cancellationToken);
+            return Ok(response);
         }
         catch (ListException ex) { return MapException(ex); }
     }

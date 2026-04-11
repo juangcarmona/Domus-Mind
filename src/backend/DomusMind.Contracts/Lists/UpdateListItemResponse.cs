@@ -5,4 +5,8 @@ public sealed record UpdateListItemResponse(
     string Name,
     string? Quantity,
     string? Note,
-    DateTime UpdatedAtUtc);
+    DateTime UpdatedAtUtc,
+    bool Importance,
+    DateOnly? DueDate,
+    DateTimeOffset? Reminder,
+    string? Repeat);

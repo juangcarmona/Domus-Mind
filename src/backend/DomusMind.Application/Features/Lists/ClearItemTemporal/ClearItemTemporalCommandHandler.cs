@@ -1,21 +1,20 @@
-﻿using DomusMind.Application.Abstractions.Messaging;
+using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Contracts.Lists;
 using DomusMind.Domain.Lists;
-using DomusMind.Domain.Lists.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
-namespace DomusMind.Application.Features.Lists.UpdateListItem;
+namespace DomusMind.Application.Features.Lists.ClearItemTemporal;
 
-public sealed class UpdateListItemCommandHandler
-    : ICommandHandler<UpdateListItemCommand, UpdateListItemResponse>
+public sealed class ClearItemTemporalCommandHandler
+    : ICommandHandler<ClearItemTemporalCommand, ClearItemTemporalResponse>
 {
     private readonly IDomusMindDbContext _dbContext;
     private readonly IEventLogWriter _eventLogWriter;
     private readonly IFamilyAuthorizationService _authorizationService;
 
-    public UpdateListItemCommandHandler(
+    public ClearItemTemporalCommandHandler(
         IDomusMindDbContext dbContext,
         IEventLogWriter eventLogWriter,
         IFamilyAuthorizationService authorizationService)
@@ -25,13 +24,10 @@ public sealed class UpdateListItemCommandHandler
         _authorizationService = authorizationService;
     }
 
-    public async Task<UpdateListItemResponse> Handle(
-        UpdateListItemCommand command,
+    public async Task<ClearItemTemporalResponse> Handle(
+        ClearItemTemporalCommand command,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(command.Name))
-            throw new ListException(ListErrorCode.InvalidInput, "Item name is required.");
-
         var listId = ListId.From(command.ListId);
 
         var list = await _dbContext.Set<SharedList>()
@@ -47,21 +43,13 @@ public sealed class UpdateListItemCommandHandler
         if (!canAccess)
             throw new ListException(ListErrorCode.AccessDenied, "Access to this family is denied.");
 
-        ListItemName itemName;
-        try
-        {
-            itemName = ListItemName.Create(command.Name);
-        }
-        catch (ArgumentException ex)
-        {
-            throw new ListException(ListErrorCode.InvalidInput, ex.Message);
-        }
-
         var itemId = ListItemId.From(command.ItemId);
+        var now = DateTime.UtcNow;
+
         ListItem item;
         try
         {
-            item = list.UpdateItem(itemId, itemName, command.Quantity, command.Note, DateTime.UtcNow);
+            item = list.ClearItemTemporal(itemId, now);
         }
         catch (InvalidOperationException)
         {
@@ -72,15 +60,8 @@ public sealed class UpdateListItemCommandHandler
         list.ClearDomainEvents();
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new UpdateListItemResponse(
+        return new ClearItemTemporalResponse(
             item.Id.Value,
-            item.Name.Value,
-            item.Quantity,
-            item.Note,
-            item.UpdatedAtUtc,
-            item.Importance,
-            item.DueDate,
-            item.Reminder,
-            item.Repeat);
+            item.UpdatedAtUtc);
     }
 }

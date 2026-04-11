@@ -6,7 +6,11 @@ public sealed record ListItemDetail(
     bool Checked,
     string? Quantity,
     string? Note,
-    int Order);
+    int Order,
+    bool Importance,
+    DateOnly? DueDate,
+    DateTimeOffset? Reminder,
+    string? Repeat);
 
 public sealed record GetListDetailResponse(
     Guid ListId,

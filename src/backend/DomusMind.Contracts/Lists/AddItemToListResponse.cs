@@ -7,4 +7,8 @@ public sealed record AddItemToListResponse(
     bool Checked,
     string? Quantity,
     string? Note,
-    int Order);
+    int Order,
+    bool Importance,
+    DateOnly? DueDate,
+    DateTimeOffset? Reminder,
+    string? Repeat);

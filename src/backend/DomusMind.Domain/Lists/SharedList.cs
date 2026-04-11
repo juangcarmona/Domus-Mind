@@ -254,4 +254,74 @@ public sealed class SharedList : AggregateRoot<ListId>
 
     /// <summary>Count of items that are not yet checked.</summary>
     public int UncheckedCount => _items.Count(i => !i.Checked);
+
+    public ListItem SetItemImportance(ListItemId itemId, bool importance, DateTime now)
+    {
+        var item = _items.FirstOrDefault(i => i.Id == itemId)
+            ?? throw new InvalidOperationException($"Item '{itemId.Value}' does not exist in this list.");
+
+        item.SetImportance(importance, now);
+
+        RaiseDomainEvent(new ListItemImportanceSet(
+            Guid.NewGuid(), Id.Value, itemId.Value, importance, now));
+
+        return item;
+    }
+
+    /// <summary>
+    /// Sets temporal fields (dueDate, reminder, repeat) on an item.
+    /// At least one field must be provided. Repeat requires dueDate.
+    /// </summary>
+    public ListItem SetItemTemporal(
+        ListItemId itemId,
+        DateOnly? dueDate,
+        DateTimeOffset? reminder,
+        string? repeat,
+        DateTime now)
+    {
+        if (dueDate is null && reminder is null && repeat is null)
+            throw new ArgumentException(
+                "At least one temporal field (dueDate, reminder, repeat) must be provided.");
+
+        var item = _items.FirstOrDefault(i => i.Id == itemId)
+            ?? throw new InvalidOperationException($"Item '{itemId.Value}' does not exist in this list.");
+
+        var isFirstTemporalSet = item.SetTemporal(dueDate, reminder, repeat, now);
+
+        if (isFirstTemporalSet)
+        {
+            RaiseDomainEvent(new ListItemScheduled(
+                Guid.NewGuid(), Id.Value, itemId.Value,
+                item.DueDate, item.Reminder, item.Repeat, now));
+        }
+        else
+        {
+            RaiseDomainEvent(new ListItemUpdated(
+                Guid.NewGuid(), Id.Value, itemId.Value,
+                item.Name.Value, item.Quantity, item.Note, now));
+        }
+
+        return item;
+    }
+
+    /// <summary>
+    /// Clears all temporal fields from an item atomically.
+    /// Emits ListItemScheduled (with nulls) to signal Agenda projection invalidation.
+    /// </summary>
+    public ListItem ClearItemTemporal(ListItemId itemId, DateTime now)
+    {
+        var item = _items.FirstOrDefault(i => i.Id == itemId)
+            ?? throw new InvalidOperationException($"Item '{itemId.Value}' does not exist in this list.");
+
+        var hadTemporalData = item.ClearTemporal(now);
+
+        if (hadTemporalData)
+        {
+            RaiseDomainEvent(new ListItemScheduled(
+                Guid.NewGuid(), Id.Value, itemId.Value,
+                null, null, null, now));
+        }
+
+        return item;
+    }
 }

@@ -85,6 +85,9 @@ using DomusMind.Application.Features.Lists.GetListByLinkedEntity;
 using DomusMind.Application.Features.Lists.RenameList;
 using DomusMind.Application.Features.Lists.DeleteList;
 using DomusMind.Application.Features.Lists.ReorderListItems;
+using DomusMind.Application.Features.Lists.SetItemImportance;
+using DomusMind.Application.Features.Lists.SetItemTemporal;
+using DomusMind.Application.Features.Lists.ClearItemTemporal;
 using DomusMind.Contracts.Auth;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
@@ -213,6 +216,9 @@ public static class ApplicationServices
         services.AddScoped<ICommandHandler<RenameListCommand, RenameListResponse>, RenameListCommandHandler>();
         services.AddScoped<ICommandHandler<DeleteListCommand, bool>, DeleteListCommandHandler>();
         services.AddScoped<ICommandHandler<ReorderListItemsCommand, bool>, ReorderListItemsCommandHandler>();
+        services.AddScoped<ICommandHandler<SetItemImportanceCommand, SetItemImportanceResponse>, SetItemImportanceCommandHandler>();
+        services.AddScoped<ICommandHandler<SetItemTemporalCommand, SetItemTemporalResponse>, SetItemTemporalCommandHandler>();
+        services.AddScoped<ICommandHandler<ClearItemTemporalCommand, ClearItemTemporalResponse>, ClearItemTemporalCommandHandler>();
 
         return services;
     }

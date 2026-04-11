@@ -50,7 +50,11 @@ public sealed class GetListDetailQueryHandler
                 i.Checked,
                 i.Quantity,
                 i.Note,
-                i.Order))
+                i.Order,
+                i.Importance,
+                i.DueDate,
+                i.Reminder,
+                i.Repeat))
             .ToList();
 
         string? linkedEntityDisplayName = null;

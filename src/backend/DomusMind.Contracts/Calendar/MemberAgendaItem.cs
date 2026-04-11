@@ -19,4 +19,6 @@ public sealed record MemberAgendaItem(
     string? OpenInProviderUrl,
     string? Location,
     string? ParticipantSummary,
-    DateTime? SourceLastModifiedUtc);
+    DateTime? SourceLastModifiedUtc,
+    Guid? ListId,
+    Guid? ListItemId);

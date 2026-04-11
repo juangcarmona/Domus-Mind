@@ -52,6 +52,21 @@ public sealed class ListItemConfiguration : IEntityTypeConfiguration<ListItem>
                 value => value.HasValue ? MemberId.From(value.Value) : null)
             .HasColumnName("updated_by_member_id");
 
+        builder.Property(i => i.Importance)
+            .HasColumnName("importance")
+            .HasDefaultValue(false)
+            .IsRequired();
+
+        builder.Property(i => i.DueDate)
+            .HasColumnName("due_date");
+
+        builder.Property(i => i.Reminder)
+            .HasColumnName("reminder");
+
+        builder.Property(i => i.Repeat)
+            .HasColumnName("repeat")
+            .HasMaxLength(100);
+
         // Shadow FK to parent list
         builder.Property<ListId>("ListId")
             .HasConversion(id => id.Value, value => ListId.From(value))

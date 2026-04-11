@@ -6,6 +6,7 @@ using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Lists;
 using Microsoft.EntityFrameworkCore;
 
 namespace DomusMind.Application.Features.Calendar.GetFamilyTimeline;
@@ -86,6 +87,45 @@ public sealed class GetFamilyTimelineQueryHandler
             })
             .ToList();
 
-        return new FamilyTimelineResponse(items);
+        // Temporal list items with a due date in the requested window
+        var listItemsQuery = _dbContext
+            .Set<SharedList>()
+            .AsNoTracking()
+            .Where(l => l.FamilyId == familyId)
+            .SelectMany(l => l.Items, (l, i) => new
+            {
+                ListId = l.Id.Value,
+                ListName = l.Name.Value,
+                ItemId = i.Id.Value,
+                ItemName = i.Name.Value,
+                i.DueDate,
+                i.Reminder,
+                i.Checked
+            })
+            .Where(i => i.DueDate.HasValue);
+
+        if (query.From.HasValue)
+            listItemsQuery = listItemsQuery.Where(i => i.DueDate >= query.From.Value);
+
+        if (query.To.HasValue)
+            listItemsQuery = listItemsQuery.Where(i => i.DueDate <= query.To.Value);
+
+        var listItems = await listItemsQuery
+            .OrderBy(i => i.DueDate)
+            .ThenBy(i => i.Reminder)
+            .ToListAsync(cancellationToken);
+
+        var timelineListItems = listItems
+            .Select(i => new FamilyTimelineListItem(
+                i.ListId,
+                i.ListName,
+                i.ItemId,
+                i.ItemName,
+                i.DueDate?.ToString("yyyy-MM-dd"),
+                i.Reminder?.ToString("o"),
+                i.Checked))
+            .ToList();
+
+        return new FamilyTimelineResponse(items, timelineListItems);
     }
 }

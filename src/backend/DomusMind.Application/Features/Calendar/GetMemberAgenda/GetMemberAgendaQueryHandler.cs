@@ -5,6 +5,7 @@ using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ExternalConnections;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Lists;
 using Microsoft.EntityFrameworkCore;
 
 namespace DomusMind.Application.Features.Calendar.GetMemberAgenda;
@@ -81,7 +82,8 @@ public sealed class GetMemberAgendaQueryHandler
                 false,
                 evt.Id.Value,
                 null, null, null, null, null, null, null, null,
-                null, null, null));
+                null, null, null,
+                null, null));
         }
 
         // External calendar entries
@@ -139,8 +141,63 @@ public sealed class GetMemberAgendaQueryHandler
                     entry.OpenInProviderUrl,
                     entry.Location,
                     entry.ParticipantSummaryJson,
-                    entry.ProviderModifiedAtUtc));
+                    entry.ProviderModifiedAtUtc,
+                    null, null));
             }
+        }
+
+        // Temporal list items (due date or reminder falls within the window)
+        var windowStartDate = DateOnly.FromDateTime(windowStart);
+        var windowEndDate = DateOnly.FromDateTime(windowEnd);
+        var windowStartOffset = new DateTimeOffset(windowStart, TimeSpan.Zero);
+        var windowEndOffset = new DateTimeOffset(windowEnd, TimeSpan.Zero);
+
+        var temporalListData = await _dbContext
+            .Set<SharedList>()
+            .AsNoTracking()
+            .Where(l => l.FamilyId == FamilyId.From(query.FamilyId))
+            .SelectMany(l => l.Items, (l, i) => new
+            {
+                ListId = l.Id.Value,
+                ListName = l.Name.Value,
+                ItemId = i.Id.Value,
+                ItemName = i.Name.Value,
+                i.DueDate,
+                i.Reminder,
+                i.Checked
+            })
+            .Where(i =>
+                (i.DueDate.HasValue && i.DueDate >= windowStartDate && i.DueDate <= windowEndDate) ||
+                (i.Reminder.HasValue && i.Reminder >= windowStartOffset && i.Reminder <= windowEndOffset))
+            .ToListAsync(cancellationToken);
+
+        foreach (var td in temporalListData)
+        {
+            DateTime startsAt;
+            bool allDay;
+            if (td.Reminder.HasValue)
+            {
+                startsAt = td.Reminder.Value.UtcDateTime;
+                allDay = false;
+            }
+            else
+            {
+                startsAt = td.DueDate!.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                allDay = true;
+            }
+
+            var status = td.Checked ? "done" : "pending";
+            items.Add(new MemberAgendaItem(
+                "list-item",
+                td.ItemName,
+                startsAt,
+                null,
+                allDay,
+                status,
+                false,
+                null, null, null, null, null, null, null, null,
+                null, null, null, null,
+                td.ListId, td.ItemId));
         }
 
         var sortedItems = items

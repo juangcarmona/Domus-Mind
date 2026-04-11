@@ -73,6 +73,10 @@ public sealed class AddItemToListCommandHandler
             item.Checked,
             item.Quantity,
             item.Note,
-            item.Order);
+            item.Order,
+            item.Importance,
+            item.DueDate,
+            item.Reminder,
+            item.Repeat);
     }
 }

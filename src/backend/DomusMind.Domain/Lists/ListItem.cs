@@ -7,6 +7,7 @@ namespace DomusMind.Domain.Lists;
 /// <summary>
 /// An individual item within a shared list.
 /// Internal entity of the SharedList aggregate.
+/// Items are polymorphic execution units supporting base, importance, and temporal capabilities.
 /// </summary>
 public sealed class ListItem : Entity<ListItemId>
 {
@@ -17,6 +18,13 @@ public sealed class ListItem : Entity<ListItemId>
     public int Order { get; private set; }
     public DateTime UpdatedAtUtc { get; private set; }
     public MemberId? UpdatedByMemberId { get; private set; }
+
+    public bool Importance { get; private set; }
+    public DateOnly? DueDate { get; private set; }
+    public DateTimeOffset? Reminder { get; private set; }
+    public string? Repeat { get; private set; }
+
+    public bool HasTemporalData => DueDate.HasValue || Reminder.HasValue || Repeat is not null;
 
     private ListItem(
         ListItemId id,
@@ -33,6 +41,7 @@ public sealed class ListItem : Entity<ListItemId>
         Note = note;
         Order = order;
         UpdatedAtUtc = createdAtUtc;
+        Importance = false;
     }
 
     // Required by EF Core for materialization
@@ -69,4 +78,53 @@ public sealed class ListItem : Entity<ListItemId>
     {
         Order = order;
     }
+
+    internal void SetImportance(bool importance, DateTime updatedAtUtc)
+    {
+        Importance = importance;
+        UpdatedAtUtc = updatedAtUtc;
+    }
+
+    /// <summary>
+    /// Sets temporal fields. At least one must be provided.
+    /// Repeat requires DueDate to be present (either provided here or already set on the item).
+    /// Returns whether this is the first time temporal data is being set (transition event).
+    /// </summary>
+    internal bool SetTemporal(
+        DateOnly? dueDate,
+        DateTimeOffset? reminder,
+        string? repeat,
+        DateTime updatedAtUtc)
+    {
+        var effectiveDueDate = dueDate ?? DueDate;
+
+        if (repeat is not null && effectiveDueDate is null)
+            throw new InvalidOperationException(
+                "Repeat requires a due date. Provide a due date together with repeat.");
+
+        var wasTemporalBefore = HasTemporalData;
+
+        if (dueDate.HasValue) DueDate = dueDate;
+        if (reminder.HasValue) Reminder = reminder;
+        if (repeat is not null) Repeat = repeat;
+
+        UpdatedAtUtc = updatedAtUtc;
+
+        return !wasTemporalBefore && HasTemporalData;
+    }
+
+    /// <summary>
+    /// Clears all temporal fields atomically.
+    /// Returns true if the item had temporal data before the clear.
+    /// </summary>
+    internal bool ClearTemporal(DateTime updatedAtUtc)
+    {
+        var hadTemporalData = HasTemporalData;
+        DueDate = null;
+        Reminder = null;
+        Repeat = null;
+        UpdatedAtUtc = updatedAtUtc;
+        return hadTemporalData;
+    }
 }
+
