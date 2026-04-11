@@ -649,14 +649,13 @@ export function ListsPage() {
             </div>
           )}
 
-          {/* Scope — disabled selector (V1: Household only) */}
+          {/* Scope — selector (V1: Household only) */}
           <div className="li-inspector__field">
             <label className="li-inspector__field-label" htmlFor="li-scope">{t("scopeLabel")}</label>
             <select
               id="li-scope"
               className="li-inspector__scope-select"
               value="Household"
-              disabled
               aria-label={t("scopeLabel")}
             >
               <option value="Household">{t("scopeHousehold")}</option>

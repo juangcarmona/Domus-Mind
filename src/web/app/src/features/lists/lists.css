@@ -1232,7 +1232,7 @@
   margin: 0;
 }
 
-/* Scope selector — disabled in V1 (Household only) */
+/* Scope selector */
 .li-inspector__scope-select {
   background: transparent;
   border: none;
@@ -1248,10 +1248,7 @@
   transition: border-bottom-color 0.12s;
 }
 
-.li-inspector__scope-select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.li-inspector__scope-select:focus { border-bottom-color: var(--primary); }
 
 .li-inspector__saving {
   font-size: 0.68rem;

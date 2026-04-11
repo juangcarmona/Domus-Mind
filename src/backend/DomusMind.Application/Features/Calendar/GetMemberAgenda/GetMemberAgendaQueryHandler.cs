@@ -1,6 +1,7 @@
 using DomusMind.Application.Abstractions.Messaging;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
+using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ExternalConnections;
@@ -166,27 +167,37 @@ public sealed class GetMemberAgendaQueryHandler
                 ItemName = i.Name.Value,
                 i.DueDate,
                 i.Reminder,
+                i.Repeat,
                 i.Importance,
                 i.Checked
-                // Repeat-only items (no dueDate, no reminder) are deferred pending recurrence expansion.
             })
             .Where(i =>
                 (i.DueDate.HasValue && i.DueDate >= windowStartDate && i.DueDate <= windowEndDate) ||
-                (i.Reminder.HasValue && i.Reminder >= windowStartOffset && i.Reminder <= windowEndOffset))
+                (i.Reminder.HasValue && i.Reminder >= windowStartOffset && i.Reminder <= windowEndOffset) ||
+                (!i.DueDate.HasValue && !i.Reminder.HasValue && i.Repeat != null))
             .ToListAsync(cancellationToken);
 
         foreach (var td in temporalListData)
         {
             DateTime startsAt;
             bool allDay;
+
             if (td.Reminder.HasValue)
             {
                 startsAt = td.Reminder.Value.UtcDateTime;
                 allDay = false;
             }
+            else if (td.DueDate.HasValue)
+            {
+                startsAt = td.DueDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                allDay = true;
+            }
             else
             {
-                startsAt = td.DueDate!.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+                // Repeat-only item: find the first fire date in the window; skip if pattern doesn't fire.
+                var firstFireDate = RepeatExpansion.GetFireDates(td.Repeat, windowStartDate, windowEndDate).FirstOrDefault();
+                if (firstFireDate == default) continue;
+                startsAt = firstFireDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
                 allDay = true;
             }
 
