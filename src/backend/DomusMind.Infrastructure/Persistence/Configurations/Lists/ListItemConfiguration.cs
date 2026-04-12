@@ -67,6 +67,12 @@ public sealed class ListItemConfiguration : IEntityTypeConfiguration<ListItem>
             .HasColumnName("repeat")
             .HasMaxLength(100);
 
+        builder.Property(i => i.ItemAreaId)
+            .HasColumnName("item_area_id");
+
+        builder.Property(i => i.TargetMemberId)
+            .HasColumnName("target_member_id");
+
         // Shadow FK to parent list
         builder.Property<ListId>("ListId")
             .HasConversion(id => id.Value, value => ListId.From(value))

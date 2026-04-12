@@ -15,6 +15,8 @@ import {
   clearDetail,
   renameSharedList,
   deleteSharedList,
+  unlinkSharedList,
+  updateSharedListMetadata,
   optimisticToggleItem,
   toggleSharedListItem,
   optimisticRenameItem,
@@ -27,6 +29,8 @@ import {
   optimisticClearTemporal,
   removeSharedListItem,
   optimisticRemoveItem,
+  setItemContext,
+  optimisticSetItemContext,
 } from "../../../store/listsSlice";
 import { fetchAreas } from "../../../store/areasSlice";
 import { useIsMobile } from "../../../hooks/useIsMobile";
@@ -188,6 +192,8 @@ export function ListsPage() {
   const [renameDraft, setRenameDraft] = useState<string | null>(null);
   const [renameError, setRenameError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [listMetaSaving, setListMetaSaving] = useState(false);
+  const [listMetaError, setListMetaError] = useState<string | null>(null);
   const [showLinkedEvent, setShowLinkedEvent] = useState(false);
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
   const [showMobileAdd, setShowMobileAdd] = useState(false);
@@ -215,9 +221,15 @@ export function ListsPage() {
   const [iRepeatFreq, setIRepeatFreq] = useState("");
   const [iRepeatDays, setIRepeatDays] = useState<number[]>([]);
   const [iSaving, setISaving] = useState(false);
+  const [iItemAreaDraft, setIItemAreaDraft] = useState<string>("");
+  const [iTargetMemberDraft, setITargetMemberDraft] = useState<string>("");
 
   const desktopAddRef = useRef<HTMLInputElement>(null);
   const addInputRef = useRef<HTMLInputElement>(null);
+
+  function isValidHexColor(value: string): boolean {
+    return /^#[0-9A-Fa-f]{6}$/.test(value);
+  }
 
   function resetAddDrafts() {
     setAddOpenPanel(null);
@@ -252,6 +264,7 @@ export function ListsPage() {
       setRenameDraft(null);
       setRenameError(null);
       setSelectedItem(null);
+      setListMetaError(null);
     } else {
       dispatch(clearDetail());
     }
@@ -278,6 +291,8 @@ export function ListsPage() {
       const { freq, days } = parseRepeat(it.repeat);
       setIRepeatFreq(freq);
       setIRepeatDays(days);
+      setIItemAreaDraft(it.itemAreaId ?? "");
+      setITargetMemberDraft(it.targetMemberId ?? "");
     }
   }, [selectedItem?.item.itemId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -428,6 +443,46 @@ export function ListsPage() {
     const result = await dispatch(deleteSharedList(activeListId));
     if (deleteSharedList.fulfilled.match(result)) setActiveListId(null);
     else setDeleting(false);
+  }
+
+  async function handleUnlinkPlan() {
+    if (!activeListId || !detail?.linkedEntityId) return;
+    setListMetaSaving(true);
+    setListMetaError(null);
+    const result = await dispatch(unlinkSharedList(activeListId));
+    if (!unlinkSharedList.fulfilled.match(result)) {
+      setListMetaError((result.payload as string) ?? t("listMetaUpdateError"));
+    }
+    await dispatch(fetchSharedListDetail(activeListId));
+    setListMetaSaving(false);
+  }
+
+  async function handleListColorChange(color: string) {
+    if (!activeListId) return;
+    if (color && !isValidHexColor(color)) {
+      setListMetaError(t("listColorUpdateError"));
+      return;
+    }
+    setListMetaSaving(true);
+    setListMetaError(null);
+    const result = await dispatch(updateSharedListMetadata({
+      listId: activeListId,
+      color: color || null,
+      clearColor: !color,
+    }));
+    if (!updateSharedListMetadata.fulfilled.match(result)) {
+      setListMetaError((result.payload as string) ?? t("listColorUpdateError"));
+    }
+    setListMetaSaving(false);
+  }
+
+  async function handleItemContextChange(field: "itemAreaId" | "targetMemberId", value: string) {
+    if (!selectedItem || !activeListId) return;
+    const { itemId } = selectedItem.item;
+    const itemAreaId = field === "itemAreaId" ? (value || null) : (selectedInStoreRef.current?.itemAreaId ?? null);
+    const targetMemberId = field === "targetMemberId" ? (value || null) : (selectedInStoreRef.current?.targetMemberId ?? null);
+    dispatch(optimisticSetItemContext({ itemId, itemAreaId, targetMemberId }));
+    dispatch(setItemContext({ listId: activeListId, itemId, itemAreaId, targetMemberId }));
   }
 
   // ── DnD reorder ──────────────────────────────────────────────────
@@ -687,7 +742,45 @@ export function ListsPage() {
           </div>
           <p className="li-inspector__scope-hint">{t("householdScoped")}</p>
 
-          {/* Area */}
+          {/* Item area context */}
+          <div className="li-inspector__scope-row">
+            <label className="li-inspector__scope-label" htmlFor="item-area-select">{t("itemAreaLabel")}</label>
+            <select
+              id="item-area-select"
+              className="li-list-inspector__select"
+              value={iItemAreaDraft}
+              onChange={(e) => {
+                setIItemAreaDraft(e.target.value);
+                handleItemContextChange("itemAreaId", e.target.value);
+              }}
+            >
+              <option value="">{t("areaNone")}</option>
+              {areas.map((area) => (
+                <option key={area.areaId} value={area.areaId}>{area.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Target member context */}
+          <div className="li-inspector__scope-row">
+            <label className="li-inspector__scope-label" htmlFor="item-member-select">{t("targetMemberLabel")}</label>
+            <select
+              id="item-member-select"
+              className="li-list-inspector__select"
+              value={iTargetMemberDraft}
+              onChange={(e) => {
+                setITargetMemberDraft(e.target.value);
+                handleItemContextChange("targetMemberId", e.target.value);
+              }}
+            >
+              <option value="">{t("memberNone")}</option>
+              {members.map((m) => (
+                <option key={m.memberId} value={m.memberId}>{m.preferredName ?? m.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Area inherited from list */}
           {linkedArea && (
             <div className="li-inspector__scope-row">
               <span className="li-inspector__scope-label">{t("areaLabel")}</span>
@@ -778,22 +871,108 @@ export function ListsPage() {
 
     </div>
   ) : (
-    <div className="li-inspector-hint">
-      {/* Linked context at list level */}
-      {renderLinkedContext("li-inspector-hint__context")}
-
+    <div className="li-list-inspector">
       {detail && detail.listId === activeListId ? (
         <>
-          <span className="li-inspector-hint__stat">
-            {unchecked.length} {unchecked.length === 1 ? t("itemSingular") : t("itemPlural")} {t("remaining")}
-          </span>
-          {checked.length > 0 && (
+          <div className="li-list-inspector__identity">
+            <span
+              className={`li-list-inspector__kind li-list-inspector__kind--${detail.kind.toLowerCase()}`}
+              style={detail.color ? { background: detail.color } : undefined}
+            />
+            <div className="li-list-inspector__identity-text">
+              <strong>{detail.name}</strong>
+              <span>{detail.kind}</span>
+            </div>
+          </div>
+
+          <div className="li-list-inspector__section">
+            <div className="li-list-inspector__section-label">{t("listColorLabel")}</div>
+            <div className="li-inspector__scope-row">
+              <label className="li-inspector__scope-label" htmlFor="list-color-picker">{t("listColorLabel")}</label>
+              <input
+                id="list-color-picker"
+                type="color"
+                value={detail.color ?? "#000000"}
+                disabled={listMetaSaving}
+                onChange={(e) => handleListColorChange(e.target.value)}
+                className="li-list-inspector__color-picker"
+              />
+              {detail.color && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  disabled={listMetaSaving}
+                  onClick={() => handleListColorChange("")}
+                >
+                  {t("clearColor")}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="li-list-inspector__section">
+            <div className="li-list-inspector__section-label">{t("contextSection")}</div>
+            <div className="li-inspector__scope-row">
+              <span className="li-inspector__scope-label">{t("scopeLabel")}</span>
+              <span className="li-inspector__scope-value">{t("scopeHousehold")}</span>
+            </div>
+
+            {detail.linkedEntityDisplayName && (
+              <div className="li-inspector__scope-row">
+                <span className="li-inspector__scope-label">{t("planLabel")}</span>
+                <ContextChip label={detail.linkedEntityDisplayName} onClick={() => setShowLinkedEvent(true)} />
+                <button type="button" className="btn btn-ghost btn-sm" onClick={handleUnlinkPlan}>
+                  {t("unlinkPlan")}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="li-list-inspector__section">
+            <div className="li-list-inspector__section-label">{t("listStats")}</div>
+            <span className="li-inspector-hint__stat">
+              {unchecked.length} {unchecked.length === 1 ? t("itemSingular") : t("itemPlural")} {t("remaining")}
+            </span>
             <span className="li-inspector-hint__stat">{checked.length} {t("done")}</span>
-          )}
-          {detail.kind !== "General" && (
-            <span className="li-inspector-hint__stat">{detail.kind}</span>
-          )}
+            <span className="li-inspector-hint__stat">{sorted.filter((i) => i.dueDate || i.reminder || i.repeat).length} {t("timeEnabled")}</span>
+          </div>
+
+          <div className="li-list-inspector__section">
+            <div className="li-list-inspector__section-label">{t("listActions")}</div>
+            {detail.linkedEntityDisplayName && (
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowLinkedEvent(true)}>
+                {t("goToLinkedEvent")}
+              </button>
+            )}
+          </div>
+
+          {listMetaError && <p className="error-msg">{listMetaError}</p>}
           <span className="li-inspector-hint__text">{t("selectItemHint")}</span>
+
+          <div className="li-inspector__bottom-bar">
+            <button
+              type="button"
+              className="li-inspector__bottom-close"
+              onClick={() => setActiveListId(null)}
+              aria-label={t("cancel")}
+              title={t("cancel")}
+            >
+              <IconChevronDown />
+            </button>
+            <span className="li-inspector__bottom-meta">
+              {unchecked.length} {unchecked.length === 1 ? t("itemSingular") : t("itemPlural")} {t("remaining")}
+            </span>
+            <button
+              type="button"
+              className="li-inspector__bottom-delete"
+              onClick={handleDelete}
+              aria-label={t("deleteList")}
+              title={t("deleteList")}
+              disabled={deleting}
+            >
+              <IconTrash />
+            </button>
+          </div>
         </>
       ) : (
         <span className="li-inspector-hint__stat">{t("noListSelected")}</span>
@@ -853,7 +1032,10 @@ export function ListsPage() {
         )}
 
         {/* Main content pane */}
-        <div className="lists-content-pane l-surface-content">
+        <div
+          className="lists-content-pane l-surface-content"
+          style={detail?.color ? ({ "--primary": detail.color } as { [key: string]: string }) : undefined}
+        >
           {listsStatus === "loading" && lists.length === 0 && (
             <div className="loading-wrap">{t("loading")}</div>
           )}

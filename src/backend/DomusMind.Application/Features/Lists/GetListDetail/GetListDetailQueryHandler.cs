@@ -54,7 +54,9 @@ public sealed class GetListDetailQueryHandler
                 i.Importance,
                 i.DueDate,
                 i.Reminder,
-                i.Repeat))
+                i.Repeat,
+                i.ItemAreaId,
+                i.TargetMemberId))
             .ToList();
 
         string? linkedEntityDisplayName = null;
@@ -73,6 +75,7 @@ public sealed class GetListDetailQueryHandler
             list.Id.Value,
             list.Name.Value,
             list.Kind.Value,
+            list.Color,
             list.AreaId?.Value,
             linkedPlanId,
             linkedEntityDisplayName,

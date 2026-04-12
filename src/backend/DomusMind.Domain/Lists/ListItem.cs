@@ -24,6 +24,11 @@ public sealed class ListItem : Entity<ListItemId>
     public DateTimeOffset? Reminder { get; private set; }
     public string? Repeat { get; private set; }
 
+    /// <summary>Optional area this item is associated with (lightweight item-level context, not list ownership).</summary>
+    public Guid? ItemAreaId { get; private set; }
+    /// <summary>Optional target member for this item (who it's for — lightweight metadata, not task ownership).</summary>
+    public Guid? TargetMemberId { get; private set; }
+
     public bool HasTemporalData => DueDate.HasValue || Reminder.HasValue || Repeat is not null;
 
     private ListItem(
@@ -119,6 +124,13 @@ public sealed class ListItem : Entity<ListItemId>
         Repeat = null;
         UpdatedAtUtc = updatedAtUtc;
         return hadTemporalData;
+    }
+
+    internal void SetContext(Guid? itemAreaId, Guid? targetMemberId, DateTime updatedAtUtc)
+    {
+        ItemAreaId = itemAreaId;
+        TargetMemberId = targetMemberId;
+        UpdatedAtUtc = updatedAtUtc;
     }
 }
 

@@ -8,7 +8,8 @@
   margin: -1.5rem -1.25rem;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -29,6 +30,7 @@
   flex-direction: column;
   width: 184px;
   flex-shrink: 0;
+  min-height: 0;
   border-right: 1px solid var(--border);
   background: var(--surface-alt);
   overflow-y: auto;
@@ -1302,6 +1304,76 @@
   font-size: 0.78rem;
   color: var(--muted);
   font-style: italic;
+}
+
+/* List-level inspector command surface */
+.li-list-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.li-list-inspector__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.li-list-inspector__kind {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: var(--muted);
+}
+
+.li-list-inspector__kind--groceries { background: #16a34a; }
+.li-list-inspector__kind--packing { background: #0369a1; }
+.li-list-inspector__kind--general { background: var(--muted); }
+
+.li-list-inspector__identity-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.li-list-inspector__identity-text strong {
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.li-list-inspector__identity-text span {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.li-list-inspector__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.li-list-inspector__section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.li-list-inspector__select {
+  min-height: 1.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.2rem 0.45rem;
+  font-size: 0.78rem;
 }
 
 /* ================================================================

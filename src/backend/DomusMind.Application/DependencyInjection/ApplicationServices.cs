@@ -17,6 +17,7 @@ using DomusMind.Application.Features.Calendar.GetFamilyPlans;
 using DomusMind.Application.Features.Calendar.GetFamilyTimeline;
 using DomusMind.Application.Features.Calendar.GetMemberAgenda;
 using DomusMind.Application.Features.Calendar.GetMemberExternalCalendarConnections;
+using DomusMind.Application.Features.Calendar.GetExternalCalendarEntry;
 using DomusMind.Application.Features.Calendar.ProposeAlternativeTimes;
 using DomusMind.Application.Features.Calendar.RemoveEventParticipant;
 using DomusMind.Application.Features.Calendar.RemoveReminder;
@@ -88,6 +89,8 @@ using DomusMind.Application.Features.Lists.ReorderListItems;
 using DomusMind.Application.Features.Lists.SetItemImportance;
 using DomusMind.Application.Features.Lists.SetItemTemporal;
 using DomusMind.Application.Features.Lists.ClearItemTemporal;
+using DomusMind.Application.Features.Lists.SetItemContext;
+using DomusMind.Application.Features.Lists.UpdateList;
 using DomusMind.Contracts.Auth;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Contracts.Family;
@@ -159,6 +162,7 @@ public static class ApplicationServices
         services.AddScoped<ICommandHandler<DisconnectExternalCalendarConnectionCommand, bool>, DisconnectExternalCalendarConnectionCommandHandler>();
         services.AddScoped<IQueryHandler<GetMemberExternalCalendarConnectionsQuery, IReadOnlyCollection<ExternalCalendarConnectionSummaryResponse>>, GetMemberExternalCalendarConnectionsQueryHandler>();
         services.AddScoped<IQueryHandler<GetExternalCalendarConnectionDetailQuery, ExternalCalendarConnectionDetailResponse>, GetExternalCalendarConnectionDetailQueryHandler>();
+        services.AddScoped<IQueryHandler<GetExternalCalendarEntryQuery, GetExternalCalendarEntryResponse>, GetExternalCalendarEntryQueryHandler>();
         services.AddScoped<IQueryHandler<GetMemberAgendaQuery, MemberAgendaResponse>, GetMemberAgendaQueryHandler>();
 
         // Tasks slices
@@ -219,6 +223,8 @@ public static class ApplicationServices
         services.AddScoped<ICommandHandler<SetItemImportanceCommand, SetItemImportanceResponse>, SetItemImportanceCommandHandler>();
         services.AddScoped<ICommandHandler<SetItemTemporalCommand, SetItemTemporalResponse>, SetItemTemporalCommandHandler>();
         services.AddScoped<ICommandHandler<ClearItemTemporalCommand, ClearItemTemporalResponse>, ClearItemTemporalCommandHandler>();
+        services.AddScoped<ICommandHandler<UpdateListCommand, UpdateListResponse>, UpdateListCommandHandler>();
+        services.AddScoped<ICommandHandler<SetItemContextCommand, SetItemContextResponse>, SetItemContextCommandHandler>();
 
         return services;
     }

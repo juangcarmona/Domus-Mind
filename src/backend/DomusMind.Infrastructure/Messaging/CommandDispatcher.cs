@@ -19,7 +19,13 @@ public sealed class CommandDispatcher : ICommandDispatcher
         var handlerType = typeof(ICommandHandler<,>)
             .MakeGenericType(command.GetType(), typeof(TResponse));
 
-        var handler = _serviceProvider.GetRequiredService(handlerType);
+        var handler = _serviceProvider.GetService(handlerType);
+        if (handler is null)
+        {
+            throw new HandlerResolutionException(
+                handlerType.FullName ?? handlerType.Name,
+                $"No command handler registration found for {handlerType.Name}.");
+        }
 
         var handleMethod = handlerType.GetMethod(
             nameof(ICommandHandler<ICommand<TResponse>, TResponse>.Handle))

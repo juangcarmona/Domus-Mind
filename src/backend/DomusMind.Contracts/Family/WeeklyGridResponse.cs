@@ -15,7 +15,9 @@ public sealed record WeeklyGridEventItem(
     bool IsReadOnly = false,
     string? Source = null,
     string? ProviderLabel = null,
-    string? OpenInProviderUrl = null);
+    string? OpenInProviderUrl = null,
+    string? CalendarName = null,
+    string? Location = null);
 
 public sealed record WeeklyGridTaskItem(
     Guid TaskId,
@@ -28,6 +30,7 @@ public sealed record WeeklyGridTaskItem(
 public sealed record WeeklyGridListItem(
     Guid ListId,
     string ListName,
+    string? Color,
     Guid ItemId,
     string Title,
     string? Note,
@@ -35,7 +38,11 @@ public sealed record WeeklyGridListItem(
     bool Importance,
     string? DueDate,
     string? Reminder,
-    string? Repeat);
+    string? Repeat,
+    Guid? ItemAreaId,
+    string? ItemAreaName,
+    Guid? TargetMemberId,
+    string? TargetMemberName);
 
 public sealed record WeeklyGridCell(
     string Date,

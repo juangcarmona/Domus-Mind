@@ -22,6 +22,10 @@ import type {
   RenameSharedListRequest,
   RenameSharedListResponse,
   ReorderSharedListItemsRequest,
+  UpdateSharedListRequest,
+  UpdateSharedListResponse,
+  SetItemContextRequest,
+  SetItemContextResponse,
 } from "./types/listTypes";
 
 export const listsApi = {
@@ -91,6 +95,12 @@ export const listsApi = {
   deleteSharedList: (listId: string) =>
     request<void>(`/api/shared-lists/${listId}`, { method: "DELETE" }),
 
+  updateSharedList: (listId: string, body: UpdateSharedListRequest) =>
+    request<UpdateSharedListResponse>(`/api/shared-lists/${listId}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+
   reorderSharedListItems: (listId: string, body: ReorderSharedListItemsRequest) =>
     request<void>(`/api/shared-lists/${listId}/items/order`, {
       method: "PATCH",
@@ -113,5 +123,11 @@ export const listsApi = {
     request<ClearItemTemporalResponse>(
       `/api/shared-lists/${listId}/items/${itemId}/temporal`,
       { method: "DELETE" },
+    ),
+
+  setItemContext: (listId: string, itemId: string, body: SetItemContextRequest) =>
+    request<SetItemContextResponse>(
+      `/api/shared-lists/${listId}/items/${itemId}/context`,
+      { method: "PATCH", body: JSON.stringify(body) },
     ),
 };

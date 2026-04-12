@@ -26,12 +26,15 @@ export interface SharedListItemDetail {
   repeat: string | null;
   updatedAtUtc: string;
   updatedByMemberId: string | null;
+  itemAreaId: string | null;
+  targetMemberId: string | null;
 }
 
 export interface GetSharedListDetailResponse {
   listId: string;
   name: string;
   kind: string;
+  color: string | null;
   areaId: string | null;
   linkedEntityType: string | null;
   linkedEntityId: string | null;
@@ -173,4 +176,36 @@ export interface RenameSharedListResponse {
 
 export interface ReorderSharedListItemsRequest {
   itemIds: string[];
+}
+
+export interface UpdateSharedListRequest {
+  name?: string | null;
+  areaId?: string | null;
+  clearArea?: boolean;
+  linkedPlanId?: string | null;
+  clearLinkedPlan?: boolean;
+  kind?: string | null;
+  color?: string | null;
+  clearColor?: boolean;
+}
+
+export interface UpdateSharedListResponse {
+  listId: string;
+  name: string;
+  color: string | null;
+  areaId: string | null;
+  linkedPlanId: string | null;
+  kind: string;
+}
+
+export interface SetItemContextRequest {
+  itemAreaId?: string | null;
+  targetMemberId?: string | null;
+}
+
+export interface SetItemContextResponse {
+  itemId: string;
+  itemAreaId: string | null;
+  targetMemberId: string | null;
+  updatedAtUtc: string;
 }

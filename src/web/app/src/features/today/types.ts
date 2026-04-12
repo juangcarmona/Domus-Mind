@@ -14,6 +14,8 @@ export interface WeeklyGridEventItem {
   source?: string | null;
   providerLabel?: string | null;
   openInProviderUrl?: string | null;
+  calendarName?: string | null;
+  location?: string | null;
 }
 
 export interface WeeklyGridTaskItem {
@@ -27,6 +29,7 @@ export interface WeeklyGridTaskItem {
 export interface WeeklyGridListItem {
   listId: string;
   listName: string;
+  color?: string | null;
   itemId: string;
   title: string;
   note: string | null;
@@ -35,6 +38,10 @@ export interface WeeklyGridListItem {
   dueDate: string | null;
   reminder: string | null;
   repeat: string | null;
+  itemAreaId?: string | null;
+  itemAreaName?: string | null;
+  targetMemberId?: string | null;
+  targetMemberName?: string | null;
 }
 
 export interface WeeklyGridRoutineItem {

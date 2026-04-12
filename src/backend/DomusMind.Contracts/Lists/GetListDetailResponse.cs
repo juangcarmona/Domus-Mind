@@ -10,12 +10,15 @@ public sealed record ListItemDetail(
     bool Importance,
     DateOnly? DueDate,
     DateTimeOffset? Reminder,
-    string? Repeat);
+    string? Repeat,
+    Guid? ItemAreaId = null,
+    Guid? TargetMemberId = null);
 
 public sealed record GetListDetailResponse(
     Guid ListId,
     string Name,
     string Kind,
+    string? Color,
     Guid? AreaId,
     Guid? LinkedPlanId,
     string? LinkedPlanDisplayName,

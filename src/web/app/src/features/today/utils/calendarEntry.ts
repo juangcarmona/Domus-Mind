@@ -46,6 +46,12 @@ export interface CalendarEntry {
    * Null for tasks, routines, and untimed events.
    */
   endTime?: string | null;
+  /** ISO date (YYYY-MM-DD) for event/routine timeline context when available. */
+  date?: string | null;
+  /** Optional end date for multi-day events. */
+  endDate?: string | null;
+  /** True for all-day events from external providers. */
+  isAllDay?: boolean;
   /** Secondary label, e.g. event participant names. Null when not applicable. */
   subtitle: string | null;
   /** Raw status string from the API: "Pending", "Completed", "Cancelled", etc. */
@@ -57,6 +63,8 @@ export interface CalendarEntry {
   isReadOnly?: boolean;
   sourceLabel?: string | null;
   openInProviderUrl?: string | null;
+  calendarName?: string | null;
+  location?: string | null;
   /** For routines: human-readable frequency/recurrence summary. */
   recurrenceSummary?: string | null;
   /** For routines: household or member scope. */
@@ -75,6 +83,12 @@ export interface CalendarEntry {
   reminder?: string | null;
   /** For projected list items: importance marker. */
   importance?: boolean;
+  /** For projected list items: optional item-level area context. */
+  itemAreaId?: string | null;
+  itemAreaName?: string | null;
+  /** For projected list items: optional target member context. */
+  targetMemberId?: string | null;
+  targetMemberName?: string | null;
 }
 
 // ----------------------------------------------------------------
@@ -143,6 +157,9 @@ export function normalizeEventItem(
     title: e.title,
     time: e.time ?? null,
     endTime: e.endTime ?? null,
+    date: e.date,
+    endDate: e.endDate ?? null,
+    isAllDay: e.time == null,
     subtitle: participants ?? null,
     status: e.status,
     color: e.color ?? null,
@@ -151,6 +168,8 @@ export function normalizeEventItem(
     isReadOnly: e.isReadOnly ?? false,
     sourceLabel: e.providerLabel ?? null,
     openInProviderUrl: e.openInProviderUrl ?? null,
+    calendarName: e.calendarName ?? null,
+    location: e.location ?? null,
   };
 }
 
@@ -218,7 +237,7 @@ export function normalizeListItem(item: WeeklyGridListItem): CalendarEntry {
     time: null,
     subtitle: item.listName,
     status: item.checked ? "done" : "pending",
-    color: null,
+    color: item.color ?? null,
     isCompleted,
     isOverdue: false,
     isReadOnly: true,
@@ -230,6 +249,10 @@ export function normalizeListItem(item: WeeklyGridListItem): CalendarEntry {
     reminder: item.reminder,
     repeat: item.repeat,
     importance: item.importance,
+    itemAreaId: item.itemAreaId ?? null,
+    itemAreaName: item.itemAreaName ?? null,
+    targetMemberId: item.targetMemberId ?? null,
+    targetMemberName: item.targetMemberName ?? null,
   };
 }
 

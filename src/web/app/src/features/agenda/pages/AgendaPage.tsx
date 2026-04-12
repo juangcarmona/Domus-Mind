@@ -1,12 +1,15 @@
 import { useState, useCallback, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "../../../store/hooks";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { useIsMobile } from "../../../hooks/useIsMobile";
 import { weekApi } from "../../today/api/weekApi";
 import type { WeeklyGridResponse } from "../../today/types";
 import type { ApiError } from "../../../api/domusmindApi";
-import { EditEntityModal, type EditableEntityType } from "../../editors/components/EditEntityModal";
+import { externalCalendarApi } from "../../../api/externalCalendarApi";
+import { fetchPlans } from "../../../store/plansSlice";
+import { fetchRoutines } from "../../../store/routinesSlice";
+import { fetchTimeline } from "../../../store/timelineSlice";
 import { PlanningAddModal } from "../../planning/components/modals/PlanningAddModal";
 import { InspectorPanel } from "../../../components/InspectorPanel";
 import { BottomSheetDetail } from "../../../components/BottomSheetDetail";
@@ -23,200 +26,23 @@ import { useMonthGridCache } from "../../today/hooks/useMonthGridCache";
 import type { CalendarEntry } from "../../today/utils/calendarEntry";
 import { normalizeCellItems } from "../../today/utils/calendarEntry";
 import {
+  AgendaInlineEntityEditor,
+  AgendaProjectedListItemBridge,
+  AgendaReadOnlyEntryDetail,
+} from "../../../components/agenda/AgendaInspectorContent";
+import {
   toIsoDate,
   addDays,
   addMonths,
   startOfWeek,
 } from "../../today/utils/dateUtils";
 import "../agenda.css";
+import "../../editors/editors.css";
 
 const VALID_MODES: AgendaView[] = ["day", "week", "month"];
 
-// ----------------------------------------------------------------
-// Inspector item display
-// ----------------------------------------------------------------
-
-/**
- * Enriched inspector body for a selected calendar entry.
- *
- * Structured in consistent sections:
- *   1. Type / source cue
- *   2. Time range (if timed)
- *   3. Type-specific metadata (participants, status, due date, recurrence, scope)
- *   4. External action (read-only imported entries)
- *   5. Edit action (native entries only)
- *
- * No close button — InspectorPanel header owns the close affordance.
- */
-function AgendaItemDetail({
-  entry,
-  onEdit,
-  onOpenInLists,
-}: {
-  entry: CalendarEntry;
-  onEdit: (type: EditableEntityType, id: string) => void;
-  onOpenInLists: (listId: string, itemId: string) => void;
-}) {
-  const { t } = useTranslation("agenda");
-  const isProjectedListItem = entry.sourceType === "list-item";
-  const canEdit = !entry.isReadOnly && !isProjectedListItem;
-
-  const typeLabel =
-    entry.isReadOnly && entry.sourceLabel
-      ? entry.sourceLabel
-      : entry.sourceType === "list-item"
-      ? t("item.typeListItem")
-      : entry.sourceType === "routine"
-      ? t("item.typeRoutine")
-      : entry.sourceType === "task"
-      ? t("item.typeTask")
-      : t("item.typePlan");
-
-  return (
-    <div className="agenda-inspector-item">
-      {/* Type / source cue */}
-      <p className="agenda-inspector-item-type-cue">
-        {typeLabel}
-        {entry.isReadOnly && (
-          <span className="agenda-inspector-item-readonly-badge">
-            {" · "}{t("item.readOnly")}
-          </span>
-        )}
-      </p>
-
-      {/* Time range */}
-      {entry.time && (
-        <p className="agenda-inspector-item-meta">
-          {entry.time}
-          {entry.endTime ? ` – ${entry.endTime}` : ""}
-        </p>
-      )}
-
-      {/* Participants (events / plans) */}
-      {entry.subtitle && entry.sourceType !== "list-item" && (
-        <p className="agenda-inspector-item-meta">
-          <span className="agenda-inspector-item-label">{t("item.participants")}</span>
-          {" "}{entry.subtitle}
-        </p>
-      )}
-
-      {/* Status (tasks) */}
-      {entry.sourceType === "task" && (
-        <p className="agenda-inspector-item-meta">
-          <span className="agenda-inspector-item-label">{t("item.status")}</span>
-          {" "}{entry.status}
-        </p>
-      )}
-
-      {/* Due date (tasks) */}
-      {entry.sourceType === "task" && (
-        <p className="agenda-inspector-item-meta">
-          <span className="agenda-inspector-item-label">{t("item.dueDate")}</span>
-          {" "}{entry.dueDate ?? t("item.noDueDate")}
-        </p>
-      )}
-
-      {/* Recurrence summary (routines) */}
-      {entry.sourceType === "routine" && entry.recurrenceSummary && (
-        <p className="agenda-inspector-item-meta">
-          <span className="agenda-inspector-item-label">{t("item.recurrence")}</span>
-          {" "}{entry.recurrenceSummary}
-        </p>
-      )}
-
-      {/* Scope (routines) */}
-      {entry.sourceType === "routine" && entry.scope && (
-        <p className="agenda-inspector-item-meta">
-          <span className="agenda-inspector-item-label">{t("item.scope")}</span>
-          {" "}{entry.scope}
-        </p>
-      )}
-
-      {/* Projected list-item detail */}
-      {isProjectedListItem && (
-        <>
-          {entry.listName && (
-            <p className="agenda-inspector-item-meta">
-              <span className="agenda-inspector-item-label">{t("item.listName")}</span>
-              {" "}{entry.listName}
-            </p>
-          )}
-          <p className="agenda-inspector-item-meta">
-            <span className="agenda-inspector-item-label">{t("item.status")}</span>
-            {" "}{entry.isCompleted ? t("item.checked") : t("item.unchecked")}
-          </p>
-          {(entry.dueDate || entry.reminder || entry.repeat) && (
-            <p className="agenda-inspector-item-meta">
-              <span className="agenda-inspector-item-label">{t("item.timeSummary")}</span>
-              {" "}
-              {[entry.dueDate, entry.reminder, entry.repeat].filter(Boolean).join(" · ")}
-            </p>
-          )}
-          {entry.note && (
-            <p className="agenda-inspector-item-meta">
-              <span className="agenda-inspector-item-label">{t("item.note")}</span>
-              {" "}{entry.note}
-            </p>
-          )}
-          {entry.listId && (
-            <div className="agenda-inspector-item-actions">
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => onOpenInLists(entry.listId!, entry.id)}
-              >
-                {t("item.openInLists")}
-              </button>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* External open link (imported read-only entries) */}
-      {!isProjectedListItem && entry.isReadOnly && entry.openInProviderUrl && (
-        <a
-          href={entry.openInProviderUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="agenda-inspector-external-link"
-        >
-          {t("item.openInProvider")}
-        </a>
-      )}
-
-      {/* Edit action (native entries only) */}
-      {canEdit && (
-        <div className="agenda-inspector-item-actions">
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={() => {
-              if (entry.sourceType === "event" || entry.sourceType === "task" || entry.sourceType === "routine") {
-                onEdit(entry.sourceType, entry.id);
-              }
-            }}
-          >
-            {t("item.edit")}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ----------------------------------------------------------------
-// Page
-// ----------------------------------------------------------------
-
-/**
- * Unified Agenda surface.
- *
- * Handles both Household scope (/agenda) and Member scope (/agenda/members/:id).
- * Mode (day/week/month) is driven by the ?mode= query param.
- *
- * Replaces TodayPage, PlanningPage, and the old MemberAgendaPage.
- */
 export function AgendaPage() {
+  const dispatch = useAppDispatch();
   const { memberId } = useParams<{ memberId?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -234,35 +60,26 @@ export function AgendaPage() {
     ? undefined
     : members.find((m) => m.memberId === memberId);
 
-  // ---- Date state (from URL param or today) ----
   const todayIso = toIsoDate(new Date());
   const initialDate = searchParams.get("date") ?? todayIso;
   const [selectedDate, setSelectedDate] = useState<string>(initialDate);
 
-  // ---- View mode (from URL param) ----
-  // Member scope defaults to "week" (week-first model).
-  // Household scope keeps "day" as the legacy default.
   const modeParam = searchParams.get("mode");
   const view: AgendaView = VALID_MODES.includes(modeParam as AgendaView)
     ? (modeParam as AgendaView)
     : isHousehold ? "day" : "week";
 
-  // ---- Grid state ----
   const [grid, setGrid] = useState<WeeklyGridResponse | null>(null);
   const [gridLoading, setGridLoading] = useState(false);
   const [gridError, setGridError] = useState<string | null>(null);
 
-  // ---- Selected calendar entry (inspector / bottom sheet) ----
   const [selectedEntry, setSelectedEntry] = useState<CalendarEntry | null>(null);
+  const [selectionHydrationError, setSelectionHydrationError] = useState<string | null>(null);
+  const [externalEntryLoading, setExternalEntryLoading] = useState(false);
 
-  // ---- Modal state ----
-  const [editTarget, setEditTarget] = useState<{ type: EditableEntityType; id: string } | null>(
-    null,
-  );
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalTime, setAddModalTime] = useState<string | undefined>();
 
-  // ---- Month data (household scope month view) ----
   const [monthAnchor, setMonthAnchor] = useState<string>(selectedDate);
   useEffect(() => {
     if (selectedDate.slice(0, 7) !== monthAnchor.slice(0, 7)) {
@@ -278,7 +95,6 @@ export function AgendaPage() {
     isHousehold && view === "month",
   );
 
-  // ---- Grid fetching ----
   const weekStartForSelected = toIsoDate(
     startOfWeek(new Date(selectedDate + "T00:00:00"), firstDayOfWeek),
   );
@@ -307,7 +123,6 @@ export function AgendaPage() {
     }
   }, [weekStartForSelected, fetchGrid, familyId]);
 
-  // Sync ?date= into URL.
   useEffect(() => {
     setSearchParams(
       (prev) => {
@@ -320,12 +135,11 @@ export function AgendaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
-  // Clear selected entry on date/view change.
   useEffect(() => {
     setSelectedEntry(null);
+    setSelectionHydrationError(null);
+    setExternalEntryLoading(false);
   }, [selectedDate, view]);
-
-  // ---- Navigation handlers ----
 
   function handleViewChange(newView: AgendaView) {
     setSearchParams(
@@ -340,8 +154,6 @@ export function AgendaPage() {
   }
 
   function handleScopeChange(newScope: "household" | string) {
-    // When switching to a member scope, default to week — week-first model.
-    // When switching back to household, keep the current view.
     const targetView = newScope !== "household" ? "week" : view;
     const params = new URLSearchParams();
     if (targetView !== "day") params.set("mode", targetView);
@@ -370,25 +182,16 @@ export function AgendaPage() {
     setSelectedDate(todayIso);
   }
 
-  // ---- Item interaction ----
-
-  /**
-   * Find a calendar entry by type + id across all cells of the currently loaded grid.
-   *
-   * Searches the raw cell data so it works for any day in the loaded week,
-   * not only the currently selected date. Used by handleItemClick.
-   */
   function findEntryAcrossGrid(
     type: "event" | "task" | "routine" | "list-item",
     id: string,
   ): CalendarEntry | null {
     if (!grid) return null;
     const memberCells = isHousehold
-      ? []
+      ? grid.members.flatMap((m) => m.cells)
       : (grid.members.find((m) => m.memberId === memberId)?.cells ?? []);
-    const cells = type === "list-item"
-      ? [...(grid.sharedCells ?? []), ...memberCells]
-      : (isHousehold ? (grid.sharedCells ?? []) : memberCells);
+    const cells = [...(grid.sharedCells ?? []), ...memberCells];
+
     for (const cell of cells) {
       const entries = normalizeCellItems(cell);
       const found = entries.find((e) => e.id === id && e.sourceType === type);
@@ -398,16 +201,64 @@ export function AgendaPage() {
   }
 
   function handleItemClick(type: "event" | "task" | "routine" | "list-item", id: string) {
+    setSelectedEntry(null);
+    setSelectionHydrationError(null);
+
     const found = findEntryAcrossGrid(type, id);
     if (found) {
       setSelectedEntry(found);
-    } else {
-      // Entry not in the currently loaded grid (e.g., stale data).
-      // Native editable types can still fall back to editor launch.
-      if (type !== "list-item") {
-        setEditTarget({ type, id });
-      }
+      return;
     }
+
+    if (type === "list-item") {
+      setSelectionHydrationError(t("item.listItemNotFound"));
+      return;
+    }
+
+    if (type === "event") {
+      if (!familyId || !memberId) {
+        setSelectionHydrationError(t("item.entryNotFound"));
+        return;
+      }
+
+      setExternalEntryLoading(true);
+      externalCalendarApi.getExternalEntry(familyId, memberId, id)
+        .then((res) => {
+          const entry: CalendarEntry = {
+            id: res.entryId,
+            sourceType: "event",
+            displayType: "event",
+            title: res.title,
+            time: res.time ?? null,
+            endTime: res.endTime ?? null,
+            date: res.date,
+            endDate: res.endDate ?? null,
+            isAllDay: res.isAllDay,
+            subtitle: null,
+            status: res.status,
+            color: null,
+            isCompleted: res.status === "Cancelled",
+            isOverdue: false,
+            isReadOnly: true,
+            sourceLabel: res.providerLabel ?? undefined,
+            openInProviderUrl: res.openInProviderUrl ?? undefined,
+            calendarName: res.calendarName ?? undefined,
+            location: res.location ?? undefined,
+          };
+          setSelectedEntry(entry);
+        })
+        .catch((err: { status?: number }) => {
+          if (err?.status === 404) {
+            setSelectionHydrationError(t("item.entryNotFound"));
+          } else {
+            setSelectionHydrationError(t("item.entryLoadFailed"));
+          }
+        })
+        .finally(() => setExternalEntryLoading(false));
+      return;
+    }
+
+    setSelectionHydrationError(t("item.entryLoadFailed"));
   }
 
   function handleOpenListItemInLists(listId: string, itemId: string) {
@@ -436,7 +287,26 @@ export function AgendaPage() {
     await fetchGrid(weekStartForSelected);
   }
 
-  // ---- Inspector / sheet content ----
+  async function handleInlineEditorSaved() {
+    if (!familyId || !selectedEntry) {
+      return;
+    }
+
+    if (selectedEntry.sourceType === "task") {
+      await dispatch(fetchTimeline({ familyId }));
+    } else if (selectedEntry.sourceType === "routine") {
+      await dispatch(fetchRoutines(familyId));
+    } else if (selectedEntry.sourceType === "event") {
+      await dispatch(fetchPlans({ familyId }));
+    }
+
+    await fetchGrid(weekStartForSelected);
+
+    const refreshed = findEntryAcrossGrid(selectedEntry.sourceType, selectedEntry.id);
+    if (refreshed) {
+      setSelectedEntry(refreshed);
+    }
+  }
 
   const memberRow = isHousehold
     ? null
@@ -444,20 +314,48 @@ export function AgendaPage() {
 
   function renderInspectorBody() {
     if (!selectedEntry) return null;
-    return (
-      <AgendaItemDetail
-        entry={selectedEntry}
-        onEdit={(type, id) => setEditTarget({ type, id })}
-        onOpenInLists={handleOpenListItemInLists}
-      />
-    );
+
+    if (selectedEntry.sourceType === "list-item") {
+      return (
+        <AgendaProjectedListItemBridge
+          entry={selectedEntry}
+          onOpenInLists={handleOpenListItemInLists}
+        />
+      );
+    }
+
+    if (!selectedEntry.isReadOnly) {
+      return (
+        <AgendaInlineEntityEditor
+          entry={selectedEntry}
+          familyId={familyId}
+          members={members}
+          onCancel={() => setSelectedEntry(null)}
+          onSaved={handleInlineEditorSaved}
+        />
+      );
+    }
+
+    return <AgendaReadOnlyEntryDetail entry={selectedEntry} />;
   }
 
-  // Inspector title: selected item title.
+  function renderInspectorContent() {
+    if (externalEntryLoading) {
+      return <p className="agenda-inspector-warning">{t("item.externalEntryLoading")}</p>;
+    }
+    if (selectionHydrationError) {
+      return <p className="agenda-inspector-warning">{selectionHydrationError}</p>;
+    }
+
+    const body = renderInspectorBody();
+    if (!body) {
+      return <p className="agenda-inspector-warning">{t("item.entryLoadFailed")}</p>;
+    }
+    return body;
+  }
+
   const scope = isHousehold ? "household" : (memberId ?? "");
   const inspectorTitle = selectedEntry?.title ?? "";
-
-  // ---- Header props ----
 
   const headerMembers = members
     .filter((m) => ["Adult", "Child", "Caregiver"].includes(m.role ?? ""))
@@ -471,8 +369,6 @@ export function AgendaPage() {
 
   const householdLabel = family?.name ?? t("household", "Household");
 
-  // ---- Guards ----
-
   if (!familyId) {
     return <div className="loading-wrap">{t("loading")}</div>;
   }
@@ -481,7 +377,6 @@ export function AgendaPage() {
     return <p className="error-msg">{t("memberNotFound")}</p>;
   }
 
-  // ---- Empty member fallback for member views ----
   const emptyMemberRow = {
     memberId: memberId ?? "",
     name: householdMember?.name ?? "",
@@ -491,7 +386,6 @@ export function AgendaPage() {
 
   return (
     <div className={`agenda-surface l-surface${selectedEntry && !isMobile ? " agenda-surface--inspector" : ""}`}>
-      {/* ── Header ── */}
       <AgendaHeader
         scope={scope}
         members={headerMembers}
@@ -506,16 +400,13 @@ export function AgendaPage() {
         onToday={handleToday}
       />
 
-      {/* ── Surface body: canvas | inspector ── */}
       <div className="agenda-body l-surface-body">
-        {/* Main canvas */}
         <div className="agenda-canvas l-surface-content">
           {gridLoading && <div className="loading-wrap">{t("loading")}</div>}
           {gridError && <p className="error-msg">{gridError}</p>}
 
           {!gridLoading && !gridError && (
             <>
-              {/* ── Household views ── */}
               {isHousehold && view === "day" && (
                 <TodayBoard
                   grid={grid}
@@ -571,7 +462,6 @@ export function AgendaPage() {
                 </>
               )}
 
-              {/* ── Member views ── */}
               {!isHousehold && view === "day" && (
                 <MemberDayView
                   member={memberRow ?? emptyMemberRow}
@@ -608,15 +498,20 @@ export function AgendaPage() {
           )}
         </div>
 
-        {/* Desktop inspector — visible only when an item is selected */}
-        {!isMobile && selectedEntry && (
-          <InspectorPanel title={inspectorTitle} onClose={() => setSelectedEntry(null)}>
-            {renderInspectorBody()}
+        {!isMobile && (selectedEntry || selectionHydrationError || externalEntryLoading) && (
+          <InspectorPanel
+            title={selectedEntry ? inspectorTitle : t("inspector.loadIssue")}
+            onClose={() => {
+              setSelectedEntry(null);
+              setSelectionHydrationError(null);
+              setExternalEntryLoading(false);
+            }}
+          >
+            {renderInspectorContent()}
           </InspectorPanel>
         )}
       </div>
 
-      {/* FAB */}
       <button
         type="button"
         className="agenda-fab"
@@ -626,32 +521,20 @@ export function AgendaPage() {
         +
       </button>
 
-      {/* Mobile bottom sheet */}
-      {isMobile && selectedEntry && (
+      {isMobile && (selectedEntry || selectionHydrationError || externalEntryLoading) && (
         <BottomSheetDetail
           open
-          onClose={() => setSelectedEntry(null)}
-          title={selectedEntry.title}
+          onClose={() => {
+            setSelectedEntry(null);
+            setSelectionHydrationError(null);
+            setExternalEntryLoading(false);
+          }}
+          title={selectedEntry?.title ?? t("inspector.loadIssue")}
         >
-          {renderInspectorBody()}
+          {renderInspectorContent()}
         </BottomSheetDetail>
       )}
 
-      {/* Edit modal */}
-      {editTarget && (
-        <EditEntityModal
-          type={editTarget.type}
-          id={editTarget.id}
-          onClose={() => setEditTarget(null)}
-          onEntitySaved={async () => {
-            setEditTarget(null);
-            setSelectedEntry(null);
-            await handleModalSuccess();
-          }}
-        />
-      )}
-
-      {/* Add modal */}
       {showAddModal && (
         <PlanningAddModal
           familyId={familyId}
@@ -672,8 +555,4 @@ export function AgendaPage() {
   );
 }
 
-/**
- * Named alias kept for backward compatibility with existing imports.
- * @deprecated Import AgendaPage directly.
- */
 export { AgendaPage as MemberAgendaPage };

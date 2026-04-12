@@ -19,6 +19,7 @@ using DomusMind.Application.Features.Lists.ReorderListItems;
 using DomusMind.Application.Features.Lists.SetItemImportance;
 using DomusMind.Application.Features.Lists.SetItemTemporal;
 using DomusMind.Application.Features.Lists.ClearItemTemporal;
+using DomusMind.Application.Features.Lists.SetItemContext;
 using DomusMind.Application.Features.Lists.RestoreList;
 using DomusMind.Application.Features.Lists.UpdateList;
 using DomusMind.Contracts.Lists;
@@ -366,6 +367,8 @@ public sealed class ListsController : ControllerBase
                     request.LinkedPlanId,
                     request.ClearLinkedPlan,
                     request.Kind,
+                    request.Color,
+                    request.ClearColor,
                     _currentUser.UserId!.Value),
                 cancellationToken);
             return Ok(response);
@@ -476,6 +479,29 @@ public sealed class ListsController : ControllerBase
         {
             var response = await dispatcher.Dispatch(
                 new ClearItemTemporalCommand(listId, itemId, _currentUser.UserId!.Value),
+                cancellationToken);
+            return Ok(response);
+        }
+        catch (ListException ex) { return MapException(ex); }
+    }
+
+    /// <summary>Sets item-level context: area and target member.</summary>
+    [HttpPatch("{listId:guid}/items/{itemId:guid}/context")]
+    [ProducesResponseType(typeof(SetItemContextResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> SetItemContext(
+        Guid listId,
+        Guid itemId,
+        [FromBody] SetItemContextRequest request,
+        [FromServices] ICommandDispatcher dispatcher,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await dispatcher.Dispatch(
+                new SetItemContextCommand(listId, itemId, request.ItemAreaId, request.TargetMemberId, _currentUser.UserId!.Value),
                 cancellationToken);
             return Ok(response);
         }

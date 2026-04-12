@@ -6,12 +6,15 @@ using DomusMind.Domain.Responsibilities;
 using DomusMind.Domain.Lists;
 using DomusMind.Domain.Lists.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace DomusMind.Application.Features.Lists.UpdateList;
 
 public sealed class UpdateListCommandHandler
     : ICommandHandler<UpdateListCommand, UpdateListResponse>
 {
+    private static readonly Regex HexColorRegex = new("^#[0-9A-Fa-f]{6}$", RegexOptions.Compiled);
+
     private readonly IDomusMindDbContext _dbContext;
     private readonly IEventLogWriter _eventLogWriter;
     private readonly IFamilyAuthorizationService _authorizationService;
@@ -32,6 +35,9 @@ public sealed class UpdateListCommandHandler
     {
         if (command.Name is not null && string.IsNullOrWhiteSpace(command.Name))
             throw new ListException(ListErrorCode.InvalidInput, "List name cannot be empty.");
+
+        if (command.Color is not null && !HexColorRegex.IsMatch(command.Color))
+            throw new ListException(ListErrorCode.InvalidInput, "List color must be a hex value in the format #RRGGBB.");
 
         var listId = ListId.From(command.ListId);
 
@@ -73,6 +79,11 @@ public sealed class UpdateListCommandHandler
             newKind,
             DateTime.UtcNow);
 
+        if (command.ClearColor)
+            list.SetColor(null, DateTime.UtcNow);
+        else if (command.Color is not null)
+            list.SetColor(command.Color, DateTime.UtcNow);
+
         await _eventLogWriter.WriteAsync(list.DomainEvents, cancellationToken);
         list.ClearDomainEvents();
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -82,6 +93,7 @@ public sealed class UpdateListCommandHandler
         return new UpdateListResponse(
             list.Id.Value,
             list.Name.Value,
+            list.Color,
             list.AreaId?.Value,
             linkedPlanId,
             list.Kind.Value);

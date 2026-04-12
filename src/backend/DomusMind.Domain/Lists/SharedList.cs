@@ -17,6 +17,8 @@ public sealed class SharedList : AggregateRoot<ListId>
     public FamilyId FamilyId { get; private set; }
     public ListName Name { get; private set; }
     public ListKind Kind { get; private set; }
+    /// <summary>Nullable hex color string (e.g. "#A9BCF5"). Null means no color override.</summary>
+    public string? Color { get; private set; }
     public ResponsibilityDomainId? AreaId { get; private set; }
     public string? LinkedEntityType { get; private set; }
     public Guid? LinkedEntityId { get; private set; }
@@ -195,9 +197,27 @@ public sealed class SharedList : AggregateRoot<ListId>
             Kind = newKind;
     }
 
+    public void SetColor(string? color, DateTime now)
+    {
+        Color = color;
+    }
+
     public void Delete(DateTime now)
     {
         RaiseDomainEvent(new ListDeleted(Guid.NewGuid(), Id.Value, now));
+    }
+
+    public ListItem SetItemContext(
+        ListItemId itemId,
+        Guid? itemAreaId,
+        Guid? targetMemberId,
+        DateTime now)
+    {
+        var item = _items.FirstOrDefault(i => i.Id == itemId)
+            ?? throw new InvalidOperationException($"Item '{itemId.Value}' does not exist in this list.");
+
+        item.SetContext(itemAreaId, targetMemberId, now);
+        return item;
     }
 
     public void Archive(DateTime now)

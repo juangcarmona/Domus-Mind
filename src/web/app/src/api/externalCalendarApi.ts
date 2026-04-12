@@ -90,6 +90,21 @@ export interface SyncConnectionResponse {
   syncCompletedAtUtc: string | null;
 }
 
+export interface GetExternalCalendarEntryResponse {
+  entryId: string;
+  title: string;
+  date: string;
+  time: string | null;
+  endDate: string | null;
+  endTime: string | null;
+  isAllDay: boolean;
+  status: string;
+  location: string | null;
+  calendarName: string | null;
+  providerLabel: string | null;
+  openInProviderUrl: string | null;
+}
+
 // --- API functions ---
 
 const baseUrl = (familyId: string, memberId: string) =>
@@ -138,4 +153,9 @@ export const externalCalendarApi = {
 
   disconnectConnection: (familyId: string, memberId: string, connectionId: string) =>
     request<unknown>(`${baseUrl(familyId, memberId)}/${connectionId}`, { method: "DELETE" }),
+
+  getExternalEntry: (familyId: string, memberId: string, entryId: string) =>
+    request<GetExternalCalendarEntryResponse>(
+      `/api/families/${familyId}/members/${memberId}/external-calendar-entries/${entryId}`,
+    ),
 };

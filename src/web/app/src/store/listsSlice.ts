@@ -176,6 +176,51 @@ export const deleteSharedList = createAsyncThunk(
   },
 );
 
+export const updateSharedListMetadata = createAsyncThunk(
+  "sharedLists/updateMetadata",
+  async (
+    {
+      listId,
+      name,
+      areaId,
+      clearArea,
+      linkedPlanId,
+      clearLinkedPlan,
+      kind,
+      color,
+      clearColor,
+    }: {
+      listId: string;
+      name?: string | null;
+      areaId?: string | null;
+      clearArea?: boolean;
+      linkedPlanId?: string | null;
+      clearLinkedPlan?: boolean;
+      kind?: string | null;
+      color?: string | null;
+      clearColor?: boolean;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      return await listsApi.updateSharedList(listId, {
+        name,
+        areaId,
+        clearArea,
+        linkedPlanId,
+        clearLinkedPlan,
+        kind,
+        color,
+        clearColor,
+      });
+    } catch (err: unknown) {
+      return rejectWithValue(
+        (err as { message?: string }).message ?? "Failed to update list",
+      );
+    }
+  },
+);
+
 export const linkSharedListToEvent = createAsyncThunk(
   "sharedLists/linkToEvent",
   async (
@@ -278,6 +323,27 @@ export const clearItemTemporal = createAsyncThunk(
   },
 );
 
+export const setItemContext = createAsyncThunk(
+  "sharedLists/setItemContext",
+  async (
+    { listId, itemId, itemAreaId, targetMemberId }: {
+      listId: string;
+      itemId: string;
+      itemAreaId?: string | null;
+      targetMemberId?: string | null;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      return await listsApi.setItemContext(listId, itemId, { itemAreaId, targetMemberId });
+    } catch (err: unknown) {
+      return rejectWithValue(
+        (err as { message?: string }).message ?? "Failed to set item context",
+      );
+    }
+  },
+);
+
 // ── Slice ────────────────────────────────────────────────────────────────────
 
 const listsSlice = createSlice({
@@ -328,6 +394,14 @@ const listsSlice = createSlice({
       if (!state.detail) return;
       const item = state.detail.items.find((i) => i.itemId === action.payload.itemId);
       if (item) { item.dueDate = null; item.reminder = null; item.repeat = null; }
+    },
+    // Optimistic set item context (area + member)
+    optimisticSetItemContext(state, action: PayloadAction<{ itemId: string; itemAreaId?: string | null; targetMemberId?: string | null }>) {
+      if (!state.detail) return;
+      const item = state.detail.items.find((i) => i.itemId === action.payload.itemId);
+      if (!item) return;
+      if (action.payload.itemAreaId !== undefined) item.itemAreaId = action.payload.itemAreaId;
+      if (action.payload.targetMemberId !== undefined) item.targetMemberId = action.payload.targetMemberId;
     },
     // Optimistic reorder: update item orders immediately in detail
     optimisticReorderItems(state, action: PayloadAction<{ itemIds: string[] }>) {
@@ -417,6 +491,8 @@ const listsSlice = createSlice({
             repeat: action.payload.repeat,
             updatedAtUtc: new Date().toISOString(),
             updatedByMemberId: null,
+            itemAreaId: null,
+            targetMemberId: null,
           };
           state.detail.items.push(newItem);
         }
@@ -483,6 +559,21 @@ const listsSlice = createSlice({
       if (summary) summary.name = action.payload.name;
     });
 
+    // updateSharedListMetadata - sync list-level metadata
+    builder.addCase(updateSharedListMetadata.fulfilled, (state, action) => {
+      if (state.detail?.listId === action.payload.listId) {
+        state.detail.name = action.payload.name;
+        state.detail.areaId = action.payload.areaId;
+        state.detail.color = action.payload.color;
+      }
+      const summary = state.lists.find((l) => l.id === action.payload.listId);
+      if (summary) {
+        summary.name = action.payload.name;
+        summary.areaId = action.payload.areaId;
+        summary.kind = action.payload.kind;
+      }
+    });
+
     // deleteSharedList - remove from index, clear detail if open
     builder.addCase(deleteSharedList.fulfilled, (state, action) => {
       state.lists = state.lists.filter((l) => l.id !== action.payload);
@@ -543,8 +634,19 @@ const listsSlice = createSlice({
         item.updatedAtUtc = action.payload.updatedAtUtc;
       }
     });
+
+    // setItemContext - sync confirmed item context from server
+    builder.addCase(setItemContext.fulfilled, (state, action) => {
+      if (!state.detail) return;
+      const item = state.detail.items.find((i) => i.itemId === action.payload.itemId);
+      if (item) {
+        item.itemAreaId = action.payload.itemAreaId;
+        item.targetMemberId = action.payload.targetMemberId;
+        item.updatedAtUtc = action.payload.updatedAtUtc;
+      }
+    });
   },
 });
 
-export const { optimisticToggleItem, optimisticRenameItem, optimisticRemoveItem, optimisticReorderItems, optimisticSetImportance, optimisticSetTemporal, optimisticClearTemporal, clearDetail } = listsSlice.actions;
+export const { optimisticToggleItem, optimisticRenameItem, optimisticRemoveItem, optimisticReorderItems, optimisticSetImportance, optimisticSetTemporal, optimisticClearTemporal, optimisticSetItemContext, clearDetail } = listsSlice.actions;
 export default listsSlice.reducer;

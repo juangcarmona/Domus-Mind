@@ -11,4 +11,6 @@ public sealed record UpdateListCommand(
     Guid? LinkedPlanId,
     bool ClearLinkedPlan,
     string? Kind,
+    string? Color,
+    bool ClearColor,
     Guid RequestedByUserId) : ICommand<UpdateListResponse>;

@@ -86,6 +86,14 @@ export default {
   lastUpdatedBy: "Updated by",
   updatedOn: "Updated {{date}}",
   householdScoped: "Household list — visible to all members",
+  areaNone: "No area",
+  memberNone: "No member",
+  unlinkPlan: "Unlink plan",
+  listStats: "List stats",
+  listActions: "Actions",
+  timeEnabled: "time-enabled items",
+  listMetaUpdateError: "Failed to update list context",
+  listColorUpdateError: "Failed to update list color",
   // Event-linked list
   checklistSection: "List",
   createChecklist: "Create list",
@@ -102,4 +110,8 @@ export default {
   listLabel: "List",
   scopeLabel: "Scope",
   scopeHousehold: "Household",
+  itemAreaLabel: "Area",
+  targetMemberLabel: "For member",
+  listColorLabel: "Color",
+  clearColor: "Clear",
 } as const;

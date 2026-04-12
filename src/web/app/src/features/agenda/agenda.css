@@ -5,6 +5,8 @@
 /* ---- Surface wrapper: cancels app-main padding so content reaches the edges ---- */
 .agenda-surface {
   margin: -1.5rem -1.25rem;
+  flex: 1;
+  min-height: 0;
 }
 
 @media (max-width: 640px) {
@@ -302,6 +304,13 @@
   color: var(--muted);
   padding: 0.5rem 0.1rem;
   font-style: italic;
+}
+
+.agenda-inspector-warning {
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 0.5rem 0.1rem;
+  line-height: 1.4;
 }
 
 /* ================================================================

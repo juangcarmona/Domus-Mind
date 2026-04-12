@@ -8,6 +8,7 @@ using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Calendar.ExternalConnections;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Lists;
+using DomusMind.Domain.Responsibilities;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -82,6 +83,7 @@ public sealed class GetWeeklyGridQueryHandler
             {
                 ListId = l.Id.Value,
                 ListName = l.Name.Value,
+                ListColor = l.Color,
                 ItemId = i.Id.Value,
                 Title = i.Name.Value,
                 i.Note,
@@ -90,9 +92,16 @@ public sealed class GetWeeklyGridQueryHandler
                 i.DueDate,
                 i.Reminder,
                 i.Repeat,
+                i.ItemAreaId,
+                i.TargetMemberId,
             })
             .Where(i => i.DueDate.HasValue || i.Reminder.HasValue || i.Repeat != null)
             .ToListAsync(cancellationToken);
+
+        var areaNameMap = await _dbContext.Set<ResponsibilityDomain>()
+            .AsNoTracking()
+            .Where(a => a.FamilyId == familyId)
+            .ToDictionaryAsync(a => a.Id.Value, a => a.Name.Value, cancellationToken);
 
         var routines = await _dbContext.Set<Routine>()
             .AsNoTracking()
@@ -177,7 +186,13 @@ public sealed class GetWeeklyGridQueryHandler
                             endTime,
                             e.Status.ToString(),
                             e.Color.Value,
-                            []);
+                                [],
+                                false,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null);
                     })
                     .ToList();
 
@@ -212,6 +227,7 @@ public sealed class GetWeeklyGridQueryHandler
                     .Select(i => new WeeklyGridListItem(
                         i.ListId,
                         i.ListName,
+                        i.ListColor,
                         i.ItemId,
                         i.Title,
                         i.Note,
@@ -219,7 +235,11 @@ public sealed class GetWeeklyGridQueryHandler
                         i.Importance,
                         i.DueDate?.ToString("yyyy-MM-dd"),
                         i.Reminder?.ToString("O"),
-                        i.Repeat))
+                        i.Repeat,
+                        i.ItemAreaId,
+                        i.ItemAreaId.HasValue ? areaNameMap.GetValueOrDefault(i.ItemAreaId.Value) : null,
+                        i.TargetMemberId,
+                        i.TargetMemberId.HasValue ? memberNameMap.GetValueOrDefault(i.TargetMemberId.Value) : null))
                     .ToList();
 
                 return new WeeklyGridCell(day.ToString("yyyy-MM-dd"), sharedEvents, unassignedTasks, dayRoutines, dayListItems);
@@ -260,7 +280,13 @@ public sealed class GetWeeklyGridQueryHandler
                                     endTime,
                                     e.Status.ToString(),
                                     e.Color.Value,
-                                    participants);
+                                        participants,
+                                        false,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null);
                             })
                             .ToList();
 
@@ -275,6 +301,7 @@ public sealed class GetWeeklyGridQueryHandler
                             .Select(entry =>
                             {
                                 connectionById.TryGetValue(entry.ConnectionId, out var conn);
+                                var feedName = conn?.Feeds.FirstOrDefault(f => f.Id == entry.FeedId)?.CalendarName;
 
                                 var date = day.ToString("yyyy-MM-dd");
                                 var time = entry.IsAllDay ? null : entry.StartsAtUtc.ToString("HH:mm");
@@ -298,7 +325,9 @@ public sealed class GetWeeklyGridQueryHandler
                                     true,
                                     "external_calendar",
                                     conn is null ? null : ExternalCalendarProviderNames.ToProviderLabel(conn.Provider),
-                                    entry.OpenInProviderUrl);
+                                        entry.OpenInProviderUrl,
+                                        feedName,
+                                        entry.Location);
                             })
                             .ToList();
 

@@ -37,6 +37,10 @@ public sealed class SharedListConfiguration : IEntityTypeConfiguration<SharedLis
             .HasMaxLength(ListKind.MaxLength)
             .IsRequired();
 
+        builder.Property(l => l.Color)
+            .HasColumnName("color")
+            .HasMaxLength(50);
+
         builder.Property(l => l.AreaId)
             .HasConversion(
                 id => id.HasValue ? id.Value.Value : (Guid?)null,
