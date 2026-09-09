@@ -278,7 +278,6 @@ function AreaInspectorContent({
             disabled={saving}
             onChange={onOwnerChange}
             aria-label={t("ownerLabel")}
-            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
           >
             {!hasOwner && <option value="">{t("noOwner")}</option>}
@@ -484,8 +483,6 @@ export function AreasPage() {
     setShowPalette(false);
   }, [selectedAreaId]);
 
-  if (!familyId) return null;
-
   const selectedArea = areas.find((a) => a.areaId === selectedAreaId) ?? null;
   const loading = status === "loading";
   const hasAreas = areas.length > 0;
@@ -544,6 +541,10 @@ export function AreasPage() {
     () => members.map((m) => ({ memberId: m.memberId, name: m.preferredName || m.name })),
     [members],
   );
+
+  // Bail out only after every hook has run, so hook order stays identical on
+  // renders before and after familyId resolves.
+  if (!familyId) return null;
 
   function refreshLinkedWork() {
     if (!familyId) return;
