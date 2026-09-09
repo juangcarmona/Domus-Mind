@@ -49,7 +49,7 @@ jobs:
           echo "DOMUSMIND_IMAGE=ghcr.io/${OWNER}/domusmind" >> "$GITHUB_ENV"
 
       - name: Build and push DomusMind image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: src/backend/DomusMind.Api/Dockerfile
