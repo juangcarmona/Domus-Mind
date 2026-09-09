@@ -5,7 +5,7 @@ import type {
   FamilyTimelineResponse,
   RescheduleEventRequest,
 } from "./types/calendarTypes";
-import type { WeeklyGridResponse } from "../features/today/types";
+import type { WeeklyGridResponse } from "../features/agenda-today/types";
 
 export const calendarApi = {
   scheduleEvent: (body: ScheduleEventRequest) =>

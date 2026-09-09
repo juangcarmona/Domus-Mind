@@ -63,7 +63,7 @@ By the end of V1, DomusMind should provide:
 - visible plans in time
 - visible operational work
 - persistent shared list state
-- a usable Today- and week-oriented household experience
+- a usable household temporal experience via Agenda
 
 ### Success shape
 

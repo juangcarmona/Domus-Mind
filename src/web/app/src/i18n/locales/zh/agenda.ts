@@ -42,4 +42,23 @@ export default {
   dateCard: {
     today: "今天",
   },
+  item: {
+    edit: "编辑",
+    openInProvider: "在 Outlook 中打开",
+    externalCalendar: "外部日历",
+    importedReadOnly: "已导入 · 只读",
+    readOnly: "只读",
+    typeRoutine: "日常事务",
+    typeTask: "任务",
+    typePlan: "计划",
+    participants: "参与者",
+    status: "状态",
+    dueDate: "截止日期",
+    noDueDate: "无截止日期",
+    recurrence: "重复",
+    scope: "范围",
+  },
+  inspector: {
+    idleHint: "选择一项以查看详情。",
+  },
 } as const;

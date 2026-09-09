@@ -1,4 +1,5 @@
 using DomusMind.Application.Abstractions.Persistence;
+using DomusMind.Domain.Calendar.ExternalConnections;
 using DomusMind.Infrastructure.Auth;
 using DomusMind.Infrastructure.Initialization;
 using DomusMind.Infrastructure.Languages;
@@ -41,11 +42,29 @@ public sealed class DomusMindDbContext : DbContext, IDomusMindDbContext
     public DbSet<SystemInitializationRecord> SystemInitialization
         => Set<SystemInitializationRecord>();
 
-    public DbSet<Domain.SharedLists.SharedList> SharedLists
-        => Set<Domain.SharedLists.SharedList>();
+    public DbSet<Domain.Lists.SharedList> Lists
+        => Set<Domain.Lists.SharedList>();
+
+    public DbSet<ExternalCalendarConnection> ExternalCalendarConnections
+        => Set<ExternalCalendarConnection>();
+
+    public DbSet<ExternalCalendarFeed> ExternalCalendarFeeds
+        => Set<ExternalCalendarFeed>();
+
+    public DbSet<ExternalCalendarEntry> ExternalCalendarEntries
+        => Set<ExternalCalendarEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DomusMindDbContext).Assembly);
+    }
+
+    public void SetExternalCalendarConnectionAuthMaterial(
+        ExternalCalendarConnection connection,
+        string encryptedTokenCache,
+        string grantedScopes)
+    {
+        Entry(connection).Property<string?>("EncryptedRefreshToken").CurrentValue = encryptedTokenCache;
+        Entry(connection).Property<string?>("GrantedScopes").CurrentValue = grantedScopes;
     }
 }

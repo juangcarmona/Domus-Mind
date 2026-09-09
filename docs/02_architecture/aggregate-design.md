@@ -439,42 +439,70 @@ ShoppingListGenerated
 
 ---
 
-# Meal Planning Aggregate
+# Meal Planning Aggregates (V2)
 
-## Aggregate Root
+Meal Planning is a V2 bounded context.
+See `docs/04_contexts/meal-planning.md` for the full context definition.
 
-```
+## Aggregate Root: MealPlan
 
-MealPlan
+Represents a **planned set of meals for a household over a defined week**.
 
-```
+Internal entities: `MealSlot`
 
-## Responsibility
+Invariants:
 
-Represents a **planned set of meals over time**.
+- meal plan must belong to exactly one family
+- week start must be a Monday
+- meal slot day + meal type combinations must be unique within a plan
 
-## Internal Entities
-
-```
-
-Meal
-
-```
-
-## Invariants
-
-- meals must reference valid recipes
-- meal plans must belong to a family
-- meals must occur within the meal plan time range
-
-## Domain Events
+Domain Events emitted:
 
 ```
-
 MealPlanCreated
-MealPlanned
-ShoppingListGeneratedFromMealPlan
+MealSlotAssigned
+MealSlotCleared
+ShoppingListRequested
+```
 
+## Aggregate Root: Recipe
+
+Represents a **household recipe** — a named set of ingredients.
+
+Internal entities: `Ingredient`
+
+Invariants:
+
+- recipe must belong to exactly one family
+- recipe name must be unique within a family
+- ingredient name must be unique within a recipe
+
+Domain Events emitted:
+
+```
+RecipeCreated
+RecipeUpdated
+RecipeDeleted
+```
+
+## Aggregate Root: WeeklyTemplate
+
+Represents a **reusable weekly meal pattern** for the household.
+
+Internal entities: `MealSlotTemplate`
+
+Invariants:
+
+- template must belong to exactly one family
+- template name must be unique within a family
+- slot day + meal type combinations must be unique within a template
+
+Domain Events emitted:
+
+```
+WeeklyTemplateCreated
+WeeklyTemplateUpdated
+WeeklyTemplateApplied
 ```
 
 ---

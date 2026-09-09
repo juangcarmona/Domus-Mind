@@ -39,4 +39,6 @@ export default {
   filterEmpty: "没有区域符合此筛选条件。",
   selectAreaHint: "选择一个区域以查看详情并管理负责人。",
   viewDetail: "查看完整详情",
+  ownerAgenda: "查看日程",
+  createFromArea: "创建…",
 } as const;

@@ -1,4 +1,4 @@
-import { DAY_ORDER, toIsoDate, startOfWeek, addDays } from "../../today/utils/dateUtils";
+import { DAY_ORDER, toIsoDate, startOfWeek, addDays } from "../../agenda-today/utils/dateUtils";
 
 /**
  * Build a calendar grid for a given year + month.

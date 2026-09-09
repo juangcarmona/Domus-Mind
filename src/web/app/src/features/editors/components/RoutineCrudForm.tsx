@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import type { RoutineListItem } from "../../../api/domusmindApi";
 import { toLocalTimeInput } from "../utils";
 import { MemberAvatar } from "../../settings/components/avatar/MemberAvatar";
-import { DAY_ORDER } from "../../today/utils/dateUtils";
+import { DAY_ORDER } from "../../agenda-today/utils/dateUtils";
 
 interface RoutineCrudFormProps {
   mode: "create" | "edit";

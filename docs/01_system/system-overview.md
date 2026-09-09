@@ -56,9 +56,60 @@ It captures actionable work and recurring operational activity.
 
 ### Shared Lists
 
-Shared Lists provides reusable household lists, checklist state, and lightweight shared capture.
+Shared Lists provides the household execution container: reusable, flexible lists whose items range from simple memory to actionable, time-aware entries.
 
-It supports persistent shared coordination without becoming a scheduling or execution model by itself.
+It captures what the household needs to remember, buy, check, prepare, or act on — grouped by context or purpose.
+
+List items support a progressive capability model: base state (name, checked, quantity, note), importance, and temporal fields (due date, reminder, repeat).
+List items with temporal fields project into the Agenda surface as a distinct entry type.
+
+List items are not tasks. A task carries structured execution semantics (assignment, lifecycle state) that list items do not require.
+A list linked to a calendar event retains list semantics — linking does not cause items to inherit scheduling behavior.
+
+Shared Lists is the household's primary capture and flexible execution layer.
+
+---
+
+## Agenda as Unified Temporal Surface
+
+Agenda is the temporal read surface for the household.
+
+It gathers temporal entries from all relevant write contexts into a single projected view:
+
+| Source context | Entry type in Agenda |
+| -------------- | -------------------- |
+| Calendar | Plans (Events), all-day and timed |
+| Tasks | Tasks (due-date bearing) |
+| Tasks | Routines (projected occurrences) |
+| Shared Lists | Temporal list items (due date, reminder, or repeat) |
+| External integration | External calendar entries (member scope only, read-only) |
+
+**Write model is divided. Read model is unified.**
+
+Each context retains full ownership of its aggregate:
+
+- Calendar owns Event. Agenda does not own Event.
+- Tasks owns Task and Routine. Agenda does not own them.
+- Shared Lists owns SharedListItem. Agenda does not own list items.
+- External calendar entries are read-only integration state. Agenda projects them, not owns them.
+
+Agenda does not collapse these entities. It projects them together into a coherent temporal view.
+No aggregate crosses a context boundary. No entity is merged.
+
+Projection is a read concern. It is not an ownership transfer.
+
+---
+
+## Shared Temporal Vocabulary
+
+Contexts may share temporal vocabulary — due date, reminder, repeat — while owning separate entities.
+
+- Calendar defines what a scheduled time means for an Event.
+- Tasks defines what a due date means for a Task or Routine.
+- Shared Lists carries temporal references on list items. Calendar gives those dates household meaning.
+
+Shared vocabulary does not imply shared entities.
+A due date on a list item and a due date on a task are the same concept, held by different owners.
 
 ---
 
@@ -69,8 +120,9 @@ The collaboration model is intentionally simple.
 - Family is the upstream identity provider.
 - Responsibilities, Calendar, Tasks, and Shared Lists depend on Family identifiers.
 - Tasks may react to Calendar and Responsibilities events.
-- Shared Lists may reference responsibilities or calendar entities when useful.
-- Shared Lists remains independent from task execution and scheduling semantics.
+- Shared Lists may reference responsibilities or calendar entities when contextually useful.
+- Shared Lists does not own time. Items may carry temporal references (due date, reminder, repeat) which project into Agenda. Modifying temporal fields on an item does not create Calendar or Task records.
+- Agenda is not a bounded context. It is the unified temporal read surface assembled from Calendar, Tasks, Shared Lists, and external integration data.
 
 Contexts collaborate through identifiers and domain events.
 
@@ -104,6 +156,7 @@ In the current documented system shape, that means:
 - responsibility is explicit
 - time is explicit
 - execution is explicit
-- shared household list state is explicit
+- shared household execution containers (lists) are explicit, with progressive item capabilities including temporal projection into Agenda
+- the unified temporal surface (Agenda) gathers entries from all contexts without merging their write models
 
 The result is a clearer and more coherent operational model for the household.

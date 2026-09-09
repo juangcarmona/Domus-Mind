@@ -3,7 +3,9 @@ using DomusMind.Application.DependencyInjection;
 using DomusMind.Infrastructure.Auth;
 using DomusMind.Infrastructure.DependencyInjection;
 using DomusMind.Infrastructure.Languages;
+using DomusMind.Infrastructure.Messaging;
 using DomusMind.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +18,45 @@ builder.Services.AddDomusMindAuthorization();
 builder.Services.AddDomusMindOpenApi();
 
 var app = builder.Build();
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
+        var exception = exceptionFeature?.Error;
+        var logger = context.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("GlobalExceptionHandler");
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+        if (exception is HandlerResolutionException resolutionException)
+        {
+            logger.LogError(
+                resolutionException,
+                "Dispatcher handler resolution failed for {HandlerType}",
+                resolutionException.HandlerType);
+
+            await context.Response.WriteAsJsonAsync(new
+            {
+                code = "handler_resolution_failed",
+                message = "An internal handler registration is missing.",
+                traceId = context.TraceIdentifier,
+            });
+            return;
+        }
+
+        logger.LogError(exception, "Unhandled server exception");
+        await context.Response.WriteAsJsonAsync(new
+        {
+            code = "internal_server_error",
+            message = "An unexpected error occurred.",
+            traceId = context.TraceIdentifier,
+        });
+    });
+});
 
 app.UseSwagger();
 app.UseSwaggerUI();

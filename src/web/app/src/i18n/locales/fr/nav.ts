@@ -1,14 +1,10 @@
 export default {
-  timeline: "Calendrier",
-  people: "Personnes",
   areas: "Espaces",
-  plans: "Plannings",
-  chores: "Tâches",
-  planning: "Planification",
-  week: "Semaine",
-  today: "Aujourd'hui",
-  members: "Membres",
+  agenda: "Agenda",
   lists: "Listes",
   signOut: "Se déconnecter",
   settings: "Paramètres",
+  switchToLight: "Passer au mode clair",
+  switchToDark: "Passer au mode sombre",
+  mealPlanning: "Repas",
 } as const;

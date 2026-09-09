@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { DAY_ORDER, addMonths } from "../../today/utils/dateUtils";
+import { DAY_ORDER, addMonths } from "../../agenda-today/utils/dateUtils";
 import { buildCalendarGrid, weekRangeFor } from "../utils/agendaDateGrid";
 import type { AgendaView } from "./AgendaHeader";
 
@@ -40,7 +40,7 @@ export function AgendaMiniCalendar({
   firstDayOfWeek,
   onSelectDate,
 }: AgendaMiniCalendarProps) {
-  const { t, i18n } = useTranslation("today");
+  const { t, i18n } = useTranslation("agenda");
 
   // Mini calendar has its own displayed month (can drift from selectedDate).
   const [displayMonth, setDisplayMonth] = useState<string>(selectedDate);

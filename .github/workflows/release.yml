@@ -69,10 +69,16 @@ jobs:
         run: |
           set -euo pipefail
           TAG="v${VERSION}"
-          git rev-parse --verify "refs/tags/${TAG}" >/dev/null 2>&1 && {
-            echo "Tag already exists: ${TAG}"
+
+          if git show-ref --verify --quiet "refs/tags/${TAG}"; then
+            echo "Tag already exists locally: ${TAG}"
             exit 1
-          }
+          fi
+
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "Tag already exists on origin: ${TAG}"
+            exit 1
+          fi
 
       - name: Compute metadata
         id: meta

@@ -146,6 +146,7 @@ DomusMind is differentiated by a small set of product truths:
 - The product is timeline-first and today-first. The main question is what matters now, not what features exist.
 - Capture must stay easier than remembering, or adoption fails.
 - Anticipation matters more than reaction. The system should help the household see pressure before it turns into friction.
+- Lists are reusable grouped memory, not task tracking. They reduce mental load by persisting what the household needs to remember — without collapsing into a task manager or a calendar.
 
 ---
 
@@ -164,6 +165,16 @@ DomusMind is not:
 DomusMind also does not promise magic automation.
 
 The product promise is shared clarity, visible responsibility, and a better operating model for the household.
+
+# Meal Planning Addition
+
+Meal planning is an extension of the existing household coordination system, not a separate product. It should:
+
+- Integrate seamlessly with existing Lists and Agenda surfaces
+- Follow the same family-first, household-level approach as other features
+- Avoid recipe database complexity or social features
+- Support weekly reuse patterns through templates and history
+- Generate shopping lists automatically from meal plans
 
 ---
 

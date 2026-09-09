@@ -1,22 +1,32 @@
 # Shared Lists Context
 
+Status: Transitional
+Canonical upstream: 00_product/surfaces/lists.md
+Do not use this document to override canonical product docs/specs
+
 ## Purpose
 
-The Shared Lists context defines persistent, reusable, shared checklists within a household.
+The Lists context defines the **household execution container** for captured items.
 
-It represents **stateful coordination**, not time-based execution.
+It supports a spectrum from memory → action → time projection.
 
 This context answers:
 
-* what items should be remembered for future actions
-* what needs to be bought, checked, or prepared next time a situation occurs
+* what items should be remembered, bought, checked, or prepared
 * what shared state exists across the household
+* which items have temporal context and may appear in the Agenda
 
-It does not represent:
+A list is not a dumb checklist.
+An item is not a dumb entry.
 
-* scheduled commitments (Calendar)
-* executable work (Tasks)
-* responsibility ownership (Responsibilities)
+Items are **polymorphic execution units**.
+They may remain lightweight memory, or they may carry importance, temporal, or action semantics — all within the same container.
+
+This context does not own:
+
+* structured task lifecycle (Tasks)
+* time as a first-class resource (Calendar)
+* accountability and ownership (Responsibilities)
 
 ---
 
@@ -25,11 +35,15 @@ It does not represent:
 The Shared Lists context is responsible for:
 
 * creating and managing shared lists
-* managing list items
+* managing list items and their capabilities
 * maintaining checked/unchecked state
+* maintaining item importance
+* maintaining item temporal fields (due date, reminder, repeat)
 * supporting persistent reuse of lists over time
 * enabling real-time shared updates across family members
 * optionally linking lists to other household entities
+* providing projection data to the Agenda surface for temporally-enriched items
+* receiving shopping lists generated from meal plans (as a `SharedList` of kind `shopping`)
 
 ---
 
@@ -37,7 +51,7 @@ The Shared Lists context is responsible for:
 
 ### SharedList
 
-Represents a persistent shared checklist.
+Represents a persistent household execution container.
 
 Owns:
 
@@ -53,9 +67,9 @@ Owns:
 
 ### SharedListItem
 
-Represents a single item within a list.
+Represents a single polymorphic execution unit within a list.
 
-Owns:
+#### Base capabilities (always present)
 
 * name
 * checked state
@@ -63,6 +77,22 @@ Owns:
 * optional note
 * order
 * last update metadata
+
+#### Optional capabilities
+
+Items may additionally carry:
+
+* **importance** — a flag marking the item as starred or high attention
+* **temporal** — due date, reminder, and/or repeat rule
+
+Not every item will carry all capabilities.
+Capability presence or absence is part of the item's state.
+
+Items with temporal capabilities may project into the Agenda surface.
+Items without temporal capabilities remain list-only.
+
+Items never become Tasks automatically.
+No implicit task creation occurs.
 
 ---
 
@@ -74,6 +104,10 @@ Owns:
 * SharedListItemName
 * SharedListKind
 * ListItemOrder
+* ItemImportance
+* ItemDueDate
+* ItemReminderDefinition
+* ItemRepeatRule
 
 ---
 
@@ -90,6 +124,10 @@ Owns:
 * must belong to exactly one list
 * name cannot be empty
 * order must be unique within a list
+* importance is a binary flag, not a scoring system
+* `repeat` may be set independently of `dueDate` — it defines a recurrence schedule that is itself a temporal anchor for Agenda projection
+* if `repeat` is set and `dueDate` is also set, the repeat rule governs projected occurrences; `dueDate` sets the anchor date for the first (or next) occurrence
+* if `dueDate` is cleared but `repeat` remains set, the item remains Agenda-eligible via `repeat`
 
 ---
 
@@ -115,12 +153,19 @@ Owns:
 
 * ReorderSharedListItems
 
+* SetSharedListItemImportance
+
+* SetSharedListItemTemporal (sets due date, reminder, repeat)
+
+* ClearSharedListItemTemporal
+
 ---
 
 ## Queries
 
 * GetFamilySharedLists
 * GetSharedListDetail
+* GetTemporalItemsForAgenda (projection query — items with temporal fields, scoped by date window)
 
 ---
 
@@ -143,6 +188,18 @@ Owns:
 * SharedListItemRemoved
 
 * SharedListItemToggled
+
+* SharedListItemImportanceSet
+
+* SharedListItemScheduled (emitted when an item receives its first temporal field)
+
+---
+
+## Domain Events (emitted by other contexts — reacted to)
+
+From Meal Planning (V2):
+
+* `ShoppingListRequested` — Shared Lists reacts by creating a new `SharedList` of kind `shopping` prefilled with consolidated ingredients from the meal plan. Shared Lists emits `SharedListCreated` after creation.
 
 ---
 
@@ -178,6 +235,30 @@ From other contexts (optional linkage only):
 * name
 * kind
 * items[]
+  * id
+  * name
+  * checked
+  * quantity
+  * note
+  * importance
+  * dueDate
+  * reminder
+  * repeat
+  * order
+
+### AgendaItemProjection
+
+* itemId
+* listId
+* listName
+* name
+* checked
+* importance
+* dueDate
+* reminder
+* repeat
+
+Used by Agenda to render temporally-enriched list items.
 
 ---
 
@@ -193,11 +274,19 @@ Lists may optionally reference an area but do not enforce ownership logic.
 
 ### Calendar
 
-Lists may be linked to events but do not affect scheduling.
+Calendar owns time.
+Lists do not own time; they **reference** time via item temporal fields.
+Items with due dates and reminders **project into** the Agenda surface.
+This projection is read-only from Calendar's perspective.
+Lists do not affect event scheduling.
 
 ### Tasks
 
-Lists do not generate tasks and are not part of task execution.
+Lists own **lightweight, flexible execution** via items.
+Tasks own **structured, explicit execution** with full lifecycle, assignment, and management.
+These are distinct models.
+A list item does not become a task automatically.
+No command from either context crosses into the other's aggregate.
 
 ---
 
@@ -211,6 +300,14 @@ Key properties:
 * toggle-based state
 * no completion lifecycle
 * no scheduling
+
+## Meal Planning Extension Notes
+
+Meal planning extends the Lists context to support:
+* Weekly meal planning with templates
+* Recipe management
+* Shopping list generation
+* Integration with existing Lists and Agenda surfaces
 
 ---
 
@@ -230,6 +327,20 @@ Input:
 Output:
 
 * listId
+
+## create-meal-plan
+
+Creates a new weekly meal plan.
+
+Input:
+
+* familyId
+* weekStart (Monday date)
+* optional templateId
+
+Output:
+
+* mealPlanId
 
 ---
 

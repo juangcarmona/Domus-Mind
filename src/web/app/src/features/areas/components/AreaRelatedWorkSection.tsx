@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { EntityCard } from "../../../components/EntityCard";
 import { useDateFormatter } from "../../../hooks/useDateFormatter";
 import type { EnrichedTimelineEntry, FamilyTimelineEventItem, RoutineListItem } from "../../../api/domusmindApi";
-import { formatRoutineAssigned, formatRoutineDays } from "../../planning/utils/routineFormatters";
+import { formatRoutineAssigned, formatRoutineDays } from "../../agenda-planning/utils/routineFormatters";
 
 interface AreaRelatedWorkSectionProps {
   tasksLoading: boolean;
@@ -10,7 +10,8 @@ interface AreaRelatedWorkSectionProps {
   linkedPlans: FamilyTimelineEventItem[];
   linkedRoutines: RoutineListItem[];
   memberMap: Record<string, string>;
-  onAddClick: () => void;
+  /** When provided, renders an add button in the section header. */
+  onAddClick?: () => void;
   onEdit: (target: { type: "task" | "routine" | "event"; id: string }) => void;
   onCompleteTask: (taskId: string) => void;
   onCancelTask: (taskId: string) => void;
@@ -42,14 +43,16 @@ export function AreaRelatedWorkSection({
     <div className="area-detail-section">
       <div className="area-detail-section-header">
         <span className="area-detail-section-title">{t("relatedWork")}</span>
-        <button
-          type="button"
-          className="btn btn-sm"
-          style={{ marginLeft: "auto" }}
-          onClick={onAddClick}
-        >
-          + {tCommon("add")}
-        </button>
+        {onAddClick && (
+          <button
+            type="button"
+            className="btn btn-sm"
+            style={{ marginLeft: "auto" }}
+            onClick={onAddClick}
+          >
+            + {tCommon("add")}
+          </button>
+        )}
       </div>
 
       {tasksLoading ? (

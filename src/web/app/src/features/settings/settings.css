@@ -163,5 +163,226 @@
   background: color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
+/* ---- Status badges ---- */
+.status-badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.status-badge--healthy { background: color-mix(in srgb, #22c55e 15%, transparent); color: #15803d; }
+.status-badge--pending { background: color-mix(in srgb, #f59e0b 15%, transparent); color: #b45309; }
+.status-badge--syncing { background: color-mix(in srgb, #3b82f6 15%, transparent); color: #1d4ed8; }
+.status-badge--warning { background: color-mix(in srgb, #f97316 15%, transparent); color: #c2410c; }
+.status-badge--error   { background: color-mix(in srgb, #ef4444 15%, transparent); color: #b91c1c; }
+.status-badge--muted   { background: color-mix(in srgb, var(--muted) 15%, transparent); color: var(--muted); }
 
+/* ---- Connected Calendars ---- */
+.settings-description {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.settings-loading,
+.settings-empty {
+  font-size: 0.875rem;
+  color: var(--muted);
+  padding: 0.5rem 0;
+}
+.calendar-connections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.calendar-connection-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+}
+.calendar-connection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  gap: 1rem;
+}
+.calendar-connection-header:hover {
+  background: color-mix(in srgb, var(--primary) 4%, transparent);
+}
+.calendar-connection-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.calendar-connection-provider-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+.calendar-connection-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: block;
+}
+.calendar-connection-email {
+  font-size: 0.78rem;
+  color: var(--muted);
+  display: block;
+}
+.calendar-connection-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+.calendar-connection-feed-count {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.calendar-connection-chevron {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.calendar-connection-body {
+  border-top: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.calendar-connection-dates {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.calendar-connection-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
 
+/* ---- Calendar Feed Selector ---- */
+.calendar-feed-selector {
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  margin-top: 0.25rem;
+}
+.calendar-feed-selector-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.calendar-feed-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.calendar-feed-item {
+  display: flex;
+}
+.calendar-feed-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+.calendar-feed-checkbox {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+.calendar-feed-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.calendar-feed-default-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary);
+}
+.calendar-horizon-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+.calendar-horizon-options {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.calendar-horizon-btn {
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 6px);
+  background: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--text);
+  transition: border-color 0.1s, background 0.1s;
+}
+.calendar-horizon-btn.active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+  font-weight: 600;
+}
+.calendar-feed-actions {
+  margin-top: 0.25rem;
+}
+
+/* ---- Connect Outlook Panel ---- */
+.connect-outlook-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-top: 1rem;
+  background: var(--surface);
+}
+.connect-outlook-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.connect-outlook-description {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+.connect-outlook-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+/* ---- btn-sm ---- */
+.btn-sm {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+}
+.btn-danger {
+  background: color-mix(in srgb, #ef4444 90%, transparent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.15s;
+}
+.btn-danger:hover:not(:disabled) { opacity: 0.85; }
+.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }

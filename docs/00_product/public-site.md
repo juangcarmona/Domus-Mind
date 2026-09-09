@@ -40,7 +40,7 @@ Section intent:
 - Reality: make the visitor feel this is exactly their household.
 - Breakdown: explain why fragmented tools fail.
 - The Shift: introduce DomusMind as the shared household system.
-- What You See: make the product visible through the Today view.
+- What You See: make the product visible through Agenda in its day and week states.
 - How It Works: explain the operating flow without technical language.
 - What Exists Today: stay inside real V1 scope.
 - Early Access / Support the Project: support testers, followers, and early supporters without breaking the main household conversion path.
@@ -72,7 +72,7 @@ Screenshot caption rules:
 
 - one caption, one idea
 - describe the household outcome, not the UI widget
-- prefer Today, Week, routines, and shared visibility examples
+- prefer Agenda day, Agenda week, routines, and shared visibility examples
 - avoid feature inventory language
 
 ---
@@ -155,8 +155,8 @@ Preferred proof types:
 
 Recommended screenshot narrative:
 
-- Today view: what matters today
-- Week view: see the whole week clearly
+- Agenda day view: what matters today
+- Agenda week view: see the whole week clearly
 - Routine visibility: know what repeats and who owns it
 - Shared household view: one place, shared clarity
 

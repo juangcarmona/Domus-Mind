@@ -1,0 +1,674 @@
+/* ================================================================
+   Meal Planning — feature surface styles
+   Naming: mp-* (surface/layout/components)
+   ================================================================ */
+
+/* ── Surface wrapper ────────────────────────────────────────────── */
+.mp-surface {
+  margin: -1.5rem -1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .mp-surface { margin: 0; }
+}
+
+/* ── Week navigator ─────────────────────────────────────────────── */
+.mp-week-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.mp-week-nav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  transition: color 0.1s, background 0.1s;
+}
+
+.mp-week-nav-btn:hover {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.mp-week-nav-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text);
+  min-width: 8rem;
+  text-align: center;
+}
+
+/* ── Week grid ──────────────────────────────────────────────────── */
+.mp-week-grid {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.mp-week-grid-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+  flex-shrink: 0;
+}
+
+.mp-week-grid-day-header {
+  padding: 0.4rem 0.5rem;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  border-right: 1px solid var(--border);
+  text-align: center;
+}
+
+.mp-week-grid-day-header:last-child {
+  border-right: none;
+}
+
+/* Short label on narrow screens */
+.mp-week-grid-day-label-short { display: none; }
+
+@media (max-width: 860px) {
+  .mp-week-grid-day-label-full { display: none; }
+  .mp-week-grid-day-label-short { display: inline; }
+}
+
+.mp-week-grid-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  align-items: start;
+}
+
+.mp-week-grid-day-col {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  min-height: 100%;
+  padding: 0.25rem 0;
+}
+
+.mp-week-grid-day-col:last-child {
+  border-right: none;
+}
+
+/* ── Slot cell ──────────────────────────────────────────────────── */
+.mp-slot-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.1s;
+}
+
+.mp-slot-cell:last-child {
+  border-bottom: none;
+}
+
+.mp-slot-cell:hover {
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+.mp-slot-cell--selected {
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+  border-left: 2px solid var(--primary);
+  padding-left: calc(0.5rem - 2px);
+}
+
+.mp-slot-cell--selected:hover {
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+}
+
+.mp-slot-cell-type {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.mp-slot-cell-recipe {
+  font-size: var(--font-size-sm);
+  color: var(--text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mp-slot-cell--empty .mp-slot-cell-type {
+  opacity: 0.5;
+}
+
+.mp-slot-cell-empty {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.mp-slot-cell-notes {
+  font-size: var(--font-size-xs);
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Loading / error / empty states ────────────────────────────── */
+.mp-loading,
+.mp-error,
+.mp-empty-week {
+  padding: 2rem 1.25rem;
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+}
+
+.mp-error {
+  color: var(--danger);
+}
+
+/* ── Slot inspector ─────────────────────────────────────────────── */
+.mp-slot-inspector {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.mp-slot-inspector-meta {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.mp-slot-inspector-day {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.mp-slot-inspector-type {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.mp-slot-inspector-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Recipe picker ──────────────────────────────────────────────── */
+.mp-recipe-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mp-recipe-picker-search-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.mp-recipe-picker-search {
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+}
+
+.mp-recipe-picker-search:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.mp-recipe-picker-new {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+}
+
+.mp-recipe-picker-loading,
+.mp-recipe-picker-empty {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+  padding: 0.25rem 0;
+}
+
+.mp-recipe-picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 14rem;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.mp-recipe-picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.1s;
+  gap: 0.5rem;
+}
+
+.mp-recipe-picker-item:last-child {
+  border-bottom: none;
+}
+
+.mp-recipe-picker-item:hover {
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+
+.mp-recipe-picker-item--selected {
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--primary);
+}
+
+.mp-recipe-picker-item--clear {
+  color: var(--muted);
+  font-size: var(--font-size-xs);
+  font-style: italic;
+}
+
+.mp-recipe-picker-item-name {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mp-recipe-picker-item-meta {
+  font-size: var(--font-size-xs);
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* ── Form primitives (shared within feature) ───────────────────── */
+.mp-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mp-form-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.mp-form-row .mp-form-field {
+  flex: 1;
+}
+
+.mp-form-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.mp-form-input {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  width: 100%;
+}
+
+.mp-form-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.mp-form-textarea {
+  resize: vertical;
+  min-height: 3.5rem;
+}
+
+.mp-form-input--compact {
+  width: 100%;
+}
+
+.mp-form-error {
+  font-size: var(--font-size-xs);
+  color: var(--danger);
+  margin: 0;
+}
+
+/* ── Modal ──────────────────────────────────────────────────────── */
+.mp-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: 1rem;
+}
+
+.mp-modal {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 26rem;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+
+.mp-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.mp-modal-title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+}
+
+.mp-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  transition: color 0.1s;
+}
+
+.mp-modal-close:hover {
+  color: var(--text);
+}
+
+.mp-modal-form {
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mp-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+}
+
+/* ── Mobile: collapse grid to vertical day list ─────────────────── */
+@media (max-width: 640px) {
+  .mp-week-grid-header,
+  .mp-week-grid-body {
+    grid-template-columns: 1fr;
+  }
+
+  .mp-week-grid-day-header {
+    display: none; /* hidden; day label is shown in the col itself */
+  }
+
+  .mp-week-grid-day-col {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mp-week-grid-day-col:last-child {
+    border-bottom: none;
+  }
+}
+
+/* ── Source type variants on slot cell ──────────────────────────── */
+.mp-slot-cell--recipe {
+  background: color-mix(in srgb, var(--success, #22c55e) 5%, var(--surface));
+}
+
+.mp-slot-cell--freetext {
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+}
+
+.mp-slot-cell--leftovers {
+  background: color-mix(in srgb, var(--muted) 8%, var(--surface));
+}
+
+.mp-slot-cell--locked {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.mp-slot-lock {
+  font-size: 0.65em;
+  margin-left: 0.2em;
+}
+
+.mp-slot-optional-dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--primary);
+  margin-left: 0.25em;
+  vertical-align: middle;
+}
+
+/* ── Source picker in inspector ─────────────────────────────────── */
+.mp-source-picker {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.mp-source-picker-btn {
+  padding: 0.25rem 0.55rem;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--muted);
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+
+.mp-source-picker-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+  color: var(--text);
+}
+
+.mp-source-picker-btn.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.mp-source-picker-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Slot badges (optional / locked) ────────────────────────────── */
+.mp-slot-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.4rem;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--muted) 15%, transparent);
+  color: var(--muted);
+}
+
+.mp-slot-badge--locked {
+  background: color-mix(in srgb, var(--danger, #ef4444) 12%, transparent);
+  color: var(--danger, #ef4444);
+}
+
+/* ── Form hint ───────────────────────────────────────────────────── */
+.mp-form-hint {
+  font-size: var(--font-size-xs);
+  color: var(--muted);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ── Plan actions bar ────────────────────────────────────────────── */
+.mp-plan-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.75rem;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+  gap: 0.5rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.mp-plan-actions-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mp-plan-status {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.mp-plan-actions-right {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.mp-plan-action-done {
+  font-size: var(--font-size-xs);
+  color: var(--success, #22c55e);
+  font-weight: 600;
+}
+
+/* ── Empty state secondary actions ──────────────────────────────── */
+.mp-empty-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* ── Empty week — compact action row ───────────────────────────── */
+.mp-empty-week {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+}
+
+.mp-empty-week-header {
+  display: flex;
+  align-items: center;
+}
+
+.mp-empty-week-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0;
+}
+
+.mp-empty-week-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ── Inline notice (replaces full-screen error for recoverable states) ── */
+.mp-notice {
+  font-size: var(--font-size-xs);
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-sm);
+  margin: 0;
+}
+
+.mp-notice--warn {
+  background: color-mix(in srgb, var(--warning, #f59e0b) 10%, var(--surface));
+  color: color-mix(in srgb, var(--warning, #f59e0b) 70%, var(--text));
+  border: 1px solid color-mix(in srgb, var(--warning, #f59e0b) 30%, transparent);
+}
+
+/* ── Load error + retry ──────────────────────────────────────────── */
+.mp-load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1.25rem;
+}

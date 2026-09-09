@@ -2,9 +2,9 @@
 
 ## Purpose
 
-The Tasks context defines the **execution layer of household work**.
+The Tasks context defines the **structured execution layer of household work**.
 
-It represents the concrete actions required to operate family life.
+It represents the concrete, explicitly managed actions required to operate family life.
 
 It is responsible for:
 
@@ -16,10 +16,27 @@ It is responsible for:
 
 This context answers:
 
-* what needs to be done
-* who should do it
+* what structured work needs to be done
+* who is explicitly assigned to it
 * when it should be done
-* whether it has been completed 
+* whether it has been completed
+
+### Tasks Is Not the Only Execution Model
+
+Tasks represents **structured, explicit execution**.
+
+List Items (Shared Lists context) represent **lightweight, flexible execution**.
+
+These are distinct models and must remain separate contexts.
+
+| Concept   | Role                                                      | Context      |
+| --------- | --------------------------------------------------------- | ------------ |
+| List Item | lightweight, flexible, optional execution unit            | Shared Lists |
+| Task      | structured, assignable, lifecycle-driven execution entity | Tasks        |
+
+A list item that carries a due date does not become a Task.
+A Task is not a list item with more fields.
+Do not collapse these models.
 
 ---
 

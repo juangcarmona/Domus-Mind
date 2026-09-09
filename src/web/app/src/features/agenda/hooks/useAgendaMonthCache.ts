@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { weekApi } from "../../today/api/weekApi";
-import type { WeeklyGridResponse, DayTypeSummary } from "../../today/types";
-import type { CalendarEntry } from "../../today/utils/calendarEntry";
-import { normalizeCellItems } from "../../today/utils/calendarEntry";
-import { sortEntries } from "../../today/utils/todayPanelHelpers";
-import { DAY_ORDER, toIsoDate } from "../../today/utils/dateUtils";
+import { weekApi } from "../../agenda-today/api/weekApi";
+import type { WeeklyGridResponse, DayTypeSummary } from "../../agenda-today/types";
+import type { CalendarEntry } from "../../agenda-today/utils/calendarEntry";
+import { normalizeCellItems } from "../../agenda-today/utils/calendarEntry";
+import { sortEntries } from "../../agenda-today/utils/todayPanelHelpers";
+import { DAY_ORDER, toIsoDate } from "../../agenda-today/utils/dateUtils";
 
 /**
  * Fetches all weekly grids needed to populate a month calendar view
@@ -86,10 +86,11 @@ export function useAgendaMonthCache(
 
       for (const cell of cells) {
         const dayKey = cell.date.slice(0, 10);
-        if (!summary[dayKey]) summary[dayKey] = { events: 0, tasks: 0, routines: 0 };
+        if (!summary[dayKey]) summary[dayKey] = { events: 0, tasks: 0, routines: 0, listItems: 0 };
         summary[dayKey].events += cell.events?.length ?? 0;
         summary[dayKey].tasks += cell.tasks?.length ?? 0;
         summary[dayKey].routines += cell.routines?.length ?? 0;
+        summary[dayKey].listItems += cell.listItems?.length ?? 0;
       }
     }
     return summary;

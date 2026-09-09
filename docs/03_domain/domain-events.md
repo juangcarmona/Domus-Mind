@@ -134,7 +134,11 @@ DomusMind V1 currently recognizes five core bounded contexts:
 * Tasks
 * Shared Lists
 
-Only events belonging to these active contexts belong in this document.
+DomusMind V2 adds:
+
+* Meal Planning
+
+Only events belonging to active contexts belong in this document.
 
 ---
 
@@ -245,28 +249,40 @@ Typical downstream uses:
 
 ## Shared List Events
 
-Shared Lists owns collaborative list-based capture and shared list state.
+Shared Lists owns collaborative household execution containers and their items.
 
-Current stable events should map only to implemented list behavior.
-
-Recommended V1 event set:
+Stable events:
 
 ```text
 SharedListCreated
 SharedListRenamed
 SharedListArchived
 SharedListItemAdded
+SharedListItemUpdated
 SharedListItemToggled
 SharedListItemRemoved
+SharedListItemImportanceSet
+SharedListItemScheduled
 ```
+
+Event notes:
+
+* `SharedListItemUpdated` — emitted when item base fields change (name, note, quantity)
+* `SharedListItemImportanceSet` — emitted when the importance flag is set or cleared
+* `SharedListItemScheduled` — emitted when an item receives its first temporal field (due date, reminder, or repeat); also emitted when those fields are cleared (to support Agenda projection invalidation)
 
 Typical downstream uses:
 
 * update list read models
 * surface household shopping / supply / checklist state
-* support timeline or coordination projections only where explicitly designed
+* update Agenda projection source when an item becomes or ceases to be temporally enriched
 
-If the implementation does not yet support one of these transitions, do not emit the event until the behavior exists in the domain.
+Cross-context projection note:
+
+Items with temporal fields project into the Agenda read surface.
+This projection is handled as a query concern.
+No cross-context domain event is emitted to Calendar or Tasks to enable projection.
+Downstream consumers of `SharedListItemScheduled` may update projection read models independently.
 
 ---
 
@@ -336,6 +352,53 @@ Possible reactions:
 * update responsibility-aware projections
 
 Cross-context reactions happen after commit.
+
+---
+
+## Meal Planning Events (V2)
+
+Meal Planning owns weekly meal coordination, recipe management, and shopping list derivation requests.
+
+Stable events:
+
+```text
+MealPlanCreated
+MealPlanUpdated
+MealSlotAssigned
+MealSlotCleared
+RecipeCreated
+RecipeUpdated
+RecipeDeleted
+WeeklyTemplateCreated
+WeeklyTemplateUpdated
+WeeklyTemplateApplied
+ShoppingListRequested
+```
+
+Event notes:
+
+* `MealSlotAssigned` — emitted when a recipe is assigned to a specific day + meal type slot
+* `MealSlotCleared` — emitted when the recipe assignment is removed from a slot (slot remains, recipe reference is null)
+* `WeeklyTemplateApplied` — emitted after a template is used to create a new meal plan; carries `mealPlanId` and `templateId`
+* `ShoppingListRequested` — emitted when the household requests shopping list generation from a plan; carries the consolidated ingredient payload; Shared Lists reacts by creating a `SharedList` of kind `shopping`
+
+Typical downstream uses:
+
+* Shared Lists reacts to `ShoppingListRequested` by creating a shopping `SharedList`
+* Agenda projection source updated when meal slot dates change
+* Read models updated for meal plan surfaces
+
+### Meal Planning → Shared Lists
+
+```text
+ShoppingListRequested
+```
+
+Possible reactions:
+
+* Shared Lists creates a new `SharedList` of kind `shopping` with ingredient items pre-populated
+* Shared Lists emits `SharedListCreated`
+* Meal Planning may observe `SharedListCreated` to record the `shoppingListId` reference on the plan
 
 ---
 

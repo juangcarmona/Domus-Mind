@@ -1,0 +1,70 @@
+schema: spec-driven
+
+context: |
+  DomusMind is a household operating platform built as a domain-centric modular monolith.
+
+  Backend stack: .NET 10, ASP.NET Core Controllers (never Minimal APIs), EF Core direct (no generic repositories), FluentValidation.
+  Frontend stack: React, TypeScript, CSS with c-/l-/u-/is-/has- naming conventions, feature-based folder structure.
+
+  Forbidden patterns: MediatR, AutoMapper, generic repositories, Minimal APIs.
+
+  Internal mediator contracts already exist and must not be reinvented:
+  ICommand<TResponse>, IQuery<TResponse>, ICommandHandler, IQueryHandler,
+  ICommandDispatcher, IQueryDispatcher, IDomainEvent, IDomainEventHandler, IDomainEventDispatcher
+
+  Backend slices follow Features/<Module>/<Capability>/ with Command.cs or Query.cs, Handler.cs, and Validator.cs.
+  One command modifies exactly one aggregate. Cross-module reactions happen through domain events only.
+
+  IDs are ULID-based strongly typed identifiers (FamilyId, MemberId, EventId, TaskId, etc.) and are serialized as strings externally. We use record structs for IDs to avoid nullability and reference equality issues.
+
+  The Domain layer is framework-agnostic: no EF Core, no ASP.NET, no infrastructure concerns.
+  Auth identity is not the same as domain identity; built-in local auth is a separate internal module.
+
+  Read queries are projection-based and use AsNoTracking.
+  Domain entities must never be exposed directly through API contracts.
+
+  EF migrations command:
+  dotnet ef migrations add <Name> --project src\backend\DomusMind.Infrastructure --startup-project src\backend\DomusMind.Api --output-dir Persistence\Migrations
+
+  Ubiquitous language includes: Event, Task, Routine, ResponsibilityDomain, SharedList/List, Family, Member.
+  Product-facing labels use: Household, Person, Task, Plan, Area, List.
+
+  OpenSpec role split:
+  - openspec/specs contains current behavioral source of truth
+  - openspec/changes contains proposed modifications and planning artifacts
+  - docs contains architecture, context, conventions, and reference material
+  - do not create new behavioral truth outside OpenSpec
+
+rules:
+  proposal:
+    - Reference existing OpenSpec specs, docs, and repository terminology before proposing new structures.
+    - State clearly which bounded context, surface, or client artifact is affected.
+    - Do not invent parallel concepts when an existing domain or product term already exists.
+    - Explicitly separate in-scope behavior, out-of-scope behavior, and unresolved ambiguity.
+
+  specs:
+    - Write specs as behavior contracts, not implementation plans.
+    - Use ubiquitous language from docs/03_domain/ubiquitous-language.md and existing OpenSpec/domain specs; never invent new terms.
+    - Prefer one consolidated spec per domain, surface, or client artifact rather than one spec per backend slice capability.
+    - Focus on observable behavior, outcomes, invariants, and externally meaningful constraints.
+    - Use Requirements and Scenarios in a behavior-first style.
+    - Keep implementation details out of specs: no handlers, component internals, file paths, framework wiring, or migration steps.
+    - If the spec is client-specific (for example web-app), describe interaction behavior and surface responsibilities without leaking implementation details.
+    - If behavior is ambiguous or contradictory in source material, add a NOTE instead of inventing.
+
+  design:
+    - Identify the bounded context and, where applicable, the aggregate being mutated.
+    - State explicitly whether domain events are emitted and which cross-context reactions they trigger.
+    - When backend implementation is involved, map each capability to its slice path (Features/<Module>/<Capability>/).
+    - Distinguish clearly between domain behavior, API/contracts, and web-app interaction behavior.
+    - Reuse existing contracts, read models, and architectural patterns before proposing new structures.
+    - Flag any new DB tables or columns and include the EF migration command when relevant.
+    - Do not propose generic repositories, base classes, AutoMapper, or Minimal APIs.
+
+  tasks:
+    - Order backend tasks by layer: Domain → Application → Contracts → Infrastructure → API → Tests.
+    - Group tasks by impacted artifact when relevant: backend, web app, shared contracts, tests.
+    - One task should be one coherent unit of work; avoid multi-file mega-tasks unless the files are inseparable.
+    - If the change requires a DB migration, include it as an explicit Infrastructure task.
+    - For frontend work, state whether the change affects API state, feature UI, shared components, or navigation/surface behavior.
+    - Final task must be: Build and verify tests pass.

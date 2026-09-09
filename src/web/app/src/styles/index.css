@@ -22,10 +22,9 @@
 /* Feature styles (stable order). */
 @import "../features/auth/auth.css";
 @import "../features/areas/areas.css";
-@import "../features/members/members.css";
 @import "../features/onboarding/onboarding.css";
-@import "../features/planning/planning.css";
+@import "../features/agenda-planning/planning.css";
 @import "../features/settings/settings.css";
-@import "../features/today/today.css";
-@import "../features/shared-lists/shared-lists.css";
+@import "../features/agenda-today/today.css";
+@import "../features/lists/lists.css";
 @import "../features/agenda/agenda.css";

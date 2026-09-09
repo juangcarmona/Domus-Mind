@@ -39,4 +39,10 @@ export default {
   filterEmpty: "Keine Bereiche entsprechen diesem Filter.",
   selectAreaHint: "Wählen Sie einen Bereich aus, um Details anzuzeigen und Eigentümer zu verwalten.",
   viewDetail: "Vollständige Details anzeigen",
+  ownerAgenda: "Agenda anzeigen",
+  createFromArea: "Aus diesem Bereich erstellen",
+  createTask: "Aufgabe",
+  createRoutine: "Routine",
+  createPlan: "Plan",
+  colorHint: "Farbe ändern",
 } as const;

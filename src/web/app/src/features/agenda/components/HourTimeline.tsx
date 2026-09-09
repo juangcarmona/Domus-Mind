@@ -1,6 +1,6 @@
 import React from "react";
-import type { CalendarEntry } from "../../today/utils/calendarEntry";
-import { ENTRY_GLYPH } from "../../today/utils/calendarEntry";
+import type { CalendarEntry } from "../../agenda-today/utils/calendarEntry";
+import { ENTRY_GLYPH } from "../../agenda-today/utils/calendarEntry";
 
 // ----------------------------------------------------------------
 // 24-hour, 30-minute slot grid
@@ -53,7 +53,7 @@ function isDurationEvent(entry: CalendarEntry): boolean {
 interface HourTimelineProps {
   /** All timed entries for the day (entry.time is non-null). */
   timedEntries: CalendarEntry[];
-  onItemClick: (type: "event" | "task" | "routine", id: string) => void;
+  onItemClick: (type: "event" | "task" | "routine" | "list-item", id: string) => void;
   /**
    * Called when an empty slot background is clicked.
    * Receives "HH:MM" (the nearest :00 or :30 slot start).
@@ -63,6 +63,12 @@ interface HourTimelineProps {
   isToday?: boolean;
   /** Current time as total minutes from midnight. Used only when isToday is true. */
   nowMinutes?: number;
+  /**
+   * When true, renders only day-phase hours (06:00–21:30) and suppresses empty
+   * night slots. Reduces slot count from 48 to ~32 for sparse mobile schedules.
+   * Duration blocks that span into night hours are still rendered correctly.
+   */
+  compact?: boolean;
 }
 
 /**
@@ -75,7 +81,7 @@ interface HourTimelineProps {
  * - All other timed entries are bucketed to nearest :00/:30 slot
  * - Empty slots are optionally clickable for "create at time" action
  */
-export function HourTimeline({ timedEntries, onItemClick, onSlotClick, isToday, nowMinutes }: HourTimelineProps) {
+export function HourTimeline({ timedEntries, onItemClick, onSlotClick, isToday, nowMinutes, compact }: HourTimelineProps) {
   // Separate duration events (absolute blocks) from point-in-time items (slot-bucketed).
   const durationEvents: CalendarEntry[] = [];
   const pointItems: CalendarEntry[] = [];
@@ -102,13 +108,16 @@ export function HourTimeline({ timedEntries, onItemClick, onSlotClick, isToday, 
   }
 
   return (
-    <div className="hour-timeline" aria-label="Hourly schedule">
+    <div className={`hour-timeline${compact ? " hour-timeline--compact" : ""}`} aria-label="Hourly schedule">
       {/* Slot rail: provides the time grid background and point-in-time items */}
       {Array.from({ length: SLOT_COUNT }, (_, idx) => {
+        const night = isNightSlot(idx);
+        // In compact mode, skip empty night slots entirely to reduce scroll area.
+        if (compact && night && (bySlot.get(idx) ?? []).length === 0) return null;
+
         const isHalf = idx % 2 === 1;
         const entries = bySlot.get(idx) ?? [];
         const hasItems = entries.length > 0;
-        const night = isNightSlot(idx);
         const label = slotLabel(idx);
         const clickable = !hasItems && !!onSlotClick;
 
@@ -178,7 +187,7 @@ export function HourTimeline({ timedEntries, onItemClick, onSlotClick, isToday, 
 
 interface TimelineItemProps {
   entry: CalendarEntry;
-  onItemClick: (type: "event" | "task" | "routine", id: string) => void;
+  onItemClick: (type: "event" | "task" | "routine" | "list-item", id: string) => void;
 }
 
 function TimelineItem({ entry, onItemClick }: TimelineItemProps) {
@@ -231,7 +240,7 @@ function TimelineItem({ entry, onItemClick }: TimelineItemProps) {
 
 interface DurationBlockProps {
   entry: CalendarEntry;
-  onItemClick: (type: "event" | "task" | "routine", id: string) => void;
+  onItemClick: (type: "event" | "task" | "routine" | "list-item", id: string) => void;
 }
 
 function DurationBlock({ entry, onItemClick }: DurationBlockProps) {

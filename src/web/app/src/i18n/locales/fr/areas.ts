@@ -39,4 +39,6 @@ export default {
   filterEmpty: "Aucun espace ne correspond à ce filtre.",
   selectAreaHint: "Sélectionnez un espace pour voir ses détails et gérer la responsabilité.",
   viewDetail: "Voir le détail complet",
+  ownerAgenda: "Voir l'agenda",
+  createFromArea: "Créer…",
 } as const;

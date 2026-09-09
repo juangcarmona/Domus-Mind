@@ -72,6 +72,335 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                     b.ToTable("calendar_events", (string)null);
                 });
 
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarConnection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("AccessTokenExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("access_token_expires_at_utc");
+
+                    b.Property<string>("AccountDisplayLabel")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("account_display_label");
+
+                    b.Property<string>("AccountEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("account_email");
+
+                    b.Property<string>("CachedAccessToken")
+                        .HasColumnType("text")
+                        .HasColumnName("cached_access_token");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("EncryptedRefreshToken")
+                        .HasColumnType("text")
+                        .HasColumnName("encrypted_refresh_token");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("family_id");
+
+                    b.Property<string>("GrantedScopes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("granted_scopes");
+
+                    b.Property<string>("LastErrorCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("last_error_code");
+
+                    b.Property<string>("LastErrorMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("last_error_message");
+
+                    b.Property<DateTime?>("LastSuccessfulSyncUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_successful_sync_utc");
+
+                    b.Property<DateTime?>("LastSyncAttemptUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_sync_attempt_utc");
+
+                    b.Property<DateTime?>("LastSyncFailureUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_sync_failure_utc");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("member_id");
+
+                    b.Property<DateTime?>("NextScheduledSyncUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_scheduled_sync_utc");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("ProviderAccountId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("provider_account_id");
+
+                    b.Property<bool>("ScheduledRefreshEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("scheduled_refresh_enabled");
+
+                    b.Property<int>("ScheduledRefreshIntervalMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("scheduled_refresh_interval_minutes");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("SyncLeaseExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sync_lease_expires_at_utc");
+
+                    b.Property<Guid?>("SyncLeaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sync_lease_id");
+
+                    b.Property<string>("TenantId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NextScheduledSyncUtc")
+                        .HasDatabaseName("ix_external_calendar_connections_next_sync");
+
+                    b.HasIndex("SyncLeaseExpiresAtUtc")
+                        .HasDatabaseName("ix_external_calendar_connections_lease_expires");
+
+                    b.HasIndex("MemberId", "Provider")
+                        .HasDatabaseName("ix_external_calendar_connections_member_provider");
+
+                    b.ToTable("external_calendar_connections", (string)null);
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ConnectionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("connection_id");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<DateTime?>("EndsAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ends_at_utc");
+
+                    b.Property<string>("ExternalEventId")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("external_event_id");
+
+                    b.Property<Guid>("FeedId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("feed_id");
+
+                    b.Property<string>("ICalUId")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("ical_uid");
+
+                    b.Property<bool>("IsAllDay")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_all_day");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime>("LastSeenAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_seen_at_utc");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("location");
+
+                    b.Property<string>("OpenInProviderUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("open_in_provider_url");
+
+                    b.Property<string>("OriginalTimezone")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("original_timezone");
+
+                    b.Property<string>("ParticipantSummaryJson")
+                        .HasColumnType("text")
+                        .HasColumnName("participant_summary_json");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("provider");
+
+                    b.Property<DateTime?>("ProviderModifiedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("provider_modified_at_utc");
+
+                    b.Property<string>("RawPayloadHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("raw_payload_hash");
+
+                    b.Property<string>("SeriesMasterId")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("series_master_id");
+
+                    b.Property<DateTime>("StartsAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("starts_at_utc");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConnectionId", "StartsAtUtc")
+                        .HasDatabaseName("ix_external_calendar_entries_connection_starts");
+
+                    b.HasIndex("FeedId", "ExternalEventId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_external_calendar_entries_feed_event_unique");
+
+                    b.HasIndex("FeedId", "ICalUId")
+                        .HasDatabaseName("ix_external_calendar_entries_feed_ical_uid");
+
+                    b.HasIndex("FeedId", "StartsAtUtc", "EndsAtUtc")
+                        .HasDatabaseName("ix_external_calendar_entries_feed_window");
+
+                    b.ToTable("external_calendar_entries", (string)null);
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarFeed", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CalendarName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("calendar_name");
+
+                    b.Property<string>("ColorHex")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)")
+                        .HasColumnName("color_hex");
+
+                    b.Property<Guid>("ConnectionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("connection_id");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_default");
+
+                    b.Property<bool>("IsSelected")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_selected");
+
+                    b.Property<string>("LastDeltaToken")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("last_delta_token");
+
+                    b.Property<DateTime?>("LastSuccessfulSyncUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_successful_sync_utc");
+
+                    b.Property<string>("ProviderCalendarId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("provider_calendar_id");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<DateTime?>("WindowEndUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("window_end_utc");
+
+                    b.Property<DateTime?>("WindowStartUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("window_start_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConnectionId", "IsSelected")
+                        .HasDatabaseName("ix_external_calendar_feeds_connection_selected");
+
+                    b.HasIndex("ConnectionId", "ProviderCalendarId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_external_calendar_feeds_connection_calendar_unique");
+
+                    b.ToTable("external_calendar_feeds", (string)null);
+                });
+
             modelBuilder.Entity("DomusMind.Domain.Family.Family", b =>
                 {
                     b.Property<Guid>("Id")
@@ -183,6 +512,459 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                     b.ToTable("family_members", (string)null);
                 });
 
+            modelBuilder.Entity("DomusMind.Domain.Lists.ListItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Checked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("checked");
+
+                    b.Property<DateOnly?>("DueDate")
+                        .HasColumnType("date")
+                        .HasColumnName("due_date");
+
+                    b.Property<bool>("Importance")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("importance");
+
+                    b.Property<Guid?>("ItemAreaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_area_id");
+
+                    b.Property<Guid>("ListId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shared_list_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer")
+                        .HasColumnName("order");
+
+                    b.Property<string>("Quantity")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("quantity");
+
+                    b.Property<DateTimeOffset?>("Reminder")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reminder");
+
+                    b.Property<string>("Repeat")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("repeat");
+
+                    b.Property<Guid?>("TargetMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_member_id");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<Guid?>("UpdatedByMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_member_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ListId");
+
+                    b.ToTable("shared_list_items", (string)null);
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.Lists.SharedList", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AreaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("area_id");
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("color");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("family_id");
+
+                    b.Property<bool>("IsArchived")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_archived");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("kind");
+
+                    b.Property<Guid?>("LinkedEntityId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("linked_entity_id");
+
+                    b.Property<string>("LinkedEntityType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("linked_entity_type");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("shared_lists", (string)null);
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.Ingredient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal?>("Quantity")
+                        .HasColumnType("numeric")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipe_id");
+
+                    b.Property<string>("Unit")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("unit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_ingredients_recipe_id_name");
+
+                    b.ToTable("ingredients", (string)null);
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.MealPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("AffectsWholeHousehold")
+                        .HasColumnType("boolean")
+                        .HasColumnName("affects_whole_household");
+
+                    b.Property<Guid?>("AppliedTemplateId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("applied_template_id");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("family_id");
+
+                    b.Property<DateTime?>("LastDerivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_derived_at");
+
+                    b.Property<Guid?>("ShoppingListId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shopping_list_id");
+
+                    b.Property<int>("ShoppingListVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("shopping_list_version");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<DateOnly>("WeekStart")
+                        .HasColumnType("date")
+                        .HasColumnName("week_start");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FamilyId", "WeekStart")
+                        .IsUnique()
+                        .HasDatabaseName("ix_meal_plans_family_id_week_start");
+
+                    b.ToTable("meal_plans", (string)null);
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.MealSlot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("AffectsWholeHousehold")
+                        .HasColumnType("boolean")
+                        .HasColumnName("affects_whole_household");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("day_of_week");
+
+                    b.Property<string>("FreeText")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("free_text");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_locked");
+
+                    b.Property<bool>("IsOptional")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_optional");
+
+                    b.Property<Guid>("MealPlanId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("meal_plan_id");
+
+                    b.Property<int>("MealSourceType")
+                        .HasColumnType("integer")
+                        .HasColumnName("meal_source_type");
+
+                    b.Property<int>("MealType")
+                        .HasColumnType("integer")
+                        .HasColumnName("meal_type");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid?>("RecipeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipe_id");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MealPlanId", "DayOfWeek", "MealType")
+                        .IsUnique()
+                        .HasDatabaseName("ix_meal_slots_plan_day_type");
+
+                    b.ToTable("meal_slots", (string)null);
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.MealSlotTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("day_of_week");
+
+                    b.Property<string>("FreeText")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("free_text");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_locked");
+
+                    b.Property<bool>("IsOptional")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_optional");
+
+                    b.Property<int>("MealSourceType")
+                        .HasColumnType("integer")
+                        .HasColumnName("meal_source_type");
+
+                    b.Property<int>("MealType")
+                        .HasColumnType("integer")
+                        .HasColumnName("meal_type");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid?>("RecipeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipe_id");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<Guid>("WeeklyTemplateId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("weekly_template_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WeeklyTemplateId", "DayOfWeek", "MealType")
+                        .IsUnique()
+                        .HasDatabaseName("ix_meal_slot_templates_template_day_type");
+
+                    b.ToTable("meal_slot_templates", (string)null);
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.Recipe", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AllowedMealTypes")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("allowed_meal_types");
+
+                    b.Property<int?>("CookTimeMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("cook_time_minutes");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("family_id");
+
+                    b.Property<bool>("IsFavorite")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_favorite");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<int?>("PrepTimeMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("prep_time_minutes");
+
+                    b.Property<int?>("Servings")
+                        .HasColumnType("integer")
+                        .HasColumnName("servings");
+
+                    b.Property<string>("Tags")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("tags");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FamilyId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_recipes_family_id_name");
+
+                    b.ToTable("recipes", (string)null);
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.WeeklyTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("family_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FamilyId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_weekly_templates_family_id_name");
+
+                    b.ToTable("weekly_templates", (string)null);
+                });
+
             modelBuilder.Entity("DomusMind.Domain.Responsibilities.ResponsibilityDomain", b =>
                 {
                     b.Property<Guid>("Id")
@@ -215,101 +997,6 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("responsibility_domains", (string)null);
-                });
-
-            modelBuilder.Entity("DomusMind.Domain.SharedLists.SharedList", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid?>("AreaId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("area_id");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at_utc");
-
-                    b.Property<Guid>("FamilyId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("family_id");
-
-                    b.Property<string>("Kind")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("kind");
-
-                    b.Property<Guid?>("LinkedEntityId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("linked_entity_id");
-
-                    b.Property<string>("LinkedEntityType")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("linked_entity_type");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("shared_lists", (string)null);
-                });
-
-            modelBuilder.Entity("DomusMind.Domain.SharedLists.SharedListItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<bool>("Checked")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("checked");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("note");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("integer")
-                        .HasColumnName("order");
-
-                    b.Property<string>("Quantity")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("quantity");
-
-                    b.Property<Guid>("SharedListId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("shared_list_id");
-
-                    b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at_utc");
-
-                    b.Property<Guid?>("UpdatedByMemberId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("updated_by_member_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SharedListId");
-
-                    b.ToTable("shared_list_items", (string)null);
                 });
 
             modelBuilder.Entity("DomusMind.Domain.Tasks.HouseholdTask", b =>
@@ -681,11 +1368,79 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarConnection", b =>
+                {
+                    b.OwnsOne("DomusMind.Domain.Calendar.ExternalConnections.SyncHorizon", "Horizon", b1 =>
+                        {
+                            b1.Property<Guid>("ExternalCalendarConnectionId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("ForwardHorizonDays")
+                                .HasColumnType("integer")
+                                .HasColumnName("forward_horizon_days");
+
+                            b1.HasKey("ExternalCalendarConnectionId");
+
+                            b1.ToTable("external_calendar_connections");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ExternalCalendarConnectionId");
+                        });
+
+                    b.Navigation("Horizon")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarFeed", b =>
+                {
+                    b.HasOne("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarConnection", null)
+                        .WithMany("Feeds")
+                        .HasForeignKey("ConnectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("DomusMind.Domain.Family.FamilyMember", b =>
                 {
                     b.HasOne("DomusMind.Domain.Family.Family", null)
                         .WithMany("Members")
                         .HasForeignKey("FamilyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.Lists.ListItem", b =>
+                {
+                    b.HasOne("DomusMind.Domain.Lists.SharedList", null)
+                        .WithMany("Items")
+                        .HasForeignKey("ListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.Ingredient", b =>
+                {
+                    b.HasOne("DomusMind.Domain.MealPlanning.Entities.Recipe", null)
+                        .WithMany("Ingredients")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.MealSlot", b =>
+                {
+                    b.HasOne("DomusMind.Domain.MealPlanning.Entities.MealPlan", null)
+                        .WithMany("MealSlots")
+                        .HasForeignKey("MealPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.MealSlotTemplate", b =>
+                {
+                    b.HasOne("DomusMind.Domain.MealPlanning.Entities.WeeklyTemplate", null)
+                        .WithMany("MealSlotTemplates")
+                        .HasForeignKey("WeeklyTemplateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -712,15 +1467,6 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                         });
 
                     b.Navigation("Color")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("DomusMind.Domain.SharedLists.SharedListItem", b =>
-                {
-                    b.HasOne("DomusMind.Domain.SharedLists.SharedList", null)
-                        .WithMany("Items")
-                        .HasForeignKey("SharedListId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -895,14 +1641,34 @@ namespace DomusMind.Infrastructure.Persistence.Migrations
                     b.Navigation("_targetMembers");
                 });
 
+            modelBuilder.Entity("DomusMind.Domain.Calendar.ExternalConnections.ExternalCalendarConnection", b =>
+                {
+                    b.Navigation("Feeds");
+                });
+
             modelBuilder.Entity("DomusMind.Domain.Family.Family", b =>
                 {
                     b.Navigation("Members");
                 });
 
-            modelBuilder.Entity("DomusMind.Domain.SharedLists.SharedList", b =>
+            modelBuilder.Entity("DomusMind.Domain.Lists.SharedList", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.MealPlan", b =>
+                {
+                    b.Navigation("MealSlots");
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.Recipe", b =>
+                {
+                    b.Navigation("Ingredients");
+                });
+
+            modelBuilder.Entity("DomusMind.Domain.MealPlanning.Entities.WeeklyTemplate", b =>
+                {
+                    b.Navigation("MealSlotTemplates");
                 });
 #pragma warning restore 612, 618
         }

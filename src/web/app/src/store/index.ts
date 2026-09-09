@@ -6,9 +6,11 @@ import plansReducer from "./plansSlice";
 import tasksReducer from "./tasksSlice";
 import routinesReducer from "./routinesSlice";
 import languagesReducer from "./languagesSlice";
-import todayReducer from "./todaySlice";
 import uiReducer from "./uiSlice";
-import sharedListsReducer from "./sharedListsSlice";
+import listsReducer from "./listsSlice";
+import externalCalendarReducer from "./externalCalendarSlice";
+import mealPlanningReducer from "./mealPlanningSlice";
+import recipeLibraryReducer from "./recipeLibrarySlice";
 
 export const store = configureStore({
   reducer: {
@@ -19,9 +21,11 @@ export const store = configureStore({
     tasks: tasksReducer,
     routines: routinesReducer,
     languages: languagesReducer,
-    today: todayReducer,
     ui: uiReducer,
-    sharedLists: sharedListsReducer,
+    lists: listsReducer,
+    externalCalendar: externalCalendarReducer,
+    mealPlanning: mealPlanningReducer,
+    recipeLibrary: recipeLibraryReducer,
   },
 });
 

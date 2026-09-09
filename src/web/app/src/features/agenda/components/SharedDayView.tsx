@@ -1,8 +1,8 @@
 import React, { useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import type { WeeklyGridCell } from "../../today/types";
-import { buildSharedEntries } from "../../today/utils/todayPanelHelpers";
-import { toIsoDate } from "../../today/utils/dateUtils";
+import type { WeeklyGridCell } from "../../agenda-today/types";
+import { buildSharedEntries } from "../../agenda-today/utils/todayPanelHelpers";
+import { toIsoDate } from "../../agenda-today/utils/dateUtils";
 import { HourTimeline } from "./HourTimeline";
 
 /**
@@ -14,7 +14,7 @@ const SLOT_H_PX = 24;
 interface SharedDayViewProps {
   sharedCells: WeeklyGridCell[];
   selectedDate: string; // ISO YYYY-MM-DD
-  onItemClick: (type: "event" | "task" | "routine", id: string) => void;
+  onItemClick: (type: "event" | "task" | "routine" | "list-item", id: string) => void;
   onSlotClick?: (time: string) => void;
 }
 

@@ -40,10 +40,10 @@ export function RegisterPage({ onSuccess, onGoToLogin }: Props) {
   return (
     <div className="auth-wrap">
       <div className="auth-card">
-        <div style={{ textAlign: "center", marginBottom: "1.25rem", color: "var(--primary)" }}>
+        <div className="auth-logo">
           <HouseholdLogo size={40} />
         </div>
-        <h1 style={{ textAlign: "center", marginBottom: "1.25rem" }}>{t("register")}</h1>
+        <h1>{t("register")}</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="reg-email">{t("email")}</label>
@@ -57,9 +57,8 @@ export function RegisterPage({ onSuccess, onGoToLogin }: Props) {
             <span className="form-hint">{t("passwordHint")}</span>
           </div>
           {error && <p className="error-msg">{error}</p>}
-          <button type="submit" className="btn" disabled={loading}
-            style={{ width: "100%", justifyContent: "center", marginTop: "0.5rem" }}>
-            {loading ? "Creating\u2026" : "Create account"}
+          <button type="submit" className="btn auth-submit" disabled={loading}>
+            {loading ? t("loading") : t("register")}
           </button>
         </form>
         {onGoToLogin && (

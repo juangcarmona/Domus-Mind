@@ -6,6 +6,7 @@ using DomusMind.Application.Temporal;
 using DomusMind.Contracts.Calendar;
 using DomusMind.Domain.Calendar;
 using DomusMind.Domain.Family;
+using DomusMind.Domain.Lists;
 using Microsoft.EntityFrameworkCore;
 
 namespace DomusMind.Application.Features.Calendar.GetFamilyTimeline;
@@ -86,6 +87,72 @@ public sealed class GetFamilyTimelineQueryHandler
             })
             .ToList();
 
-        return new FamilyTimelineResponse(items);
+        // Temporal list items: items with dueDate, reminder, or repeat-only in the requested window.
+        // Repeat-only items are filtered in memory using RepeatExpansion.
+        var listItemsQuery = _dbContext
+            .Set<SharedList>()
+            .AsNoTracking()
+            .Where(l => l.FamilyId == familyId)
+            .SelectMany(l => l.Items, (l, i) => new
+            {
+                ListId = l.Id.Value,
+                ListName = l.Name.Value,
+                ItemId = i.Id.Value,
+                ItemName = i.Name.Value,
+                i.DueDate,
+                i.Reminder,
+                i.Repeat,
+                i.Importance,
+                i.Checked
+            })
+            .Where(i => i.DueDate.HasValue || i.Reminder.HasValue || i.Repeat != null);
+
+        if (query.From.HasValue)
+        {
+            var fromDate = query.From.Value;
+            var fromUtc = new DateTimeOffset(fromDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+            listItemsQuery = listItemsQuery.Where(i =>
+                (i.DueDate.HasValue && i.DueDate >= fromDate) ||
+                (i.Reminder.HasValue && !i.DueDate.HasValue && i.Reminder >= fromUtc) ||
+                (!i.DueDate.HasValue && !i.Reminder.HasValue && i.Repeat != null));
+        }
+
+        if (query.To.HasValue)
+        {
+            var toDate = query.To.Value;
+            var toUtc = new DateTimeOffset(toDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+            listItemsQuery = listItemsQuery.Where(i =>
+                (i.DueDate.HasValue && i.DueDate <= toDate) ||
+                (i.Reminder.HasValue && !i.DueDate.HasValue && i.Reminder <= toUtc) ||
+                (!i.DueDate.HasValue && !i.Reminder.HasValue && i.Repeat != null));
+        }
+
+        var allListItems = await listItemsQuery
+            .OrderBy(i => i.DueDate)
+            .ThenBy(i => i.Reminder)
+            .ToListAsync(cancellationToken);
+
+        var windowFrom = query.From ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var windowTo = query.To ?? windowFrom;
+
+        var timelineListItems = allListItems
+            .Where(i =>
+            {
+                if (i.DueDate.HasValue || i.Reminder.HasValue) return true;
+                // Repeat-only: filter in memory
+                return RepeatExpansion.FiresInWindow(i.Repeat, windowFrom, windowTo);
+            })
+            .Select(i => new FamilyTimelineListItem(
+                i.ListId,
+                i.ListName,
+                i.ItemId,
+                i.ItemName,
+                i.DueDate?.ToString("yyyy-MM-dd"),
+                i.Reminder?.ToString("o"),
+                i.Checked,
+                i.Importance))
+            .ToList();
+
+        return new FamilyTimelineResponse(items, timelineListItems);
     }
 }

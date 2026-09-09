@@ -15,8 +15,8 @@ hero:
     label: "See how it works"
     href: "/how-it-works"
   proofPanel:
-    eyebrow: "Today"
-    title: "Today"
+    eyebrow: "Agenda"
+    title: "Agenda"
     groups:
       - ["09:00 — School meeting"]
       - ["18:00 — Football practice — Noah"]
@@ -48,13 +48,13 @@ shift:
 proof:
   title: "What You See"
   primary:
-    title: "Today"
+    title: "Agenda"
     caption: "Everyone sees what matters today. No one has to remember everything."
-    placeholder: "today-view"
-    alt: "Today view showing plans, routines, and tasks for the household"
-    imageSrc: "/screenshots/today_panel.png"
+    placeholder: "agenda-view"
+    alt: "Agenda view showing plans, routines, and tasks for the household"
+    imageSrc: "/screenshots/agenda_panel.png"
     preview:
-      eyebrow: "Today"
+      eyebrow: "Agenda"
       groups:
         - ["09:00 — School meeting"]
         - ["18:00 — Football practice — Noah"]
@@ -87,7 +87,7 @@ currentState:
         - "Lists — groceries, checklists, and recurring household items"
     - title: "Operational surface"
       items:
-        - "Today — what matters now"
+        - "Agenda — what matters now"
         - "Week — the upcoming week in one shared view"
         - "Month — wider planning at a glance"
         - "Timeline roller — move through time without losing context"

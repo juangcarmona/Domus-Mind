@@ -32,7 +32,16 @@ When working on UX, surfaces, layout, or interaction behavior, treat these as ca
 - docs/00_product/strategy.md
 - docs/00_product/experience.md
 - docs/00_product/surface-system.md
-- specs/surfaces/*.md
+- 00_product/surfaces/*.md
 
 Do not let implementation files, old comments, or outdated docs override these documents.
 If code conflicts with them, update code or explicitly document the blocker.
+
+## Maintenance Rules
+
+To prevent future drift and maintain documentation quality:
+
+1. If a surface is replaced, the old spec must be retired in the same PR
+2. If terminology changes, update ubiquitous language and system spec in the same PR  
+3. No new instruction file may reference retired specs
+4. No feature spec may keep old terminology without an explicit migration note

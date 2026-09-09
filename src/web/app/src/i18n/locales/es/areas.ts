@@ -39,4 +39,6 @@ export default {
   filterEmpty: "Ningún área coincide con este filtro.",
   selectAreaHint: "Selecciona un área para ver sus detalles y gestionar la titularidad.",
   viewDetail: "Ver detalle completo",
+  ownerAgenda: "Ver agenda",
+  createFromArea: "Crear…",
 } as const;

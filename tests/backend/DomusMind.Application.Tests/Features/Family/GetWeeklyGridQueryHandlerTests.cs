@@ -1,9 +1,12 @@
 using DomusMind.Application.Features.Family;
 using DomusMind.Application.Features.Family.GetWeeklyGrid;
 using DomusMind.Domain.Calendar;
+using DomusMind.Domain.Calendar.ExternalConnections;
 using DomusMind.Domain.Calendar.ValueObjects;
 using DomusMind.Domain.Family;
 using DomusMind.Domain.Family.ValueObjects;
+using DomusMind.Domain.Lists;
+using DomusMind.Domain.Lists.ValueObjects;
 using DomusMind.Domain.Shared;
 using DomusMind.Domain.Tasks;
 using DomusMind.Domain.Tasks.Enums;
@@ -89,6 +92,17 @@ public sealed class GetWeeklyGridQueryHandlerTests
                          DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday }),
             null,
             DateTime.UtcNow);
+
+    private static SharedList MakeList(FamilyId familyId, string name = "Groceries")
+        => SharedList.Create(
+            ListId.New(),
+            familyId,
+            ListName.Create(name),
+            ListKind.Create("General"),
+            areaId: null,
+            linkedEntityType: null,
+            linkedEntityId: null,
+            createdAtUtc: DateTime.UtcNow);
 
     // ---- Authorization / guarding ----
 
@@ -207,6 +221,75 @@ public sealed class GetWeeklyGridQueryHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ImportedExternalEvent_AppearsInCorrectMemberCellAsReadOnly()
+    {
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Bob")));
+
+        var now = DateTime.UtcNow;
+        var connectionId = ExternalCalendarConnectionId.New();
+        var connection = ExternalCalendarConnection.Connect(
+            connectionId,
+            familyId,
+            memberId,
+            ExternalCalendarProvider.Microsoft,
+            "provider-account",
+            "bob@outlook.com",
+            "Bob Outlook",
+            "common",
+            now);
+
+        var feed = ExternalCalendarFeed.Create(
+            connectionId,
+            "cal-1",
+            "Calendar",
+            true,
+            true,
+            now);
+
+        db.Set<ExternalCalendarConnection>().Add(connection);
+        db.Set<ExternalCalendarFeed>().Add(feed);
+
+        var weekStart = new DateOnly(2026, 3, 16);
+        var externalDate = weekStart.AddDays(2);
+        db.Set<ExternalCalendarEntry>().Add(new ExternalCalendarEntry
+        {
+            Id = Guid.NewGuid(),
+            ConnectionId = connectionId.Value,
+            FeedId = feed.Id,
+            Provider = "microsoft",
+            ExternalEventId = "evt-1",
+            Title = "Math Class",
+            StartsAtUtc = externalDate.ToDateTime(new TimeOnly(14, 0), DateTimeKind.Utc),
+            EndsAtUtc = externalDate.ToDateTime(new TimeOnly(15, 0), DateTimeKind.Utc),
+            IsAllDay = false,
+            Status = "confirmed",
+            OpenInProviderUrl = "https://outlook.office.com/calendar/item/1",
+            IsDeleted = false,
+            LastSeenAtUtc = now,
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now,
+        });
+
+        await db.SaveChangesAsync();
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var wednesdayCell = result.Members.First().Cells.Single(c => c.Date == externalDate.ToString("yyyy-MM-dd"));
+        var external = wednesdayCell.Events.Should().ContainSingle(e => e.Title == "Math Class").Which;
+
+        external.IsReadOnly.Should().BeTrue();
+        external.Source.Should().Be("external_calendar");
+        external.ProviderLabel.Should().Be("Outlook");
+        external.OpenInProviderUrl.Should().Be("https://outlook.office.com/calendar/item/1");
+    }
+
+    [Fact]
     public async Task Handle_EventOutsideWeekWindow_IsExcluded()
     {
         var db = CreateDb();
@@ -270,6 +353,107 @@ public sealed class GetWeeklyGridQueryHandlerTests
             CancellationToken.None);
 
         result.Members.First().Cells.SelectMany(c => c.Tasks).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Handle_TemporalListItem_WithDueDate_ProjectsIntoSharedDayCell()
+    {
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Pat")));
+
+        var weekStart = new DateOnly(2026, 3, 16);
+        var dueDate = weekStart.AddDays(2);
+
+        var list = MakeList(familyId, "School");
+        var itemId = ListItemId.New();
+        list.AddItem(itemId, ListItemName.Create("Permission slip"), null, null, DateTime.UtcNow);
+        list.SetItemTemporal(itemId, dueDate, null, null, DateTime.UtcNow);
+        db.Set<SharedList>().Add(list);
+        await db.SaveChangesAsync();
+
+        var handler = BuildHandler(db);
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var dayCell = result.SharedCells.Single(c => c.Date == dueDate.ToString("yyyy-MM-dd"));
+        var projected = dayCell.ListItems.Should().ContainSingle().Which;
+        projected.Title.Should().Be("Permission slip");
+        projected.ListName.Should().Be("School");
+        projected.DueDate.Should().Be(dueDate.ToString("yyyy-MM-dd"));
+    }
+
+    [Fact]
+    public async Task Handle_TemporalListItem_WithReminderOrRepeatOnly_ProjectsIntoSharedDayCell()
+    {
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Pat")));
+
+        var weekStart = new DateOnly(2026, 3, 16); // Monday
+        var reminderDate = weekStart.AddDays(1); // Tuesday
+        var repeatDate = weekStart.AddDays(3); // Thursday
+
+        var reminderList = MakeList(familyId, "Errands");
+        var reminderItemId = ListItemId.New();
+        reminderList.AddItem(reminderItemId, ListItemName.Create("Call clinic"), null, null, DateTime.UtcNow);
+        reminderList.SetItemTemporal(
+            reminderItemId,
+            null,
+            reminderDate.ToDateTime(new TimeOnly(10, 30), DateTimeKind.Utc),
+            null,
+            DateTime.UtcNow);
+
+        var repeatOnlyList = MakeList(familyId, "Chores");
+        var repeatItemId = ListItemId.New();
+        repeatOnlyList.AddItem(repeatItemId, ListItemName.Create("Water plants"), null, null, DateTime.UtcNow);
+        repeatOnlyList.SetItemTemporal(repeatItemId, null, null, "Weekly:4", DateTime.UtcNow);
+
+        db.Set<SharedList>().AddRange(reminderList, repeatOnlyList);
+        await db.SaveChangesAsync();
+
+        var handler = BuildHandler(db);
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var tuesdayCell = result.SharedCells.Single(c => c.Date == reminderDate.ToString("yyyy-MM-dd"));
+        tuesdayCell.ListItems.Should().ContainSingle(i => i.Title == "Call clinic");
+
+        var thursdayCell = result.SharedCells.Single(c => c.Date == repeatDate.ToString("yyyy-MM-dd"));
+        thursdayCell.ListItems.Should().ContainSingle(i => i.Title == "Water plants");
+    }
+
+    [Fact]
+    public async Task Handle_CheckedTemporalListItem_RemainsProjectedInSharedCell()
+    {
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Pat")));
+
+        var weekStart = new DateOnly(2026, 3, 16);
+        var dueDate = weekStart.AddDays(4);
+
+        var list = MakeList(familyId, "Party");
+        var itemId = ListItemId.New();
+        list.AddItem(itemId, ListItemName.Create("Buy candles"), null, null, DateTime.UtcNow);
+        list.SetItemTemporal(itemId, dueDate, null, null, DateTime.UtcNow);
+        list.ToggleItem(itemId, null, DateTime.UtcNow);
+
+        db.Set<SharedList>().Add(list);
+        await db.SaveChangesAsync();
+
+        var handler = BuildHandler(db);
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var fridayCell = result.SharedCells.Single(c => c.Date == dueDate.ToString("yyyy-MM-dd"));
+        fridayCell.ListItems.Should().ContainSingle(i => i.Title == "Buy candles" && i.Checked);
     }
 
     // ---- Routines ----
@@ -541,5 +725,254 @@ public sealed class GetWeeklyGridQueryHandlerTests
 
         var names = result.Members.Select(m => m.Name).ToList();
         names.Should().Equal("Aaron", "Mike", "Zoe");
+    }
+
+    // ── Regression: ExternalCalendarConnection MemberId EF translation ───────
+    //
+    // GetWeeklyGrid used to throw:
+    //   InvalidOperationException: The LINQ expression
+    //   '@memberIds.Contains(... ExternalCalendarConnection ... .MemberId.Value)'
+    //   could not be translated by EF Core / Npgsql.
+    //
+    // Root cause: the query expressed memberIds.Contains(c.MemberId.Value)
+    // where c.MemberId has a value converter. EF cannot translate the .Value
+    // property access inside the expression tree after applying the converter.
+    // Fix: compare using strongly-typed MemberId values so EF applies the
+    // converter correctly and emits a server-side IN clause.
+
+    private static ExternalCalendarConnection MakeConnection(
+        ExternalCalendarConnectionId connectionId,
+        FamilyId familyId,
+        MemberId memberId,
+        DateTime now)
+        => ExternalCalendarConnection.Connect(
+            connectionId,
+            familyId,
+            memberId,
+            ExternalCalendarProvider.Microsoft,
+            "provider-account",
+            "member@outlook.com",
+            "Member Outlook",
+            "common",
+            now);
+
+    private static ExternalCalendarFeed MakeFeed(
+        ExternalCalendarConnectionId connectionId,
+        DateTime now,
+        bool selected = true)
+        => ExternalCalendarFeed.Create(
+            connectionId,
+            "cal-1",
+            "Calendar",
+            isDefault: true,
+            isSelected: selected,
+            now);
+
+    private static ExternalCalendarEntry MakeExternalEntry(
+        ExternalCalendarConnectionId connectionId,
+        Guid feedId,
+        DateOnly date,
+        DateTime now,
+        string title = "External Event")
+        => new()
+        {
+            Id = Guid.NewGuid(),
+            ConnectionId = connectionId.Value,
+            FeedId = feedId,
+            Provider = "microsoft",
+            ExternalEventId = Guid.NewGuid().ToString(),
+            Title = title,
+            StartsAtUtc = date.ToDateTime(new TimeOnly(10, 0), DateTimeKind.Utc),
+            EndsAtUtc = date.ToDateTime(new TimeOnly(11, 0), DateTimeKind.Utc),
+            IsAllDay = false,
+            Status = "confirmed",
+            IsDeleted = false,
+            LastSeenAtUtc = now,
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now,
+        };
+
+    [Fact]
+    public async Task Handle_FamilyWithExternalCalendarConnections_DoesNotThrowEfTranslationException()
+    {
+        // Regression: memberIds.Contains(c.MemberId.Value) was not translatable.
+        // Using strongly-typed MemberId set fixes the translation.
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Alice")));
+
+        var now = DateTime.UtcNow;
+        var connectionId = ExternalCalendarConnectionId.New();
+        var conn = MakeConnection(connectionId, familyId, memberId, now);
+        db.Set<ExternalCalendarConnection>().Add(conn);
+        await db.SaveChangesAsync();
+
+        var handler = BuildHandler(db);
+
+        var weekStart = new DateOnly(2026, 3, 16);
+        var act = () => handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task Handle_MemberWithExternalConnection_ExternalEntriesAppearAsReadOnly()
+    {
+        // External calendar entries for matching members must appear in the correct cell
+        // and be flagged as read-only.
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Alice")));
+
+        var now = DateTime.UtcNow;
+        var connectionId = ExternalCalendarConnectionId.New();
+        var conn = MakeConnection(connectionId, familyId, memberId, now);
+        var feed = MakeFeed(connectionId, now);
+        db.Set<ExternalCalendarConnection>().Add(conn);
+        db.Set<ExternalCalendarFeed>().Add(feed);
+
+        var weekStart = new DateOnly(2026, 3, 16);
+        var entryDate = weekStart.AddDays(2); // Wednesday
+        db.Set<ExternalCalendarEntry>().Add(
+            MakeExternalEntry(connectionId, feed.Id, entryDate, now, "Dentist"));
+        await db.SaveChangesAsync();
+
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var wednesdayCell = result.Members.First().Cells
+            .Single(c => c.Date == entryDate.ToString("yyyy-MM-dd"));
+        var entry = wednesdayCell.Events
+            .Should().ContainSingle(e => e.Title == "Dentist").Which;
+
+        entry.IsReadOnly.Should().BeTrue();
+        entry.Source.Should().Be("external_calendar");
+        entry.ProviderLabel.Should().Be("Outlook");
+    }
+
+    [Fact]
+    public async Task Handle_MultipleMembersWithMixedConnections_CorrectlyRoutesEntries()
+    {
+        // Multiple members — each member should only see their own external entries.
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var alice = MemberId.New();
+        var bob = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (alice, "Alice"), (bob, "Bob")));
+
+        var now = DateTime.UtcNow;
+        var weekStart = new DateOnly(2026, 3, 16);
+        var entryDate = weekStart.AddDays(1); // Tuesday
+
+        // Alice has a connection + entry
+        var aliceConnId = ExternalCalendarConnectionId.New();
+        var aliceConn = MakeConnection(aliceConnId, familyId, alice, now);
+        var aliceFeed = MakeFeed(aliceConnId, now);
+        db.Set<ExternalCalendarConnection>().Add(aliceConn);
+        db.Set<ExternalCalendarFeed>().Add(aliceFeed);
+        db.Set<ExternalCalendarEntry>().Add(
+            MakeExternalEntry(aliceConnId, aliceFeed.Id, entryDate, now, "Alice's Meeting"));
+
+        // Bob has a connection but NO entries
+        var bobConnId = ExternalCalendarConnectionId.New();
+        var bobConn = MakeConnection(bobConnId, familyId, bob, now);
+        var bobFeed = MakeFeed(bobConnId, now);
+        db.Set<ExternalCalendarConnection>().Add(bobConn);
+        db.Set<ExternalCalendarFeed>().Add(bobFeed);
+
+        await db.SaveChangesAsync();
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        var aliceRow = result.Members.Single(m => m.Name == "Alice");
+        var bobRow = result.Members.Single(m => m.Name == "Bob");
+
+        aliceRow.Cells.Single(c => c.Date == entryDate.ToString("yyyy-MM-dd"))
+            .Events.Should().ContainSingle(e => e.Title == "Alice's Meeting");
+
+        bobRow.Cells.Single(c => c.Date == entryDate.ToString("yyyy-MM-dd"))
+            .Events.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Handle_DisconnectedExternalConnection_EntriesAreExcluded()
+    {
+        // Disconnected connections must not have their feeds or entries included.
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Alice")));
+
+        var now = DateTime.UtcNow;
+        var connectionId = ExternalCalendarConnectionId.New();
+        var conn = MakeConnection(connectionId, familyId, memberId, now);
+
+        // Disconnect the connection
+        conn.Disconnect(now);
+        conn.ClearDomainEvents();
+
+        var feed = MakeFeed(connectionId, now);
+        db.Set<ExternalCalendarConnection>().Add(conn);
+        db.Set<ExternalCalendarFeed>().Add(feed);
+
+        var weekStart = new DateOnly(2026, 3, 16);
+        var entryDate = weekStart.AddDays(1);
+        db.Set<ExternalCalendarEntry>().Add(
+            MakeExternalEntry(connectionId, feed.Id, entryDate, now, "Hidden Event"));
+        await db.SaveChangesAsync();
+
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.Members.First().Cells
+            .SelectMany(c => c.Events)
+            .Should().NotContain(e => e.Title == "Hidden Event");
+    }
+
+    [Fact]
+    public async Task Handle_UnselectedFeed_EntriesAreExcluded()
+    {
+        // Entries from feeds that are not selected must not appear.
+        var db = CreateDb();
+        var familyId = FamilyId.New();
+        var memberId = MemberId.New();
+        db.Set<Domain.Family.Family>().Add(MakeFamily(familyId, (memberId, "Alice")));
+
+        var now = DateTime.UtcNow;
+        var connectionId = ExternalCalendarConnectionId.New();
+        var conn = MakeConnection(connectionId, familyId, memberId, now);
+        // selected = false
+        var feed = MakeFeed(connectionId, now, selected: false);
+        db.Set<ExternalCalendarConnection>().Add(conn);
+        db.Set<ExternalCalendarFeed>().Add(feed);
+
+        var weekStart = new DateOnly(2026, 3, 16);
+        var entryDate = weekStart.AddDays(1);
+        db.Set<ExternalCalendarEntry>().Add(
+            MakeExternalEntry(connectionId, feed.Id, entryDate, now, "Unselected Feed Event"));
+        await db.SaveChangesAsync();
+
+        var handler = BuildHandler(db);
+
+        var result = await handler.Handle(
+            new GetWeeklyGridQuery(familyId.Value, weekStart, Guid.NewGuid()),
+            CancellationToken.None);
+
+        result.Members.First().Cells
+            .SelectMany(c => c.Events)
+            .Should().NotContain(e => e.Title == "Unselected Feed Event");
     }
 }

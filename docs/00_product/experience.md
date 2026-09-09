@@ -42,7 +42,7 @@ The product should feel like one shared household system, not a collection of di
 
 - Household-first. The product reflects shared household reality, not one person's private productivity space.
 - Action first. The product should answer what matters now before asking for setup or interpretation.
-- Timeline-first. Plans, routines, tasks, and relevant shared state should become legible together.
+- **Unified temporal surface.** Plans, routines, tasks, temporal list items, and relevant external calendar entries should become legible together in a single surface (Agenda). The write model stays divided — each context owns its entities. The read model is unified — Agenda gathers all temporal entries into one surface.
 - Capture must stay easier than remembering. If adding or updating state becomes slow, adoption fails.
 - Simplicity at the surface. Product complexity belongs in the model, not in the interface.
 - One product, one language. All surfaces must feel like part of the same system.
@@ -92,45 +92,77 @@ Task stays Task by design.
 
 # Surface Roles
 
-## Today
+## Agenda
 
-Today is the primary household operational surface.
+Agenda is the unified household temporal surface.
 
 It answers:
 
-> What matters today for this household?
+> What is happening in this household — today, this week, this month — for everyone or for one person?
 
-It should be:
+It operates in two scopes:
+
+- **Household**: shows the shared household picture — all members, shared plans, owned tasks, routines
+- **Member**: shows one person's temporal reality in depth
+
+And in three time modes:
+
+- **Day**: household board (compact, all members) or individual timeline (hour-positioned, one member)
+- **Week**: 7-day coordination view
+- **Month**: density and navigation overview
+
+Default entry: Household scope, Day mode, today's date — the operational "what matters today" question.
+
+Agenda must be:
 
 - dense
 - fast to scan
 - truthful
 - low-navigation
-- shared-reality first
-
-## Planning
-
-Planning is the write-heavy temporal coordination surface.
-
-It answers:
-
-> What is coming, when is it happening, and what needs adjustment?
-
-It should support:
-
-- day, week, and month awareness
-- plan creation and inspection
-- quick date navigation
-- conflict visibility
-- preparation awareness
+- write-capable in-place
 
 ## Lists
 
-Lists are the reusable shared-state surface.
+Lists are reusable household execution containers.
 
 They answer:
 
-> What should be remembered, bought, checked, or prepared next time?
+> What should be remembered, bought, checked, prepared, or done next time?
+
+Lists own household capture and flexible execution.
+They are not a full task management system and do not replace Calendar.
+
+A list item is not a task.
+A list item may carry importance and temporal fields (due date, reminder, repeat).
+Items with any temporal field project into the Agenda surface as a distinct entry type.
+Temporal fields are independently optional — repeat does not require a due date.
+A list linked to a plan remains a list. Linking does not cause all items to project.
+
+Lists must be:
+
+- grouped by context or purpose
+- independent objects — able to exist without links to plans or areas
+- persistent across uses
+- reusable by design
+
+Lists exist for:
+
+- groceries
+- packing
+- preparation
+- restocking
+- school preparation with due dates
+- any recurring household collection
+- meal planning (future extension)
+
+The four axes of DomusMind must remain strictly separate:
+
+| Surface | Owns |
+| ------- | ---- |
+| Agenda | Time (source of truth) |
+| Tasks | Structured execution lifecycle |
+| Areas | Ownership |
+| Lists | Household execution container (capture → action → time reference) |
 
 They should feel:
 
@@ -139,8 +171,6 @@ They should feel:
 - row-based
 - low-ceremony
 - shared
-
-Lists are not a task manager and not a calendar.
 
 ## Areas
 
@@ -152,24 +182,33 @@ They answer:
 
 They should make ownership visible without becoming administrative.
 
-## Member Agenda
+## Settings
 
-Member Agenda is the individual deep temporal surface.
+Settings is the low-frequency configuration surface.
 
 It answers:
 
-> What does this person's day, week, or month actually look like?
+> How do we manage people details, household preferences, and personal integrations without polluting operational surfaces?
 
-It exists to inspect and plan one person's temporal load without losing shared context.
+It should feel:
+
+- compact
+- calm
+- explicit
+- secondary to operational surfaces
+
+Settings is where member-scoped external calendar connections are managed in phase 1.
+Agenda consumes the resulting read-only projections, but does not own connection setup.
 
 ---
 
-# Planning vs Timeline
+# Agenda and the Household Timeline
 
-DomusMind distinguishes between planning surfaces and the timeline.
+DomusMind does not require the user to navigate between surfaces to understand household time.
 
-- Planning is where the household creates or adjusts future temporal state.
-- Timeline-oriented surfaces are where current household reality becomes legible.
+The Agenda surface is the single temporal entry point.
+
+Scope (Household or Member) and time mode (Day, Week, Month) are selections within one surface, not separate navigation destinations.
 
 The household should not need separate tools to understand:
 
@@ -224,7 +263,7 @@ The flow should:
 2. Name the household.
 3. Add people.
 4. Add first useful state such as plans, routines, or lists.
-5. Show Today and Planning immediately.
+5. Show Agenda immediately in its default household day state.
 
 The result should be a working system, not an empty shell.
 
@@ -256,8 +295,8 @@ Guardrails:
 
 The experience direction is successful when:
 
-- the household can understand Today in seconds
-- planning the week feels calm and fast
+- the household can understand Agenda's default day state in seconds
+- Agenda week planning feels calm and fast
 - lists feel efficient and obvious
 - ownership is visible without admin overhead
 - desktop and mobile feel like the same product

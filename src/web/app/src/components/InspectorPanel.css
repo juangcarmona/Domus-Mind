@@ -3,6 +3,7 @@
 .inspector-panel {
   width: var(--inspector-width);
   flex-shrink: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--surface-alt, var(--surface));
@@ -61,6 +62,9 @@
 
 .inspector-panel-body {
   flex: 1;
-  padding: 1rem;
-  overflow-y: auto;
+  padding: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }

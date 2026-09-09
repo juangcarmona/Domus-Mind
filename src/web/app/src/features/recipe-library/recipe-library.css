@@ -1,0 +1,359 @@
+/* ── Recipe Library Surface ──────────────────────────────────────────────────
+   CSS class prefix: rl-
+   Follows the same layout conventions as the meal-planning surface.
+*/
+
+/* ── Page Layout ─────────────────────────────────────────────────────────────*/
+
+.rl-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.rl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  gap: var(--spacing-3);
+}
+
+.rl-header-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.rl-header-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+.rl-search {
+  padding: var(--spacing-2) var(--spacing-4);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.rl-search-input {
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+}
+
+.rl-search-input:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+/* ── Recipe List ─────────────────────────────────────────────────────────────*/
+
+.rl-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.rl-list-pane {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.rl-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--spacing-2) 0;
+}
+
+.rl-list-empty {
+  padding: var(--spacing-6) var(--spacing-4);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.rl-list-empty-hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin-top: var(--spacing-1);
+}
+
+.rl-recipe-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  gap: var(--spacing-3);
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.rl-recipe-row:hover {
+  background: var(--color-surface-hover);
+}
+
+.rl-recipe-row.is-selected {
+  background: var(--color-surface-active);
+}
+
+.rl-recipe-row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.rl-recipe-row-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rl-recipe-row-meta {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.rl-recipe-row-meta-item {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.rl-recipe-favorite-icon {
+  color: var(--color-warning);
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+/* ── Detail Panel ────────────────────────────────────────────────────────────*/
+
+.rl-detail-pane {
+  width: 340px;
+  border-left: 1px solid var(--color-border);
+  overflow-y: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rl-detail-header {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.rl-detail-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-1);
+}
+
+.rl-detail-description {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.rl-detail-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-2);
+}
+
+.rl-detail-stats {
+  display: flex;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.rl-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rl-stat-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rl-stat-value {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.rl-detail-section {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.rl-detail-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 var(--spacing-2);
+}
+
+.rl-ingredient-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.rl-ingredient-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+  padding: var(--spacing-1) 0;
+}
+
+.rl-ingredient-name {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.rl-ingredient-qty {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.rl-ingredient-actions {
+  display: flex;
+  gap: var(--spacing-1);
+}
+
+.rl-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-1);
+}
+
+.rl-tag {
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--color-surface-3);
+  color: var(--color-text-secondary);
+}
+
+.rl-meal-type-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-1);
+}
+
+.rl-meal-type-badge {
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+}
+
+/* ── Inline ingredient form ───────────────────────────────────────────────────*/
+
+.rl-ingredient-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) 0;
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--spacing-2);
+}
+
+.rl-ingredient-form-row {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.rl-ingredient-form-input {
+  flex: 1;
+  padding: var(--spacing-1) var(--spacing-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  min-width: 0;
+}
+
+.rl-ingredient-form-input:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+.rl-ingredient-form-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  justify-content: flex-end;
+}
+
+/* ── Delete confirmation ─────────────────────────────────────────────────────*/
+
+.rl-delete-confirm {
+  padding: var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.rl-delete-confirm-body {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.rl-delete-confirm-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  justify-content: flex-end;
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────────────────*/
+
+@media (max-width: 640px) {
+  .rl-detail-pane {
+    display: none;
+  }
+
+  .rl-detail-pane.is-open {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    z-index: 50;
+    background: var(--color-surface);
+    border-left: none;
+  }
+}

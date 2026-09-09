@@ -1,9 +1,9 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { DAY_ORDER } from "../../today/utils/dateUtils";
+import { DAY_ORDER } from "../../agenda-today/utils/dateUtils";
 import { buildCalendarGrid } from "../utils/agendaDateGrid";
-import type { CalendarEntry } from "../../today/utils/calendarEntry";
-import type { DayTypeSummary } from "../../today/types";
+import type { CalendarEntry } from "../../agenda-today/utils/calendarEntry";
+import type { DayTypeSummary } from "../../agenda-today/types";
 
 // ----------------------------------------------------------------
 // Compact entry preview

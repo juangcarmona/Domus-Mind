@@ -6,7 +6,7 @@ import { fetchAreas } from "../../../store/areasSlice";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { toLocalDateInput, toLocalTimeInput } from "../utils";
 import { DateInput } from "../../../components/DateInput";
-import { EventChecklistSection } from "../../shared-lists/components/EventChecklistSection";
+import { EventChecklistSection } from "../../lists/components/EventChecklistSection";
 import { calendarApi } from "../../../api/calendarApi";
 import { MemberAvatar } from "../../settings/components/avatar/MemberAvatar";
 

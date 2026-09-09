@@ -11,7 +11,7 @@ steps:
     body: "Add the people in your household."
   - title: "Add plans, routines, and lists."
     body: "Add the first plans, recurring routines, or shared lists."
-  - title: "See Today and Week."
+  - title: "See Agenda and Week."
     body: "DomusMind shows what matters today and what is coming this week."
 visible:
   title: "What becomes visible"

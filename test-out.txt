@@ -1,0 +1,16 @@
+Test run for D:\repos\domusmind\tests\backend\DomusMind.Domain.Tests\bin\Debug\net10.0\DomusMind.Domain.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for D:\repos\domusmind\tests\backend\DomusMind.Infrastructure.Tests\bin\Debug\net10.0\DomusMind.Infrastructure.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for D:\repos\domusmind\tests\backend\DomusMind.Api.Tests\bin\Debug\net10.0\DomusMind.Api.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for D:\repos\domusmind\tests\backend\DomusMind.Application.Tests\bin\Debug\net10.0\DomusMind.Application.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.A total of 1 test files matched the specified pattern.
+
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     5, Skipped:     0, Total:     5, Duration: 32 ms - DomusMind.Api.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:   204, Skipped:     0, Total:   204, Duration: 152 ms - DomusMind.Domain.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:    44, Skipped:     0, Total:    44, Duration: 1 s - DomusMind.Infrastructure.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:   497, Skipped:     0, Total:   497, Duration: 1 s - DomusMind.Application.Tests.dll (net10.0)

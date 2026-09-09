@@ -15,5 +15,16 @@ public sealed record FamilyTimelineEventItem(
     IReadOnlyCollection<Guid> ParticipantMemberIds,
     IReadOnlyCollection<ParticipantProjection> Participants);
 
+public sealed record FamilyTimelineListItem(
+    Guid ListId,
+    string ListName,
+    Guid ItemId,
+    string ItemName,
+    string? DueDate,
+    string? Reminder,
+    bool Checked,
+    bool Importance);
+
 public sealed record FamilyTimelineResponse(
-    IReadOnlyCollection<FamilyTimelineEventItem> Events);
+    IReadOnlyCollection<FamilyTimelineEventItem> Events,
+    IReadOnlyCollection<FamilyTimelineListItem> ListItems);

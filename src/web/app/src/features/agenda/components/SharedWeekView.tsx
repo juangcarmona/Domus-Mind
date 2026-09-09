@@ -1,14 +1,14 @@
 import { useTranslation } from "react-i18next";
-import type { WeeklyGridCell } from "../../today/types";
-import type { CalendarEntry } from "../../today/utils/calendarEntry";
-import { buildSharedEntries } from "../../today/utils/todayPanelHelpers";
-import { CalendarEntryItem } from "../../today/components/shared/CalendarEntryItem";
+import type { WeeklyGridCell } from "../../agenda-today/types";
+import type { CalendarEntry } from "../../agenda-today/utils/calendarEntry";
+import { buildSharedEntries } from "../../agenda-today/utils/todayPanelHelpers";
+import { CalendarEntryItem } from "../../agenda-today/components/shared/CalendarEntryItem";
 
 interface SharedWeekViewProps {
   sharedCells: WeeklyGridCell[];
   /** ISO YYYY-MM-DD — any day in the target week. */
   selectedDate: string;
-  onItemClick: (type: "event" | "task" | "routine", id: string) => void;
+  onItemClick: (type: "event" | "task" | "routine" | "list-item", id: string) => void;
   /** Called when the user taps a day header to drill into the Day view. */
   onDayClick?: (date: string) => void;
 }

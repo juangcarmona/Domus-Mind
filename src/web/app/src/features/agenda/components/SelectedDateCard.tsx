@@ -1,13 +1,13 @@
 import { useTranslation } from "react-i18next";
-import type { CalendarEntry } from "../../today/utils/calendarEntry";
-import { CalendarEntryItem } from "../../today/components/shared/CalendarEntryItem";
+import type { CalendarEntry } from "../../agenda-today/utils/calendarEntry";
+import { CalendarEntryItem } from "../../agenda-today/components/shared/CalendarEntryItem";
 
 interface SelectedDateCardProps {
   /** Untimed entries for the selected date (entry.time === null). */
   entries: CalendarEntry[];
   /** "Today" or a formatted date string, used as the card heading. */
   dateLabel: string;
-  onItemClick: (type: "event" | "task" | "routine", id: string) => void;
+  onItemClick: (type: "event" | "task" | "routine" | "list-item", id: string) => void;
 }
 
 /**

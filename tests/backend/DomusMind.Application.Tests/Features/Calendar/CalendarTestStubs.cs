@@ -1,3 +1,4 @@
+using DomusMind.Application.Abstractions.Integrations.Calendar;
 using DomusMind.Application.Abstractions.Persistence;
 using DomusMind.Application.Abstractions.Security;
 using DomusMind.Domain.Abstractions;
@@ -50,4 +51,32 @@ internal static class CalendarTestHelpers
             EventTitle.Create(title), null,
             eventTime, HexColor.From("#3B82F6"), DateTime.UtcNow);
     }
+}
+
+/// <summary>Always grants a lease; does not track release calls.</summary>
+internal sealed class StubExternalCalendarSyncLeaseService : IExternalCalendarSyncLeaseService
+{
+    public Task<Guid?> TryAcquireAsync(Guid connectionId, CancellationToken cancellationToken = default)
+        => Task.FromResult<Guid?>(Guid.NewGuid());
+
+    public Task ReleaseAsync(Guid connectionId, Guid leaseId, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
+}
+
+/// <summary>Returns a fixed access token; all other operations are no-ops.</summary>
+internal sealed class StubExternalCalendarAuthService : IExternalCalendarAuthService
+{
+    private readonly string? _token;
+
+    public StubExternalCalendarAuthService(string? token = "access-token") => _token = token;
+
+    public Task<ExternalCalendarProviderAccount> ExchangeAuthorizationCodeAsync(
+        string authorizationCode, string redirectUri, CancellationToken cancellationToken = default)
+        => throw new NotSupportedException();
+
+    public Task<string?> GetAccessTokenAsync(Guid connectionId, CancellationToken cancellationToken = default)
+        => Task.FromResult(_token);
+
+    public Task RevokeAsync(Guid connectionId, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 }

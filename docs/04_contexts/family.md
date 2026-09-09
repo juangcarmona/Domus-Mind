@@ -122,7 +122,7 @@ Pet identity is owned by the Family context. Pets can be registered as family me
 **V1 operational scope for pets:**
 
 - Pets may be added to the family for identity and reference purposes
-- Pets do **not** appear in coordination views (Today board, Week grid, Timeline) in V1
+- Pets do **not** appear in Agenda household day rows, Agenda week/month coordination views, or member timelines in V1
 - Pets **cannot** receive task assignments in V1
 - Pets **cannot** hold responsibility ownership in V1
 - Pets **can** be added as event participants (e.g. a vet appointment)

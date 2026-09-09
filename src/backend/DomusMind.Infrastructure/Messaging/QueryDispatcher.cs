@@ -19,7 +19,13 @@ public sealed class QueryDispatcher : IQueryDispatcher
         var handlerType = typeof(IQueryHandler<,>)
             .MakeGenericType(query.GetType(), typeof(TResponse));
 
-        var handler = _serviceProvider.GetRequiredService(handlerType);
+        var handler = _serviceProvider.GetService(handlerType);
+        if (handler is null)
+        {
+            throw new HandlerResolutionException(
+                handlerType.FullName ?? handlerType.Name,
+                $"No query handler registration found for {handlerType.Name}.");
+        }
 
         var handleMethod = handlerType.GetMethod(
             nameof(IQueryHandler<IQuery<TResponse>, TResponse>.Handle))
