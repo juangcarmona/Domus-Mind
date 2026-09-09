@@ -313,7 +313,7 @@ jobs:
         run: docker compose -f deploy/docker-compose.yml config --quiet
 
       - name: Publish release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.prepare.outputs.tag }}
           name: DomusMind ${{ needs.prepare.outputs.tag }}
