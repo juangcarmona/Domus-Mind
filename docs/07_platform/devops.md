@@ -225,6 +225,55 @@ Mobile validation only.
 
 Only public release publisher.
 
+### Required checks and the `changes` gate
+
+Each CI workflow above starts with a small `changes` job, and its real job
+is gated on that job's output:
+
+```yaml
+jobs:
+  changes:      # asks the API which files the pull request touches
+  build:
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
+```
+
+This looks redundant next to a `paths:` filter, and it is not. A
+path-filtered workflow reports **no check run at all**, and a required
+status check that never reports leaves the pull request blocked forever,
+so a docs-only change could never go green. A job skipped by an `if:`
+condition does report a check run, with conclusion `skipped`, and that
+**satisfies** the requirement.
+
+So the `pull_request` triggers carry no `paths:` filter; the `changes`
+job reproduces the filter instead. `push` triggers keep their filters,
+since required checks do not apply there.
+
+Three consequences to preserve:
+
+* Do not remove the `changes` jobs, and do not add `paths:` back to a
+  `pull_request` trigger. Either one re-blocks unrelated pull requests.
+* Job display names are the required check contexts, so renaming a job
+  breaks branch protection until the contexts are updated to match. The
+  backend and web app jobs are deliberately named `backend build` and
+  `webapp build`; both were previously called `build` and collided on a
+  single context.
+* **Do not turn a gated job back into a matrix.** A skipped matrix job
+  reports a single check run named after the base job, with no matrix
+  expansion, so the per-leg contexts never report and a required check on
+  them can never be satisfied. This is why CodeQL runs as two jobs,
+  `Analyze (csharp)` and `Analyze (javascript-typescript)`, rather than
+  one matrix over `language`.
+
+Current required contexts on `main`: `backend build`, `webapp build`,
+`Validate Astro site`, `Analyze (csharp)`,
+`Analyze (javascript-typescript)`.
+
+`required_approving_review_count` is `0`. Pull requests are still
+required, but GitHub forbids approving your own, so on a
+solo-maintained repository any non-zero count makes every pull request
+unmergeable without an admin bypass.
+
 ### Reusable validation workflows
 
 Recommended next step:
