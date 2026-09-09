@@ -33,3 +33,6 @@ coverage/
 # Claude
 .claude/
 CLAUDE.md
+
+# APM dependencies
+apm_modules/
