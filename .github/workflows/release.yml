@@ -275,7 +275,7 @@ jobs:
           cache-to: type=gha,scope=domusmind,mode=max
 
       - name: Upload release manifest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-manifest
           path: release-artifacts/release-manifest.json
