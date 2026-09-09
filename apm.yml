@@ -1,0 +1,14 @@
+name: domusmind
+version: 1.0.0
+description: APM project for domusmind
+author: Juan G. Carmona
+dependencies:
+  apm:
+  - PlainConceptsChapters/chapter-devex/plugins/pc-lifecycle#v0.2.0
+  mcp: []
+includes:
+- auto
+- .apm/skills
+targets:
+- copilot
+scripts: {}
