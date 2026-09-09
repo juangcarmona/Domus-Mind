@@ -294,7 +294,7 @@ jobs:
           ref: ${{ needs.prepare.outputs.tag }}
 
       - name: Download manifest
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-manifest
           path: release-artifacts
