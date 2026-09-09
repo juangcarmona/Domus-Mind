@@ -1,17 +1,48 @@
 name: public-site-ci
 
 on:
+  # See the note in backend-ci.yml: no path filter, gated on `changes` instead,
+  # so the required check always reports.
   pull_request:
     branches: [main]
-    paths:
-      - 'src/web/public/**'
-      - '.github/workflows/public-site-ci.yml'
-      - '.github/workflows/public-site-cd.yml'
   workflow_dispatch:
 
 jobs:
+  changes:
+    name: public site changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - name: Detect relevant changes
+        id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" \
+            --paginate --jq '.[].filename')
+          echo "$files"
+          if printf '%s\n' "$files" | grep -qE '^(src/web/public/|\.github/workflows/public-site-c[id]\.yml$)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
   validate:
     name: Validate Astro site
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:

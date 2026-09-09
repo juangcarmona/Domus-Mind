@@ -1,10 +1,10 @@
 name: webapp-ci
 
 on:
+  # See the note in backend-ci.yml: no path filter, gated on `changes` instead,
+  # so the required check always reports.
   pull_request:
-    paths:
-      - 'src/web/app/**'
-      - '.github/workflows/webapp-ci.yml'
+    branches: [main]
   push:
     branches: [main]
     paths:
@@ -13,7 +13,42 @@ on:
   workflow_dispatch:
 
 jobs:
+  changes:
+    name: webapp changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - name: Detect relevant changes
+        id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" \
+            --paginate --jq '.[].filename')
+          echo "$files"
+          if printf '%s\n' "$files" | grep -qE '^(src/web/app/|\.github/workflows/webapp-ci\.yml$)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    name: webapp build
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
+
     runs-on: ubuntu-24.04
 
     defaults:
