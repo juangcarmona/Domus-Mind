@@ -1,6 +1,6 @@
 ---
 name: rebase-safely
-description: "Plain Concepts Lifecycle: conduct a git rebase safely: preflight, a backup ref, and conflict-by-conflict resolution that challenges the operator instead of guessing. Use when rebasing a branch onto an updated upstream, replaying commits, or resolving rebase conflicts."
+description: "Lifecycle: conduct a git rebase safely: preflight, a backup ref, and conflict-by-conflict resolution that challenges the operator instead of guessing. Use when rebasing a branch onto an updated upstream, replaying commits, or resolving rebase conflicts."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

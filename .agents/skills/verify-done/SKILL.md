@@ -1,6 +1,6 @@
 ---
 name: verify-done
-description: "Plain Concepts Lifecycle: assess a change against the project's Definition of Done: run the deterministic lane, collect its evidence, and present the judgement items to the roles that own them. Use at the Done gate, before marking a pull request ready for review, or when deciding whether a change may proceed to integration."
+description: "Lifecycle: assess a change against the project's Definition of Done: run the deterministic lane, collect its evidence, and present the judgement items to the roles that own them. Use at the Done gate, before marking a pull request ready for review, or when deciding whether a change may proceed to integration."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

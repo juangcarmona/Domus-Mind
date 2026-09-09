@@ -1,6 +1,6 @@
 ---
 name: status
-description: "Plain Concepts Lifecycle: report where a work item sits in the lifecycle, which capability comes next, and what has drifted. Read-only: mutates no state, comment or branch. Use when the operator asks where an item stands, what to do next with it, whether its Done gate has passed, or what lifecycle drift exists."
+description: "Lifecycle: report where a work item sits in the lifecycle, which capability comes next, and what has drifted. Read-only: mutates no state, comment or branch. Use when the operator asks where an item stands, what to do next with it, whether its Done gate has passed, or what lifecycle drift exists."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

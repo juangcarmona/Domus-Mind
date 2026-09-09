@@ -1,6 +1,6 @@
 ---
 name: adopt
-description: "Plain Concepts Lifecycle: scaffold a repository for the lifecycle: discover how the team already works, derive their Definition of Ready and Definition of Done, and install only the role capabilities the project needs. Use when the operator asks to adopt, set up or onboard the lifecycle in a repository, or to re-adopt after the project's tooling or its definitions changed."
+description: "Lifecycle: scaffold a repository for the lifecycle: discover how the team already works, derive their Definition of Ready and Definition of Done, and install only the role capabilities the project needs. Use when the operator asks to adopt, set up or onboard the lifecycle in a repository, or to re-adopt after the project's tooling or its definitions changed."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

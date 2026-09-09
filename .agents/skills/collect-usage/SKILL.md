@@ -1,6 +1,6 @@
 ---
 name: collect-usage
-description: "Plain Concepts Lifecycle: summarise human-versus-agent effort for a work item from captured agent telemetry (active time, cost and tokens), reporting missing or truncated data honestly. Read-only. Use when a review entry needs measured effort figures rather than a guess."
+description: "Lifecycle: summarise human-versus-agent effort for a work item from captured agent telemetry (active time, cost and tokens), reporting missing or truncated data honestly. Read-only. Use when a review entry needs measured effort figures rather than a guess."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

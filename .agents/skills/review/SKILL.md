@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Plain Concepts Lifecycle stage 5: learn from a completed cycle: record what happened with measured effort, and propose amendments to the process itself. Use when the operator asks to review or retrospect a merged work item, close out a cycle, or improve the lifecycle from what just happened. Post-merge only; gates nothing."
+description: "Lifecycle stage 5: learn from a completed cycle: record what happened with measured effort, and propose amendments to the process itself. Use when the operator asks to review or retrospect a merged work item, close out a cycle, or improve the lifecycle from what just happened. Post-merge only; gates nothing."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

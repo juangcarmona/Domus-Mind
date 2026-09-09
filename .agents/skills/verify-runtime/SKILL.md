@@ -1,6 +1,6 @@
 ---
 name: verify-runtime
-description: "Plain Concepts Lifecycle: drive the real application to observe a change working, and capture the evidence that proves it. Use when a change alters or adds a user-facing surface, when tests pass but nobody has seen the change run, or when the Definition of Done requires runtime evidence."
+description: "Lifecycle: drive the real application to observe a change working, and capture the evidence that proves it. Use when a change alters or adds a user-facing surface, when tests pass but nobody has seen the change run, or when the Definition of Done requires runtime evidence."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

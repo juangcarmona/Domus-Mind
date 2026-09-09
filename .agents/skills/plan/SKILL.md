@@ -1,6 +1,6 @@
 ---
 name: plan
-description: "Plain Concepts Lifecycle stage 2: turn a ready work item into a written, reviewable solution design with tasks and test impact, pick it up, and raise a draft pull request carrying the plan. Use when the operator asks to plan a work item, design the solution for a ready item, or produce a plan artifact for review."
+description: "Lifecycle stage 2: turn a ready work item into a written, reviewable solution design with tasks and test impact, pick it up, and raise a draft pull request carrying the plan. Use when the operator asks to plan a work item, design the solution for a ready item, or produce a plan artifact for review."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

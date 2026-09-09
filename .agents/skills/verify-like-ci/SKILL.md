@@ -1,6 +1,6 @@
 ---
 name: verify-like-ci
-description: "Plain Concepts Lifecycle: run the checks CI will run, locally, deriving them from the pipeline definitions instead of memory. Use before committing or pushing, before claiming a change is green, before opening or un-drafting a pull request, or after fixing anything a linter, analyzer or test reported."
+description: "Lifecycle: run the checks CI will run, locally, deriving them from the pipeline definitions instead of memory. Use before committing or pushing, before claiming a change is green, before opening or un-drafting a pull request, or after fixing anything a linter, analyzer or test reported."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

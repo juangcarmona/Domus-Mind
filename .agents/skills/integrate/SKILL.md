@@ -1,6 +1,6 @@
 ---
 name: integrate
-description: "Plain Concepts Lifecycle stage 4: land an approved change: verify the Done gate passed, fold in the specifications, archive the plan, merge, and close the loop in the tracker. Use when the operator asks to integrate, land or merge an approved work item and close it out."
+description: "Lifecycle stage 4: land an approved change: verify the Done gate passed, fold in the specifications, archive the plan, merge, and close the loop in the tracker. Use when the operator asks to integrate, land or merge an approved work item and close it out."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

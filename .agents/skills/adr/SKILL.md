@@ -1,6 +1,6 @@
 ---
 name: adr
-description: "Plain Concepts Lifecycle: author an Architecture Decision Record from the shared template, assigning the next sequential number, status and date, and updating the index. Use when recording or proposing an architectural or technical decision, documenting why a design choice was made, or capturing the trade-offs and alternatives behind one."
+description: "Lifecycle: author an Architecture Decision Record from the shared template, assigning the next sequential number, status and date, and updating the index. Use when recording or proposing an architectural or technical decision, documenting why a design choice was made, or capturing the trade-offs and alternatives behind one."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

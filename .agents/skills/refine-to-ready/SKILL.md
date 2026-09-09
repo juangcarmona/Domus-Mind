@@ -1,6 +1,6 @@
 ---
 name: refine-to-ready
-description: "Plain Concepts Lifecycle: take a work item to the project's Definition of Ready: interrogate a raw idea into a ready draft, or evaluate an existing item and name what is missing. Use when refining a backlog item before planning, when checking whether an item is ready to be picked up, or when a Ready gate needs a verdict."
+description: "Lifecycle: take a work item to the project's Definition of Ready: interrogate a raw idea into a ready draft, or evaluate an existing item and name what is missing. Use when refining a backlog item before planning, when checking whether an item is ready to be picked up, or when a Ready gate needs a verdict."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

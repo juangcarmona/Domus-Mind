@@ -1,6 +1,6 @@
 ---
 name: refine
-description: "Plain Concepts Lifecycle stage 1: take a raw idea or an existing work item to the project's Definition of Ready, authoring the acceptance criteria along the way, and end at the Ready gate. Use when the operator asks to refine, groom or shape a backlog item, or to take an idea to ready."
+description: "Lifecycle stage 1: take a raw idea or an existing work item to the project's Definition of Ready, authoring the acceptance criteria along the way, and end at the Ready gate. Use when the operator asks to refine, groom or shape a backlog item, or to take an idea to ready."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

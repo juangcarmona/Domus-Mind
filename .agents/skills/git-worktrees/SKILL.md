@@ -1,6 +1,6 @@
 ---
 name: git-worktrees
-description: "Plain Concepts Lifecycle: run parallel work in git worktrees without cross-contaminating branches, build output, tooling configuration or telemetry. Use when starting a second work item while one is in flight, reviewing a branch without disturbing the current one, or when a worktree's tooling behaves differently from the main checkout."
+description: "Lifecycle: run parallel work in git worktrees without cross-contaminating branches, build output, tooling configuration or telemetry. Use when starting a second work item while one is in flight, reviewing a branch without disturbing the current one, or when a worktree's tooling behaves differently from the main checkout."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

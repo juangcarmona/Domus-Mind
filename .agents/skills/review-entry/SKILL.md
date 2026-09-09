@@ -1,6 +1,6 @@
 ---
 name: review-entry
-description: "Plain Concepts Lifecycle: append one dated entry to the project's review log after a change has merged, recording what worked, what did not, and what to change next time, alongside the effort figures the caller supplies. Use at loop close-out, when recording a retrospective for a completed work item, or when a post-merge finding needs capturing."
+description: "Lifecycle: append one dated entry to the project's review log after a change has merged, recording what worked, what did not, and what to change next time, alongside the effort figures the caller supplies. Use at loop close-out, when recording a retrospective for a completed work item, or when a post-merge finding needs capturing."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

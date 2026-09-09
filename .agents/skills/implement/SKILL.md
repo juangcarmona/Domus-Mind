@@ -1,6 +1,6 @@
 ---
 name: implement
-description: "Plain Concepts Lifecycle stage 3: apply the approved plan on its branch, verify the change against the project's Definition of Done in both lanes, and mark the pull request ready for review. Use when the operator asks to implement, build out or finish a planned work item, or to take a change to the Done gate."
+description: "Lifecycle stage 3: apply the approved plan on its branch, verify the change against the project's Definition of Done in both lanes, and mark the pull request ready for review. Use when the operator asks to implement, build out or finish a planned work item, or to take a change to the Done gate."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"

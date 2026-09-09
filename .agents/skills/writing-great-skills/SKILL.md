@@ -1,6 +1,6 @@
 ---
 name: writing-great-skills
-description: "Plain Concepts Lifecycle: author and review Agent Skills that stay valid, portable and predictable, against the Agent Skills specification and this package's own rules. Use when writing a new skill, reviewing or refactoring an existing one, adapting a role template into a project's own skill during adoption, or turning a delivery failure into a durable guard."
+description: "Lifecycle: author and review Agent Skills that stay valid, portable and predictable, against the Agent Skills specification and this package's own rules. Use when writing a new skill, reviewing or refactoring an existing one, adapting a role template into a project's own skill during adoption, or turning a delivery failure into a durable guard."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"
@@ -39,12 +39,12 @@ Write it in two halves:
 2. **When to reach for it**, naming the situations in the words a person would actually use.
 
 ```yaml
-description: "Plain Concepts Lifecycle: run the checks CI will run, locally, deriving them from the pipeline definitions instead of memory. Use before committing or pushing, before claiming a change is green, before opening or un-drafting a pull request, or after fixing anything a linter, analyzer or test reported."
+description: "Lifecycle: run the checks CI will run, locally, deriving them from the pipeline definitions instead of memory. Use before committing or pushing, before claiming a change is green, before opening or un-drafting a pull request, or after fixing anything a linter, analyzer or test reported."
 ```
 
 - **Name the situations, not synonyms for the skill.** "Use when reviewing, checking, looking at or examining code" is one situation written four times. "Use before pushing, before un-drafting a pull request, or after a linter reported something" is three.
 - **Do not restate the body.** Anything that does not help the agent decide *whether to open the file* is dead weight in every session.
-- **Prefix consistently.** Every skill here opens with `Plain Concepts Lifecycle:` so a reader can see at a glance which package a skill came from.
+- **Prefix consistently.** Every skill here opens with `Lifecycle:` so a reader can see at a glance which package a skill came from.
 
 ## 3. Keep the body short, and push detail down
 

@@ -1,6 +1,6 @@
 ---
 name: harden-process
-description: "Plain Concepts Lifecycle: turn one concrete failure into the smallest durable guard in the process itself. Use after a red pipeline, a review that caught something the process should have, an escaped defect, or any moment a stage was reported done when it was not."
+description: "Lifecycle: turn one concrete failure into the smallest durable guard in the process itself. Use after a red pipeline, a review that caught something the process should have, an escaped defect, or any moment a stage was reported done when it was not."
 metadata:
   plugin: pc-lifecycle
   author: "Juan García Carmona"
